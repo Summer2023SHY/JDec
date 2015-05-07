@@ -1,9 +1,12 @@
 public class Event {
     
+    	/* Class constants */
+
     public static final int MAX_NUMBER_OF_EVENTS = 255;
 	public static final int N_BYTES_OF_ID = 1; // (So 255 unique events with 0 representing null, NOTE: we will make this flexible later to allow up to 2^63 unique events)
  
-    // Private instance variables
+    	/* Private instance variables */
+    	
     private String label;
     private int id; // Used as int to prevent overflow, although we read and write as unsigned byte
     private boolean observable, controllable;
@@ -21,17 +24,37 @@ public class Event {
 		this.controllable = controllable;
 	}
 
+	public boolean hasSameID(Event other) {
+		return this.id == other.id;
+	}
+
+		/** STANDARD ACCESSOR AND MUTATOR METHODS **/
+
+	/**
+	 *	Get the observability property of the event
+ 	 *	@return whether or not the event is observable
+	 **/
 	public boolean isObservable() {
 		return observable;
 	}
 
+	/**
+	 *	Get the controllability property of the event
+ 	 *	@return whether or not the event is controllable
+	 **/
 	public boolean isControlable() {
 		return controllable;
 	}
 
-	public boolean hasSameID(Event other) {
-		return this.id == other.id;
+	/**
+	 *	Get the ID number of the event
+ 	 *	@return id
+	 **/
+	public int getID() {
+		return id;
 	}
+
+		/** OVERRIDDEN METHODS **/  
 
 	@Override public int hashCode() {
 		return label.hashCode();

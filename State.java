@@ -3,7 +3,8 @@ import java.io.*;
 
 public class State {
     
-	// Private instance variables
+		/* Private instance variables */
+	
 	private String label;
 	private long id;
 	private boolean marked;
