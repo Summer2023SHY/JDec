@@ -17,6 +17,18 @@ public class State {
 		this.transitions = transitions;
 	}
 
+	// Create state with no transitions
+	public State(String label, long id, boolean marked) {
+		this.label = label;
+		this.id = id;
+		this.marked = marked;
+		transitions = new ArrayList<Transition>();
+	}
+
+	public int getNumberOfTransitions() {
+		return transitions.size();
+	}
+
 	// 	unfinished
 	public boolean writeToFile(RandomAccessFile file, int nBytesPerState, int nTransitionsPerState) {
 		
