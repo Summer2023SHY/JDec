@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.*;
 
 public class AutomataGUI extends JFrame {
 
@@ -8,7 +9,7 @@ public class AutomataGUI extends JFrame {
 
 	private JTextPane 	eventInput,
 						stateInput,
-						transitionsInput;
+						transitionInput;
     
     public static void main(String[] args) {
 		new AutomataGUI();
@@ -34,7 +35,9 @@ public class AutomataGUI extends JFrame {
 		container.add(new TooltipComponent(
 				eventInputInstructions,
 				"<html>1 event per line, formatted as <i>LABEL</i>,<i>OBSERVABLE</i>,<i>CONTROLLABLE</i>.<br>"
-				+ "<b><u>EXAMPLE</u></b>: '<i>EventName,T,F</i>' denotes an event called <b>EventName</b> that is <b>observable</b> but <b>not controllable</b>.</html>"
+				+ "<b><u>EXAMPLE</u></b>: '<i>EventName,True,False</i>' denotes an event called <b>EventName</b> "
+                + "that is <b>observable</b> but <b>not controllable</b>.<br>"
+                + "<b><u>NOTE</u></b>: '<i>True</i>' and '<i>False</i>' can be abbreviated as '<i>T</i>' and '<i>F</i>', respectively.</html>"
 			),c);
 
     	eventInput = new JTextPane();
@@ -56,8 +59,9 @@ public class AutomataGUI extends JFrame {
 		c.gridy = 0;
 		container.add(new TooltipComponent(
 				stateInputInstructions,
-				"<html>1 state per line, formatted as <i>LABEL</i>,<i>MARKED</i>.<br>"
-				+ "<b><u>EXAMPLE</u></b>: '<i>StateName,F</i>' denotes a state called <b>StateName</b> that is <b>unmarked</b>.</html>"
+				"<html>1 state per line, formatted as <i>LABEL,MARKED</i>.<br>"
+				+ "<b><u>EXAMPLE</u></b>: <i>'StateName,False'</i> denotes a state called <b>StateName</b> that is <b>unmarked</b>.<br>"
+                + "<b><u>NOTE</u></b>: <i>'True'</i> and <i>'False'</i> can be abbreviated as <i>'T'</i> and <i>'F'</i>, respectively.</html>"
 			),c);
 
 		stateInput = new JTextPane();
@@ -81,12 +85,13 @@ public class AutomataGUI extends JFrame {
 		c.gridy = 2;
 		container.add(new TooltipComponent(
 				transitionInputInstructions,
-				"<html>1 state per line, formatted as <i>LABEL</i>,<i>MARKED</i>.<br>"
-				+ "<b><u>EXAMPLE</u></b>: '<i>StateName,F</i>' denotes a state called <b>StateName</b> that is <b>unmarked</b>.</html>"
+				"<html>1 transition per line, formatted as <i>INITIAL_STATE,EVENT,TARGET_STATE</i>.<br>"
+				+ "<b><u>EXAMPLE</u></b>: <i>'FirstState,Event,SecondState'</i> denotes a transition that goes from "
+                + "the state <b>'FirstState'</b> to the state <b>'SecondState'</b> by the event called <b>'Event'</b>.</html>"
 			),c);
 
-		transitionsInput = new JTextPane();
-		JScrollPane transitionInputScrollPane = new JScrollPane(transitionsInput);
+		transitionInput = new JTextPane();
+		JScrollPane transitionInputScrollPane = new JScrollPane(transitionInput);
 		c.ipady = 400;
     	c.weightx = 0.5;
     	c.weighty = 1.0;
@@ -96,22 +101,57 @@ public class AutomataGUI extends JFrame {
 
     	add(container);
 
-    		/* Generate Automaton */
+    		/* Generate Automaton (NOTE: It is assumed that Automatons that are typed in by hand will not be extremely large) */
 
-    	JButton generateAutomaton = new JButton("Generate");
+    	JButton generateAutomaton = new JButton("Generate Automaton");
     	generateAutomaton.addActionListener(new ActionListener() {
  
             public void actionPerformed(ActionEvent e)
             {
 
+                // Setup
             	Automaton a = new Automaton();
-
+                HashMap<String, Integer> eventMapping = new HashMap<String, Integer>(); // Maps the events's labels to the events's ID
+                HashMap<String, Long> stateMapping = new HashMap<String, Long>(); // Maps the state's labels to the state's ID
+                
+            	// Events
                 for (String line : eventInput.getText().split("\n")) {
-                	String[] splitLine = line.split(",");
-                	if (splitLine.length == 3)
-                		a.addEvent(splitLine[0], splitLine[1].equals("T"), splitLine[2].equals("T"));
-                	else
-                		System.out.println("ERROR: Could not parse '" + line + "'");
+                	
+                    String[] splitLine = line.split(",");
+
+                	if (splitLine.length == 3) {
+                		int id = a.addEvent(splitLine[0], isTrue(splitLine[1]), isTrue(splitLine[2]));
+                        eventMapping.put(splitLine[0], id);
+                    }
+                	else if (line.length() > 0)
+                		System.out.println("ERROR: Could not parse '" + line + "' as an event.");
+
+                }
+
+                // States
+                for (String line : stateInput.getText().split("\n")) {
+                	
+                    String[] splitLine = line.split(",");
+
+                	if (splitLine.length == 2) {
+                		long id = a.addState(splitLine[0], isTrue(splitLine[1]));
+                        stateMapping.put(splitLine[0], id);
+                    }
+                	else if (line.length() > 0)
+                		System.out.println("ERROR: Could not parse '" + line + "' as a state.");
+                }
+
+                // Transitions (TO-DO: CATCH NULLPOINTEREXCEPTIONS)
+                for (String line : transitionInput.getText().split("\n")) {
+                    String[] splitLine = line.split(",");
+                    if (splitLine.length == 3) {
+                        long initialStateID = stateMapping.get(splitLine[0]);
+                        int eventID = eventMapping.get(splitLine[1]);
+                        long targetStateID = stateMapping.get(splitLine[2]);
+                        a.addTransition(initialStateID, eventID, targetStateID);
+                    }
+                    else if (line.length() > 0)
+                        System.out.println("ERROR: Could not parse '" + line + "' as a transition.");
                 }
 
             }
@@ -122,6 +162,10 @@ public class AutomataGUI extends JFrame {
     		/* Finish GUI */
 
     	setGUIproperties();
+    }
+
+    private boolean isTrue(String str) {
+        return str.equals("T") || str.equals("True");
     }
 
     /**

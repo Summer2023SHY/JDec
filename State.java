@@ -25,20 +25,33 @@ public class State {
 		transitions = new ArrayList<Transition>();
 	}
 
+	public void addTransition(Transition transition) {
+		transitions.add(transition);
+		System.out.println("DEBUG: Transition added!" + transition.getEvent() + " " + transition.getTargetStateID());
+	}
+
 	public int getNumberOfTransitions() {
 		return transitions.size();
 	}
 
-	// 	unfinished
-	public boolean writeToFile(RandomAccessFile file, int nBytesPerState, int nTransitionsPerState) {
-		
+	public boolean writeToFile(RandomAccessFile file, int nBytesPerState, int nBytesPerStateID, int nTransitionsPerState) {
+
 		try {
 
             file.seek(id * nBytesPerState);
 
-            // for (int i = 0; i < nBytesPerState; i++) {
-            //     file.writeUnsignedByte();
-            // }
+            // Write each transition to file (event ID followed by target state ID)
+            for (Transition t : transitions) {
+            	writeLongAsBytes(file, (long) (t.getEvent().getID()), Event.N_BYTES_OF_ID);
+            	writeLongAsBytes(file, t.getTargetStateID(), nBytesPerStateID);
+            }
+
+            // Pad with zeroes
+            for (int t = 0; t < nTransitionsPerState - transitions.size(); t++)
+            	for (int b = 0; b < Event.N_BYTES_OF_ID + nBytesPerStateID; b++) {
+            		file.writeByte(0);
+            		System.out.println("DEBUG: Wrote padded byte!");
+            	}
 
             return true;
           
@@ -49,24 +62,69 @@ public class State {
 
 	}
 
+	/**
+	 *	Get the ID number of the state
+ 	 *	@return id
+	 **/
+	public long getID() {
+		return id;
+	}
+
+	// Splits the specified number (which is a long) into the proper number of bytes and writes them one at a time into the file
+	private static void writeLongAsBytes(RandomAccessFile file, long n, int nBytes) throws IOException {
+
+		for (int i = nBytes - 1; i >= 0; i--) {
+			file.writeByte((int) (n >> (i*8)));
+			System.out.println("DEBUG: Wrote byte!");
+		}
+
+	}
+
 	// 	unfinished
-	public static State readFromFile(RandomAccessFile file, long id, int nBytesPerState, int nTransitionsPerState) {
+	public static State readFromFile(Automaton automaton, RandomAccessFile file, long id, int nBytesPerState, int nBytesPerStateID, int nTransitionsPerState) {
 
 		try {
 
+			State state = new State("temporaryLabel" /** TEMPORARY UNTIL HEADER FILE **/, id, true /** TEMPORARY UNTIL HEADER FILE **/);
+
             file.seek(id * nBytesPerState);
 
-            for (int i = 0; i < nBytesPerState; i++) {
-                int val = file.readUnsignedByte();
+            for (int t = 0; t < nTransitionsPerState; t++) {
+            	int eventID = (int) readBytesAsLong(file, Event.N_BYTES_OF_ID);
+            	long targetStateID = readBytesAsLong(file, nBytesPerStateID);
+            	state.addTransition(new Transition(automaton.getEvent(eventID), targetStateID));
             }
 
-            return null; // temporary
+            return state;
           
 	    } catch (IOException e) {
             e.printStackTrace();
             return null;
 	    }
 
+	}
+
+	// Joins the specified number of bytes into a long from file
+	private static long readBytesAsLong(RandomAccessFile file, int nBytes) throws IOException {
+
+		long n = 0;
+
+		for (int i = nBytes - 1; i >= 0; i--) {
+			n <<= 8;
+			n += file.readUnsignedByte();
+		}
+
+		return n;
+
+	}
+
+	@Override public String toString() {
+		return "("
+			+ label + ",ID:"
+			+ id + ","
+			+ (marked ? "Marked" : "Unmarked") + ","
+			+ "# Transitions: " + transitions.size()
+			+ ")";
 	}
 
 }

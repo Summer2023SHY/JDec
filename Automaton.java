@@ -12,12 +12,6 @@ public class Automaton {
 		System.out.println("nStates: " + nStates);
 		System.out.println("currentMaxStates: " + currentMaxStates);
 	}
-	public void printEventData() {
-		System.out.println("# events: " + events.size());
-		System.out.println("# active events: " + activeEvents.size());
-		System.out.println("# controllable events: " + controllableEvents.size());
-		System.out.println("# observable events: " + observableEvents.size());
-	}
 
 		/* Class constants */
 
@@ -45,9 +39,10 @@ public class Automaton {
 	private long nStates = 0;
 	private long currentMaxStates = 255;
 
-	private File file = null;
-	private RandomAccessFile 	headerFile, // Contains basic information about automaton, needed in order to read the bodyFile
-								bodyFile;	// List each state in the automaton, with the transitions
+	private static File defaultHeaderFile = new File("temp.hdr"),
+						defaultBodyFile = new File("temp.bdy");
+	private RandomAccessFile 	headerRAFile, // Contains basic information about automaton, needed in order to read the bodyFile
+								bodyRAFile;	// List each state in the automaton, with the transitions
 
 		/** CONSTRUCTORS **/
 
@@ -55,22 +50,23 @@ public class Automaton {
      * Default constructor: create empty automaton
      **/
     public Automaton() {
+    	this(defaultHeaderFile, defaultBodyFile);
     	updateNumberBytesPerState();
     }
 
     /**
      *	Convenience constructor: create automaton from a binary file
-	 *	@param file - The binary file to load the automaton from
+	 *	@param headerFile - The binary file to load the header information of the automaton from (information about events, etc.)
+	 *	@param bodyFile - The binary file to load the body information of the automaton from (states and transitions)
      **/
 	public Automaton(File headerFile, File bodyFile) {
-		this();
-
+		
 		try {
-			this.headerFile = new RandomAccessFile(headerFile, "rw");
-			this.bodyFile = new RandomAccessFile(bodyFile, "rw");
+			this.headerRAFile = new RandomAccessFile(headerFile, "rw");
+			this.bodyRAFile = new RandomAccessFile(bodyFile, "rw");
 		 } catch (IOException e) {
             e.printStackTrace();
-	    }
+	    }	
 
     }
     	/** AUTOMATA OPERATIONS **/
@@ -94,15 +90,43 @@ public class Automaton {
 		return null; // temporary
 	}
 
+	// CURRENTLY IN-EFFICENT!!!!!!!!!! (rewrites the entire state to file instead of only writing the new transition)
+	
+	public void addTransition(long initialStateID, int eventID, long targetStateID) {
+
+		System.out.println(initialStateID);
+		System.out.println(eventID);
+		System.out.println(targetStateID);
+
+		State initialState = getState(initialStateID);
+
+		System.out.println(initialState);
+
+		// Increase the maximum allowed transitions per state
+		if (initialState.getNumberOfTransitions() == nTransitionsPerState) {
+			nTransitionsPerState++;
+			recreateBinaryFile();
+		}
+
+		initialState.addTransition(new Transition(getEvent(eventID), targetStateID));
+		initialState.writeToFile(bodyRAFile, nBytesPerState, nBytesPerStateID, nTransitionsPerState);
+
+	}
+
+	public long addState(String label, boolean marked) {
+		return addState(label, marked, new ArrayList<Transition>());
+	}
+
 	/**
 	 *	Add the specified state ot the automaton
-	 *	@return whether or not the addition was successful 
+	 *	@param 	UNFINISHED!!!!!!!!!!!!!
+	 *	@return the ID of the added state (0 indicates the addition was unsuccessful)
 	 **/
-	public boolean addState(String label, boolean marked, ArrayList<Transition> transitions) {
+	public long addState(String label, boolean marked, ArrayList<Transition> transitions) {
 
-		// Ensure that we haven't already reached the limit (NOTE: This will likely never be the case)
+		// Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs)
 		if (nStates == MAX_NUMBER_OF_STATES)
-			return false;
+			return 0;
 
 		// Increase the maximum allowed transitions per state
 		if (transitions.size() > nTransitionsPerState) {
@@ -112,7 +136,7 @@ public class Automaton {
 
 		// Write new state to file
 		State state = new State(label, ++nStates, marked, transitions);
-		state.writeToFile(bodyFile, nBytesPerState, nTransitionsPerState);
+		state.writeToFile(bodyRAFile, nBytesPerState, nBytesPerStateID, nTransitionsPerState);
 
 		// Check to see if we need to re-write the entire binary file
 		if (nStates > currentMaxStates) {
@@ -120,15 +144,14 @@ public class Automaton {
 			// Adjust variables
 			currentMaxStates = (currentMaxStates * 2) +  1;
 			nBytesPerStateID++;
-
-			
 			updateNumberBytesPerState();
 
+			// Re-create binary file
 			recreateBinaryFile();
 
 		}
 
-		return true;
+		return nStates;
 	}
 
 	/**
@@ -140,9 +163,9 @@ public class Automaton {
 
 	/**
 	 *	Add the specified event to the set (events with identical labels and different properties are considered unique)
-	 *	@return whether or not the added event was unqiue (if false, then the list did not change in size)
+	 *	@return the ID of the added event (0 indicates the addition was unsuccessful, which means the set did not change in size)
 	 **/
-	public boolean addEvent(String label, boolean observable, boolean controllable) {
+	public int addEvent(String label, boolean observable, boolean controllable) {
 
 		// Keep track of the original 
 		long originalSize = events.size();
@@ -159,13 +182,13 @@ public class Automaton {
 			controllableEvents.add(event);
 
 		// If the number of events have changed, that means that this was a unique event
-		return originalSize != events.size();
+		return originalSize != events.size() ? events.size() : 0;
 
 	}
 
 	private void recreateBinaryFile() {
 
-		System.out.println("NOT IMPLEMENTED YET!!");
+		System.out.println("RECREATE BINARY FILE NOT IMPLEMENTED YET!!");
 
 	}
 
@@ -177,7 +200,28 @@ public class Automaton {
 	 *	@return state - the requested state
      **/
     public State getState(long id) {
-    	return State.readFromFile(bodyFile, id, nBytesPerState, nTransitionsPerState);
+    	return State.readFromFile(this, bodyRAFile, id, nBytesPerState, nBytesPerStateID, nTransitionsPerState);
+    }
+
+    /**
+     *	TEMPORARY SOLUTION: Later we will read this directly from the .hdr file.
+     *	Given the ID number of an event, get the event information
+	 *	@param id - The unique identifier corresponding to the requested event
+	 *	@return state - the requested event (or null if it does not exist)
+     **/
+    public Event getEvent(int id) {
+
+    	System.out.println("DEBUG: About to start look for event with ID #" + id + " in a list of " + events.size() + " events.");
+
+    	for (Event e : events) {
+    		if (e.getID() == id)
+    			return e;
+    	}
+
+    	System.out.println("DEBUG: Couldn't find event...");
+
+    	return null;
+
     }
 
     public Set<Event> getEvents() {

@@ -1,20 +1,20 @@
 public class Transition {
 
 	// Private instance variables
-    private State targetState;
+    private long targetStateID;
     private Event event;
 
-	public Transition(Event event, State targetState) {
+	public Transition(Event event, long targetStateID) {
 		this.event = event;
-		this.targetState = targetState;
+		this.targetStateID = targetStateID;
 	}
 
 	public Event getEvent() {
 		return event;
 	}
 
-	public State getTargetState() {
-		return targetState;
+	public long getTargetStateID() {
+		return targetStateID;
 	}
 
 }
