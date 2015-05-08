@@ -19,6 +19,7 @@ public class State {
 
 	// 	unfinished
 	public boolean writeToFile(RandomAccessFile file, int nBytesPerState, int nTransitionsPerState) {
+		
 		try {
 
             file.seek(id * nBytesPerState);
@@ -33,6 +34,7 @@ public class State {
             e.printStackTrace();
             return false;
 	    }
+
 	}
 
 	// 	unfinished
