@@ -1,10 +1,18 @@
 public class TestAutomata {
 
 	public static final int MAX_VERBOSE = 3;
-	private static final int verbose = 3;
+	private static int verbose = 1;
     
     public static void main(String[] args) {
+
+    		/* Turn verbose on if "-v" flag was used */
+
+    	if (args.length > 0)
+    		if (args[0].length() >=2 && args[0].substring(0, 2).equals("-v"))
+    			verbose = MAX_VERBOSE;
 		
+			/* Run the testing suite */
+    	
     	runTests();
 
     }
@@ -169,7 +177,7 @@ public class TestAutomata {
     	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '1'", a.getSizeOfStateID() == 1, counter);
     	printTestCase("Ensuring that 'nBytesPerState' was initialized to '4'", a.getSizeOfState() == 4, counter);
 
-    	printTestOutput("Instantiating empty automaton (State capacity: 255, Transition capacity: 1)...", 3);
+    	printTestOutput("Instantiating empty automaton (State capacity: 256, Transition capacity: 1)...", 3);
     	a = new Automaton(256, 1);
     	printTestCase("Ensuring that 'stateCapacity' was increased to '65535'", a.getStateCapacity() == 65535, counter);
     	printTestCase("Ensuring that 'transitionCapacity' was left at '1'", a.getTransitionCapacity() == 1, counter);
@@ -193,6 +201,10 @@ public class TestAutomata {
     	printTestOutput("Instantiating empty automaton (State capacity: (Long.MAX_VALUE >> 7) + 1, Transition capacity: 1)...", 3);
     	a = new Automaton((Long.MAX_VALUE >> 7) + 1, 1);
     	printTestCase("Ensuring that 'stateCapacity' was increased to 'Long.MAX_VALUE'", a.getStateCapacity() == Long.MAX_VALUE, counter);
+
+    	printTestOutput("Instantiating empty automaton (State capacity: Long.MAX_VALUE >> 7, Transition capacity: 1)...", 3);
+    	a = new Automaton(Long.MAX_VALUE >> 7, 1);
+    	printTestCase("Ensuring that 'stateCapacity' remained at 'Long.MAX_VALUE >> 7'", a.getStateCapacity() == Long.MAX_VALUE >> 7, counter);
     	
     		/* Print summary of this test routine */
 
@@ -249,10 +261,13 @@ public class TestAutomata {
      **/
     private static void printTestRoutineSummary(String testRoutineName, TestCounter counter) {
 
-    	String result = String.format(testRoutineName + " TEST ROUTINE SUMMARY:\n\t%d/%d test cases passed\n\t%d test cases failed",
-    		counter.getPassedTests(),
-    		counter.getTotalTests(),
-    		counter.getFailedTests());
+    	String result = String.format(
+    			testRoutineName + " TEST ROUTINE SUMMARY:\n\t\tPASSED: %d/%d\n\t\tFAILED: %d/%d",
+    			counter.getPassedTests(),
+    			counter.getTotalTests(),
+    			counter.getFailedTests(),
+    			counter.getTotalTests()
+    		);
 
     	printTestOutput(result, 1);
 
