@@ -6,19 +6,13 @@ import javax.imageio.*;
 
 public class Automaton {
 
-	// temporary
-	public void printStateData() {
-		System.out.println("nBytesPerStateID: " + nBytesPerStateID);
-		System.out.println("nTransitionsPerState: " + nTransitionsPerState);
-		System.out.println("nBytesPerState: " + nBytesPerState);
-		System.out.println("nStates: " + nStates);
-		System.out.println("currentMaxStates: " + currentMaxStates);
-	}
-
 		/* Class constants */
 
-	public static long MAX_NUMBER_OF_STATES = Long.MAX_VALUE;
-	public static long LIMIT_OF_STATES_FOR_PICTURE = 10000; // arbitrary
+	public static final long DEFAULT_STATE_CAPACITY = 255;
+	public static final long MAX_STATE_CAPACITY = Long.MAX_VALUE;
+	public static final int DEFAULT_TRANSITION_CAPACITY = 1;
+	public static final int MAX_TRANSITION_CAPACITY = Integer.MAX_VALUE;
+	public static final long LIMIT_OF_STATES_FOR_PICTURE = 10000; // Arbitrary value which will be revised once we have tried generating large automata
 
 		/* Private instance variables */
 
@@ -34,14 +28,21 @@ public class Automaton {
 	 *	-3 bytes gives 16777215 possible states (2^24 - 1)
 	 *	...
 	 *	-8 bytes gives ~9.2*10^18 possible states (2^63 - 1)
-	 * 	NOTE: Whenever nBytesPerStateID or nTransitionsPerState is changed, this affects nBytesPerState, which means the binary file needs to be recreated.
+	 * 	NOTE: Whenever nBytesPerStateID or transitionCapacity is changed, this affects nBytesPerState, which means the binary file needs to be recreated.
 	 **/
-	private int nBytesPerStateID = 1;
-	private int nTransitionsPerState = 1;
-	private int nBytesPerState = 1;
-	private long nStates = 0;
-	private long currentMaxStates = 255;
 
+	private long nStates = 0;
+	
+	// Variables which determine how large the .bdy file will become
+	private long stateCapacity;
+	private int transitionCapacity = 2;
+
+	// Initialized based on the above capacities
+	private int nBytesPerStateID;
+	private long nBytesPerState;
+
+
+	// Files
 	private static File defaultHeaderFile = new File("temp.hdr"),
 						defaultBodyFile = new File("temp.bdy");
 	private RandomAccessFile 	headerRAFile, // Contains basic information about automaton, needed in order to read the bodyFile
@@ -53,23 +54,49 @@ public class Automaton {
      * Default constructor: create empty automaton
      **/
     public Automaton() {
-    	this(defaultHeaderFile, defaultBodyFile);
-    	updateNumberBytesPerState();
+    	this(defaultHeaderFile, defaultBodyFile, DEFAULT_STATE_CAPACITY, DEFAULT_TRANSITION_CAPACITY);
     }
 
     /**
-     *	Convenience constructor: create automaton from a binary file
+     *	Implicit constructor: create automaton with specified initial capacities
+     *	NOTE: 	Choosing larger values increases the amount of space needed to store the binary file.
+     *			Choosing smaller values increases the frequency that you need to re-write the entire binary file in order to expand it
+	 *	@param stateCapacity - The initial state capacity (increases by a factor of 256 when it is exceeded)
+	 *			NOTE: the initial state capacity may be higher than the value you give it, since it has to be 256^x
+	 *	@param transitionCapacity - The initial maximum number of transitions per state (increases by 1 whenever it is exeeded)
+     **/
+    public Automaton(long stateCapacity, int transitionCapacity) {
+    	this(defaultHeaderFile, defaultBodyFile, stateCapacity, transitionCapacity);
+    }
+
+    /**
+     *	Implicit constructor: create automaton from a binary file
 	 *	@param headerFile - The binary file to load the header information of the automaton from (information about events, etc.)
 	 *	@param bodyFile - The binary file to load the body information of the automaton from (states and transitions)
+	 *  @param stateCapacity - The initial state capacity (increases by a factor of 256 when it is exceeded)
+	 *	@param transitionCapacity - The initial maximum number of transitions per state (increases by 1 whenever it is exeeded)
      **/
-	public Automaton(File headerFile, File bodyFile) {
+	public Automaton(File headerFile, File bodyFile, long stateCapacity, int transitionCapacity) {
+
+		// Will be overriden if we are loading information from file
+		this.stateCapacity = stateCapacity;
+		this.transitionCapacity = transitionCapacity;
+
+		// It does not make sense for an automaton to have 0 transitions (or a negative number of transitions)
+		if (this.transitionCapacity < 1)
+			this.transitionCapacity = 1;
 		
+		// Create file (TO-DO: CURRENTLY DOESN'T INITIALIZE AUTOMATON FROM FILE!!!)
 		try {
 			this.headerRAFile = new RandomAccessFile(headerFile, "rw");
 			this.bodyRAFile = new RandomAccessFile(bodyFile, "rw");
-		 } catch (IOException e) {
+		} catch (IOException e) {
             e.printStackTrace();
 	    }	
+
+	    // Finish setting up
+	    initializeVariables();
+    	updateNumberBytesPerState();
 
     }
 
@@ -87,7 +114,7 @@ public class Automaton {
     	return new Automaton(); // temporary
     }
 
-    	/** **/
+    	/** IMAGE GENERATION **/
 
 
     public void outputDOT() {
@@ -101,7 +128,7 @@ public class Automaton {
     	StringBuilder str = new StringBuilder();
 
     	str.append("digraph G {");
-    	// str.append("size=\"4,4\";");
+    	str.append("size=\"4,4\";");
     	str.append("node [shape=circle, style=bold]");
     	
     	for (long s = 1; s <= nStates; s++) {
@@ -125,13 +152,7 @@ public class Automaton {
 			out.print(str.toString());
 
 			// Produce PNG from DOT language
-	        Process process = new ProcessBuilder(
-	                "dot",
-	                "-Tpng",
-	                "out.tmp",
-	                "-o",
-	                "image.png"
-	            ).start();
+	        Process process = new ProcessBuilder("dot", "-Tpng", "out.tmp", "-o", "image.png").start();
 
 	        process.waitFor();
 
@@ -149,25 +170,36 @@ public class Automaton {
 			return ImageIO.read(getClass().getResource("image.png"));
 		} catch (IOException e) {
 			e.printStackTrace();
+			return null;
 		}
 
-		return null; // temporary
 	}
+
+		/** MUTATOR METHODS **/  
 
 	// CURRENTLY IN-EFFICENT!!!!!!!!!! (rewrites the entire state to file instead of only writing the new transition)
 	
-	public void addTransition(long initialStateID, int eventID, long targetStateID) {
+	public boolean addTransition(long initialStateID, int eventID, long targetStateID) {
 
+		// Create initial state from ID
 		State initialState = getState(initialStateID);
 
 		// Increase the maximum allowed transitions per state
-		if (initialState.getNumberOfTransitions() == nTransitionsPerState) {
-			nTransitionsPerState++;
+		if (initialState.getNumberOfTransitions() == transitionCapacity) {
+
+			// If we cannot increase the capacity, return false (NOTE: This will likely never happen)
+			if (transitionCapacity == MAX_TRANSITION_CAPACITY)
+				return false;
+
+			transitionCapacity++;
 			recreateBinaryFile();
 		}
 
+		// Add transition and update the file
 		initialState.addTransition(new Transition(getEvent(eventID), targetStateID));
-		initialState.writeToFile(bodyRAFile, nBytesPerState, nBytesPerStateID, nTransitionsPerState);
+		initialState.writeToFile(bodyRAFile, nBytesPerState, nBytesPerStateID, transitionCapacity);
+
+		return true;
 
 	}
 
@@ -183,24 +215,29 @@ public class Automaton {
 	public long addState(String label, boolean marked, ArrayList<Transition> transitions) {
 
 		// Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs)
-		if (nStates == MAX_NUMBER_OF_STATES)
+		if (nStates == MAX_STATE_CAPACITY)
 			return 0;
 
 		// Increase the maximum allowed transitions per state
-		if (transitions.size() > nTransitionsPerState) {
-			nTransitionsPerState = transitions.size();
+		if (transitions.size() > transitionCapacity) {
+
+			// If we cannot increase the capacity, indicate a failure (NOTE: This will likely never happen)
+			if (transitions.size() > MAX_TRANSITION_CAPACITY)
+				return 0;
+
+			transitionCapacity = transitions.size();
 			recreateBinaryFile();
 		}
 
 		// Write new state to file
 		State state = new State(label, ++nStates, marked, transitions);
-		state.writeToFile(bodyRAFile, nBytesPerState, nBytesPerStateID, nTransitionsPerState);
+		state.writeToFile(bodyRAFile, nBytesPerState, nBytesPerStateID, transitionCapacity);
 
 		// Check to see if we need to re-write the entire binary file
-		if (nStates > currentMaxStates) {
+		if (nStates > stateCapacity) {
 
 			// Adjust variables
-			currentMaxStates = (currentMaxStates * 2) +  1;
+			stateCapacity = ((stateCapacity + 1) << 8) - 1;
 			nBytesPerStateID++;
 			updateNumberBytesPerState();
 
@@ -216,7 +253,40 @@ public class Automaton {
 	 * Re-calculate the amount of space required to store the transitions of a state
 	 **/
 	private void updateNumberBytesPerState() {
-		nBytesPerState = nTransitionsPerState * (Event.N_BYTES_OF_ID + nBytesPerStateID);
+		nBytesPerState = (long) transitionCapacity * (long) (Event.N_BYTES_OF_ID + nBytesPerStateID);
+	}
+
+	private void initializeVariables() {
+
+			/* Calculate the amount of space needed to store each state ID */
+
+		// Special case if the state capacity is not positive
+		nBytesPerStateID = stateCapacity < 1 ? 1 : 0;
+
+		long temp = stateCapacity;
+		
+		while (temp > 0) {
+			nBytesPerStateID++;
+			temp >>= 8;
+		}
+
+			/* Calculate the maximum number of states that we can have before we have to allocate more space for each state ID */
+
+		stateCapacity = 1;
+
+		for (int i = 0; i < nBytesPerStateID; i++)
+			stateCapacity <<= 8;
+
+		// Special case when the user gives a value between 2^56 - 1 and 2^64 (exclusive)
+		if (stateCapacity == 0)
+			stateCapacity = MAX_STATE_CAPACITY;
+		else
+			stateCapacity--;
+
+		// Cap the state capacity
+		if (stateCapacity > MAX_STATE_CAPACITY)
+			stateCapacity = MAX_STATE_CAPACITY;
+
 	}
 
 	/**
@@ -250,7 +320,7 @@ public class Automaton {
 
 	}
 
-    	/** STANDARD ACCESSOR AND MUTATOR METHODS **/  
+    	/** ACCESSOR METHODS **/  
 
     /**
      *	Given the ID number of a state, get the state information
@@ -258,7 +328,7 @@ public class Automaton {
 	 *	@return state - the requested state
      **/
     public State getState(long id) {
-    	return State.readFromFile(this, bodyRAFile, id, nBytesPerState, nBytesPerStateID, nTransitionsPerState);
+    	return State.readFromFile(this, bodyRAFile, id, nBytesPerState, nBytesPerStateID, transitionCapacity);
     }
 
     /**
@@ -292,6 +362,26 @@ public class Automaton {
 
     public Set<Event> getObservableEvents() {
     	return observableEvents;
+    }
+
+    public long getNumberOfStates() {
+    	return nStates;
+    }
+
+    public long getStateCapacity() {
+    	return stateCapacity;
+    }
+
+    public int getTransitionCapacity() {
+    	return transitionCapacity;
+    }
+
+    public int getSizeOfStateID() {
+    	return nBytesPerStateID;
+    }
+
+    public long getSizeOfState() {
+    	return nBytesPerState;
     }
 
 }

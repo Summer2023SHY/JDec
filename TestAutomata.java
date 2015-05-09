@@ -1,14 +1,15 @@
 public class TestAutomata {
 
 	public static final int MAX_VERBOSE = 3;
+	private static final int verbose = 3;
     
     public static void main(String[] args) {
 		
-    	runTests(MAX_VERBOSE);
+    	runTests();
 
     }
 
-    private static boolean runTests(int verbose) {
+    private static boolean runTests() {
 
     	System.out.println("RUNNING ALL TESTS...");
 
@@ -16,7 +17,10 @@ public class TestAutomata {
 
     		/* Run tests */
 
-    	if (!runEventCreationTestRoutine(verbose))
+    	if (!runEventCreationTestRoutine())
+    		passedAllTests = false;
+
+    	if (!runAutomatonCapacityTestRoutine())
     		passedAllTests = false;
 
     		/* Print summary of all tests */
@@ -30,112 +34,175 @@ public class TestAutomata {
 
     }
 
-    private static boolean runEventCreationTestRoutine(int verbose) {
+    private static boolean runEventCreationTestRoutine() {
 
-    	printTestOutput("RUNNING EVENT CREATION TESTS...", verbose, 1);
+    	String testRoutineName = "EVENT CREATION";
+
+    	printTestOutput("RUNNING " + testRoutineName + " TESTS...", 1);
 
     	TestCounter counter = new TestCounter();
 
     		/* Basic Event Creation Tests */
 
-    	printTestOutput("BASIC EVENT CREATION: ", verbose, 2);
+    	printTestOutput("BASIC EVENT CREATION: ", 2);
 
-    	printTestOutput("Instantiating empty automaton...", verbose, 3);
+    	printTestOutput("Instantiating empty automaton...", 3);
     	Automaton a = new Automaton();
 
-    	printTestOutput("Adding an event that is controllable and observable...", verbose, 3);
+    	printTestOutput("Adding an event that is controllable and observable...", 3);
     	a.addEvent("firstEvent", true, true);
-    	printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 1, verbose, counter);
-    	printTestCase("Ensuring that 'controllableEvents' set was expanded", a.getControllableEvents().size() == 1, verbose, counter);
-    	printTestCase("Ensuring that 'observableEvents' set was expanded", a.getObservableEvents().size() == 1, verbose, counter);
+    	printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 1, counter);
+    	printTestCase("Ensuring that 'controllableEvents' set was expanded", a.getControllableEvents().size() == 1, counter);
+    	printTestCase("Ensuring that 'observableEvents' set was expanded", a.getObservableEvents().size() == 1, counter);
 
-    	printTestOutput("Adding an event that is observable, but not controllable...", verbose, 3);
+    	printTestOutput("Adding an event that is observable, but not controllable...", 3);
     	a.addEvent("secondEvent", true, false);
-    	printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 2, verbose, counter);
-    	printTestCase("Ensuring that 'controllableEvents' set was not expanded", a.getControllableEvents().size() == 1, verbose, counter);
-    	printTestCase("Ensuring that 'observableEvents' set was expanded", a.getObservableEvents().size() == 2, verbose, counter);
+    	printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 2, counter);
+    	printTestCase("Ensuring that 'controllableEvents' set was not expanded", a.getControllableEvents().size() == 1, counter);
+    	printTestCase("Ensuring that 'observableEvents' set was expanded", a.getObservableEvents().size() == 2, counter);
 
-    	printTestOutput("Adding an event that is controllable, but not observable...", verbose, 3);
+    	printTestOutput("Adding an event that is controllable, but not observable...", 3);
     	a.addEvent("thirdEvent", false, true);
-    	printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 3, verbose, counter);
-    	printTestCase("Ensuring that 'controllableEvents' set was expanded", a.getControllableEvents().size() == 2, verbose, counter);
-    	printTestCase("Ensuring that 'observableEvents' set was not expanded", a.getObservableEvents().size() == 2, verbose, counter);
+    	printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 3, counter);
+    	printTestCase("Ensuring that 'controllableEvents' set was expanded", a.getControllableEvents().size() == 2, counter);
+    	printTestCase("Ensuring that 'observableEvents' set was not expanded", a.getObservableEvents().size() == 2, counter);
 
-    	printTestOutput("Adding an event that neither controllable, nor observable...", verbose, 3);
+    	printTestOutput("Adding an event that neither controllable, nor observable...", 3);
     	a.addEvent("fourthEvent", false, false);
-    	printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 4, verbose, counter);
-    	printTestCase("Ensuring that 'controllableEvents' set was not expanded", a.getControllableEvents().size() == 2, verbose, counter);
-    	printTestCase("Ensuring that 'observableEvents' set was not expanded", a.getObservableEvents().size() == 2, verbose, counter);
+    	printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 4, counter);
+    	printTestCase("Ensuring that 'controllableEvents' set was not expanded", a.getControllableEvents().size() == 2, counter);
+    	printTestCase("Ensuring that 'observableEvents' set was not expanded", a.getObservableEvents().size() == 2, counter);
 
-    	printTestOutput("Adding an event with a pre-existing label, but with a different observability property...", verbose, 3);
+    	printTestOutput("Adding an event with a pre-existing label, but with a different observability property...", 3);
     	a.addEvent("firstEvent", false, true);
-    	printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 5, verbose, counter);
-    	printTestCase("Ensuring that 'controllableEvents' set was expanded", a.getControllableEvents().size() == 3, verbose, counter);
-    	printTestCase("Ensuring that 'observableEvents' set was not expanded", a.getObservableEvents().size() == 2, verbose, counter);
+    	printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 5, counter);
+    	printTestCase("Ensuring that 'controllableEvents' set was expanded", a.getControllableEvents().size() == 3, counter);
+    	printTestCase("Ensuring that 'observableEvents' set was not expanded", a.getObservableEvents().size() == 2, counter);
 
-    	printTestOutput("Adding an event with a pre-existing label, but with a different controllability property...", verbose, 3);
+    	printTestOutput("Adding an event with a pre-existing label, but with a different controllability property...", 3);
     	a.addEvent("secondEvent", true, true);
-    	printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 6, verbose, counter);
-    	printTestCase("Ensuring that 'controllableEvents' set was expanded", a.getControllableEvents().size() == 4, verbose, counter);
-    	printTestCase("Ensuring that 'observableEvents' set was expanded", a.getObservableEvents().size() == 3, verbose, counter);
+    	printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 6, counter);
+    	printTestCase("Ensuring that 'controllableEvents' set was expanded", a.getControllableEvents().size() == 4, counter);
+    	printTestCase("Ensuring that 'observableEvents' set was expanded", a.getObservableEvents().size() == 3, counter);
 
-    	printTestOutput("Adding an event with a pre-existing label, but with different controllability and observability properties...", verbose, 3);
+    	printTestOutput("Adding an event with a pre-existing label, but with different controllability and observability properties...", 3);
     	a.addEvent("thirdEvent", true, false);
-    	printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 7, verbose, counter);
-    	printTestCase("Ensuring that 'controllableEvents' set was not expanded", a.getControllableEvents().size() == 4, verbose, counter);
-    	printTestCase("Ensuring that 'observableEvents' set was expanded", a.getObservableEvents().size() == 4, verbose, counter);
+    	printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 7, counter);
+    	printTestCase("Ensuring that 'controllableEvents' set was not expanded", a.getControllableEvents().size() == 4, counter);
+    	printTestCase("Ensuring that 'observableEvents' set was expanded", a.getObservableEvents().size() == 4, counter);
 
-    	printTestOutput("Adding a pre-existing event...", verbose, 3);
+    	printTestOutput("Adding a pre-existing event...", 3);
     	a.addEvent("fourthEvent", false, false);
-    	printTestCase("Ensuring that 'events' set was not expanded", a.getEvents().size() == 7, verbose, counter);
-    	printTestCase("Ensuring that 'controllableEvents' set was not expanded", a.getControllableEvents().size() == 4, verbose, counter);
-    	printTestCase("Ensuring that 'observableEvents' set was not expanded", a.getObservableEvents().size() == 4, verbose, counter);
+    	printTestCase("Ensuring that 'events' set was not expanded", a.getEvents().size() == 7, counter);
+    	printTestCase("Ensuring that 'controllableEvents' set was not expanded", a.getControllableEvents().size() == 4, counter);
+    	printTestCase("Ensuring that 'observableEvents' set was not expanded", a.getObservableEvents().size() == 4, counter);
 
-    		/* Basic Event Creation Tests */
+    		/* Event ID Assignment Tests */
 
-    	printTestOutput("EVENT ID ASSIGNMENTS: ", verbose, 2);
+    	printTestOutput("EVENT ID ASSIGNMENTS: ", 2);
 
-    	printTestOutput("Instantiating empty automaton...", verbose, 3);
+    	printTestOutput("Instantiating empty automaton...", 3);
     	a = new Automaton();
 
-    	printTestOutput("Adding an event...", verbose, 3);
+    	printTestOutput("Adding an event...", 3);
     	a.addEvent("firstEvent", true, true);
     	boolean passed = false;
     	for (Event e : a.getEvents())
     		if (e.getID() == 1)
     			passed = true;
-    	printTestCase("Ensuring that the event's ID is 1", passed, verbose, counter);
+    	printTestCase("Ensuring that the event's ID is 1", passed, counter);
 
-    	printTestOutput("Adding a second event...", verbose, 3);
+    	printTestOutput("Adding a second event...", 3);
     	a.addEvent("secondEvent", true, true);
     	passed = false;
     	for (Event e : a.getEvents())
     		if (e.getID() == 2)
     			passed = true;
-    	printTestCase("Ensuring that the event's ID is 2", passed, verbose, counter);
+    	printTestCase("Ensuring that the event's ID is 2", passed, counter);
 
-    	printTestOutput("Adding a pre-existing event...", verbose, 3);
+    	printTestOutput("Adding a pre-existing event...", 3);
     	a.addEvent("firstEvent", true, true);
     	passed = true;
     	for (Event e : a.getEvents())
     		if (e.getID() == 3)
     			passed = false;
-    	printTestCase("Ensuring that no event has an ID of 3", passed, verbose, counter);
+    	printTestCase("Ensuring that no event has an ID of 3", passed, counter);
 
     		/* Print summary of this test routine */
 
-    	String result = String.format("EVENT CREATION TESTS SUMMARY:\n\t%d/%d test cases passed\n\t%d test cases failed",
-    		counter.getPassedTests(),
-    		counter.getTotalTests(),
-    		counter.getFailedTests());
-
-    	printTestOutput(result, verbose, 1);
+    	printTestRoutineSummary(testRoutineName, counter);
 
     	return counter.getPassedTests() == counter.getTotalTests();
 
     }
 
-    private static void printTestOutput(String str, int verbose, int requiredVerbose) {
+    private static boolean runAutomatonCapacityTestRoutine() {
+
+    	String testRoutineName = "AUTOMATON CAPACITY";
+
+    	printTestOutput("RUNNING " + testRoutineName + " TEST ROUTINE...", 1);
+
+    	TestCounter counter = new TestCounter();
+
+    		/* Automaton Capacity Initialization Tests */
+
+    	printTestOutput("AUTOMATON CAPACITY INITIALIZATION: ", 2);
+
+    	printTestOutput("Instantiating empty automaton (State capacity: 0, Transition capacity: 0)...", 3);
+    	Automaton a = new Automaton(0, 0);
+    	printTestCase("Ensuring that 'stateCapacity' was reset to '255'", a.getStateCapacity() == 255, counter);
+    	printTestCase("Ensuring that 'transitionCapacity' was reset to '1'", a.getTransitionCapacity() == 1, counter);
+    	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '1'", a.getSizeOfStateID() == 1, counter);
+    	printTestCase("Ensuring that 'nBytesPerState' was initialized to '2'", a.getSizeOfState() == 2, counter);
+
+    	printTestOutput("Instantiating empty automaton (State capacity: -1, Transition capacity: -1)...", 3);
+    	a = new Automaton(-1, -1);
+    	printTestCase("Ensuring that 'stateCapacity' was reset to '255'", a.getStateCapacity() == 255, counter);
+    	printTestCase("Ensuring that 'transitionCapacity' was reset to '1'", a.getTransitionCapacity() == 1, counter);
+    	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '1'", a.getSizeOfStateID() == 1, counter);
+    	printTestCase("Ensuring that 'nBytesPerState' was initialized to '2'", a.getSizeOfState() == 2, counter);
+
+    	printTestOutput("Instantiating empty automaton (State capacity: 255, Transition capacity: 2)...", 3);
+    	a = new Automaton(255, 2);
+    	printTestCase("Ensuring that 'stateCapacity' was left at '255'", a.getStateCapacity() == 255, counter);
+    	printTestCase("Ensuring that 'transitionCapacity' was left at '2'", a.getTransitionCapacity() == 2, counter);
+    	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '1'", a.getSizeOfStateID() == 1, counter);
+    	printTestCase("Ensuring that 'nBytesPerState' was initialized to '4'", a.getSizeOfState() == 4, counter);
+
+    	printTestOutput("Instantiating empty automaton (State capacity: 255, Transition capacity: 1)...", 3);
+    	a = new Automaton(256, 1);
+    	printTestCase("Ensuring that 'stateCapacity' was increased to '65535'", a.getStateCapacity() == 65535, counter);
+    	printTestCase("Ensuring that 'transitionCapacity' was left at '1'", a.getTransitionCapacity() == 1, counter);
+    	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '2'", a.getSizeOfStateID() == 2, counter);
+    	printTestCase("Ensuring that 'nBytesPerState' was initialized to '3'", a.getSizeOfState() == 3, counter);
+
+    	printTestOutput("Instantiating empty automaton (State capacity: Long.MAX_VALUE, Transition capacity: Integer.MAX_VALUE)...", 3);
+    	a = new Automaton(Long.MAX_VALUE, Integer.MAX_VALUE);
+    	printTestCase("Ensuring that 'stateCapacity' remained at 'Long.MAX_VALUE'", a.getStateCapacity() == Long.MAX_VALUE, counter);
+    	printTestCase("Ensuring that 'transitionCapacity' remained at 'Integer.MAX_VALUE'", a.getTransitionCapacity() == Integer.MAX_VALUE, counter);
+    	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '8'", a.getSizeOfStateID() == 8, counter);
+    	printTestCase("Ensuring that 'nBytesPerState' was initialized to '9 * Integer.MAX_VALUE'", a.getSizeOfState() == 9 * (long) Integer.MAX_VALUE, counter);
+
+    	printTestOutput("Instantiating empty automaton (State capacity: Long.MAX_VALUE - 1, Transition capacity: Integer.MAX_VALUE - 1)...", 3);
+    	a = new Automaton(Long.MAX_VALUE - 1, Integer.MAX_VALUE - 1);
+    	printTestCase("Ensuring that 'stateCapacity' was increased to 'Long.MAX_VALUE'", a.getStateCapacity() == Long.MAX_VALUE, counter);
+    	printTestCase("Ensuring that 'transitionCapacity' remained at 'Integer.MAX_VALUE - 1'", a.getTransitionCapacity() == Integer.MAX_VALUE - 1, counter);
+    	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '8'", a.getSizeOfStateID() == 8, counter);
+    	printTestCase("Ensuring that 'nBytesPerState' was initialized to '9 * (Integer.MAX_VALUE - 1)'", a.getSizeOfState() == 9 * (long) (Integer.MAX_VALUE - 1), counter);
+
+    	printTestOutput("Instantiating empty automaton (State capacity: (Long.MAX_VALUE >> 7) + 1, Transition capacity: 1)...", 3);
+    	a = new Automaton((Long.MAX_VALUE >> 7) + 1, 1);
+    	printTestCase("Ensuring that 'stateCapacity' was increased to 'Long.MAX_VALUE'", a.getStateCapacity() == Long.MAX_VALUE, counter);
+    	
+    		/* Print summary of this test routine */
+
+    	printTestRoutineSummary(testRoutineName, counter);
+
+    	return counter.getPassedTests() == counter.getTotalTests();
+
+    }
+
+    private static void printTestOutput(String str, int requiredVerbose) {
 
     	// Do not print output if the verbose is not high enough
     	if (verbose < requiredVerbose)
@@ -153,7 +220,7 @@ public class TestAutomata {
 
     }
 
-    private static void printTestCase(String str, boolean passed, int verbose, TestCounter counter) {
+    private static void printTestCase(String str, boolean passed, TestCounter counter) {
 
     		/* Update counters */
 
@@ -172,6 +239,22 @@ public class TestAutomata {
 	    	System.out.println(str + ": " + (passed ? "PASSED" : "*** FAILED ***"));
 
 	    }
+
+    }
+
+    /**
+     * Helper method to print the results of a test routine.
+     * @param testRoutineName - The test routine's name is used as part of the output.
+     * @param counter - The counter contains the information about how many test cases passed and failed
+     **/
+    private static void printTestRoutineSummary(String testRoutineName, TestCounter counter) {
+
+    	String result = String.format(testRoutineName + " TEST ROUTINE SUMMARY:\n\t%d/%d test cases passed\n\t%d test cases failed",
+    		counter.getPassedTests(),
+    		counter.getTotalTests(),
+    		counter.getFailedTests());
+
+    	printTestOutput(result, 1);
 
     }
 

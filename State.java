@@ -45,7 +45,7 @@ public class State {
 		return transitions.size();
 	}
 
-	public boolean writeToFile(RandomAccessFile file, int nBytesPerState, int nBytesPerStateID, int nTransitionsPerState) {
+	public boolean writeToFile(RandomAccessFile file, long nBytesPerState, int nBytesPerStateID, int nTransitionsPerState) {
 
 		try {
 
@@ -88,7 +88,7 @@ public class State {
 	}
 
 	// 	unfinished
-	public static State readFromFile(Automaton automaton, RandomAccessFile file, long id, int nBytesPerState, int nBytesPerStateID, int nTransitionsPerState) {
+	public static State readFromFile(Automaton automaton, RandomAccessFile file, long id, long nBytesPerState, int nBytesPerStateID, int nTransitionsPerState) {
 
 		try {
 

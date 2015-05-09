@@ -213,6 +213,7 @@ public class AutomataGUI extends JFrame {
         automaton.outputDOT();
         image = automaton.loadImageFromFile();
         repaint();
+        pack();
     }
 
     private boolean isTrue(String str) {
@@ -283,8 +284,10 @@ public class AutomataGUI extends JFrame {
 
                 /* Draw image */
 
-            } else
+            } else {
+                System.out.println(image.getWidth() + " " + image.getHeight());
                 g.drawImage(image, 0, 0, null);
+            }
 
         }
 
