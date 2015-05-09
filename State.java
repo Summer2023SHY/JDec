@@ -2,6 +2,10 @@ import java.util.*;
 import java.io.*;
 
 public class State {
+
+		/* Class constants */
+
+	public static final int MARKED_BIT = 0b10000000; // Leading bit of a byte
     
 		/* Private instance variables */
 	
@@ -25,6 +29,10 @@ public class State {
 		transitions = new ArrayList<Transition>();
 	}
 
+	public boolean isMarked() {
+		return marked;
+	}
+
 	/**
 	 *	Get the label of the event
  	 *	@return label
@@ -45,20 +53,34 @@ public class State {
 		return transitions.size();
 	}
 
-	public boolean writeToFile(RandomAccessFile file, long nBytesPerState, int nBytesPerStateID, int nTransitionsPerState) {
+	public boolean writeToFile(RandomAccessFile file, long nBytesPerState, int nBytesPerStateID, int transitionCapacity) {
 
 		try {
 
-            file.seek(id * nBytesPerState);
+			// Special case if there are no transitions
+			if (transitions.size() == 0) {
+
+				// Write marked bit
+				file.seek(id * nBytesPerState);
+				writeLongAsBytes(file, marked ? MARKED_BIT : 0, Event.N_BYTES_OF_ID);
+
+				// Pad with zeroes
+				for (int t = 1; t < transitionCapacity; t++)
+	            	for (int b = 0; b < Event.N_BYTES_OF_ID + nBytesPerStateID; b++)
+	            		file.writeByte(0);
+
+	           	return true;
+			}
 
             // Write each transition to file (event ID followed by target state ID)
+            file.seek(id * nBytesPerState);
             for (Transition t : transitions) {
-            	writeLongAsBytes(file, (long) (t.getEvent().getID()), Event.N_BYTES_OF_ID);
+            	writeLongAsBytes(file, (long) (t.getEvent().getID() | MARKED_BIT), Event.N_BYTES_OF_ID);
             	writeLongAsBytes(file, t.getTargetStateID(), nBytesPerStateID);
             }
 
             // Pad with zeroes
-            for (int t = 0; t < nTransitionsPerState - transitions.size(); t++)
+            for (int t = 0; t < transitionCapacity - transitions.size(); t++)
             	for (int b = 0; b < Event.N_BYTES_OF_ID + nBytesPerStateID; b++)
             		file.writeByte(0);
 
@@ -88,18 +110,29 @@ public class State {
 	}
 
 	// 	unfinished
-	public static State readFromFile(Automaton automaton, RandomAccessFile file, long id, long nBytesPerState, int nBytesPerStateID, int nTransitionsPerState) {
+	public static State readFromFile(Automaton automaton, RandomAccessFile file, long id, long nBytesPerState, int nBytesPerStateID, int transitionCapacity) {
 
 		try {
 
-			State state = new State("temporaryLabel" /** TEMPORARY UNTIL HEADER FILE **/, id, true /** TEMPORARY UNTIL HEADER FILE **/);
+			// Read in marked state (which is stored as the leading bit of the targetStateID in the first transition)
+			file.seek(id * nBytesPerState);
+			boolean marked = ((readBytesAsLong(file, Event.N_BYTES_OF_ID)) & MARKED_BIT) > 0;
+
+			System.out.println("READ: " + id + " " + marked);
+
+			State state = new State("temporaryLabel" /** TEMPORARY UNTIL HEADER FILE **/, id, marked);
 
             file.seek(id * nBytesPerState);
 
             // Read in each transition
-            for (int t = 0; t < nTransitionsPerState; t++) {
-            	int eventID = (int) readBytesAsLong(file, Event.N_BYTES_OF_ID);
+            for (int t = 0; t < transitionCapacity; t++) {
+
+            	long temp = readBytesAsLong(file, Event.N_BYTES_OF_ID);
+            		System.out.println("temp:" + temp);
+            	int eventID = ((int) temp) & ~MARKED_BIT;
             	long targetStateID = readBytesAsLong(file, nBytesPerStateID);
+
+            	System.out.println(id + " " + eventID);
 
             	// Indicates that we've hit padding, so let's stop
             	if (eventID == 0)

@@ -27,7 +27,7 @@ public class Automaton {
 	 *	-2 bytes gives 65535 possible states (2^16 - 1)
 	 *	-3 bytes gives 16777215 possible states (2^24 - 1)
 	 *	...
-	 *	-8 bytes gives ~9.2*10^18 possible states (2^63 - 1)
+	 *	-8 bytes gives ~9.2*10^18 possible states (2^63 - 1) NOTE: Last bit is used to indicate whether the state is marked or not
 	 * 	NOTE: Whenever nBytesPerStateID or transitionCapacity is changed, this affects nBytesPerState, which means the binary file needs to be recreated.
 	 **/
 
@@ -43,8 +43,10 @@ public class Automaton {
 
 
 	// Files
-	private static File defaultHeaderFile = new File("temp.hdr"),
-						defaultBodyFile = new File("temp.bdy");
+	private static final File 	DEFAULT_HEADER_FILE = new File("temp.hdr"),
+								DEFAULT_BODY_FILE = new File("temp.bdy");
+	private File 	headerFile,
+					bodyFile;
 	private RandomAccessFile 	headerRAFile, // Contains basic information about automaton, needed in order to read the bodyFile
 								bodyRAFile;	// List each state in the automaton, with the transitions
 
@@ -54,7 +56,7 @@ public class Automaton {
      * Default constructor: create empty automaton
      **/
     public Automaton() {
-    	this(defaultHeaderFile, defaultBodyFile, DEFAULT_STATE_CAPACITY, DEFAULT_TRANSITION_CAPACITY);
+    	this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, DEFAULT_STATE_CAPACITY, DEFAULT_TRANSITION_CAPACITY);
     }
 
     /**
@@ -66,7 +68,7 @@ public class Automaton {
 	 *	@param transitionCapacity - The initial maximum number of transitions per state (increases by 1 whenever it is exeeded)
      **/
     public Automaton(long stateCapacity, int transitionCapacity) {
-    	this(defaultHeaderFile, defaultBodyFile, stateCapacity, transitionCapacity);
+    	this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, stateCapacity, transitionCapacity);
     }
 
     /**
@@ -78,21 +80,19 @@ public class Automaton {
      **/
 	public Automaton(File headerFile, File bodyFile, long stateCapacity, int transitionCapacity) {
 
+		this.headerFile = headerFile;
+		this.bodyFile = bodyFile;
+
 		// Will be overriden if we are loading information from file
 		this.stateCapacity = stateCapacity;
 		this.transitionCapacity = transitionCapacity;
 
-		// It does not make sense for an automaton to have 0 transitions (or a negative number of transitions)
+		// The automaton needs at least 1 transition per state (specifically, since we store the marked status bit in it)
 		if (this.transitionCapacity < 1)
 			this.transitionCapacity = 1;
 		
 		// Create file (TO-DO: CURRENTLY DOESN'T INITIALIZE AUTOMATON FROM FILE!!!)
-		try {
-			this.headerRAFile = new RandomAccessFile(headerFile, "rw");
-			this.bodyRAFile = new RandomAccessFile(bodyFile, "rw");
-		} catch (IOException e) {
-            e.printStackTrace();
-	    }	
+		openRAFiles();
 
 	    // Finish setting up
 	    initializeVariables();
@@ -119,9 +119,12 @@ public class Automaton {
 
     public void outputDOT() {
 
+    	// Make sure the latest changes have been pushed to file
+    	flushRAFiles();
+
     	// Abort the operation if the automaton is too large to do this in a reasonable amount of time
     	if (nStates > LIMIT_OF_STATES_FOR_PICTURE) {
-    		System.out.println("ERROR: Aborted due to the fact that this graph is large...!");
+    		System.out.println("ERROR: Aborted due to the fact that this graph is quite large!");
     		return;
     	}
 
@@ -131,8 +134,15 @@ public class Automaton {
     	str.append("size=\"4,4\";");
     	str.append("node [shape=circle, style=bold]");
     	
+    	System.out.println(nStates);
+
     	for (long s = 1; s <= nStates; s++) {
     		State state = getState(s);
+
+    		if (state.isMarked())
+    			str.append(state.getID() + " [peripheries=2]");
+    		else
+    			str.append(state.getID() + " [peripheries=1]");
 
     		for (Transition t : state.getTransitions()) {
     			str.append(state.getID() + "->" + t.getTargetStateID());
@@ -172,6 +182,35 @@ public class Automaton {
 			e.printStackTrace();
 			return null;
 		}
+
+	}
+
+	private void flushRAFiles() {
+
+		closeRAFiles();
+		openRAFiles();
+
+	}
+
+	private void openRAFiles() {
+
+		try {
+			headerRAFile = new RandomAccessFile(headerFile, "rw");
+			bodyRAFile = new RandomAccessFile(bodyFile, "rw");
+		} catch (IOException e) {
+            e.printStackTrace();
+	    }	
+
+	}
+
+	private void closeRAFiles() {
+
+		try {
+			headerRAFile.close();
+			bodyRAFile.close();
+		} catch (IOException e) {
+            e.printStackTrace();
+	    }
 
 	}
 

@@ -2,13 +2,16 @@ public class Event {
     
     	/* Class constants */
 
-    public static final int MAX_NUMBER_OF_EVENTS = 255;
-	public static final int N_BYTES_OF_ID = 1; // (So 255 unique events with 0 representing null, NOTE: we will make this flexible later to allow up to 2^63 unique events)
+    // 127 unique events with 0 representing null, and the first bit is actually used by State to identify whether or not it is marked.
+	// NOTE: We will make this flexible later to allow for more events
+    public static final int MAX_NUMBER_OF_EVENTS = 127;
+	public static final int N_BYTES_OF_ID = 1; 
+
  
     	/* Private instance variables */
 
     private String label;
-    private int id; // Used as int to prevent overflow, although we read and write as unsigned byte
+    private int id;
     private boolean observable, controllable;
 
     /**

@@ -53,10 +53,11 @@ public class AutomataGUI extends JFrame {
         c.gridy = 0;
         container.add(new TooltipComponent(
                 eventInputInstructions,
-                "<html>1 event per line, formatted as <i>LABEL</i>,<i>OBSERVABLE</i>,<i>CONTROLLABLE</i>.<br>"
+                "<html>1 event per line, formatted as <i>LABEL,[OBSERVABLE],[CONTROLLABLE].<br>"
                 + "<b><u>EXAMPLE</u></b>: '<i>EventName,True,False</i>' denotes an event called <b>EventName</b> "
                 + "that is <b>observable</b> but <b>not controllable</b>.<br>"
-                + "<b><u>NOTE</u></b>: '<i>True</i>' and '<i>False</i>' can be abbreviated as '<i>T</i>' and '<i>F</i>', respectively.</html>"
+                + "<b><u>NOTE</u></b>: '<i>True</i>' and '<i>False</i>' can be abbreviated as '<i>T</i>' and '<i>F</i>', "
+                + "respectively. The default value is '<i>True</i>' in both cases.</html>"
             ),c);
 
         eventInput = new JTextPane();
@@ -78,9 +79,10 @@ public class AutomataGUI extends JFrame {
         c.gridy = 0;
         container.add(new TooltipComponent(
                 stateInputInstructions,
-                "<html>1 state per line, formatted as <i>LABEL,MARKED</i>.<br>"
+                "<html>1 state per line, formatted as <i>LABEL,[MARKED]</i>.<br>"
                 + "<b><u>EXAMPLE</u></b>: <i>'StateName,False'</i> denotes a state called <b>StateName</b> that is <b>unmarked</b>.<br>"
-                + "<b><u>NOTE</u></b>: <i>'True'</i> and <i>'False'</i> can be abbreviated as <i>'T'</i> and <i>'F'</i>, respectively.</html>"
+                + "<b><u>NOTE</u></b>: <i>'True'</i> and <i>'False'</i> can be abbreviated as <i>'T'</i> and <i>'F'</i>, respectively. "
+                + "The default value is '<i>True</i>'.</html>"
             ),c);
 
         stateInput = new JTextPane();
@@ -175,8 +177,8 @@ public class AutomataGUI extends JFrame {
             
             String[] splitLine = line.split(",");
 
-            if (splitLine.length == 3) {
-                int id = automaton.addEvent(splitLine[0], isTrue(splitLine[1]), isTrue(splitLine[2]));
+            if (splitLine.length >= 1) {
+                int id = automaton.addEvent(splitLine[0], splitLine.length < 2 || isTrue(splitLine[1]), splitLine.length < 3 || isTrue(splitLine[2]));
                 eventMapping.put(splitLine[0], id);
             }
             else if (line.length() > 0)
@@ -189,8 +191,8 @@ public class AutomataGUI extends JFrame {
             
             String[] splitLine = line.split(",");
 
-            if (splitLine.length == 2) {
-                long id = automaton.addState(splitLine[0], isTrue(splitLine[1]));
+            if (splitLine.length >= 1) {
+                long id = automaton.addState(splitLine[0], splitLine.length < 2 || isTrue(splitLine[1]));
                 stateMapping.put(splitLine[0], id);
             }
             else if (line.length() > 0)
@@ -285,8 +287,9 @@ public class AutomataGUI extends JFrame {
                 /* Draw image */
 
             } else {
-                System.out.println(image.getWidth() + " " + image.getHeight());
+
                 g.drawImage(image, 0, 0, null);
+
             }
 
         }
