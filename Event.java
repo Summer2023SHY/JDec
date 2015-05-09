@@ -6,7 +6,7 @@ public class Event {
 	public static final int N_BYTES_OF_ID = 1; // (So 255 unique events with 0 representing null, NOTE: we will make this flexible later to allow up to 2^63 unique events)
  
     	/* Private instance variables */
-    	
+
     private String label;
     private int id; // Used as int to prevent overflow, although we read and write as unsigned byte
     private boolean observable, controllable;
@@ -31,6 +31,22 @@ public class Event {
 		/** STANDARD ACCESSOR AND MUTATOR METHODS **/
 
 	/**
+	 *	Get the label of the event
+ 	 *	@return label
+	 **/
+	public String getLabel() {
+		return label;
+	}
+
+	/**
+	 *	Get the ID number of the event
+ 	 *	@return id
+	 **/
+	public int getID() {
+		return id;
+	}
+
+	/**
 	 *	Get the observability property of the event
  	 *	@return whether or not the event is observable
 	 **/
@@ -46,13 +62,6 @@ public class Event {
 		return controllable;
 	}
 
-	/**
-	 *	Get the ID number of the event
- 	 *	@return id
-	 **/
-	public int getID() {
-		return id;
-	}
 
 		/** OVERRIDDEN METHODS **/  
 

@@ -1,6 +1,8 @@
 import java.util.*;
 import java.io.*;
 import java.awt.image.*;
+import java.net.*;
+import javax.imageio.*;
 
 public class Automaton {
 
@@ -16,6 +18,7 @@ public class Automaton {
 		/* Class constants */
 
 	public static long MAX_NUMBER_OF_STATES = Long.MAX_VALUE;
+	public static long LIMIT_OF_STATES_FOR_PICTURE = 10000; // arbitrary
 
 		/* Private instance variables */
 
@@ -69,6 +72,7 @@ public class Automaton {
 	    }	
 
     }
+
     	/** AUTOMATA OPERATIONS **/
 
     static Automaton intersection(Automaton first, Automaton second) {
@@ -85,7 +89,67 @@ public class Automaton {
 
     	/** **/
 
-    public BufferedImage generateImage() {
+
+    public void outputDOT() {
+
+    	// Abort the operation if the automaton is too large to do this in a reasonable amount of time
+    	if (nStates > LIMIT_OF_STATES_FOR_PICTURE) {
+    		System.out.println("ERROR: Aborted due to the fact that this graph is large...!");
+    		return;
+    	}
+
+    	StringBuilder str = new StringBuilder();
+
+    	str.append("digraph G {");
+    	// str.append("size=\"4,4\";");
+    	str.append("node [shape=circle, style=bold]");
+    	
+    	for (long s = 1; s <= nStates; s++) {
+    		State state = getState(s);
+
+    		for (Transition t : state.getTransitions()) {
+    			str.append(state.getID() + "->" + t.getTargetStateID());
+    			// str.append(state.getLabel() + "->" + getState(t.getTargetStateID()).getLabel());
+    			str.append(" [label=\"" + t.getEvent().getLabel() + "\"]");
+    			str.append(";");
+    		}
+
+    	}
+
+    	str.append("}");
+
+    	try {
+
+    		// Write DOT language to file
+	    	PrintStream out = new PrintStream(new FileOutputStream("out.tmp"));
+			out.print(str.toString());
+
+			// Produce PNG from DOT language
+	        Process process = new ProcessBuilder(
+	                "dot",
+	                "-Tpng",
+	                "out.tmp",
+	                "-o",
+	                "image.png"
+	            ).start();
+
+	        process.waitFor();
+
+	    } catch (IOException | InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		
+    	
+    }
+
+    public BufferedImage loadImageFromFile() {
+
+    	try {
+			return ImageIO.read(getClass().getResource("image.png"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
 		return null; // temporary
 	}
@@ -94,13 +158,7 @@ public class Automaton {
 	
 	public void addTransition(long initialStateID, int eventID, long targetStateID) {
 
-		System.out.println(initialStateID);
-		System.out.println(eventID);
-		System.out.println(targetStateID);
-
 		State initialState = getState(initialStateID);
-
-		System.out.println(initialState);
 
 		// Increase the maximum allowed transitions per state
 		if (initialState.getNumberOfTransitions() == nTransitionsPerState) {
@@ -211,14 +269,10 @@ public class Automaton {
      **/
     public Event getEvent(int id) {
 
-    	System.out.println("DEBUG: About to start look for event with ID #" + id + " in a list of " + events.size() + " events.");
-
     	for (Event e : events) {
     		if (e.getID() == id)
     			return e;
     	}
-
-    	System.out.println("DEBUG: Couldn't find event...");
 
     	return null;
 

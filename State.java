@@ -25,9 +25,20 @@ public class State {
 		transitions = new ArrayList<Transition>();
 	}
 
+	/**
+	 *	Get the label of the event
+ 	 *	@return label
+	 **/
+	public String getLabel() {
+		return label;
+	}
+
 	public void addTransition(Transition transition) {
 		transitions.add(transition);
-		System.out.println("DEBUG: Transition added!" + transition.getEvent() + " " + transition.getTargetStateID());
+	}
+
+	public ArrayList<Transition> getTransitions() {
+		return transitions;
 	}
 
 	public int getNumberOfTransitions() {
@@ -48,10 +59,8 @@ public class State {
 
             // Pad with zeroes
             for (int t = 0; t < nTransitionsPerState - transitions.size(); t++)
-            	for (int b = 0; b < Event.N_BYTES_OF_ID + nBytesPerStateID; b++) {
+            	for (int b = 0; b < Event.N_BYTES_OF_ID + nBytesPerStateID; b++)
             		file.writeByte(0);
-            		System.out.println("DEBUG: Wrote padded byte!");
-            	}
 
             return true;
           
@@ -73,10 +82,8 @@ public class State {
 	// Splits the specified number (which is a long) into the proper number of bytes and writes them one at a time into the file
 	private static void writeLongAsBytes(RandomAccessFile file, long n, int nBytes) throws IOException {
 
-		for (int i = nBytes - 1; i >= 0; i--) {
+		for (int i = nBytes - 1; i >= 0; i--)
 			file.writeByte((int) (n >> (i*8)));
-			System.out.println("DEBUG: Wrote byte!");
-		}
 
 	}
 
@@ -89,9 +96,16 @@ public class State {
 
             file.seek(id * nBytesPerState);
 
+            // Read in each transition
             for (int t = 0; t < nTransitionsPerState; t++) {
             	int eventID = (int) readBytesAsLong(file, Event.N_BYTES_OF_ID);
             	long targetStateID = readBytesAsLong(file, nBytesPerStateID);
+
+            	// Indicates that we've hit padding, so let's stop
+            	if (eventID == 0)
+            		break;
+
+            	// Add transition to the list
             	state.addTransition(new Transition(automaton.getEvent(eventID), targetStateID));
             }
 
