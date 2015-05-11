@@ -61,7 +61,7 @@ public class Event {
 	 *	Get the controllability property of the event
  	 *	@return whether or not the event is controllable
 	 **/
-	public boolean isControlable() {
+	public boolean isControllable() {
 		return controllable;
 	}
 

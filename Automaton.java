@@ -12,6 +12,8 @@ public class Automaton {
 	public static final long MAX_STATE_CAPACITY = Long.MAX_VALUE;
 	public static final int DEFAULT_TRANSITION_CAPACITY = 1;
 	public static final int MAX_TRANSITION_CAPACITY = Integer.MAX_VALUE;
+	public static final int DEFAULT_LABEL_LENGTH = 1;
+	public static final int MAX_LABEL_LENGTH = 100;
 	public static final long LIMIT_OF_STATES_FOR_PICTURE = 10000; // Arbitrary value which will be revised once we have tried generating large automata
 
 		/* Private instance variables */
@@ -36,6 +38,7 @@ public class Automaton {
 	// Variables which determine how large the .bdy file will become
 	private long stateCapacity;
 	private int transitionCapacity = 2;
+	private int labelLength;
 
 	// Initialized based on the above capacities
 	private int nBytesPerStateID;
@@ -56,7 +59,7 @@ public class Automaton {
      * Default constructor: create empty automaton
      **/
     public Automaton() {
-    	this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, DEFAULT_STATE_CAPACITY, DEFAULT_TRANSITION_CAPACITY);
+    	this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, DEFAULT_STATE_CAPACITY, DEFAULT_TRANSITION_CAPACITY, DEFAULT_LABEL_LENGTH);
     }
 
     /**
@@ -66,9 +69,10 @@ public class Automaton {
 	 *	@param stateCapacity - The initial state capacity (increases by a factor of 256 when it is exceeded)
 	 *			NOTE: the initial state capacity may be higher than the value you give it, since it has to be 256^x
 	 *	@param transitionCapacity - The initial maximum number of transitions per state (increases by 1 whenever it is exeeded)
+	 *	@param labelLength - The initial maximum number characters per state label (increases by 1 whenever it is exeeded)
      **/
-    public Automaton(long stateCapacity, int transitionCapacity) {
-    	this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, stateCapacity, transitionCapacity);
+    public Automaton(long stateCapacity, int transitionCapacity, int labelLength) {
+    	this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, stateCapacity, transitionCapacity, labelLength);
     }
 
     /**
@@ -77,8 +81,9 @@ public class Automaton {
 	 *	@param bodyFile - The binary file to load the body information of the automaton from (states and transitions)
 	 *  @param stateCapacity - The initial state capacity (increases by a factor of 256 when it is exceeded)
 	 *	@param transitionCapacity - The initial maximum number of transitions per state (increases by 1 whenever it is exeeded)
+	 *	@param labelLength - The initial maximum number characters per state label (increases by 1 whenever it is exeeded)
      **/
-	public Automaton(File headerFile, File bodyFile, long stateCapacity, int transitionCapacity) {
+	public Automaton(File headerFile, File bodyFile, long stateCapacity, int transitionCapacity, int labelLength) {
 
 		this.headerFile = headerFile;
 		this.bodyFile = bodyFile;
@@ -86,10 +91,17 @@ public class Automaton {
 		// Will be overriden if we are loading information from file
 		this.stateCapacity = stateCapacity;
 		this.transitionCapacity = transitionCapacity;
+		this.labelLength = labelLength;
 
 		// The automaton needs at least 1 transition per state (specifically, since we store the marked status bit in it)
 		if (this.transitionCapacity < 1)
 			this.transitionCapacity = 1;
+
+		// The requested length of the state labels should not exceed the limit, nor should it be non-positive
+		if (this.labelLength < 1)
+			this.labelLength = 1;
+		if (this.labelLength > MAX_LABEL_LENGTH)
+			this.labelLength = MAX_LABEL_LENGTH;
 		
 		// Create file (TO-DO: CURRENTLY DOESN'T INITIALIZE AUTOMATON FROM FILE!!!)
 		openRAFiles();
@@ -117,44 +129,63 @@ public class Automaton {
     	/** IMAGE GENERATION **/
 
 
-    public void outputDOT() {
+    public boolean outputDOT() {
 
-    	// Make sure the latest changes have been pushed to file
-    	flushRAFiles();
-
-    	// Abort the operation if the automaton is too large to do this in a reasonable amount of time
+    		/* Abort the operation if the automaton is too large to do this in a reasonable amount of time */
+    	
     	if (nStates > LIMIT_OF_STATES_FOR_PICTURE) {
     		System.out.println("ERROR: Aborted due to the fact that this graph is quite large!");
-    		return;
+    		return false;
     	}
 
-    	StringBuilder str = new StringBuilder();
+    		/* Setup */
 
+    	StringBuilder str = new StringBuilder();
     	str.append("digraph G {");
+    	str.append("node [shape=circle, style=bold];");
     	str.append("size=\"4,4\";");
-    	str.append("node [shape=circle, style=bold]");
+    	str.append("ratio=fill;");
     	
-    	System.out.println(nStates);
+    		/* Draw all states and their transitions */
 
     	for (long s = 1; s <= nStates; s++) {
+
+    		// Get state from file
     		State state = getState(s);
 
+    		// Draw states
     		if (state.isMarked())
-    			str.append(state.getID() + " [peripheries=2]");
+    			str.append(state.getLabel() + " [peripheries=2];");
     		else
-    			str.append(state.getID() + " [peripheries=1]");
+    			str.append(state.getLabel()  + " [peripheries=1];");
 
+    		// Draw each of its transitions
     		for (Transition t : state.getTransitions()) {
-    			str.append(state.getID() + "->" + t.getTargetStateID());
-    			// str.append(state.getLabel() + "->" + getState(t.getTargetStateID()).getLabel());
-    			str.append(" [label=\"" + t.getEvent().getLabel() + "\"]");
-    			str.append(";");
+    			str.append(state.getLabel() + "->" + getState(t.getTargetStateID()).getLabel());
+    			str.append(" [constraint=false,label=\"" + t.getEvent().getLabel() + "\"");
+    			
+    			if (!t.getEvent().isObservable())
+    				str.append(",style=dotted");
+
+    			if (!t.getEvent().isControllable())
+    				str.append(",color=red");
+
+    			str.append("];");
     		}
 
     	}
 
+    		/* Finish up */
+
+    	// Create arrow towards initial state (currently assumed to be the first state)
+    	if (nStates > 0) {
+    		str.append("node [shape=plaintext];");
+    		str.append("entry->1;");
+    	}
+
     	str.append("}");
 
+    	// Generate image
     	try {
 
     		// Write DOT language to file
@@ -164,14 +195,15 @@ public class Automaton {
 			// Produce PNG from DOT language
 	        Process process = new ProcessBuilder("dot", "-Tpng", "out.tmp", "-o", "image.png").start();
 
+	        // Wait for it to finish
 	        process.waitFor();
 
 	    } catch (IOException | InterruptedException e) {
 			e.printStackTrace();
 		}
-
-		
     	
+    	return true;
+
     }
 
     public BufferedImage loadImageFromFile() {
@@ -185,13 +217,6 @@ public class Automaton {
 
 	}
 
-	private void flushRAFiles() {
-
-		closeRAFiles();
-		openRAFiles();
-
-	}
-
 	private void openRAFiles() {
 
 		try {
@@ -200,17 +225,6 @@ public class Automaton {
 		} catch (IOException e) {
             e.printStackTrace();
 	    }	
-
-	}
-
-	private void closeRAFiles() {
-
-		try {
-			headerRAFile.close();
-			bodyRAFile.close();
-		} catch (IOException e) {
-            e.printStackTrace();
-	    }
 
 	}
 
@@ -236,7 +250,7 @@ public class Automaton {
 
 		// Add transition and update the file
 		initialState.addTransition(new Transition(getEvent(eventID), targetStateID));
-		initialState.writeToFile(bodyRAFile, nBytesPerState, nBytesPerStateID, transitionCapacity);
+		initialState.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID, transitionCapacity);
 
 		return true;
 
@@ -257,6 +271,18 @@ public class Automaton {
 		if (nStates == MAX_STATE_CAPACITY)
 			return 0;
 
+		// Increase the maximum allowed characters per state label
+		if (label.length() > labelLength) {
+
+			// If we cannot increase the capacity, indicate a failure
+			if (label.length() > MAX_LABEL_LENGTH)
+				return 0;
+
+			labelLength = label.length();
+			recreateBinaryFile();
+
+		}
+
 		// Increase the maximum allowed transitions per state
 		if (transitions.size() > transitionCapacity) {
 
@@ -270,7 +296,7 @@ public class Automaton {
 
 		// Write new state to file
 		State state = new State(label, ++nStates, marked, transitions);
-		state.writeToFile(bodyRAFile, nBytesPerState, nBytesPerStateID, transitionCapacity);
+		state.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID, transitionCapacity);
 
 		// Check to see if we need to re-write the entire binary file
 		if (nStates > stateCapacity) {
@@ -292,7 +318,10 @@ public class Automaton {
 	 * Re-calculate the amount of space required to store the transitions of a state
 	 **/
 	private void updateNumberBytesPerState() {
-		nBytesPerState = (long) transitionCapacity * (long) (Event.N_BYTES_OF_ID + nBytesPerStateID);
+		nBytesPerState =
+			1 // Whether the state is marked or not
+			+ (long) labelLength // The state's labels
+			+ (long) transitionCapacity * (long) (Event.N_BYTES_OF_ID + nBytesPerStateID); // All of the state transitions
 	}
 
 	private void initializeVariables() {
@@ -367,7 +396,7 @@ public class Automaton {
 	 *	@return state - the requested state
      **/
     public State getState(long id) {
-    	return State.readFromFile(this, bodyRAFile, id, nBytesPerState, nBytesPerStateID, transitionCapacity);
+    	return State.readFromFile(this, bodyRAFile, id);
     }
 
     /**
@@ -413,6 +442,10 @@ public class Automaton {
 
     public int getTransitionCapacity() {
     	return transitionCapacity;
+    }
+
+    public int getLabelLength() {
+    	return labelLength;
     }
 
     public int getSizeOfStateID() {

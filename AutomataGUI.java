@@ -177,7 +177,7 @@ public class AutomataGUI extends JFrame {
             
             String[] splitLine = line.split(",");
 
-            if (splitLine.length >= 1) {
+            if (splitLine.length >= 1 && splitLine[0].length() > 0) {
                 int id = automaton.addEvent(splitLine[0], splitLine.length < 2 || isTrue(splitLine[1]), splitLine.length < 3 || isTrue(splitLine[2]));
                 eventMapping.put(splitLine[0], id);
             }
@@ -191,9 +191,14 @@ public class AutomataGUI extends JFrame {
             
             String[] splitLine = line.split(",");
 
-            if (splitLine.length >= 1) {
+            if (splitLine.length >= 1 && splitLine[0].length() > 0) {
                 long id = automaton.addState(splitLine[0], splitLine.length < 2 || isTrue(splitLine[1]));
-                stateMapping.put(splitLine[0], id);
+
+                if (id == 0)
+                    System.out.println("ERROR: Could not store '" + line + "' as a state.");
+                else
+                    stateMapping.put(splitLine[0], id);
+
             }
             else if (line.length() > 0)
                 System.out.println("ERROR: Could not parse '" + line + "' as a state.");
@@ -212,10 +217,12 @@ public class AutomataGUI extends JFrame {
                 System.out.println("ERROR: Could not parse '" + line + "' as a transition.");
         }
 
-        automaton.outputDOT();
-        image = automaton.loadImageFromFile();
-        repaint();
-        pack();
+        // Try to create graph image, displaying it on the screen
+        if (automaton.outputDOT()) {
+            image = automaton.loadImageFromFile();
+            repaint();
+            pack();
+        }
     }
 
     private boolean isTrue(String str) {
@@ -246,8 +253,8 @@ public class AutomataGUI extends JFrame {
 
             /* Class Constants */
         
-        private final int DEFAULT_HEIGHT  = 100;
-        private final int DEFAULT_WIDTH   = 100;
+        private final int DEFAULT_HEIGHT  = 384;
+        private final int DEFAULT_WIDTH   = 384;
 
         public Canvas () {
 
