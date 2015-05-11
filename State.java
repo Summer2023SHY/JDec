@@ -10,6 +10,15 @@ public class State {
 	private boolean marked;
 	private ArrayList<Transition> transitions;
 
+	/**
+	 *	ID (used to identify states): a binary string consisting of all 0's is reserved to represent "null", so:
+	 * 	-1 byte allows us to represent up to 255 possible states (2^8 - 1)
+	 *	-2 bytes gives 65535 possible states (2^16 - 1)
+	 *	-3 bytes gives 16777215 possible states (2^24 - 1)
+	 *	...
+	 *	-8 bytes gives ~9.2*10^18 possible states (2^63 - 1)
+	 **/
+
 	public State(String label, long id, boolean marked, ArrayList<Transition> transitions) {
 		this.label = label;
 		this.id = id;
@@ -79,11 +88,11 @@ public class State {
 		for (Transition t : transitions) {
 
 			// Event
-			writeLongAsBytes(bytesToWrite, index, (long) (t.getEvent().getID()), Event.N_BYTES_OF_ID);
+			ByteManipulator.writeLongAsBytes(bytesToWrite, index, (long) (t.getEvent().getID()), Event.N_BYTES_OF_ID);
 			index += Event.N_BYTES_OF_ID;
 
 			// Target state
-			writeLongAsBytes(bytesToWrite, index, t.getTargetStateID(), nBytesPerStateID);
+			ByteManipulator.writeLongAsBytes(bytesToWrite, index, t.getTargetStateID(), nBytesPerStateID);
 			index += nBytesPerStateID;
 			
 		}
@@ -103,14 +112,6 @@ public class State {
             return false;
 
 	    }
-
-	}
-
-	// Splits the specified number (which is a long) into the proper number of bytes and writes them one at a time into the array
-	private static void writeLongAsBytes(byte[] arr, int index, long n, int nBytes) {
-
-		for (int i = nBytes - 1; i >= 0; i--)
-			arr[index++] = (byte) (n >> (i*8));
 
 	}
 
@@ -151,10 +152,10 @@ public class State {
 		int index = 1 + automaton.getLabelLength();
 		for (int t = 0; t < automaton.getTransitionCapacity(); t++) {
 
-        	int eventID = (int) readBytesAsLong(bytesRead, index, Event.N_BYTES_OF_ID);
+        	int eventID = (int) ByteManipulator.readBytesAsLong(bytesRead, index, Event.N_BYTES_OF_ID);
         	index += Event.N_BYTES_OF_ID;
 
-        	long targetStateID = readBytesAsLong(bytesRead, index, automaton.getSizeOfStateID());
+        	long targetStateID = ByteManipulator.readBytesAsLong(bytesRead, index, automaton.getSizeOfStateID());
         	index += automaton.getSizeOfStateID();
 
         	// Indicates that we've hit padding, so let's stop
@@ -166,20 +167,6 @@ public class State {
         }
 
 	    return state;
-
-	}
-
-	// Joins the specified number of bytes into a long from an array of bytes
-	private static long readBytesAsLong(byte[] arr, int index, int nBytes) {
-
-		long n = 0;
-
-		for (int i = nBytes - 1; i >= 0; i--) {
-			n <<= 8;
-			n += arr[index++];
-		}
-
-		return n;
 
 	}
 

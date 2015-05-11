@@ -4,7 +4,7 @@ import java.awt.event.*;
 import java.util.*;
 import java.awt.image.*;
 
-public class AutomataGUI extends JFrame {
+public class AutomataGUI extends JFrame implements ActionListener {
 
 		/* Private instance variables */
 
@@ -30,6 +30,8 @@ public class AutomataGUI extends JFrame {
         container.add(canvas);
 
         add(container);
+
+        addMenu();
 
     	setGUIproperties();
     }
@@ -227,6 +229,47 @@ public class AutomataGUI extends JFrame {
 
     private boolean isTrue(String str) {
         return str.equals("T") || str.equals("True");
+    }
+
+    /* Adds the menu system to the application */
+    private void addMenu() {
+
+        JMenuBar menuBar = new JMenuBar();
+        JMenuItem menuItem;
+        JMenu menu;
+
+          /* File Menu */
+
+        menu = new JMenu("File");
+        menuBar.add(menu);
+
+        menuItem = new JMenuItem("Load");
+        menuItem.addActionListener(this);
+        menu.add(menuItem);
+
+        this.setJMenuBar(menuBar);
+
+    }
+
+    /**
+    *   This method handles all of the actions triggered when the user interacts with the main menu.
+    *   @param event - The triggered event
+    **/
+    public void actionPerformed(ActionEvent event) {
+
+        switch (event.getActionCommand()) {
+
+            case "Load":
+
+                Automaton automaton = new Automaton();
+                automaton.generateInputForGUI();
+                eventInput.setText(automaton.getEventInput());
+                stateInput.setText(automaton.getStateInput());
+                transitionInput.setText(automaton.getTransitionInput());
+
+                break;
+        }
+
     }
 
     /**

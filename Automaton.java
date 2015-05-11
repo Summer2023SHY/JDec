@@ -8,6 +8,8 @@ public class Automaton {
 
 		/* Class constants */
 
+	private static final int HEADER_SIZE = 24; // This is the fixed amount of space needed to hold the main variables in the .hdr file
+
 	public static final long DEFAULT_STATE_CAPACITY = 255;
 	public static final long MAX_STATE_CAPACITY = Long.MAX_VALUE;
 	public static final int DEFAULT_TRANSITION_CAPACITY = 1;
@@ -22,16 +24,6 @@ public class Automaton {
 						activeEvents = new HashSet<Event>(),
 						controllableEvents = new HashSet<Event>(),
 						observableEvents = new HashSet<Event>();
-
-	/**
-	 *	ID (used to identify states): a binary string consisting of all 0's is reserved to represent "null", so:
-	 * 	-1 byte allows us to represent up to 255 possible states (2^8 - 1)
-	 *	-2 bytes gives 65535 possible states (2^16 - 1)
-	 *	-3 bytes gives 16777215 possible states (2^24 - 1)
-	 *	...
-	 *	-8 bytes gives ~9.2*10^18 possible states (2^63 - 1) NOTE: Last bit is used to indicate whether the state is marked or not
-	 * 	NOTE: Whenever nBytesPerStateID or transitionCapacity is changed, this affects nBytesPerState, which means the binary file needs to be recreated.
-	 **/
 
 	private long nStates = 0;
 	
@@ -50,7 +42,7 @@ public class Automaton {
 								DEFAULT_BODY_FILE = new File("temp.bdy");
 	private File 	headerFile,
 					bodyFile;
-	private RandomAccessFile 	headerRAFile, // Contains basic information about automaton, needed in order to read the bodyFile
+	private RandomAccessFile 	headerRAFile, // Contains basic information about automaton, needed in order to read the bodyFile, as well as the events
 								bodyRAFile;	// List each state in the automaton, with the transitions
 
 		/** CONSTRUCTORS **/
@@ -103,12 +95,15 @@ public class Automaton {
 		if (this.labelLength > MAX_LABEL_LENGTH)
 			this.labelLength = MAX_LABEL_LENGTH;
 		
-		// Create file (TO-DO: CURRENTLY DOESN'T INITIALIZE AUTOMATON FROM FILE!!!)
+		// Open data from files (if it exists)
 		openRAFiles();
 
 	    // Finish setting up
 	    initializeVariables();
     	updateNumberBytesPerState();
+
+    	// Update header file
+		writeHeaderFile();
 
     }
 
@@ -127,7 +122,6 @@ public class Automaton {
     }
 
     	/** IMAGE GENERATION **/
-
 
     public boolean outputDOT() {
 
@@ -220,8 +214,12 @@ public class Automaton {
 	private void openRAFiles() {
 
 		try {
+
 			headerRAFile = new RandomAccessFile(headerFile, "rw");
 			bodyRAFile = new RandomAccessFile(bodyFile, "rw");
+
+			readHeaderFile();
+
 		} catch (IOException e) {
             e.printStackTrace();
 	    }	
@@ -245,7 +243,13 @@ public class Automaton {
 				return false;
 
 			transitionCapacity++;
-			recreateBinaryFile();
+
+			// Update body file
+			recreateBodyFile();
+
+			// Update header file
+			writeHeaderFile();
+
 		}
 
 		// Add transition and update the file
@@ -256,13 +260,21 @@ public class Automaton {
 
 	}
 
+	/**
+	 *	Add the specified state to the automaton with an empty transition list
+	 *	@param 	label - The "name" of the new state
+	 *	@param 	marked - Whether or not the states is marked
+	 *	@return the ID of the added state (0 indicates the addition was unsuccessful)
+	 **/
 	public long addState(String label, boolean marked) {
 		return addState(label, marked, new ArrayList<Transition>());
 	}
 
 	/**
-	 *	Add the specified state ot the automaton
-	 *	@param 	UNFINISHED!!!!!!!!!!!!!
+	 *	Add the specified state to the automaton
+	 *	@param 	label - The "name" of the new state
+	 *	@param 	marked - Whether or not the states is marked
+	 *	@param 	transitions - The list of transitions
 	 *	@return the ID of the added state (0 indicates the addition was unsuccessful)
 	 **/
 	public long addState(String label, boolean marked, ArrayList<Transition> transitions) {
@@ -279,7 +291,7 @@ public class Automaton {
 				return 0;
 
 			labelLength = label.length();
-			recreateBinaryFile();
+			recreateBodyFile();
 
 		}
 
@@ -291,7 +303,7 @@ public class Automaton {
 				return 0;
 
 			transitionCapacity = transitions.size();
-			recreateBinaryFile();
+			recreateBodyFile();
 		}
 
 		// Write new state to file
@@ -307,9 +319,12 @@ public class Automaton {
 			updateNumberBytesPerState();
 
 			// Re-create binary file
-			recreateBinaryFile();
+			recreateBodyFile();
 
 		}
+
+		// Update header file
+		writeHeaderFile();
 
 		return nStates;
 	}
@@ -358,7 +373,10 @@ public class Automaton {
 	}
 
 	/**
-	 *	Add the specified event to the set (events with identical labels and different properties are considered unique)
+	 *	Add the specified event to the set (events with identical labels and different properties are currently considered unique)
+	 *	@param label - The "name" of the new event
+	 *	@param observable - Whether or not the event is observable
+	 *	@param controllable - Whether or not the event is controllable
 	 *	@return the ID of the added event (0 indicates the addition was unsuccessful, which means the set did not change in size)
 	 **/
 	public int addEvent(String label, boolean observable, boolean controllable) {
@@ -377,14 +395,198 @@ public class Automaton {
 		if (controllable)
 			controllableEvents.add(event);
 
+		// Update header file
+		writeHeaderFile();
+
 		// If the number of events have changed, that means that this was a unique event
 		return originalSize != events.size() ? events.size() : 0;
 
 	}
 
-	private void recreateBinaryFile() {
+	/**
+	 *	Write all of the header information to file.
+	 **/
+	private void writeHeaderFile() {
 
-		System.out.println("RECREATE BINARY FILE NOT IMPLEMENTED YET!!");
+			/* Write the header of the .hdr file */
+		
+		byte[] bytesToWrite = new byte[HEADER_SIZE];
+
+		ByteManipulator.writeLongAsBytes(bytesToWrite, 0, nStates, 8);
+		ByteManipulator.writeLongAsBytes(bytesToWrite, 8, stateCapacity, 8);
+		ByteManipulator.writeLongAsBytes(bytesToWrite, 12, transitionCapacity, 4);
+		ByteManipulator.writeLongAsBytes(bytesToWrite, 16, labelLength, 4);
+		ByteManipulator.writeLongAsBytes(bytesToWrite, 20, events.size(), 4);
+
+		try {
+
+			headerRAFile.seek(0);
+			headerRAFile.write(bytesToWrite);
+
+				/* Write the events to the .hdr file */
+
+			for (int e = 1; e <= events.size(); e++) {
+
+				Event event = getEvent(e); // This could be made a lot more efficient!!!!!!!!!!!! Perhaps turn HashSet into a TreeSet so that we can iterate the events by ID?
+
+				// Fill the buffer
+				bytesToWrite = new byte[2 + 4 + event.getLabel().length()];
+
+				// Read event properties
+				bytesToWrite[0] = (byte) (event.isObservable() ? 1 : 0);
+				bytesToWrite[1] = (byte) (event.isControllable() ? 1 : 0);
+
+				// Write the length of the label
+				ByteManipulator.writeLongAsBytes(bytesToWrite, 2, event.getLabel().length(), 4);
+
+				// Write each character of the label
+				int index = 6;
+				for (int i = 0; i < event.getLabel().length(); i++) {
+					bytesToWrite[index++] = (byte) event.getLabel().charAt(i);
+					System.out.println("write char:" + ((byte) event.getLabel().charAt(i)));
+				}
+
+				headerRAFile.write(bytesToWrite);
+
+			}
+
+		} catch (IOException e) {
+            e.printStackTrace();
+	    }	
+
+	}
+
+	/**
+	 *	Read all of the header information from file.
+	 **/
+	private void readHeaderFile() {
+
+		byte[] bytesRead = new byte[HEADER_SIZE];
+
+		try {
+
+			if (headerRAFile.length() == 0) {
+				System.out.println("Could not load the automaton from file, because there was nothing stored there.");
+				return;
+			}
+
+			headerRAFile.seek(0);
+			headerRAFile.read(bytesRead);
+
+			nStates = ByteManipulator.readBytesAsLong(bytesRead, 0, 8);
+			stateCapacity = ByteManipulator.readBytesAsLong(bytesRead, 8, 8);
+			transitionCapacity = (int) ByteManipulator.readBytesAsLong(bytesRead, 12, 4);
+			labelLength = (int) ByteManipulator.readBytesAsLong(bytesRead, 16, 4);
+			int nEvents = (int) ByteManipulator.readBytesAsLong(bytesRead, 20, 4);
+
+			// Read in the events
+			for (int e = 1; e <= nEvents; e++) {
+
+				// Read properties
+				boolean observable = (headerRAFile.readByte()) == 1;
+				boolean controllable = (headerRAFile.readByte()) == 1;
+
+				// Read the number of characters in the label
+				bytesRead = new byte[4];
+				headerRAFile.read(bytesRead);
+				int eventLabelLength = (int) ByteManipulator.readBytesAsLong(bytesRead, 0, 4);
+
+				// Read each character of the label, building an array of characters
+				bytesRead = new byte[eventLabelLength];
+				headerRAFile.read(bytesRead);
+				char[] arr = new char[eventLabelLength];
+				for (int i = 0; i < arr.length; i++)
+					arr[i] = (char) bytesRead[i];
+
+				// Crete the event and add it to the list
+				addEvent(new String(arr), observable, controllable);
+
+			}
+
+		} catch (IOException e) {
+            e.printStackTrace();
+	    }	
+
+	}
+
+	private void recreateBodyFile() {
+
+
+		System.out.println("RECREATE BINARY FILE NOT IMPLEMENTED YET!! Dumping stack..");
+		Thread.dumpStack();
+
+	}
+
+		/** GUI INPUT CODE GENERATION **/
+
+	StringBuilder 	eventInputBuilder,
+					stateInputBuilder,
+					transitionInputBuilder;
+
+	public void generateInputForGUI() {
+
+		eventInputBuilder = new StringBuilder();
+		stateInputBuilder = new StringBuilder();
+		transitionInputBuilder = new StringBuilder();
+
+			/* Generate event input */
+
+		for (int e = 1; e <= events.size(); e++) {
+
+			Event event = getEvent(e); // This could be made a lot more efficient!!!!!!!!!!!! Perhaps turn HashSet into a TreeSet so that we can iterate the events by ID?
+
+			eventInputBuilder.append(event.getLabel());
+			eventInputBuilder.append((event.isObservable() ? ",T" : ",F"));
+			eventInputBuilder.append((event.isControllable() ? ",T" : ",F"));
+			
+			if (e < events.size())
+				eventInputBuilder.append("\n");
+
+		}
+
+			/* Generate state and transition input */
+
+		for (int s = 1; s <= nStates; s++) {
+
+			State state = getState(s);
+
+			stateInputBuilder.append(state.getLabel());
+			stateInputBuilder.append((state.isMarked() ? ",T" : ",F"));
+			
+			if (s < nStates)
+				stateInputBuilder.append("\n");
+
+			for (Transition t : state.getTransitions())
+				transitionInputBuilder.append(state.getLabel() + "," + t.getEvent().getLabel() + "," + t.getTargetState().getLabel());
+
+		}
+
+	}
+
+	public String getEventInput() {
+
+		if (eventInputBuilder == null)
+			return null;
+
+		return eventInputBuilder.toString();
+
+	}
+
+	public String getStateInput() {
+
+		if (stateInputBuilder == null)
+			return null;
+
+		return stateInputBuilder.toString();
+
+	}
+
+	public String getTransitionInput() {
+
+		if (transitionInputBuilder == null)
+			return null;
+
+		return transitionInputBuilder.toString();
 
 	}
 
