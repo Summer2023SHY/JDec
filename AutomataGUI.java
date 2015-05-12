@@ -17,6 +17,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
     private Canvas canvas;
     private BufferedImage image = null;
 
+    private File currentDirectory = null;
     private File mostRecentInputFile = null;
     
     public static void main(String[] args) {
@@ -25,19 +26,81 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     public AutomataGUI() {
 
+            /* Add input boxes and canvas */
+
         Container container = new Container();
         container.setLayout(new FlowLayout());
-
         container.add(createInputContainer());
-
         canvas = new Canvas();
         container.add(canvas);
-
         add(container);
+
+            /* Add menu */
 
         addMenu();
 
+            /* Finish setting up */
+
     	setGUIproperties();
+        loadCurrentDirectory();
+
+    }
+
+    /**
+    *   Set some default GUI Properties.
+    **/
+    private void setGUIproperties() {
+
+        // Pack things in nicely
+        pack();
+        
+        // Ensure our application will be closed when the user presses the "X" */
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setResizable(false);
+        setSize(800, 600);
+
+        // Sets screen location in the center of the screen (only works after calling pack)
+        setLocationRelativeTo(null);
+
+        // Update title
+        setTitle("Automata Manipulator");
+
+        // Show screen
+        setVisible(true);
+
+    }
+
+    private void loadCurrentDirectory() {
+
+        try {
+
+            Scanner sc = new Scanner(new File("gui.data"));
+
+            if (sc.hasNextLine())
+                currentDirectory = new File(sc.nextLine());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void saveCurrentDirectory() {
+
+        if (currentDirectory != null) {
+
+            try {
+
+                PrintWriter writer = new PrintWriter(new FileWriter("gui.data", false));
+                writer.println(currentDirectory.getPath());
+                writer.close();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+
     }
 
     private Container createInputContainer() {
@@ -157,30 +220,6 @@ public class AutomataGUI extends JFrame implements ActionListener {
         container.add(generateAutomatonButton, c);
 
         return container;
-
-    }
-
-    /**
-     * Set some default GUI Properties
-     **/
-    private void setGUIproperties() {
-
-        // Pack things in nicely
-        pack();
-        
-        // Ensure our application will be closed when the user presses the "X" */
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setResizable(false);
-        setSize(800, 600);
-
-        // Sets screen location in the center of the screen (only works after calling pack)
-        setLocationRelativeTo(null);
-
-        // Update title
-        setTitle("Automata Manipulator");
-
-        // Show screen
-        setVisible(true);
 
     }
 
@@ -344,17 +383,20 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
             /* Begin at the most recently accessed directory */
 
-        if (mostRecentInputFile != null)
-            fileChooser.setCurrentDirectory(mostRecentInputFile.getParentFile());
+        if (currentDirectory != null)
+            fileChooser.setCurrentDirectory(currentDirectory);
 
             /* Prompt user to select a file */
 
         fileChooser.showOpenDialog(null);
 
-            /* Update last file opened (so that we can automatically navigate to the proper directory next time) */
+            /* Update last file opened and update current directory */
 
-        if (fileChooser.getSelectedFile() != null)
+        if (fileChooser.getSelectedFile() != null) {
             mostRecentInputFile = fileChooser.getSelectedFile();
+            currentDirectory = mostRecentInputFile.getParentFile();
+            saveCurrentDirectory();
+        }
 
         return fileChooser.getSelectedFile();
         
