@@ -131,7 +131,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         c.gridy = 0;
         container.add(new TooltipComponent(
                 eventInputInstructions,
-                "<html>1 event per line, formatted as <i>LABEL,[OBSERVABLE],[CONTROLLABLE].<br>"
+                "<html>1 event per line, formatted as <i>LABEL[,OBSERVABLE[,CONTROLLABLE]]</i>.<br>"
                 + "<b><u>EXAMPLE</u></b>: '<i>EventName,True,False</i>' denotes an event called <b>EventName</b> "
                 + "that is <b>observable</b> but <b>not controllable</b>.<br>"
                 + "<b><u>NOTE</u></b>: '<i>True</i>' and '<i>False</i>' can be abbreviated as '<i>T</i>' and '<i>F</i>', "
@@ -157,10 +157,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
         c.gridy = 0;
         container.add(new TooltipComponent(
                 stateInputInstructions,
-                "<html>1 state per line, formatted as <i>LABEL,[MARKED]</i>.<br>"
+                "<html>1 state per line, formatted as <i>[*]LABEL[,MARKED]</i> (where the asterisk denotes that this is the initial state).<br>"
                 + "<b><u>EXAMPLE</u></b>: <i>'StateName,False'</i> denotes a state called <b>StateName</b> that is <b>unmarked</b>.<br>"
-                + "<b><u>NOTE</u></b>: <i>'True'</i> and <i>'False'</i> can be abbreviated as <i>'T'</i> and <i>'F'</i>, respectively. "
-                + "If omitted, the default value is '<i>True</i>'.</html>"
+                + "<b><u>EXAMPLE</u></b>: <i>'*StateName'</i> denotes a state called <b>StateName</b> that is the <b>initial state</b> and is <b>marked</b>.<br>"
+                + "<b><u>NOTES</u></b>: <i>'True'</i> and <i>'False'</i> can be abbreviated as <i>'T'</i> and <i>'F'</i>, respectively. "
+                + "If omitted, the default value is '<i>True</i>'. There is only allowed to be one initial state.</html>"
             ),c);
 
         stateInput = new JTextPane();
@@ -209,7 +210,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 Automaton.deleteTemporaryFiles();
 
                 // Create automaton from input code
-                Automaton automaton = generateAutomaton(eventInput.getText(), stateInput.getText(), transitionInput.getText());
+                Automaton automaton = generateAutomaton(eventInput.getText(), stateInput.getText(), transitionInput.getText(), true);
 
                 // Set the image blank if there were no states entered
                 if (automaton == null)
@@ -237,7 +238,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
     }
 
     /* In order to use TestAutomata.java to run some test routines on it, this method was made public and had some parameters added */
-    public static Automaton generateAutomaton(String eventInputText, String stateInputText, String transitionInputText) {
+    public static Automaton generateAutomaton(String eventInputText, String stateInputText, String transitionInputText, boolean verbose) {
 
             /* Setup */
         
@@ -250,17 +251,47 @@ public class AutomataGUI extends JFrame implements ActionListener {
         for (String line : stateInputText.split("\n")) {
             
             String[] splitLine = line.split(",");
+            String label = splitLine[0];
 
-            if (splitLine.length >= 1 && splitLine[0].length() > 0) {
-                long id = automaton.addState(splitLine[0], splitLine.length < 2 || isTrue(splitLine[1]));
+            // Check to see if this is a duplicate state label
+            if (stateMapping.get(label) != null) {
 
-                if (id == 0)
-                    System.out.println("ERROR: Could not store '" + line + "' as a state.");
-                else
-                    stateMapping.put(splitLine[0], id);
+                if (verbose)
+                    System.out.println("ERROR: Could not store '" + line + "' as a state, since there is already a state with this label.");
+
+            // Try to add the state
+            } else if (splitLine.length >= 1 && label.length() > 0) {
+
+                boolean isInitialState = (label.charAt(0) == '*');
+
+                // Ensure the user didn't only have an asterisk as the name of the label (since the asterisk gets removed, we are left with an empty string)
+                if (isInitialState && label.length() == 1) {
+                    
+                    if (verbose)
+                        System.out.println("ERROR: Could not parse '" + line + "' as a state (state name must be at least 1 character long).");
+
+                } else {
+
+                    // Remove '*' from the label name
+                    if (isInitialState)
+                        label = label.substring(1);
+
+                    long id = automaton.addState(label, splitLine.length < 2 || isTrue(splitLine[1]), isInitialState);
+
+                    // Error checking
+                    if (id == 0) {
+                        if (verbose)
+                            System.out.println("ERROR: Could not store '" + line + "' as a state.");
+                    }
+                    
+                    // Add state
+                    else
+                        stateMapping.put(label, id);
+
+                }
 
             }
-            else if (line.length() > 0)
+            else if (line.length() > 0 && verbose)
                 System.out.println("ERROR: Could not parse '" + line + "' as a state.");
         }
 
@@ -274,16 +305,30 @@ public class AutomataGUI extends JFrame implements ActionListener {
         for (String line : eventInputText.split("\n")) {
             
             String[] splitLine = line.split(",");
+            String label = splitLine[0];
 
-            if (splitLine.length >= 1 && splitLine[0].length() > 0) {
-                int id = automaton.addEvent(splitLine[0], splitLine.length < 2 || isTrue(splitLine[1]), splitLine.length < 3 || isTrue(splitLine[2]));
+            // Check to see if this is a duplicate event label
+            if (eventMapping.get(label) != null) {
 
-                 if (id == 0)
-                    System.out.println("ERROR: Could not store '" + line + "' as an event.");
+                if (verbose)
+                    System.out.println("ERROR: Could not store '" + line + "' as an event, since there is already an event with this label.");
+
+            // Try to add the event
+            } else if (splitLine.length >= 1 && label.length() > 0) {
+                int id = automaton.addEvent(label, splitLine.length < 2 || isTrue(splitLine[1]), splitLine.length < 3 || isTrue(splitLine[2]));
+
+                // Error checking
+                 if (id == 0) {
+                    if (verbose)
+                        System.out.println("ERROR: Could not store '" + line + "' as an event.");
+                 }
+                    
+                
+                // Add event
                 else
-                     eventMapping.put(splitLine[0], id);
+                     eventMapping.put(label, id);
             }
-            else if (line.length() > 0)
+            else if (line.length() > 0 && verbose)
                 System.out.println("ERROR: Could not parse '" + line + "' as an event.");
 
         }
@@ -291,17 +336,28 @@ public class AutomataGUI extends JFrame implements ActionListener {
             /* Transitions */
 
         for (String line : transitionInputText.split("\n")) {
+            
             String[] splitLine = line.split(",");
+
+            // Ensure that all 3 parameters are present
             if (splitLine.length == 3) {
+
+                // Get ID's of initial state, event, and target state
                 Long initialStateID = stateMapping.get(splitLine[0]);
                 Integer eventID = eventMapping.get(splitLine[1]);
                 Long targetStateID = stateMapping.get(splitLine[2]);
-                if (initialStateID == null || initialStateID == 0  || eventID == null || eventID == 0 || targetStateID == null || targetStateID == 0)
-                    System.out.println("ERROR: Could not store '" + line + "' as a transition.");
+
+                // Prevent crashing by checking to see if any of the values are null (indicates that they've entered a state or event that doesn't exist)
+                if (initialStateID == null || eventID == null || targetStateID == null) {
+                    if (verbose)
+                        System.out.println("ERROR: Could not store '" + line + "' as a transition.");
+                }
+                
+                // Add transition
                 else
                     automaton.addTransition(initialStateID, eventID, targetStateID);
             }
-            else if (line.length() > 0)
+            else if (line.length() > 0 && verbose)
                 System.out.println("ERROR: Could not parse '" + line + "' as a transition.");
         }
 

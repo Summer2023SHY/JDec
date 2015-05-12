@@ -252,17 +252,31 @@ public class TestAutomata {
 
     	printTestOutput("BASIC GUI INPUT: ", 2);
 
-    	printTestOutput("Instantiating automaton from GUI input code...", 3);
+    	printTestOutput("Instantiating automaton from simple GUI input code...", 3);
     	Automaton.deleteTemporaryFiles();
     	Automaton a = AutomataGUI.generateAutomaton(
     			"a,T,T\nb,T,F\nc,F,T\nd,F,F", // Events
     			"e,T\nf,F", // States	
-    			"e,a,f\nf,b,e" // Transitions
+    			"e,a,f\nf,b,e", // Transitions
+    			false // We do not want it to be verbose
     		);
     	a.generateInputForGUI();
     	printTestCase("Ensuring the event input was saved and loaded correctly", a.getEventInput().equals("a,T,T\nb,T,F\nc,F,T\nd,F,F"), counter);
     	printTestCase("Ensuring the state input was saved and loaded correctly", a.getStateInput().equals("e,T\nf,F"), counter);
     	printTestCase("Ensuring the transition input was saved and loaded correctly", a.getTransitionInput().equals("e,a,f\nf,b,e"), counter);
+
+    	printTestOutput("Instantiating automaton from GUI input code with duplicate labels, omitted optional parameters, and an initial state...", 3);
+    	Automaton.deleteTemporaryFiles();
+    	a = AutomataGUI.generateAutomaton(
+    			"a\nb,F\na,F,F\nb", // Events
+    			"*c\nc,F", // States	
+    			"", // Transitions
+    			false // We do not want it to be verbose
+    		);
+    	a.generateInputForGUI();
+    	printTestCase("Ensuring the event input was saved and loaded correctly", a.getEventInput().equals("a,T,T\nb,F,T"), counter);
+    	printTestCase("Ensuring the state input was saved and loaded correctly", a.getStateInput().equals("*c,T"), counter);
+    	printTestCase("Ensuring the transition input was saved and loaded correctly", a.getTransitionInput().equals(""), counter);
 
     		/* Print summary of this test routine */
 

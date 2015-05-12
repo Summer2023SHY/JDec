@@ -8,7 +8,7 @@ public class Automaton {
 
 		/* Class constants */
 
-	private static final int HEADER_SIZE = 24; // This is the fixed amount of space needed to hold the main variables in the .hdr file
+	private static final int HEADER_SIZE = 32; // This is the fixed amount of space needed to hold the main variables in the .hdr file
 
 	public static final long DEFAULT_STATE_CAPACITY = 255;
 	public static final long MAX_STATE_CAPACITY = Long.MAX_VALUE;
@@ -26,6 +26,7 @@ public class Automaton {
 						observableEvents = new HashSet<Event>();
 
 	private long nStates = 0;
+	private long initialState = 0;
 	
 	// Variables which determine how large the .bdy file will become
 	private long stateCapacity;
@@ -151,7 +152,7 @@ public class Automaton {
     	StringBuilder str = new StringBuilder();
     	str.append("digraph G {");
     	str.append("node [shape=circle, style=bold];");
-    	double inches = ((double) size) / 100.0;
+    	double inches = ((double) size) / 100.0; // Assuming DPI of monitor is 100
     	str.append("size=\"" + inches + "," + inches + "\";");
     	str.append("ratio=fill;");
     	
@@ -187,9 +188,9 @@ public class Automaton {
     		/* Finish up */
 
     	// Create arrow towards initial state (currently assumed to be the first state)
-    	if (nStates > 0) {
+    	if (initialState > 0) {
     		str.append("node [shape=plaintext];");
-    		str.append("entry->1;");
+    		str.append("entry->" + State.readLabelFromFile(this, bodyRAFile, initialState) + ";");
     	}
 
     	str.append("}");
@@ -299,10 +300,11 @@ public class Automaton {
 	 *	Add the specified state to the automaton with an empty transition list
 	 *	@param 	label - The "name" of the new state
 	 *	@param 	marked - Whether or not the states is marked
+	 *	@param 	isInitialState - Whether or not this is the initial state
 	 *	@return the ID of the added state (0 indicates the addition was unsuccessful)
 	 **/
-	public long addState(String label, boolean marked) {
-		return addState(label, marked, new ArrayList<Transition>());
+	public long addState(String label, boolean marked, boolean isInitialState) {
+		return addState(label, marked, new ArrayList<Transition>(), isInitialState);
 	}
 
 	/**
@@ -310,9 +312,10 @@ public class Automaton {
 	 *	@param 	label - The "name" of the new state
 	 *	@param 	marked - Whether or not the states is marked
 	 *	@param 	transitions - The list of transitions
+	 *	@param 	isInitialState - Whether or not this is the initial state
 	 *	@return the ID of the added state (0 indicates the addition was unsuccessful)
 	 **/
-	public long addState(String label, boolean marked, ArrayList<Transition> transitions) {
+	public long addState(String label, boolean marked, ArrayList<Transition> transitions, boolean isInitialState) {
 
 		// Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs)
 		if (nStates == MAX_STATE_CAPACITY)
@@ -341,9 +344,15 @@ public class Automaton {
 			recreateBodyFile();
 		}
 
+		long id = ++nStates;
+
 		// Write new state to file
-		State state = new State(label, ++nStates, marked, transitions);
+		State state = new State(label, id, marked, transitions);
 		state.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID, transitionCapacity);
+
+		// Change initial state
+		if (isInitialState)
+			initialState = id;
 
 		// Check to see if we need to re-write the entire binary file
 		if (nStates > stateCapacity) {
@@ -361,7 +370,7 @@ public class Automaton {
 		// Update header file
 		writeHeaderFile();
 
-		return nStates;
+		return id;
 	}
 
 	/**
@@ -451,7 +460,8 @@ public class Automaton {
 		ByteManipulator.writeLongAsBytes(bytesToWrite, 8, stateCapacity, 8);
 		ByteManipulator.writeLongAsBytes(bytesToWrite, 12, transitionCapacity, 4);
 		ByteManipulator.writeLongAsBytes(bytesToWrite, 16, labelLength, 4);
-		ByteManipulator.writeLongAsBytes(bytesToWrite, 20, events.size(), 4);
+		ByteManipulator.writeLongAsBytes(bytesToWrite, 20, initialState, 8);
+		ByteManipulator.writeLongAsBytes(bytesToWrite, 28, events.size(), 4);
 
 		try {
 
@@ -509,7 +519,8 @@ public class Automaton {
 			stateCapacity = ByteManipulator.readBytesAsLong(bytesRead, 8, 8);
 			transitionCapacity = (int) ByteManipulator.readBytesAsLong(bytesRead, 12, 4);
 			labelLength = (int) ByteManipulator.readBytesAsLong(bytesRead, 16, 4);
-			int nEvents = (int) ByteManipulator.readBytesAsLong(bytesRead, 20, 4);
+			initialState = ByteManipulator.readBytesAsLong(bytesRead, 20, 8);
+			int nEvents = (int) ByteManipulator.readBytesAsLong(bytesRead, 28, 4);
 
 			// Read in the events
 			for (int e = 1; e <= nEvents; e++) {
@@ -584,20 +595,28 @@ public class Automaton {
 
 			State state = getState(s);
 
+			// Place asterisk before label if this is the initial state
+			if (s == initialState)
+				stateInputBuilder.append("*");
+			
+			// Append label and properties
 			stateInputBuilder.append(state.getLabel());
 			stateInputBuilder.append((state.isMarked() ? ",T" : ",F"));
 			
+			// Add line separator after unless this is the last state
 			if (s < nStates)
 				stateInputBuilder.append("\n");
 
+			// Append all transitions
 			for (Transition t : state.getTransitions()) {
 
+				// Add line separator before unless this is the very first transition
 				if (firstTransitionInStringBuilder)
 					firstTransitionInStringBuilder = false;
 				else
 					transitionInputBuilder.append("\n");
 
-
+				// Append transition
 				transitionInputBuilder.append(
 						state.getLabel()
 						+ "," + t.getEvent().getLabel()
