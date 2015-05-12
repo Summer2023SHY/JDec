@@ -3,6 +3,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.awt.image.*;
+import java.io.*;
+import javax.swing.filechooser.*;
 
 public class AutomataGUI extends JFrame implements ActionListener {
 
@@ -14,6 +16,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     private Canvas canvas;
     private BufferedImage image = null;
+
+    private File mostRecentInputFile = null;
     
     public static void main(String[] args) {
 		new AutomataGUI();
@@ -59,7 +63,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 + "<b><u>EXAMPLE</u></b>: '<i>EventName,True,False</i>' denotes an event called <b>EventName</b> "
                 + "that is <b>observable</b> but <b>not controllable</b>.<br>"
                 + "<b><u>NOTE</u></b>: '<i>True</i>' and '<i>False</i>' can be abbreviated as '<i>T</i>' and '<i>F</i>', "
-                + "respectively. The default value is '<i>True</i>' in both cases.</html>"
+                + "respectively. If omitted, the default value is '<i>True</i>'.</html>"
             ),c);
 
         eventInput = new JTextPane();
@@ -84,7 +88,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 "<html>1 state per line, formatted as <i>LABEL,[MARKED]</i>.<br>"
                 + "<b><u>EXAMPLE</u></b>: <i>'StateName,False'</i> denotes a state called <b>StateName</b> that is <b>unmarked</b>.<br>"
                 + "<b><u>NOTE</u></b>: <i>'True'</i> and <i>'False'</i> can be abbreviated as <i>'T'</i> and <i>'F'</i>, respectively. "
-                + "The default value is '<i>True</i>'.</html>"
+                + "If omitted, the default value is '<i>True</i>'.</html>"
             ),c);
 
         stateInput = new JTextPane();
@@ -128,7 +132,20 @@ public class AutomataGUI extends JFrame implements ActionListener {
         generateAutomatonButton.addActionListener(new ActionListener() {
  
             public void actionPerformed(ActionEvent e) {
-                generateAutomaton();
+                
+                // Remove any temporary files
+                Automaton.deleteTemporaryFiles();
+
+                // Create automaton from input code
+                Automaton automaton = generateAutomaton(eventInput.getText(), stateInput.getText(), transitionInput.getText());
+
+                // Try to create graph image, displaying it on the screen
+                if (automaton.outputDOT()) {
+                    image = automaton.loadImageFromFile();
+                    repaint();
+                    pack();
+                }
+
             }
 
         });
@@ -167,7 +184,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     }
 
-    private void generateAutomaton() {
+    /* In order to use TestAutomata.java to run some test routines on it, this method was made public and had some parameters added */
+    public static Automaton generateAutomaton(String eventInputText, String stateInputText, String transitionInputText) {
 
         // Setup
         Automaton automaton = new Automaton();
@@ -175,13 +193,17 @@ public class AutomataGUI extends JFrame implements ActionListener {
         HashMap<String, Long> stateMapping = new HashMap<String, Long>(); // Maps the state's labels to the state's ID
         
         // Events
-        for (String line : eventInput.getText().split("\n")) {
+        for (String line : eventInputText.split("\n")) {
             
             String[] splitLine = line.split(",");
 
             if (splitLine.length >= 1 && splitLine[0].length() > 0) {
                 int id = automaton.addEvent(splitLine[0], splitLine.length < 2 || isTrue(splitLine[1]), splitLine.length < 3 || isTrue(splitLine[2]));
-                eventMapping.put(splitLine[0], id);
+
+                 if (id == 0)
+                    System.out.println("ERROR: Could not store '" + line + "' as an event.");
+                else
+                     eventMapping.put(splitLine[0], id);
             }
             else if (line.length() > 0)
                 System.out.println("ERROR: Could not parse '" + line + "' as an event.");
@@ -189,7 +211,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         }
 
         // States
-        for (String line : stateInput.getText().split("\n")) {
+        for (String line : stateInputText.split("\n")) {
             
             String[] splitLine = line.split(",");
 
@@ -207,27 +229,25 @@ public class AutomataGUI extends JFrame implements ActionListener {
         }
 
         // Transitions (TO-DO: CATCH NULLPOINTEREXCEPTIONS)
-        for (String line : transitionInput.getText().split("\n")) {
+        for (String line : transitionInputText.split("\n")) {
             String[] splitLine = line.split(",");
             if (splitLine.length == 3) {
-                long initialStateID = stateMapping.get(splitLine[0]);
-                int eventID = eventMapping.get(splitLine[1]);
-                long targetStateID = stateMapping.get(splitLine[2]);
-                automaton.addTransition(initialStateID, eventID, targetStateID);
+                Long initialStateID = stateMapping.get(splitLine[0]);
+                Integer eventID = eventMapping.get(splitLine[1]);
+                Long targetStateID = stateMapping.get(splitLine[2]);
+                if (initialStateID == null || initialStateID == 0  || eventID == null || eventID == 0 || targetStateID == null || targetStateID == 0)
+                    System.out.println("ERROR: Could not store '" + line + "' as a transition.");
+                else
+                    automaton.addTransition(initialStateID, eventID, targetStateID);
             }
             else if (line.length() > 0)
                 System.out.println("ERROR: Could not parse '" + line + "' as a transition.");
         }
 
-        // Try to create graph image, displaying it on the screen
-        if (automaton.outputDOT()) {
-            image = automaton.loadImageFromFile();
-            repaint();
-            pack();
-        }
+        return automaton;
     }
 
-    private boolean isTrue(String str) {
+    private static boolean isTrue(String str) {
         return str.equals("T") || str.equals("True");
     }
 
@@ -243,7 +263,17 @@ public class AutomataGUI extends JFrame implements ActionListener {
         menu = new JMenu("File");
         menuBar.add(menu);
 
-        menuItem = new JMenuItem("Load");
+        menuItem = new JMenuItem("Open");
+        menuItem.addActionListener(this);
+        menu.add(menuItem);
+
+        menuItem = new JMenuItem("Refresh");
+        menuItem.addActionListener(this);
+        menu.add(menuItem);
+
+        menu.addSeparator();
+
+        menuItem = new JMenuItem("Close");
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
@@ -259,18 +289,76 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         switch (event.getActionCommand()) {
 
-            case "Load":
+            case "Open":
 
-                Automaton automaton = new Automaton();
-                automaton.generateInputForGUI();
+                // Prompt user to select Automaton from file (stop if they did not pick a file)
+                if (selectFile("Select Automaton") == null)
+                    break;
+
+            case "Refresh":
+
+                // Load Automaton from file, filling the input fields with its data
+                Automaton automaton = new Automaton(mostRecentInputFile);
                 eventInput.setText(automaton.getEventInput());
                 stateInput.setText(automaton.getStateInput());
                 transitionInput.setText(automaton.getTransitionInput());
+                automaton.generateInputForGUI();
+
+                System.out.println("generated...");
+
+                break;
+
+            case "Close":
+
+                // Clear input fields
+                eventInput.setText("");
+                stateInput.setText("");
+                transitionInput.setText("");
+
+                // Change image
+                image = null;
+                repaint();
+                pack();
 
                 break;
         }
 
     }
+
+    /** 
+     *  Opens up a JFileChooser for the user to choose a file from their file system.
+     *  @param title - The title to put in the file chooser dialog box.
+     *  @return a file that the user selected on their computer, or null if they didn't choose anything
+     */
+    private File selectFile (String title) {
+
+            /* Set up the file chooser */
+
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle(title);
+
+            /* Filter .BMP files */
+
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Automaton files", "hdr");
+        fileChooser.setFileFilter(filter);
+
+            /* Begin at the most recently accessed directory */
+
+        if (mostRecentInputFile != null)
+            fileChooser.setCurrentDirectory(mostRecentInputFile.getParentFile());
+
+            /* Prompt user to select a file */
+
+        fileChooser.showOpenDialog(null);
+
+            /* Update last file opened (so that we can automatically navigate to the proper directory next time) */
+
+        if (fileChooser.getSelectedFile() != null)
+            mostRecentInputFile = fileChooser.getSelectedFile();
+
+        return fileChooser.getSelectedFile();
+        
+    } 
 
     /**
      * Private class to add a tooltip with the specified text to the left of the given component.

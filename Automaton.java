@@ -55,6 +55,19 @@ public class Automaton {
     }
 
     /**
+     * Implicit constructor: load automaton from file
+     **/
+    public Automaton(File headerFile) {
+    	this(
+    			headerFile,
+    			(headerFile == null) ? null : new File(headerFile.getName().substring(0, headerFile.getName().length() - 4) + ".bdy"),
+    			DEFAULT_STATE_CAPACITY,
+    			DEFAULT_TRANSITION_CAPACITY,
+    			DEFAULT_LABEL_LENGTH
+    		);
+    }
+
+    /**
      *	Implicit constructor: create automaton with specified initial capacities
      *	NOTE: 	Choosing larger values increases the amount of space needed to store the binary file.
      *			Choosing smaller values increases the frequency that you need to re-write the entire binary file in order to expand it
@@ -75,6 +88,7 @@ public class Automaton {
 	 *	@param transitionCapacity - The initial maximum number of transitions per state (increases by 1 whenever it is exeeded)
 	 *	@param labelLength - The initial maximum number characters per state label (increases by 1 whenever it is exeeded)
      **/
+
 	public Automaton(File headerFile, File bodyFile, long stateCapacity, int transitionCapacity, int labelLength) {
 
 		this.headerFile = headerFile;
@@ -155,7 +169,7 @@ public class Automaton {
 
     		// Draw each of its transitions
     		for (Transition t : state.getTransitions()) {
-    			str.append(state.getLabel() + "->" + getState(t.getTargetStateID()).getLabel());
+    			str.append(state.getLabel() + "->" + State.readLabelFromFile(this, bodyRAFile, t.getTargetStateID()));
     			str.append(" [constraint=false,label=\"" + t.getEvent().getLabel() + "\"");
     			
     			if (!t.getEvent().isObservable())
@@ -223,6 +237,26 @@ public class Automaton {
 		} catch (IOException e) {
             e.printStackTrace();
 	    }	
+
+	}
+
+	public static void deleteTemporaryFiles() {
+
+			/* Delete .hdr file */
+
+		try {
+    		DEFAULT_HEADER_FILE.delete();
+    	} catch (SecurityException e) {
+    		e.printStackTrace();
+    	}
+
+    		/* Delete .bdy file */
+
+		try {
+    		DEFAULT_BODY_FILE.delete();
+    	} catch (SecurityException e) {
+    		e.printStackTrace();
+    	}
 
 	}
 
@@ -441,10 +475,8 @@ public class Automaton {
 
 				// Write each character of the label
 				int index = 6;
-				for (int i = 0; i < event.getLabel().length(); i++) {
+				for (int i = 0; i < event.getLabel().length(); i++)
 					bytesToWrite[index++] = (byte) event.getLabel().charAt(i);
-					System.out.println("write char:" + ((byte) event.getLabel().charAt(i)));
-				}
 
 				headerRAFile.write(bytesToWrite);
 
@@ -465,10 +497,9 @@ public class Automaton {
 
 		try {
 
-			if (headerRAFile.length() == 0) {
-				System.out.println("Could not load the automaton from file, because there was nothing stored there.");
+			// Do not try to load an empty file
+			if (headerRAFile.length() == 0)
 				return;
-			}
 
 			headerRAFile.seek(0);
 			headerRAFile.read(bytesRead);
@@ -546,6 +577,8 @@ public class Automaton {
 
 			/* Generate state and transition input */
 
+		boolean firstTransitionInStringBuilder = true;
+
 		for (int s = 1; s <= nStates; s++) {
 
 			State state = getState(s);
@@ -556,9 +589,21 @@ public class Automaton {
 			if (s < nStates)
 				stateInputBuilder.append("\n");
 
-			for (Transition t : state.getTransitions())
-				transitionInputBuilder.append(state.getLabel() + "," + t.getEvent().getLabel() + "," + t.getTargetState().getLabel());
+			for (Transition t : state.getTransitions()) {
 
+				if (firstTransitionInStringBuilder)
+					firstTransitionInStringBuilder = false;
+				else
+					transitionInputBuilder.append("\n");
+
+
+				transitionInputBuilder.append(
+						state.getLabel()
+						+ "," + t.getEvent().getLabel()
+						+ "," + State.readLabelFromFile(this, bodyRAFile, t.getTargetStateID())
+					);
+			
+			}
 		}
 
 	}

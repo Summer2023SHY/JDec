@@ -115,6 +115,36 @@ public class State {
 
 	}
 
+	/* Light-weight method used just to get the label (because loading transitions as well take a bit of time) */
+	public static String readLabelFromFile(Automaton automaton, RandomAccessFile file, long id) {
+
+		/* Setup */
+
+		byte[] bytesRead = new byte[automaton.getLabelLength()];
+
+			/* Read bytes */
+
+		try {
+
+			file.seek((id * automaton.getSizeOfState()) + 1);
+			file.read(bytesRead);
+			
+	    } catch (IOException e) {
+
+            e.printStackTrace();
+            return null;
+
+	    }
+	    	/* State's label */
+
+	    char[] arr = new char[automaton.getLabelLength()];
+		for (int i = 0; i < arr.length; i++)
+			arr[i] = (char) bytesRead[i];
+
+		return new String(arr);
+
+	}
+
 	public static State readFromFile(Automaton automaton, RandomAccessFile file, long id) {
 
 			/* Setup */
