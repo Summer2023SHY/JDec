@@ -16,6 +16,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     private Canvas canvas;
     private BufferedImage image = null;
+    private int imageSize;
 
     private File currentDirectory = null;
     private File mostRecentInputFile = null;
@@ -26,14 +27,23 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     public AutomataGUI() {
 
-            /* Add input boxes and canvas */
+            /* Create input boxes */
 
         Container container = new Container();
         container.setLayout(new FlowLayout());
         container.add(createInputContainer());
+
+            /* Create canvas */
+
         canvas = new Canvas();
         container.add(canvas);
         add(container);
+
+            /* Calculate the size we want the image to be, and update the canvas */
+
+        pack();
+        imageSize = container.getHeight();
+        repaint();
 
             /* Add menu */
 
@@ -57,7 +67,6 @@ public class AutomataGUI extends JFrame implements ActionListener {
         // Ensure our application will be closed when the user presses the "X" */
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
-        setSize(800, 600);
 
         // Sets screen location in the center of the screen (only works after calling pack)
         setLocationRelativeTo(null);
@@ -202,11 +211,15 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 // Create automaton from input code
                 Automaton automaton = generateAutomaton(eventInput.getText(), stateInput.getText(), transitionInput.getText());
 
+                // Set the image blank if there were no states entered
+                if (automaton == null)
+                    canvas.setBlankImage();
+
                 // Try to create graph image, displaying it on the screen
-                if (automaton.outputDOT()) {
+                else if (automaton.outputDOT(imageSize)) {
                     image = automaton.loadImageFromFile();
-                    repaint();
-                    pack();
+                    canvas.repaint();
+                    // pack();
                 }
 
             }
@@ -226,30 +239,14 @@ public class AutomataGUI extends JFrame implements ActionListener {
     /* In order to use TestAutomata.java to run some test routines on it, this method was made public and had some parameters added */
     public static Automaton generateAutomaton(String eventInputText, String stateInputText, String transitionInputText) {
 
-        // Setup
+            /* Setup */
+        
         Automaton automaton = new Automaton();
         HashMap<String, Integer> eventMapping = new HashMap<String, Integer>(); // Maps the events's labels to the events's ID
         HashMap<String, Long> stateMapping = new HashMap<String, Long>(); // Maps the state's labels to the state's ID
+
+            /* States */
         
-        // Events
-        for (String line : eventInputText.split("\n")) {
-            
-            String[] splitLine = line.split(",");
-
-            if (splitLine.length >= 1 && splitLine[0].length() > 0) {
-                int id = automaton.addEvent(splitLine[0], splitLine.length < 2 || isTrue(splitLine[1]), splitLine.length < 3 || isTrue(splitLine[2]));
-
-                 if (id == 0)
-                    System.out.println("ERROR: Could not store '" + line + "' as an event.");
-                else
-                     eventMapping.put(splitLine[0], id);
-            }
-            else if (line.length() > 0)
-                System.out.println("ERROR: Could not parse '" + line + "' as an event.");
-
-        }
-
-        // States
         for (String line : stateInputText.split("\n")) {
             
             String[] splitLine = line.split(",");
@@ -267,7 +264,32 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 System.out.println("ERROR: Could not parse '" + line + "' as a state.");
         }
 
-        // Transitions (TO-DO: CATCH NULLPOINTEREXCEPTIONS)
+            /* The image will be blank if there are no states */
+
+        if (stateMapping.isEmpty())
+            return null;
+        
+            /* Events */
+
+        for (String line : eventInputText.split("\n")) {
+            
+            String[] splitLine = line.split(",");
+
+            if (splitLine.length >= 1 && splitLine[0].length() > 0) {
+                int id = automaton.addEvent(splitLine[0], splitLine.length < 2 || isTrue(splitLine[1]), splitLine.length < 3 || isTrue(splitLine[2]));
+
+                 if (id == 0)
+                    System.out.println("ERROR: Could not store '" + line + "' as an event.");
+                else
+                     eventMapping.put(splitLine[0], id);
+            }
+            else if (line.length() > 0)
+                System.out.println("ERROR: Could not parse '" + line + "' as an event.");
+
+        }
+
+            /* Transitions */
+
         for (String line : transitionInputText.split("\n")) {
             String[] splitLine = line.split(",");
             if (splitLine.length == 3) {
@@ -343,8 +365,6 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 transitionInput.setText(automaton.getTransitionInput());
                 automaton.generateInputForGUI();
 
-                System.out.println("generated...");
-
                 break;
 
             case "Close":
@@ -354,10 +374,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 stateInput.setText("");
                 transitionInput.setText("");
 
-                // Change image
-                image = null;
-                repaint();
-                pack();
+                // Set blank image
+                canvas.setBlankImage();
 
                 break;
         }
@@ -425,13 +443,18 @@ public class AutomataGUI extends JFrame implements ActionListener {
     private class Canvas extends JPanel {
 
             /* Class Constants */
-        
-        private final int DEFAULT_HEIGHT  = 384;
-        private final int DEFAULT_WIDTH   = 384;
 
         public Canvas () {
 
             setVisible(true);
+
+        }
+
+        public void setBlankImage() {
+
+            image = null;
+            this.repaint();
+            // pack();
 
         }
 
@@ -442,8 +465,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         */
         @Override public Dimension getPreferredSize() {
 
-
-            return image == null  ? new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT)
+            return image == null  ? new Dimension(imageSize, imageSize)
                                 : new Dimension(image.getWidth(), image.getHeight());
         
         }
@@ -462,7 +484,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
             if (image == null) {
 
                 g.setColor(Color.LIGHT_GRAY);
-                g.fillRect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+                g.fillRect(0, 0, imageSize, imageSize);
 
                 /* Draw image */
 

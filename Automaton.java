@@ -137,7 +137,7 @@ public class Automaton {
 
     	/** IMAGE GENERATION **/
 
-    public boolean outputDOT() {
+    public boolean outputDOT(int size) {
 
     		/* Abort the operation if the automaton is too large to do this in a reasonable amount of time */
     	
@@ -151,7 +151,8 @@ public class Automaton {
     	StringBuilder str = new StringBuilder();
     	str.append("digraph G {");
     	str.append("node [shape=circle, style=bold];");
-    	str.append("size=\"4,4\";");
+    	double inches = ((double) size) / 100.0;
+    	str.append("size=\"" + inches + "," + inches + "\";");
     	str.append("ratio=fill;");
     	
     		/* Draw all states and their transitions */
