@@ -39,8 +39,14 @@ public class Automaton {
 
 
 	// Files
-	private static final File 	DEFAULT_HEADER_FILE = new File("temp.hdr"),
-								DEFAULT_BODY_FILE = new File("temp.bdy");
+	
+	private static String 	DEFAULT_HEADER_FILE_NAME = "temp.hdr",
+							DEFAULT_BODY_FILE_NAME = "temp.bdy";
+	private static final File 	DEFAULT_HEADER_FILE = new File(DEFAULT_HEADER_FILE_NAME),
+								DEFAULT_BODY_FILE = new File(DEFAULT_BODY_FILE_NAME);
+
+	private String 	headerFileName = DEFAULT_HEADER_FILE_NAME,
+					bodyFileName = DEFAULT_BODY_FILE_NAME;
 	private File 	headerFile,
 					bodyFile;
 	private RandomAccessFile 	headerRAFile, // Contains basic information about automaton, needed in order to read the bodyFile, as well as the events
@@ -115,7 +121,7 @@ public class Automaton {
 
 	    // Finish setting up
 	    initializeVariables();
-    	updateNumberBytesPerState();
+    	nBytesPerState = calculateNumberOfBytesPerState(nBytesPerStateID, transitionCapacity, labelLength);
 
     	// Update header file
 		writeHeaderFile();
@@ -141,6 +147,9 @@ public class Automaton {
     public boolean outputDOT(int size) {
 
     		/* Abort the operation if the automaton is too large to do this in a reasonable amount of time */
+
+
+		System.out.println("nStates..." + nStates);
     	
     	if (nStates > LIMIT_OF_STATES_FOR_PICTURE) {
     		System.out.println("ERROR: Aborted due to the fact that this graph is quite large!");
@@ -162,6 +171,7 @@ public class Automaton {
 
     		// Get state from file
     		State state = getState(s);
+    		System.out.println(state.getLabel());
 
     		// Draw states
     		if (state.isMarked())
@@ -278,10 +288,15 @@ public class Automaton {
 			if (transitionCapacity == MAX_TRANSITION_CAPACITY)
 				return false;
 
-			transitionCapacity++;
-
 			// Update body file
-			recreateBodyFile();
+
+			recreateBodyFile(
+					stateCapacity,
+					transitionCapacity + 1,
+					labelLength,
+					nBytesPerStateID,
+					calculateNumberOfBytesPerState(nBytesPerStateID, transitionCapacity + 1, labelLength)
+				);
 
 			// Update header file
 			writeHeaderFile();
@@ -328,8 +343,13 @@ public class Automaton {
 			if (label.length() > MAX_LABEL_LENGTH)
 				return 0;
 
-			labelLength = label.length();
-			recreateBodyFile();
+			recreateBodyFile(
+					stateCapacity,
+					transitionCapacity,
+					label.length(),
+					nBytesPerStateID,
+					calculateNumberOfBytesPerState(nBytesPerStateID, transitionCapacity, label.length())
+				);
 
 		}
 
@@ -340,32 +360,40 @@ public class Automaton {
 			if (transitions.size() > MAX_TRANSITION_CAPACITY)
 				return 0;
 
-			transitionCapacity = transitions.size();
-			recreateBodyFile();
+			recreateBodyFile(
+					stateCapacity,
+					transitions.size(),
+					labelLength,
+					nBytesPerStateID,
+					calculateNumberOfBytesPerState(nBytesPerStateID, transitions.size(), labelLength)
+				);
+
+		}
+
+		// Check to see if we need to re-write the entire binary file
+		if (nStates == stateCapacity) {
+
+			// Re-create binary file
+			recreateBodyFile(
+					((stateCapacity + 1) << 8) - 1,
+					transitionCapacity,
+					labelLength,
+					nBytesPerStateID + 1,
+					calculateNumberOfBytesPerState(nBytesPerStateID + 1, transitionCapacity, labelLength)
+				);
+
 		}
 
 		long id = ++nStates;
 
 		// Write new state to file
 		State state = new State(label, id, marked, transitions);
+		System.out.println("label length before write:" + labelLength);
 		state.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID, transitionCapacity);
 
 		// Change initial state
 		if (isInitialState)
 			initialState = id;
-
-		// Check to see if we need to re-write the entire binary file
-		if (nStates > stateCapacity) {
-
-			// Adjust variables
-			stateCapacity = ((stateCapacity + 1) << 8) - 1;
-			nBytesPerStateID++;
-			updateNumberBytesPerState();
-
-			// Re-create binary file
-			recreateBodyFile();
-
-		}
 
 		// Update header file
 		writeHeaderFile();
@@ -374,13 +402,13 @@ public class Automaton {
 	}
 
 	/**
-	 * Re-calculate the amount of space required to store the transitions of a state
+	 * Calculate the amount of space required to store a state
 	 **/
-	private void updateNumberBytesPerState() {
-		nBytesPerState =
+	private long calculateNumberOfBytesPerState(long newNBytesPerStateID, int newTransitionCapacity, int newLabelLength) {
+		return
 			1 // Whether the state is marked or not
-			+ (long) labelLength // The state's labels
-			+ (long) transitionCapacity * (long) (Event.N_BYTES_OF_ID + nBytesPerStateID); // All of the state transitions
+			+ (long) newLabelLength // The state's labels
+			+ (long) newTransitionCapacity * (long) (Event.N_BYTES_OF_ID + newNBytesPerStateID); // All of the state transitions
 	}
 
 	private void initializeVariables() {
@@ -552,11 +580,54 @@ public class Automaton {
 
 	}
 
-	private void recreateBodyFile() {
+	private void recreateBodyFile(long newStateCapacity, int newTransitionCapacity, int newLabelLength, int newNBytesPerStateID, long newNBytesPerState) {
 
+		System.out.println("Re-creating..!!");
 
-		System.out.println("RECREATE BINARY FILE NOT IMPLEMENTED YET!! Dumping stack..");
-		Thread.dumpStack();
+			/* Setup files */
+
+		File newBodyFile = new File(".tmp");
+		RandomAccessFile newBodyRAFile = null;
+
+		try {
+		
+			newBodyRAFile = new RandomAccessFile(newBodyFile, "rw");
+
+		} catch (FileNotFoundException e) {
+    		e.printStackTrace();
+    		return;
+    	}
+
+			/* Copy over body file */
+
+			System.out.println(nStates);
+
+		for (int s = 1; s <= nStates; s++) {
+			State state = getState(s);
+			state.writeToFile(newBodyRAFile, newNBytesPerState, newLabelLength, newNBytesPerStateID, newTransitionCapacity);
+			System.out.println("state "  + s + " was copied over");
+		}
+
+			/* Remove old file, rename new one */
+
+		try {
+			bodyRAFile.close();
+    		bodyFile.delete();
+    	} catch (SecurityException | IOException e) {
+    		e.printStackTrace();
+    	}
+
+		newBodyFile.renameTo(new File(bodyFileName));
+
+			/* Update variables */
+
+		stateCapacity = newStateCapacity;
+		transitionCapacity = newTransitionCapacity;
+		labelLength = newLabelLength;
+		nBytesPerStateID = newNBytesPerStateID;
+		nBytesPerState = newNBytesPerState;
+
+		bodyRAFile = newBodyRAFile;
 
 	}
 
@@ -598,7 +669,7 @@ public class Automaton {
 			// Place asterisk before label if this is the initial state
 			if (s == initialState)
 				stateInputBuilder.append("*");
-			
+
 			// Append label and properties
 			stateInputBuilder.append(state.getLabel());
 			stateInputBuilder.append((state.isMarked() ? ",T" : ",F"));

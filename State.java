@@ -101,6 +101,8 @@ public class State {
 
 		try {
 
+			System.out.println("seeked to " + (id * nBytesPerState));
+
 			file.seek(id * nBytesPerState);
 			file.write(bytesToWrite);
 
