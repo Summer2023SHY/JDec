@@ -159,7 +159,7 @@ public class Automaton {
     	StringBuilder str = new StringBuilder();
     	str.append("digraph G {");
     	str.append("node [shape=circle, style=bold];");
-    	double inches = ((double) size) / 100.0; // Assuming DPI is 100
+    	double inches = ((double) size) / 96.0; // Assuming DPI is 96
     	str.append("size=\"" + inches + "," + inches + "\";");
     	str.append("ratio=fill;");
     	

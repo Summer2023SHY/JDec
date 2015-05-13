@@ -17,7 +17,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 	                               transitionInput = new ArrayList<JTextPane>();
 
     private ArrayList<Canvas> canvas = new ArrayList<Canvas>();
-    private int imageSize = 437;
+    private int imageSize = 587;
 
     private File currentDirectory = null;
     private ArrayList<File> automataFile = new ArrayList<File>();
@@ -86,7 +86,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         
         // Ensure our application will be closed when the user presses the "X" */
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setResizable(false);
+        // setResizable(false);
 
         // Sets screen location in the center of the screen (only works after calling pack)
         setLocationRelativeTo(null);
@@ -159,7 +159,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
             ),c);
 
         eventInput.set(index, new JTextPane());
-        JScrollPane eventInputScrollPane = new JScrollPane(eventInput.get(index));   
+        JScrollPane eventInputScrollPane = new JScrollPane(eventInput.get(index)) {
+            @Override public Dimension getPreferredSize() {
+                return new Dimension(100, 100);    
+            }
+        };
         c.ipady = 100;
         c.weightx = 0.5;
         c.weighty = 1.0;
@@ -185,7 +189,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
             ),c);
 
         stateInput.set(index, new JTextPane());
-        JScrollPane stateInputScrollPane = new JScrollPane(stateInput.get(index));
+        JScrollPane stateInputScrollPane = new JScrollPane(stateInput.get(index)) {
+            @Override public Dimension getPreferredSize() {
+                return new Dimension(100, 100);    
+            }
+        };
         c.ipady = 100;
         c.weightx = 0.5;
         c.weighty = 1.0;
@@ -211,7 +219,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
             ),c);
 
         transitionInput.set(index, new JTextPane());
-        JScrollPane transitionInputScrollPane = new JScrollPane(transitionInput.get(index));
+        JScrollPane transitionInputScrollPane = new JScrollPane(transitionInput.get(index)) {
+            @Override public Dimension getPreferredSize() {
+                return new Dimension(100, 100);    
+            }
+        };
         c.ipady = 200;
         c.weightx = 0.5;
         c.weighty = 1.0;
@@ -616,14 +628,13 @@ public class AutomataGUI extends JFrame implements ActionListener {
         public void setImage(BufferedImage image) {
 
             this.image = image;
-            repaint();
+            this.repaint();
             // pack();
 
         }
 
         /**
-        * Returns the dimensions that the canvas should be, taking into consideration
-        * the image size and padding.
+        * Returns the dimensions that the canvas should be.
         * @return preferred dimension
         */
         @Override public Dimension getPreferredSize() {
