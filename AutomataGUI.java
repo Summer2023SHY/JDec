@@ -10,16 +10,17 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
 		/* Private instance variables */
 
-	private JTextPane 	eventInput,
-						stateInput,
-						transitionInput;
+    private JTabbedPane tabbedPane;
 
-    private Canvas canvas;
-    private BufferedImage image = null;
-    private int imageSize;
+	private ArrayList<JTextPane>   eventInput = new ArrayList<JTextPane>(),
+	                               stateInput = new ArrayList<JTextPane>(),
+	                               transitionInput = new ArrayList<JTextPane>();
+
+    private ArrayList<Canvas> canvas = new ArrayList<Canvas>();
+    private int imageSize = 437;
 
     private File currentDirectory = null;
-    private File mostRecentInputFile = null;
+    private ArrayList<File> automataFile = new ArrayList<File>();
     
     public static void main(String[] args) {
 		new AutomataGUI();
@@ -27,23 +28,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     public AutomataGUI() {
 
-            /* Create input boxes */
+            /* Create tabbed pane and add a tab to it */
 
-        Container container = new Container();
-        container.setLayout(new FlowLayout());
-        container.add(createInputContainer());
-
-            /* Create canvas */
-
-        canvas = new Canvas();
-        container.add(canvas);
-        add(container);
-
-            /* Calculate the size we want the image to be, and update the canvas */
-
-        pack();
-        imageSize = container.getHeight();
-        repaint();
+        tabbedPane = new JTabbedPane();
+        createTab();
+        add(tabbedPane);
 
             /* Add menu */
 
@@ -53,6 +42,37 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     	setGUIproperties();
         loadCurrentDirectory();
+
+    }
+
+    private void createTab() {
+
+            /* Setup */
+
+        eventInput.add(null);
+        stateInput.add(null);
+        transitionInput.add(null);
+        canvas.add(null);
+        automataFile.add(null);
+
+        int index = tabbedPane.getTabCount();
+
+            /* Create input boxes */
+
+        Container container = new Container();
+        container.setLayout(new FlowLayout());
+        container.add(createInputContainer(index));
+
+            /* Create canvas */
+
+        canvas.set(index, new Canvas());
+        container.add(canvas.get(index));
+
+            /* Add to tabs */
+
+        tabbedPane.addTab("" + index, null, container, "");
+        // tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
+        tabbedPane.setSelectedIndex(index);
 
     }
 
@@ -112,7 +132,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     }
 
-    private Container createInputContainer() {
+    private Container createInputContainer(final int index) {
 
             /* Setup */
 
@@ -138,8 +158,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 + "respectively. If omitted, the default value is '<i>True</i>'.</html>"
             ),c);
 
-        eventInput = new JTextPane();
-        JScrollPane eventInputScrollPane = new JScrollPane(eventInput);   
+        eventInput.set(index, new JTextPane());
+        JScrollPane eventInputScrollPane = new JScrollPane(eventInput.get(index));   
         c.ipady = 100;
         c.weightx = 0.5;
         c.weighty = 1.0;
@@ -164,8 +184,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 + "If omitted, the default value is '<i>True</i>'. There is only allowed to be one initial state.</html>"
             ),c);
 
-        stateInput = new JTextPane();
-        JScrollPane stateInputScrollPane = new JScrollPane(stateInput);
+        stateInput.set(index, new JTextPane());
+        JScrollPane stateInputScrollPane = new JScrollPane(stateInput.get(index));
         c.ipady = 100;
         c.weightx = 0.5;
         c.weighty = 1.0;
@@ -190,8 +210,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 + "the state <b>'FirstState'</b> to the state <b>'SecondState'</b> by the event called <b>'Event'</b>.</html>"
             ),c);
 
-        transitionInput = new JTextPane();
-        JScrollPane transitionInputScrollPane = new JScrollPane(transitionInput);
+        transitionInput.set(index, new JTextPane());
+        JScrollPane transitionInputScrollPane = new JScrollPane(transitionInput.get(index));
         c.ipady = 200;
         c.weightx = 0.5;
         c.weighty = 1.0;
@@ -210,16 +230,21 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 Automaton.deleteTemporaryFiles();
 
                 // Create automaton from input code
-                Automaton automaton = generateAutomaton(eventInput.getText(), stateInput.getText(), transitionInput.getText(), true, mostRecentInputFile);
+                Automaton automaton = generateAutomaton(
+                        eventInput.get(index).getText(),
+                        stateInput.get(index).getText(),
+                        transitionInput.get(index).getText(),
+                        true,
+                        automataFile.get(index)
+                    );
 
                 // Set the image blank if there were no states entered
                 if (automaton == null)
-                    canvas.setBlankImage();
+                    canvas.get(index).setImage(null);
 
                 // Try to create graph image, displaying it on the screen
                 else if (automaton.outputDOT(imageSize)) {
-                    image = automaton.loadImageFromFile();
-                    canvas.repaint();
+                    canvas.get(index).setImage(automaton.loadImageFromFile());
                     // pack();
                 }
 
@@ -356,8 +381,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 // Add transition
                 else
                     automaton.addTransition(initialStateID, eventID, targetStateID);
-            }
-            else if (line.length() > 0 && verbose)
+            
+            } else if (line.length() > 0 && verbose)
                 System.out.println("ERROR: Could not parse '" + line + "' as a transition.");
         }
 
@@ -381,6 +406,10 @@ public class AutomataGUI extends JFrame implements ActionListener {
         menuBar.add(menu);
 
         menuItem = new JMenuItem("New");
+        menuItem.addActionListener(this);
+        menu.add(menuItem);
+
+        menuItem = new JMenuItem("New Tab");
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
@@ -413,19 +442,24 @@ public class AutomataGUI extends JFrame implements ActionListener {
             case "New":
 
                 // Clear input fields
-                eventInput.setText("");
-                stateInput.setText("");
-                transitionInput.setText("");
+                eventInput.get(tabbedPane.getSelectedIndex()).setText("");
+                stateInput.get(tabbedPane.getSelectedIndex()).setText("");
+                transitionInput.get(tabbedPane.getSelectedIndex()).setText("");
 
                 // Set blank image
-                canvas.setBlankImage();
+                canvas.get(tabbedPane.getSelectedIndex()).setImage(null);
 
                 // Clear temporary files if they were in use
-                if (mostRecentInputFile == null)
+                if (automataFile.get(tabbedPane.getSelectedIndex()) == null)
                     Automaton.deleteTemporaryFiles();
 
-                mostRecentInputFile = null;
+                automataFile.set(tabbedPane.getSelectedIndex(), null);
 
+                break;
+
+            case "New Tab":
+
+                createTab();
                 break;
 
             case "Save As...":
@@ -444,13 +478,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
             case "Refresh":
 
                 // Load Automaton from file, filling the input fields with its data
-                if (mostRecentInputFile != null)
-                    System.out.println(mostRecentInputFile.getName());
-                Automaton automaton = new Automaton(mostRecentInputFile);
+                Automaton automaton = new Automaton(automataFile.get(tabbedPane.getSelectedIndex()));
                 automaton.generateInputForGUI();
-                eventInput.setText(automaton.getEventInput());
-                stateInput.setText(automaton.getStateInput());
-                transitionInput.setText(automaton.getTransitionInput());
+                eventInput.get(tabbedPane.getSelectedIndex()).setText(automaton.getEventInput());
+                stateInput.get(tabbedPane.getSelectedIndex()).setText(automaton.getStateInput());
+                transitionInput.get(tabbedPane.getSelectedIndex()).setText(automaton.getTransitionInput());
 
                 break;
 
@@ -488,8 +520,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
             /* Update last file opened and update current directory */
 
         if (fileChooser.getSelectedFile() != null) {
-            mostRecentInputFile = fileChooser.getSelectedFile();
-            currentDirectory = mostRecentInputFile.getParentFile();
+            automataFile.set(tabbedPane.getSelectedIndex(), fileChooser.getSelectedFile());
+            currentDirectory = fileChooser.getSelectedFile().getParentFile();
             saveCurrentDirectory();
         }
 
@@ -540,8 +572,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
             /* Update last file opened and update current directory */
 
         if (file != null) {
-            mostRecentInputFile = file;
-            currentDirectory = mostRecentInputFile.getParentFile();
+            automataFile.set(tabbedPane.getSelectedIndex(), file);
+            currentDirectory = file.getParentFile();
             saveCurrentDirectory();
         }
 
@@ -571,6 +603,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     private class Canvas extends JPanel {
 
+        private BufferedImage image;
+
             /* Class Constants */
 
         public Canvas () {
@@ -579,10 +613,10 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         }
 
-        public void setBlankImage() {
+        public void setImage(BufferedImage image) {
 
-            image = null;
-            this.repaint();
+            this.image = image;
+            repaint();
             // pack();
 
         }
@@ -594,8 +628,10 @@ public class AutomataGUI extends JFrame implements ActionListener {
         */
         @Override public Dimension getPreferredSize() {
 
-            return image == null  ? new Dimension(imageSize, imageSize)
-                                : new Dimension(image.getWidth(), image.getHeight());
+            return new Dimension(imageSize, imageSize);
+
+            // return image == null  ? new Dimension(imageSize, imageSize)
+            //                     : new Dimension(image.getWidth(), image.getHeight());
         
         }
 
