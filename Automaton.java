@@ -731,34 +731,48 @@ public class Automaton {
     }
 
     /**
-     *	TEMPORARY SOLUTION: Later we will read this directly from the .hdr file.
      *	Given the ID number of an event, get the event information
 	 *	@param id - The unique identifier corresponding to the requested event
 	 *	@return state - the requested event (or null if it does not exist)
      **/
     public Event getEvent(int id) {
 
-    	for (Event e : events) {
+    	for (Event e : events)
     		if (e.getID() == id)
     			return e;
-    	}
 
     	return null;
 
     }
 
+    /**
+     *	Return the set of all events.
+	 *	@return set of all events
+     **/
     public Set<Event> getEvents() {
     	return events;
     }
 
+    /**
+     *	Return the set of all active events.
+	 *	@return set of all active events
+     **/
     public Set<Event> getActiveEvents() {
     	return activeEvents;
     }
 
+    /**
+     *	Return the set of all controllable events.
+	 *	@return set of all controllable events
+     **/
     public Set<Event> getControllableEvents() {
     	return controllableEvents;
     }
 
+    /**
+     *	Return the set of all observable events.
+	 *	@return set of all observable events
+     **/
     public Set<Event> getObservableEvents() {
     	return observableEvents;
     }

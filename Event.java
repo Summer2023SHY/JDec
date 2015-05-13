@@ -65,8 +65,7 @@ public class Event {
 		return controllable;
 	}
 
-
-		/** OVERRIDDEN METHODS **/  
+		/** OVERRIDDEN METHODS **/
 
 	@Override public int hashCode() {
 		return label.hashCode();
