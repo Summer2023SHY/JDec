@@ -16,6 +16,7 @@ public class Automaton {
 	public static final int MAX_TRANSITION_CAPACITY = Integer.MAX_VALUE;
 	public static final int DEFAULT_LABEL_LENGTH = 1;
 	public static final int MAX_LABEL_LENGTH = 100;
+
 	public static final long LIMIT_OF_STATES_FOR_PICTURE = 10000; // Arbitrary value which will be revised once we have tried generating large automata
 
 		/* Private instance variables */
@@ -66,8 +67,8 @@ public class Automaton {
      **/
     public Automaton(File headerFile) {
     	this(
-    			headerFile,
-    			(headerFile == null) ? null : new File(headerFile.getName().substring(0, headerFile.getName().length() - 4) + ".bdy"),
+    			(headerFile == null) ? DEFAULT_HEADER_FILE : headerFile,
+    			(headerFile == null) ? DEFAULT_BODY_FILE : new File(headerFile.getName().substring(0, headerFile.getName().length() - 4) + ".bdy"),
     			DEFAULT_STATE_CAPACITY,
     			DEFAULT_TRANSITION_CAPACITY,
     			DEFAULT_LABEL_LENGTH
@@ -122,7 +123,7 @@ public class Automaton {
 	    // Finish setting up
 	    initializeVariables();
     	nBytesPerState = calculateNumberOfBytesPerState(nBytesPerStateID, this.transitionCapacity, this.labelLength);
-    	
+
     	// Update header file
 		writeHeaderFile();
 
@@ -168,7 +169,6 @@ public class Automaton {
 
     		// Get state from file
     		State state = getState(s);
-    		System.out.println(state.getLabel());
 
     		// Draw states
     		if (state.isMarked())

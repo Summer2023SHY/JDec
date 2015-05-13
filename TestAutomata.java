@@ -258,7 +258,8 @@ public class TestAutomata {
     			"a,T,T\nb,T,F\nc,F,T\nd,F,F", // Events
     			"e,T\nf,F", // States	
     			"e,a,f\nf,b,e", // Transitions
-    			false // We do not want it to be verbose
+    			false, // We do not want it to be verbose
+    			null // Use temporary files to store automaton
     		);
     	a.generateInputForGUI();
     	printTestCase("Ensuring the event input was saved and loaded correctly", a.getEventInput().equals("a,T,T\nb,T,F\nc,F,T\nd,F,F"), counter);
@@ -271,7 +272,8 @@ public class TestAutomata {
     			"a\nb,F\na,F,F\nb", // Events
     			"*c\nc,F", // States	
     			"", // Transitions
-    			false // We do not want it to be verbose
+    			false, // We do not want it to be verbose
+    			null // Use temporary files to store automaton
     		);
     	a.generateInputForGUI();
     	printTestCase("Ensuring the event input was saved and loaded correctly", a.getEventInput().equals("a,T,T\nb,F,T"), counter);

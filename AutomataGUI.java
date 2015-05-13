@@ -210,7 +210,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 Automaton.deleteTemporaryFiles();
 
                 // Create automaton from input code
-                Automaton automaton = generateAutomaton(eventInput.getText(), stateInput.getText(), transitionInput.getText(), true);
+                Automaton automaton = generateAutomaton(eventInput.getText(), stateInput.getText(), transitionInput.getText(), true, mostRecentInputFile);
 
                 // Set the image blank if there were no states entered
                 if (automaton == null)
@@ -238,11 +238,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
     }
 
     /* In order to use TestAutomata.java to run some test routines on it, this method was made public and had some parameters added */
-    public static Automaton generateAutomaton(String eventInputText, String stateInputText, String transitionInputText, boolean verbose) {
+    public static Automaton generateAutomaton(String eventInputText, String stateInputText, String transitionInputText, boolean verbose, File headerFile) {
 
             /* Setup */
         
-        Automaton automaton = new Automaton();
+        Automaton automaton = new Automaton(headerFile);
         HashMap<String, Integer> eventMapping = new HashMap<String, Integer>(); // Maps the events's labels to the events's ID
         HashMap<String, Long> stateMapping = new HashMap<String, Long>(); // Maps the state's labels to the state's ID
 
@@ -380,17 +380,21 @@ public class AutomataGUI extends JFrame implements ActionListener {
         menu = new JMenu("File");
         menuBar.add(menu);
 
+        menuItem = new JMenuItem("New");
+        menuItem.addActionListener(this);
+        menu.add(menuItem);
+
         menuItem = new JMenuItem("Open");
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
-        menuItem = new JMenuItem("Refresh");
+        menuItem = new JMenuItem("Save As...");
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
         menu.addSeparator();
 
-        menuItem = new JMenuItem("Close");
+        menuItem = new JMenuItem("Refresh");
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
@@ -406,24 +410,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         switch (event.getActionCommand()) {
 
-            case "Open":
-
-                // Prompt user to select Automaton from file (stop if they did not pick a file)
-                if (selectFile("Select Automaton") == null)
-                    break;
-
-            case "Refresh":
-
-                // Load Automaton from file, filling the input fields with its data
-                Automaton automaton = new Automaton(mostRecentInputFile);
-                eventInput.setText(automaton.getEventInput());
-                stateInput.setText(automaton.getStateInput());
-                transitionInput.setText(automaton.getTransitionInput());
-                automaton.generateInputForGUI();
-
-                break;
-
-            case "Close":
+            case "New":
 
                 // Clear input fields
                 eventInput.setText("");
@@ -433,14 +420,48 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 // Set blank image
                 canvas.setBlankImage();
 
+                // Clear temporary files if they were in use
+                if (mostRecentInputFile == null)
+                    Automaton.deleteTemporaryFiles();
+
+                mostRecentInputFile = null;
+
                 break;
+
+            case "Save As...":
+
+                // Prompt user to save Automaton to the specified file
+                saveFile("Choose .hdr File");
+                    
+                break;
+
+            case "Open":
+
+                // Prompt user to select Automaton from file (stop if they did not pick a file)
+                if (selectFile("Select Automaton") == null)
+                    break;
+
+            case "Refresh":
+
+                // Load Automaton from file, filling the input fields with its data
+                if (mostRecentInputFile != null)
+                    System.out.println(mostRecentInputFile.getName());
+                Automaton automaton = new Automaton(mostRecentInputFile);
+                automaton.generateInputForGUI();
+                eventInput.setText(automaton.getEventInput());
+                stateInput.setText(automaton.getStateInput());
+                transitionInput.setText(automaton.getTransitionInput());
+
+                break;
+
+            
         }
 
     }
 
     /** 
      *  Opens up a JFileChooser for the user to choose a file from their file system.
-     *  @param title - The title to put in the file chooser dialog box.
+     *  @param title - The title to put in the file chooser dialog box
      *  @return a file that the user selected on their computer, or null if they didn't choose anything
      */
     private File selectFile (String title) {
@@ -450,7 +471,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle(title);
 
-            /* Filter .BMP files */
+            /* Filter .hdr files */
 
         FileNameExtensionFilter filter = new FileNameExtensionFilter("Automaton files", "hdr");
         fileChooser.setFileFilter(filter);
@@ -474,7 +495,59 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         return fileChooser.getSelectedFile();
         
-    } 
+    }
+
+    /**
+     *  Prompts the user to name and specify the filename they wish to save the data.
+     *  @return - A File object to which data can be saved
+     */
+    private File saveFile(String title) {
+
+            /* Set up the file chooser */
+
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle(title);
+
+            /* Filter .hdr files */
+
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Automaton files", "hdr");
+        fileChooser.setFileFilter(filter);
+
+            /* Begin at the most recently accessed directory */
+        
+        if (currentDirectory != null)
+            fileChooser.setCurrentDirectory(currentDirectory);
+
+            /* Prompt user to select a filename */
+
+        fileChooser.showSaveDialog(null);
+
+            /* User pressed cancel, so there was no file */
+
+        if (fileChooser.getSelectedFile() == null)
+            return null;
+
+            /* Add .hdr extension if the user didn't put it there */
+
+        String name = fileChooser.getSelectedFile().getName();
+
+        // Remove anything after the period
+        if (name.indexOf(".") != -1)
+            name = name.substring(0, name.indexOf("."));
+
+        File file = new File(fileChooser.getSelectedFile().getParentFile() + "/" + name + ".hdr");
+
+            /* Update last file opened and update current directory */
+
+        if (file != null) {
+            mostRecentInputFile = file;
+            currentDirectory = mostRecentInputFile.getParentFile();
+            saveCurrentDirectory();
+        }
+
+        return file;
+        
+    }
 
     /**
      * Private class to add a tooltip with the specified text to the left of the given component.
