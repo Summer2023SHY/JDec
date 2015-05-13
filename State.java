@@ -101,8 +101,6 @@ public class State {
 
 		try {
 
-			System.out.println("seeked to " + (id * nBytesPerState));
-
 			file.seek(id * nBytesPerState);
 			file.write(bytesToWrite);
 
@@ -140,8 +138,19 @@ public class State {
 	    	/* State's label */
 
 	    char[] arr = new char[automaton.getLabelLength()];
-		for (int i = 0; i < arr.length; i++)
-			arr[i] = (char) bytesRead[i];
+		for (int i = 0; i < arr.length; i++) {
+
+			// Indicates end of label
+			if (bytesRead[i] == 0) {
+
+				arr = Arrays.copyOfRange(arr, 0, i);
+				break;
+
+			// Read and store character
+			} else
+				arr[i] = (char) bytesRead[i];
+
+		}
 
 		return new String(arr);
 
@@ -174,8 +183,19 @@ public class State {
 	    	/* State's label */
 
 	    char[] arr = new char[automaton.getLabelLength()];
-		for (int i = 0; i < arr.length; i++)
-			arr[i] = (char) bytesRead[i + 1];
+		for (int i = 0; i < arr.length; i++) {
+
+			// Indicates end of label
+			if (bytesRead[i + 1] == 0) {
+
+				arr = Arrays.copyOfRange(arr, 0, i);
+				break;
+
+			// Read and store character
+			} else
+				arr[i] = (char) bytesRead[i + 1];
+
+		}
 
 		State state = new State(new String(arr), id, marked);
 

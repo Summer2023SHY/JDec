@@ -121,8 +121,8 @@ public class Automaton {
 
 	    // Finish setting up
 	    initializeVariables();
-    	nBytesPerState = calculateNumberOfBytesPerState(nBytesPerStateID, transitionCapacity, labelLength);
-
+    	nBytesPerState = calculateNumberOfBytesPerState(nBytesPerStateID, this.transitionCapacity, this.labelLength);
+    	
     	// Update header file
 		writeHeaderFile();
 
@@ -147,9 +147,6 @@ public class Automaton {
     public boolean outputDOT(int size) {
 
     		/* Abort the operation if the automaton is too large to do this in a reasonable amount of time */
-
-
-		System.out.println("nStates..." + nStates);
     	
     	if (nStates > LIMIT_OF_STATES_FOR_PICTURE) {
     		System.out.println("ERROR: Aborted due to the fact that this graph is quite large!");
@@ -161,7 +158,7 @@ public class Automaton {
     	StringBuilder str = new StringBuilder();
     	str.append("digraph G {");
     	str.append("node [shape=circle, style=bold];");
-    	double inches = ((double) size) / 100.0; // Assuming DPI of monitor is 100
+    	double inches = ((double) size) / 100.0; // Assuming DPI is 100
     	str.append("size=\"" + inches + "," + inches + "\";");
     	str.append("ratio=fill;");
     	
@@ -388,7 +385,6 @@ public class Automaton {
 
 		// Write new state to file
 		State state = new State(label, id, marked, transitions);
-		System.out.println("label length before write:" + labelLength);
 		state.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID, transitionCapacity);
 
 		// Change initial state
@@ -600,12 +596,9 @@ public class Automaton {
 
 			/* Copy over body file */
 
-			System.out.println(nStates);
-
 		for (int s = 1; s <= nStates; s++) {
 			State state = getState(s);
 			state.writeToFile(newBodyRAFile, newNBytesPerState, newLabelLength, newNBytesPerStateID, newTransitionCapacity);
-			System.out.println("state "  + s + " was copied over");
 		}
 
 			/* Remove old file, rename new one */
