@@ -2,9 +2,9 @@ public class Event {
     
     	/* Class constants */
 
-    // 127 unique events with 0 representing null, and the first bit is actually used by State to identify whether or not it is marked.
+    // 255 unique events with 0 representing null
 	// NOTE: We will make this flexible later to allow for more events
-    public static final int MAX_NUMBER_OF_EVENTS = 127;
+    public static final int MAX_NUMBER_OF_EVENTS = 255;
 	public static final int N_BYTES_OF_ID = 1; 
 
  
