@@ -59,19 +59,20 @@ public class Automaton {
      * Default constructor: create empty automaton
      **/
     public Automaton() {
-    	this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, DEFAULT_STATE_CAPACITY, DEFAULT_TRANSITION_CAPACITY, DEFAULT_LABEL_LENGTH);
+    	this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, DEFAULT_STATE_CAPACITY, DEFAULT_TRANSITION_CAPACITY, DEFAULT_LABEL_LENGTH, true);
     }
 
     /**
      * Implicit constructor: load automaton from file
      **/
-    public Automaton(File headerFile) {
+    public Automaton(File headerFile, boolean clearFiles) {
     	this(
     			(headerFile == null) ? DEFAULT_HEADER_FILE : headerFile,
     			(headerFile == null) ? DEFAULT_BODY_FILE : new File(headerFile.getName().substring(0, headerFile.getName().length() - 4) + ".bdy"),
     			DEFAULT_STATE_CAPACITY,
     			DEFAULT_TRANSITION_CAPACITY,
-    			DEFAULT_LABEL_LENGTH
+    			DEFAULT_LABEL_LENGTH,
+    			clearFiles
     		);
     }
 
@@ -83,9 +84,10 @@ public class Automaton {
 	 *			NOTE: the initial state capacity may be higher than the value you give it, since it has to be 256^x
 	 *	@param transitionCapacity - The initial maximum number of transitions per state (increases by 1 whenever it is exeeded)
 	 *	@param labelLength - The initial maximum number characters per state label (increases by 1 whenever it is exeeded)
+	 *	@param clearFiles - Whether or not the header and body files should be cleared
      **/
-    public Automaton(long stateCapacity, int transitionCapacity, int labelLength) {
-    	this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, stateCapacity, transitionCapacity, labelLength);
+    public Automaton(long stateCapacity, int transitionCapacity, int labelLength, boolean clearFiles) {
+    	this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, stateCapacity, transitionCapacity, labelLength, clearFiles);
     }
 
     /**
@@ -95,14 +97,15 @@ public class Automaton {
 	 *  @param stateCapacity - The initial state capacity (increases by a factor of 256 when it is exceeded)
 	 *	@param transitionCapacity - The initial maximum number of transitions per state (increases by 1 whenever it is exeeded)
 	 *	@param labelLength - The initial maximum number characters per state label (increases by 1 whenever it is exeeded)
+	 *	@param clearFiles - Whether or not the header and body files should be cleared
      **/
 
-	public Automaton(File headerFile, File bodyFile, long stateCapacity, int transitionCapacity, int labelLength) {
+	public Automaton(File headerFile, File bodyFile, long stateCapacity, int transitionCapacity, int labelLength, boolean clearFiles) {
 
 		this.headerFile = headerFile;
 		this.bodyFile = bodyFile;
 
-		// Will be overriden if we are loading information from file
+		// Will be overridden if we are loading information from file
 		this.stateCapacity = stateCapacity;
 		this.transitionCapacity = transitionCapacity;
 		this.labelLength = labelLength;
@@ -116,8 +119,12 @@ public class Automaton {
 			this.labelLength = 1;
 		if (this.labelLength > MAX_LABEL_LENGTH)
 			this.labelLength = MAX_LABEL_LENGTH;
+
+		// Clear files
+		if (clearFiles)
+			deleteFiles();
 		
-		// Open data from files (if it exists)
+		// Open files and try to load data from header
 		openRAFiles();
 
 	    // Finish setting up
@@ -249,20 +256,11 @@ public class Automaton {
 
 	}
 
-	public static void deleteTemporaryFiles() {
-
-			/* Delete .hdr file */
+	private void deleteFiles() {
 
 		try {
-    		DEFAULT_HEADER_FILE.delete();
-    	} catch (SecurityException e) {
-    		e.printStackTrace();
-    	}
-
-    		/* Delete .bdy file */
-
-		try {
-    		DEFAULT_BODY_FILE.delete();
+    		headerFile.delete();
+    		bodyFile.delete();
     	} catch (SecurityException e) {
     		e.printStackTrace();
     	}
@@ -272,8 +270,7 @@ public class Automaton {
 		/** MUTATOR METHODS **/  
 
 	// CURRENTLY IN-EFFICENT!!!!!!!!!! (rewrites the entire state to file instead of only writing the new transition)
-	
-	public boolean addTransition(long initialStateID, int eventID, long targetStateID) {
+	public boolean addTransition(long initialStateID, int eventID, long targetStateID, boolean updateFile) {
 
 		// Create initial state from ID
 		State initialState = getState(initialStateID);
@@ -623,6 +620,25 @@ public class Automaton {
 		bodyRAFile = newBodyRAFile;
 
 	}
+
+	// public void saveAutomatonAs(String newFileName) {
+
+	// 		/* Close old files */
+
+	// 	bodyRAFile.close();
+ //    	headerRAFile.close();
+
+ //    		/* Rename files */
+
+ //    	bodyFile.renameTo(new File(newBodyFileName + ".hdr"));
+ //    	headerFile.renameTo(new File(newHeaderFileName + ".bdy"));
+
+ //    		/* Open new files */
+
+ //    	openRAFiles();
+
+
+	// }
 
 		/** GUI INPUT CODE GENERATION **/
 
