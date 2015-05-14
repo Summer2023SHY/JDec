@@ -28,6 +28,9 @@ public class TestAutomata {
     	if (!runEventCreationTestRoutine())
     		passedAllTests = false;
 
+    	if (!runStateCreationTestRoutine())
+    		passedAllTests = false;
+
     	if (!runAutomatonCapacityTestRoutine())
     		passedAllTests = false;
 
@@ -146,6 +149,78 @@ public class TestAutomata {
     		if (e.getID() == 3)
     			passed = false;
     	printTestCase("Ensuring that no event has an ID of 3", passed, counter);
+
+    		/* Print summary of this test routine */
+
+    	printTestRoutineSummary(testRoutineName, counter);
+
+    	return counter.getPassedTests() == counter.getTotalTests();
+
+    }
+
+    private static boolean runStateCreationTestRoutine() {
+
+    	String testRoutineName = "STATE CREATION";
+
+    	printTestOutput("RUNNING " + testRoutineName + " TESTS...", 1);
+
+    	TestCounter counter = new TestCounter();
+
+    		/* Basic Event Creation Tests */
+
+    	printTestOutput("BASIC STATE CREATION: ", 2);
+
+    	printTestOutput("Instantiating empty automaton...", 3);
+    	Automaton a = new Automaton();
+
+    	printTestOutput("Adding a state that is marked...", 3);
+    	a.addState("firstState", true, false);
+    	printTestCase("Ensuring that 'nStates' was incremented", a.getNumberOfStates() == 1, counter);
+    	printTestCase("Ensuring that 'stateCapacity' was not increased", a.getStateCapacity() == 255, counter);
+    	printTestCase("Ensuring that the added state exists", a.stateExists(1), counter);
+    	printTestCase("Ensuring that the added state was not labeled the initial state", a.getInitialStateID() == 0, counter);
+    	printTestCase("Ensuring that the added state has the proper label", a.getState(1).getLabel().equals("firstState"), counter);
+    	printTestCase("Ensuring that the added state is marked", a.getState(1).isMarked(), counter);
+
+    	printTestOutput("Adding an initial state that is unmarked...", 3);
+    	a.addState("secondState", false, true);
+    	printTestCase("Ensuring that 'nStates' was incremented", a.getNumberOfStates() == 2, counter);
+    	printTestCase("Ensuring that 'stateCapacity' was not increased", a.getStateCapacity() == 255, counter);
+    	printTestCase("Ensuring that the added state exists", a.stateExists(2), counter);
+    	printTestCase("Ensuring that the added state was labeled the initial state", a.getInitialStateID() == 2, counter);
+    	printTestCase("Ensuring that the added state has the proper label", a.getState(2).getLabel().equals("secondState"), counter);
+    	printTestCase("Ensuring that the added state is unmarked", !a.getState(2).isMarked(), counter);
+    	
+    		/* Event ID Assignment Tests */
+
+    	// printTestOutput("EVENT ID ASSIGNMENTS: ", 2);
+
+    	// printTestOutput("Instantiating empty automaton...", 3);
+    	// a = new Automaton();
+
+    	// printTestOutput("Adding an event...", 3);
+    	// a.addEvent("firstEvent", true, true);
+    	// boolean passed = false;
+    	// for (Event e : a.getEvents())
+    	// 	if (e.getID() == 1)
+    	// 		passed = true;
+    	// printTestCase("Ensuring that the event's ID is 1", passed, counter);
+
+    	// printTestOutput("Adding a second event...", 3);
+    	// a.addEvent("secondEvent", true, true);
+    	// passed = false;
+    	// for (Event e : a.getEvents())
+    	// 	if (e.getID() == 2)
+    	// 		passed = true;
+    	// printTestCase("Ensuring that the event's ID is 2", passed, counter);
+
+    	// printTestOutput("Adding a pre-existing event...", 3);
+    	// a.addEvent("firstEvent", true, true);
+    	// passed = true;
+    	// for (Event e : a.getEvents())
+    	// 	if (e.getID() == 3)
+    	// 		passed = false;
+    	// printTestCase("Ensuring that no event has an ID of 3", passed, counter);
 
     		/* Print summary of this test routine */
 

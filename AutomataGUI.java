@@ -21,6 +21,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     private File currentDirectory = null;
     private ArrayList<File> automataFile = new ArrayList<File>();
+    private ArrayList<Automaton> automata = new ArrayList<Automaton>();
     
     public static void main(String[] args) {
 		new AutomataGUI();
@@ -54,6 +55,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         transitionInput.add(null);
         canvas.add(null);
         automataFile.add(null);
+        automata.add(null);
 
         int index = tabbedPane.getTabCount();
 
@@ -88,6 +90,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         transitionInput.remove(index);
         canvas.remove(index);
         automataFile.remove(index);
+        automata.remove(index);
 
             /* Remove tab */
 
@@ -424,7 +427,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
         return str.equals("T") || str.equals("True");
     }
 
-    /* Adds the menu system to the application */
+    /**
+     *  Adds the menu system to the application.
+     **/
     private void addMenu() {
 
         JMenuBar menuBar = new JMenuBar();
@@ -458,9 +463,22 @@ public class AutomataGUI extends JFrame implements ActionListener {
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
-         menu.addSeparator();
+        menu.addSeparator();
 
         menuItem = new JMenuItem("Close");
+        menuItem.addActionListener(this);
+        menu.add(menuItem);
+
+          /* Operation Menu */
+
+        menu = new JMenu("Operation");
+        menuBar.add(menu);
+
+        menuItem = new JMenuItem("Intersection");
+        menuItem.addActionListener(this);
+        menu.add(menuItem);
+
+        menuItem = new JMenuItem("Product");
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
@@ -477,6 +495,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
         int index = tabbedPane.getSelectedIndex();
 
         switch (event.getActionCommand()) {
+
+                /* File */
 
             case "Clear":
 
@@ -515,17 +535,30 @@ public class AutomataGUI extends JFrame implements ActionListener {
             case "Refresh":
 
                 // Load Automaton from file, filling the input fields with its data
-                Automaton automaton = new Automaton(automataFile.get(tabbedPane.getSelectedIndex()), false);
-                automaton.generateInputForGUI();
-                eventInput.get(tabbedPane.getSelectedIndex()).setText(automaton.getEventInput());
-                stateInput.get(tabbedPane.getSelectedIndex()).setText(automaton.getStateInput());
-                transitionInput.get(tabbedPane.getSelectedIndex()).setText(automaton.getTransitionInput());
+                automata.set(index, new Automaton(automataFile.get(index), false));
+                automata.get(index).generateInputForGUI();
+                eventInput.get(index).setText(automata.get(index).getEventInput());
+                stateInput.get(index).setText(automata.get(index).getStateInput());
+                transitionInput.get(index).setText(automata.get(index).getTransitionInput());
 
                 break;
 
             case "Close":
 
                 closeCurrentTab();
+                break;
+
+                /* Operation */
+
+            case "Intersection":
+
+                Automaton automaton = Automaton.intersection(automata.get(0), automata.get(1));
+                System.out.println("Generated!");
+                automaton.generateInputForGUI();
+                System.out.println("E:" + automaton.getEventInput());
+                System.out.println("S:" + automaton.getStateInput());
+                System.out.println("T:" + automaton.getTransitionInput());
+
                 break;
             
         }
@@ -536,7 +569,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
      *  Opens up a JFileChooser for the user to choose a file from their file system.
      *  @param title - The title to put in the file chooser dialog box
      *  @return a file that the user selected on their computer, or null if they didn't choose anything
-     */
+     **/
     private File selectFile (String title) {
 
             /* Set up the file chooser */
@@ -573,7 +606,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
     /**
      *  Prompts the user to name and specify the filename they wish to save the data.
      *  @return - A File object to which data can be saved
-     */
+     **/
     private File saveFile(String title) {
 
             /* Set up the file chooser */
@@ -638,13 +671,18 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
 	    }
 
-	}
+	} // TooltipComponent class
 
+    /**
+     * Private class to maintain a canvas on which a BufferedImage can be drawn.
+     **/
     private class Canvas extends JPanel {
+
+            /* Private instance variable */
 
         private BufferedImage image;
 
-            /* Class Constants */
+            /* Constructor */
 
         public Canvas () {
 
@@ -652,32 +690,30 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         }
 
+        /**
+         *  Update the image in the canvas.
+         **/
         public void setImage(BufferedImage image) {
 
             this.image = image;
             this.repaint();
-            // pack();
 
         }
 
         /**
-        * Returns the dimensions that the canvas should be.
-        * @return preferred dimension
-        */
+         *  Returns the dimensions that the canvas should be.
+         *  @return the preferred dimension
+         **/
         @Override public Dimension getPreferredSize() {
 
             return new Dimension(imageSize, imageSize);
-
-            // return image == null  ? new Dimension(imageSize, imageSize)
-            //                     : new Dimension(image.getWidth(), image.getHeight());
         
         }
 
         /**
-        * Updates the canvas, drawing the image (or blank canvas) in the center,
-        * with pre-defined padding around it.
-        * @param g - Graphics object
-        */
+         *  Updates the canvas, drawing the image (or blank canvas) in the center.
+         *  @param g - Graphics object
+         **/
         @Override protected void paintComponent(Graphics g) {
 
             super.paintComponent(g);
@@ -699,6 +735,6 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         }
 
-     } // Canvas Class
+     } // Canvas class
 
 }

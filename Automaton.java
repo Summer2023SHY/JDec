@@ -853,6 +853,11 @@ public class Automaton {
 
 			State state = getState(s);
 
+			if (state == null) {
+				System.out.println("ERROR: State could not be loaded..");
+				continue;
+			}
+
 			// Place asterisk before label if this is the initial state
 			if (s == initialState)
 				stateInputBuilder.append("*");

@@ -83,6 +83,8 @@ public class State {
 		if (isMarked())
 			bytesToWrite[0] |= MARKED_MASK; 
 
+		System.out.println(bytesToWrite[0]);
+
 			/* State's label */
 
 		for (int i = 0; i < label.length(); i++)
@@ -138,7 +140,10 @@ public class State {
 
 	}
 
-	/* Light-weight method used just to get the label (because loading transitions as well take a bit of time) */
+	/**
+	 *	Light-weight method used just to get the label (because loading transitions as well take a bit of time) 
+	 *	NOTE: This method assumes that the state exists in the first place 
+	 **/
 	public static String readLabelFromFile(Automaton automaton, RandomAccessFile file, long id) {
 
 		/* Setup */
@@ -204,9 +209,11 @@ public class State {
 	    boolean marked = (bytesRead[0] & MARKED_MASK) > 0;
 	    boolean exists = (bytesRead[0] & EXISTS_MASK) > 0;
 
+	    System.out.println(bytesRead[0]);
+
 	    // Return null if this state doesn't actually exist
-	    if (!exists)
-	    	return null;
+	    // if (!exists)
+	    // 	return null;
 
 	    	/* State's label */
 
