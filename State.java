@@ -10,6 +10,10 @@ public class State {
 	private boolean marked;
 	private ArrayList<Transition> transitions;
 
+	// These masks allow us to store and access multiple true/false values in the same byte
+	private static int EXISTS_MASK = 0b00000010; // Whether or not a state actually exists here
+	private static int MARKED_MASK = 0b00000001; // Whether or not the state is marked
+
 	/**
 	 *	ID (used to identify states): a binary string consisting of all 0's is reserved to represent "null", so:
 	 * 	-1 byte allows us to represent up to 255 possible states (2^8 - 1)
@@ -73,9 +77,11 @@ public class State {
 
 		byte[] bytesToWrite = new byte[(int) nBytesPerState];
 
-			/* Marked status */
+			/* Exists and marked status */
 
-		bytesToWrite[0] = (byte) (marked ? 1 : 0);
+		bytesToWrite[0] = (byte) (EXISTS_MASK);
+		if (isMarked())
+			bytesToWrite[0] |= MARKED_MASK; 
 
 			/* State's label */
 
@@ -106,6 +112,23 @@ public class State {
 
             return true;
           
+	    } catch (IOException e) {
+
+            e.printStackTrace();
+            return false;
+
+	    }
+
+	}
+
+	public static boolean stateExists(Automaton automaton, RandomAccessFile file, long id) {
+
+		try {
+
+			file.seek(id * automaton.getSizeOfState());
+			
+			return (file.readByte() & EXISTS_MASK) > 0;
+			
 	    } catch (IOException e) {
 
             e.printStackTrace();
@@ -176,9 +199,14 @@ public class State {
 
 	    }
 
-	    	/* Marked status */
+	    	/* Exists and marked status */
 
-	    boolean marked = (bytesRead[0] == 1);
+	    boolean marked = (bytesRead[0] & MARKED_MASK) > 0;
+	    boolean exists = (bytesRead[0] & EXISTS_MASK) > 0;
+
+	    // Return null if this state doesn't actually exist
+	    if (!exists)
+	    	return null;
 
 	    	/* State's label */
 

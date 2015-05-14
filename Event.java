@@ -72,7 +72,7 @@ public class Event {
 	}
 
 	/**
-	 *	Check for equality (but do not use the ID number)
+	 *	Check for equality using the label
 	 *	NOTE: This method is used to check to see if an event is unique and should be added to the event set.
 	 *	@param obj - The event to compare this one to
 	 *	@return whether or not the events are equal
@@ -81,9 +81,11 @@ public class Event {
 
 		Event event = (Event) obj;
 
-		return this.label.equals(event.label)
-			&& this.observable == event.observable
-			&& this.controllable == event.controllable;
+		return this.label.equals(event.label);
+
+		// Events with identical names and 
+			// && this.observable == event.observable
+			// && this.controllable == event.controllable;
 
 	}
 

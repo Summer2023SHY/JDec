@@ -411,7 +411,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 
                 // Add transition
                 else
-                    automaton.addTransition(initialStateID, eventID, targetStateID, true);
+                    automaton.addTransition(initialStateID, eventID, targetStateID);
             
             } else if (line.length() > 0 && verbose)
                 System.out.println("ERROR: Could not parse '" + line + "' as a transition.");

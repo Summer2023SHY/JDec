@@ -63,58 +63,58 @@ public class TestAutomata {
     	printTestOutput("Adding an event that is controllable and observable...", 3);
     	a.addEvent("firstEvent", true, true);
     	printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 1, counter);
-    	printTestCase("Ensuring that 'activeEvents' set was expanded", a.getActiveEvents().size() == 1, counter);
+    	printTestCase("Ensuring that 'activeEvents' set was not expanded", a.getActiveEvents().size() == 0, counter);
     	printTestCase("Ensuring that 'controllableEvents' set was expanded", a.getControllableEvents().size() == 1, counter);
     	printTestCase("Ensuring that 'observableEvents' set was expanded", a.getObservableEvents().size() == 1, counter);
 
     	printTestOutput("Adding an event that is observable, but not controllable...", 3);
     	a.addEvent("secondEvent", true, false);
     	printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 2, counter);
-    	printTestCase("Ensuring that 'activeEvents' set was expanded", a.getActiveEvents().size() == 2, counter);
+    	printTestCase("Ensuring that 'activeEvents' set was not expanded", a.getActiveEvents().size() == 0, counter);
     	printTestCase("Ensuring that 'controllableEvents' set was not expanded", a.getControllableEvents().size() == 1, counter);
     	printTestCase("Ensuring that 'observableEvents' set was expanded", a.getObservableEvents().size() == 2, counter);
 
     	printTestOutput("Adding an event that is controllable, but not observable...", 3);
     	a.addEvent("thirdEvent", false, true);
     	printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 3, counter);
-    	printTestCase("Ensuring that 'activeEvents' set was expanded", a.getActiveEvents().size() == 3, counter);
+    	printTestCase("Ensuring that 'activeEvents' set was not expanded", a.getActiveEvents().size() == 0, counter);
     	printTestCase("Ensuring that 'controllableEvents' set was expanded", a.getControllableEvents().size() == 2, counter);
     	printTestCase("Ensuring that 'observableEvents' set was not expanded", a.getObservableEvents().size() == 2, counter);
 
     	printTestOutput("Adding an event that neither controllable, nor observable...", 3);
     	a.addEvent("fourthEvent", false, false);
     	printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 4, counter);
-    	printTestCase("Ensuring that 'activeEvents' set was expanded", a.getActiveEvents().size() == 4, counter);
+    	printTestCase("Ensuring that 'activeEvents' set was not expanded", a.getActiveEvents().size() == 0, counter);
     	printTestCase("Ensuring that 'controllableEvents' set was not expanded", a.getControllableEvents().size() == 2, counter);
     	printTestCase("Ensuring that 'observableEvents' set was not expanded", a.getObservableEvents().size() == 2, counter);
 
-    	printTestOutput("Adding an event with a pre-existing label, but with a different observability property...", 3);
-    	a.addEvent("firstEvent", false, true);
-    	printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 5, counter);
-    	printTestCase("Ensuring that 'activeEvents' set was expanded", a.getActiveEvents().size() == 5, counter);
-    	printTestCase("Ensuring that 'controllableEvents' set was expanded", a.getControllableEvents().size() == 3, counter);
-    	printTestCase("Ensuring that 'observableEvents' set was not expanded", a.getObservableEvents().size() == 2, counter);
-
-    	printTestOutput("Adding an event with a pre-existing label, but with a different controllability property...", 3);
-    	a.addEvent("secondEvent", true, true);
-    	printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 6, counter);
-    	printTestCase("Ensuring that 'activeEvents' set was expanded", a.getActiveEvents().size() == 6, counter);
-    	printTestCase("Ensuring that 'controllableEvents' set was expanded", a.getControllableEvents().size() == 4, counter);
-    	printTestCase("Ensuring that 'observableEvents' set was expanded", a.getObservableEvents().size() == 3, counter);
-
-    	printTestOutput("Adding an event with a pre-existing label, but with different controllability and observability properties...", 3);
-    	a.addEvent("thirdEvent", true, false);
-    	printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 7, counter);
-    	printTestCase("Ensuring that 'activeEvents' set was expanded", a.getActiveEvents().size() == 7, counter);
-    	printTestCase("Ensuring that 'controllableEvents' set was not expanded", a.getControllableEvents().size() == 4, counter);
-    	printTestCase("Ensuring that 'observableEvents' set was expanded", a.getObservableEvents().size() == 4, counter);
-
     	printTestOutput("Adding a pre-existing event...", 3);
     	a.addEvent("fourthEvent", false, false);
-    	printTestCase("Ensuring that 'events' set was not expanded", a.getEvents().size() == 7, counter);
-    	printTestCase("Ensuring that 'activeEvents' set was not expanded", a.getActiveEvents().size() == 7, counter);
-    	printTestCase("Ensuring that 'controllableEvents' set was not expanded", a.getControllableEvents().size() == 4, counter);
-    	printTestCase("Ensuring that 'observableEvents' set was not expanded", a.getObservableEvents().size() == 4, counter);
+    	printTestCase("Ensuring that 'events' set was not expanded", a.getEvents().size() == 4, counter);
+    	printTestCase("Ensuring that 'activeEvents' set was not expanded", a.getActiveEvents().size() == 0, counter);
+    	printTestCase("Ensuring that 'controllableEvents' set was not expanded", a.getControllableEvents().size() == 2, counter);
+    	printTestCase("Ensuring that 'observableEvents' set was not expanded", a.getObservableEvents().size() == 2, counter);
+
+    	// printTestOutput("Adding an event with a pre-existing label, but with a different observability property...", 3);
+    	// a.addEvent("firstEvent", false, true);
+    	// printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 5, counter);
+    	// printTestCase("Ensuring that 'activeEvents' set was not expanded", a.getActiveEvents().size() == 0, counter);
+    	// printTestCase("Ensuring that 'controllableEvents' set was expanded", a.getControllableEvents().size() == 3, counter);
+    	// printTestCase("Ensuring that 'observableEvents' set was not expanded", a.getObservableEvents().size() == 2, counter);
+
+    	// printTestOutput("Adding an event with a pre-existing label, but with a different controllability property...", 3);
+    	// a.addEvent("secondEvent", true, true);
+    	// printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 6, counter);
+    	// printTestCase("Ensuring that 'activeEvents' set was not expanded", a.getActiveEvents().size() == 0, counter);
+    	// printTestCase("Ensuring that 'controllableEvents' set was expanded", a.getControllableEvents().size() == 4, counter);
+    	// printTestCase("Ensuring that 'observableEvents' set was expanded", a.getObservableEvents().size() == 3, counter);
+
+    	// printTestOutput("Adding an event with a pre-existing label, but with different controllability and observability properties...", 3);
+    	// a.addEvent("thirdEvent", true, false);
+    	// printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 7, counter);
+    	// printTestCase("Ensuring that 'activeEvents' set was not expanded", a.getActiveEvents().size() == 0, counter);
+    	// printTestCase("Ensuring that 'controllableEvents' set was not expanded", a.getControllableEvents().size() == 4, counter);
+    	// printTestCase("Ensuring that 'observableEvents' set was expanded", a.getObservableEvents().size() == 4, counter);
 
     		/* Event ID Assignment Tests */
 

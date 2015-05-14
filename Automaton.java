@@ -138,10 +138,91 @@ public class Automaton {
 
     	/** AUTOMATA OPERATIONS **/
 
+    // NOTE: We will need to consider how this will work for large automata (how do we know which pairs of states have already been added?)
+    // IDEA: # ID IN INTERSECTION = (#ID IN 1) X (#ID IN 2), so find a way to map them together (then we can check if it has already been added)
+    // Afterwards we can renumber the states properly
     static Automaton intersection(Automaton first, Automaton second) {
 
+    		/* Setup */
 
-    	return new Automaton(); // temporary
+    	Automaton automaton = new Automaton(new File("intersection.hdr"), true);
+
+    	// These two stacks should always have the same size
+    	Stack<Long> stack1 = new Stack<Long>(); 
+    	Stack<Long> stack2 = new Stack<Long>();
+
+    	stack1.push(first.getInitialStateID());
+    	stack1.push(second.getInitialStateID());
+
+    		/* Build product */
+
+    	// Create event set (intersection of both event sets)
+    	for (Event e : first.getEvents())
+    		if (second.getEvents().contains(e))
+    			automaton.addEvent(e.getLabel(), e.isObservable(), e.isControllable());
+
+    	System.out.println("number of events: " + automaton.getEvents().size());
+
+    	// Add states and transition
+    	while (stack1.size() > 0) {
+
+    		// Get next IDs
+    		long id1 = stack1.pop();
+    		long id2 = stack2.pop();
+
+    		// Error checking
+    		if (id1 == 0 || id2 == 0) {
+    			System.out.println("ERROR: Bad state ID.");
+    			continue;
+    		}
+
+    		// Create combined ID
+    		long newStateID = calculateCombinedID(id1, first, id2, second);
+
+    		// This state has already been created, so we don't need to create it again
+    		if (automaton.stateExists(newStateID))
+    			continue;
+
+    		// Get states and transitions
+    		State state1 = first.getState(id1);
+    		State state2 = second.getState(id2);
+    		ArrayList<Transition> transitions1 = state1.getTransitions();
+    		ArrayList<Transition> transitions2 = state2.getTransitions();
+
+    		// Add new state
+    		automaton.addStateAt(
+    				id1 + "," + id2,
+    				state1.isMarked() && state2.isMarked(),
+    				new ArrayList<Transition>(),
+    				id1 == first.getInitialStateID() && id2 == second.getInitialStateID(),
+    				newStateID
+    			);
+
+    		System.out.println("added state");
+
+    		// Find every pair of transitions that have the same events
+    		for (Transition t1 : transitions1)
+    			for (Transition t2 : transitions2)
+    				if (t1.getEvent().equals(t2.getEvent())) {
+    					stack1.add(t1.getTargetStateID());
+    					stack2.add(t2.getTargetStateID());
+    					long targetID = calculateCombinedID(id1, first, id2, second);
+    					automaton.addTransition(newStateID, t1.getEvent().getID(), targetID);
+    					System.out.println("added transition");
+    				}
+
+    	}
+
+    		/* Re-number states (by removing empty ones) */
+
+    	return automaton;
+    }
+
+    // Unique ID created in a way that no other combination of valid id1 and id2 from the same pair of automatons will map to this ID
+    private static long calculateCombinedID(long id1, Automaton first, long id2, Automaton second) {
+
+    	return ((id2 - 1) * first.getStateCapacity() + id1);
+
     }
 
     static Automaton union(Automaton first, Automaton second) {
@@ -270,7 +351,7 @@ public class Automaton {
 		/** MUTATOR METHODS **/  
 
 	// CURRENTLY IN-EFFICENT!!!!!!!!!! (rewrites the entire state to file instead of only writing the new transition)
-	public boolean addTransition(long initialStateID, int eventID, long targetStateID, boolean updateFile) {
+	public boolean addTransition(long initialStateID, int eventID, long targetStateID) {
 
 		// Create initial state from ID
 		State initialState = getState(initialStateID);
@@ -298,8 +379,10 @@ public class Automaton {
 		}
 
 		// Add transition and update the file
-		initialState.addTransition(new Transition(getEvent(eventID), targetStateID));
+		Event event = getEvent(eventID);
+		initialState.addTransition(new Transition(event, targetStateID));
 		initialState.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID, transitionCapacity);
+		activeEvents.add(event);
 
 		return true;
 
@@ -395,6 +478,100 @@ public class Automaton {
 	}
 
 	/**
+	 *	Add the specified state to the automaton
+	 *	@param 	label - The "name" of the new state
+	 *	@param 	marked - Whether or not the states is marked
+	 *	@param 	transitions - The list of transitions
+	 *	@param 	isInitialState - Whether or not this is the initial state
+	 *	@param 	id - The index where the state should be added at
+	 *	@return whether or not the addition was successful (returns false if a state already existed there)
+	 **/
+	public boolean addStateAt(String label, boolean marked, ArrayList<Transition> transitions, boolean isInitialState, long id) {
+
+		// Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs)
+		if (nStates == MAX_STATE_CAPACITY)
+			return false;
+
+		// Increase the maximum allowed characters per state label
+		if (label.length() > labelLength) {
+
+			// If we cannot increase the capacity, indicate a failure
+			if (label.length() > MAX_LABEL_LENGTH)
+				return false;
+
+			recreateBodyFile(
+					stateCapacity,
+					transitionCapacity,
+					label.length(),
+					nBytesPerStateID,
+					calculateNumberOfBytesPerState(nBytesPerStateID, transitionCapacity, label.length())
+				);
+
+		}
+
+		// Increase the maximum allowed transitions per state
+		if (transitions.size() > transitionCapacity) {
+
+			// If we cannot increase the capacity, indicate a failure (NOTE: This will likely never happen)
+			if (transitions.size() > MAX_TRANSITION_CAPACITY)
+				return false;
+
+			recreateBodyFile(
+					stateCapacity,
+					transitions.size(),
+					labelLength,
+					nBytesPerStateID,
+					calculateNumberOfBytesPerState(nBytesPerStateID, transitions.size(), labelLength)
+				);
+
+		}
+
+		// Check to see if we need to re-write the entire binary file
+		if (id > stateCapacity) {
+
+			// Determine how much stateCapacity and nBytesPerStateID need to be increased by
+			long newStateCapacity = stateCapacity;
+			int newNBytesPerStateID = nBytesPerStateID;
+			while (newStateCapacity < id) {
+				newStateCapacity = ((newStateCapacity + 1) << 8) - 1;
+				newNBytesPerStateID++;
+			}
+
+			// Re-create binary file
+			recreateBodyFile(
+					newStateCapacity,
+					transitionCapacity,
+					labelLength,
+					newNBytesPerStateID,
+					calculateNumberOfBytesPerState(newNBytesPerStateID, transitionCapacity, labelLength)
+				);
+
+		}
+
+		// Write new state to file
+		State state = new State(label, id, marked, transitions);
+		if (!state.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID, transitionCapacity))
+			return false;
+
+		nStates++;
+
+		// Change initial state
+		if (isInitialState)
+			initialState = id;
+
+		// Update header file
+		writeHeaderFile();
+
+		return true;
+	}
+
+	public boolean stateExists(long id) {
+
+		return State.stateExists(this, bodyRAFile, id);
+
+	}
+
+	/**
 	 * Calculate the amount of space required to store a state
 	 **/
 	private long calculateNumberOfBytesPerState(long newNBytesPerStateID, int newTransitionCapacity, int newLabelLength) {
@@ -452,7 +629,6 @@ public class Automaton {
 		// Create and add the event
 		Event event = new Event(label, events.size() + 1, observable, controllable);
 		events.add(event);
-		activeEvents.add(event);
 
 		// Add event to corresponding lists
 		if (observable)
@@ -533,9 +709,11 @@ public class Automaton {
 			if (headerRAFile.length() == 0)
 				return;
 
+			// Go to the proper position and read in the bytes
 			headerRAFile.seek(0);
 			headerRAFile.read(bytesRead);
 
+			// Calculate the values stored in these bytes
 			nStates = ByteManipulator.readBytesAsLong(bytesRead, 0, 8);
 			stateCapacity = ByteManipulator.readBytesAsLong(bytesRead, 8, 8);
 			transitionCapacity = (int) ByteManipulator.readBytesAsLong(bytesRead, 12, 4);
@@ -575,7 +753,7 @@ public class Automaton {
 
 	private void recreateBodyFile(long newStateCapacity, int newTransitionCapacity, int newLabelLength, int newNBytesPerStateID, long newNBytesPerState) {
 
-		System.out.println("Re-creating..!!");
+		System.out.println("Re-creating body file.");
 
 			/* Setup files */
 
@@ -815,6 +993,10 @@ public class Automaton {
 
     public long getSizeOfState() {
     	return nBytesPerState;
+    }
+
+    public long getInitialStateID() {
+    	return initialState;
     }
 
 }
