@@ -105,12 +105,15 @@ public class Automaton {
 		this.headerFile = headerFile;
 		this.bodyFile = bodyFile;
 
+		this.headerFileName = headerFile.getName();
+		this.bodyFileName = bodyFile.getName();
+
 		// Will be overridden if we are loading information from file
 		this.stateCapacity = stateCapacity;
 		this.transitionCapacity = transitionCapacity;
 		this.labelLength = labelLength;
 
-		// The automaton needs at least 1 transition per state (specifically, since we store the marked status bit in it)
+		// The automaton should have room for at least 1 transition per state (otherwise our automaton will be pretty boring)
 		if (this.transitionCapacity < 1)
 			this.transitionCapacity = 1;
 
@@ -138,9 +141,6 @@ public class Automaton {
 
     	/** AUTOMATA OPERATIONS **/
 
-    // NOTE: We will need to consider how this will work for large automata (how do we know which pairs of states have already been added?)
-    // IDEA: # ID IN INTERSECTION = (#ID IN 1) X (#ID IN 2), so find a way to map them together (then we can check if it has already been added)
-    // Afterwards we can renumber the states properly
     static Automaton intersection(Automaton first, Automaton second) {
 
     		/* Setup */
@@ -152,7 +152,7 @@ public class Automaton {
     	Stack<Long> stack2 = new Stack<Long>();
 
     	stack1.push(first.getInitialStateID());
-    	stack1.push(second.getInitialStateID());
+    	stack2.push(second.getInitialStateID());
 
     		/* Build product */
 
@@ -340,8 +340,10 @@ public class Automaton {
 	private void deleteFiles() {
 
 		try {
+
     		headerFile.delete();
     		bodyFile.delete();
+
     	} catch (SecurityException e) {
     		e.printStackTrace();
     	}
@@ -351,20 +353,21 @@ public class Automaton {
 		/** MUTATOR METHODS **/  
 
 	// CURRENTLY IN-EFFICENT!!!!!!!!!! (rewrites the entire state to file instead of only writing the new transition)
-	public boolean addTransition(long initialStateID, int eventID, long targetStateID) {
+	public boolean addTransition(long startingStateID, int eventID, long targetStateID) {
 
-		// Create initial state from ID
-		State initialState = getState(initialStateID);
+		// Create starting state from ID
+		State startingState = getState(startingStateID);
 
 		// Increase the maximum allowed transitions per state
-		if (initialState.getNumberOfTransitions() == transitionCapacity) {
+		if (startingState.getNumberOfTransitions() == transitionCapacity) {
 
 			// If we cannot increase the capacity, return false (NOTE: This will likely never happen)
-			if (transitionCapacity == MAX_TRANSITION_CAPACITY)
+			if (transitionCapacity == MAX_TRANSITION_CAPACITY) {
+				System.out.println("ERROR: Could not add transition to file (reached maximum transition capacity).");
 				return false;
+			}
 
 			// Update body file
-
 			recreateBodyFile(
 					stateCapacity,
 					transitionCapacity + 1,
@@ -380,8 +383,11 @@ public class Automaton {
 
 		// Add transition and update the file
 		Event event = getEvent(eventID);
-		initialState.addTransition(new Transition(event, targetStateID));
-		initialState.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID, transitionCapacity);
+		startingState.addTransition(new Transition(event, targetStateID));
+		if (!startingState.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID, transitionCapacity)) {
+			System.out.println("ERROR: Could not add transition to file.");
+			return false;
+		}
 		activeEvents.add(event);
 
 		return true;
@@ -410,15 +416,19 @@ public class Automaton {
 	public long addState(String label, boolean marked, ArrayList<Transition> transitions, boolean isInitialState) {
 
 		// Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs)
-		if (nStates == MAX_STATE_CAPACITY)
+		if (nStates == MAX_STATE_CAPACITY) {
+			System.out.println("ERROR: Could not write state to file.");
 			return 0;
+		}
 
 		// Increase the maximum allowed characters per state label
 		if (label.length() > labelLength) {
 
 			// If we cannot increase the capacity, indicate a failure
-			if (label.length() > MAX_LABEL_LENGTH)
+			if (label.length() > MAX_LABEL_LENGTH) {
+				System.out.println("ERROR: Could not write state to file.");
 				return 0;
+			}
 
 			recreateBodyFile(
 					stateCapacity,
@@ -434,8 +444,10 @@ public class Automaton {
 		if (transitions.size() > transitionCapacity) {
 
 			// If we cannot increase the capacity, indicate a failure (NOTE: This will likely never happen)
-			if (transitions.size() > MAX_TRANSITION_CAPACITY)
+			if (transitions.size() > MAX_TRANSITION_CAPACITY) {
+				System.out.println("ERROR: Could not write state to file.");
 				return 0;
+			}
 
 			recreateBodyFile(
 					stateCapacity,
@@ -465,7 +477,10 @@ public class Automaton {
 
 		// Write new state to file
 		State state = new State(label, id, marked, transitions);
-		state.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID, transitionCapacity);
+		if (!state.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID, transitionCapacity)) {
+			System.out.println("ERROR: Could not write state to file.");
+			return 0;
+		}
 
 		// Change initial state
 		if (isInitialState)
@@ -489,15 +504,19 @@ public class Automaton {
 	public boolean addStateAt(String label, boolean marked, ArrayList<Transition> transitions, boolean isInitialState, long id) {
 
 		// Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs)
-		if (nStates == MAX_STATE_CAPACITY)
+		if (nStates == MAX_STATE_CAPACITY) {
+			System.out.println("ERROR: Could not write state to file.");
 			return false;
+		}
 
 		// Increase the maximum allowed characters per state label
 		if (label.length() > labelLength) {
 
 			// If we cannot increase the capacity, indicate a failure
-			if (label.length() > MAX_LABEL_LENGTH)
+			if (label.length() > MAX_LABEL_LENGTH) {
+				System.out.println("ERROR: Could not write state to file.");
 				return false;
+			}
 
 			recreateBodyFile(
 					stateCapacity,
@@ -513,8 +532,10 @@ public class Automaton {
 		if (transitions.size() > transitionCapacity) {
 
 			// If we cannot increase the capacity, indicate a failure (NOTE: This will likely never happen)
-			if (transitions.size() > MAX_TRANSITION_CAPACITY)
+			if (transitions.size() > MAX_TRANSITION_CAPACITY) {
+				System.out.println("ERROR: Could not write state to file.");
 				return false;
+			}
 
 			recreateBodyFile(
 					stateCapacity,
@@ -550,8 +571,10 @@ public class Automaton {
 
 		// Write new state to file
 		State state = new State(label, id, marked, transitions);
-		if (!state.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID, transitionCapacity))
+		if (!state.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID, transitionCapacity)) {
+			System.out.println("ERROR: Could not write state to file.");
 			return false;
+		}
 
 		nStates++;
 
@@ -773,7 +796,10 @@ public class Automaton {
 
 		for (int s = 1; s <= nStates; s++) {
 			State state = getState(s);
-			state.writeToFile(newBodyRAFile, newNBytesPerState, newLabelLength, newNBytesPerStateID, newTransitionCapacity);
+			if (!state.writeToFile(newBodyRAFile, newNBytesPerState, newLabelLength, newNBytesPerStateID, newTransitionCapacity)) {
+				System.out.println("ERROR: Could not write copy over state to file. Aborting re-creation of .bdy file.");
+				return;
+			}
 		}
 
 			/* Remove old file, rename new one */

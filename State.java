@@ -81,9 +81,7 @@ public class State {
 
 		bytesToWrite[0] = (byte) (EXISTS_MASK);
 		if (isMarked())
-			bytesToWrite[0] |= MARKED_MASK; 
-
-		System.out.println(bytesToWrite[0]);
+			bytesToWrite[0] |= MARKED_MASK;
 
 			/* State's label */
 
@@ -209,11 +207,9 @@ public class State {
 	    boolean marked = (bytesRead[0] & MARKED_MASK) > 0;
 	    boolean exists = (bytesRead[0] & EXISTS_MASK) > 0;
 
-	    System.out.println(bytesRead[0]);
-
 	    // Return null if this state doesn't actually exist
-	    // if (!exists)
-	    // 	return null;
+	    if (!exists)
+	    	return null;
 
 	    	/* State's label */
 

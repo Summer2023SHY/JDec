@@ -17,4 +17,11 @@ public class Transition {
 		return targetStateID;
 	}
 
+	@Override public String toString() {
+		return "("
+			+ event + ","
+			+ targetStateID
+			+ ")";
+	}
+
 }

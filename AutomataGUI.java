@@ -285,6 +285,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 true,
                 automataFile.get(index)
             );
+        automata.set(index, automaton);
 
         // Set the image blank if there were no states entered
         if (automaton == null)
