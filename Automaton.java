@@ -184,14 +184,16 @@ public class Automaton {
     			continue;
 
     		// Get states and transitions
+    		System.out.println("about to get state1");
     		State state1 = first.getState(id1);
+    		System.out.println("about to get state2");
     		State state2 = second.getState(id2);
     		ArrayList<Transition> transitions1 = state1.getTransitions();
     		ArrayList<Transition> transitions2 = state2.getTransitions();
 
     		// Add new state
     		automaton.addStateAt(
-    				id1 + "," + id2,
+    				state1.getLabel() + "-" + state2.getLabel(),
     				state1.isMarked() && state2.isMarked(),
     				new ArrayList<Transition>(),
     				id1 == first.getInitialStateID() && id2 == second.getInitialStateID(),

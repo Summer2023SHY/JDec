@@ -128,6 +128,10 @@ public class State {
 			file.seek(id * automaton.getSizeOfState());
 			
 			return (file.readByte() & EXISTS_MASK) > 0;
+
+		} catch (EOFException e) {
+
+			return false;
 			
 	    } catch (IOException e) {
 
