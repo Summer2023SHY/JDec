@@ -131,6 +131,7 @@ public class State {
 
 		} catch (EOFException e) {
 
+			// State does not exist yet because the file does not go this far
 			return false;
 			
 	    } catch (IOException e) {
