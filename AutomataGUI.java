@@ -29,6 +29,10 @@ public class AutomataGUI extends JFrame implements ActionListener, KeyListener {
 
     public AutomataGUI() {
 
+            /* Clear temporary files */
+
+        Automaton.clearTemporaryFiles();
+
             /* Create tabbed pane and add a tab to it */
 
         tabbedPane = new JTabbedPane();
@@ -477,7 +481,7 @@ public class AutomataGUI extends JFrame implements ActionListener, KeyListener {
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
-        menuItem = new JMenuItem("New");
+        menuItem = new JMenuItem("New Tab");
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
@@ -542,7 +546,7 @@ public class AutomataGUI extends JFrame implements ActionListener, KeyListener {
 
                 break;
 
-            case "New":
+            case "New Tab":
 
                 createTab();
                 break;
