@@ -1,3 +1,5 @@
+import java.io.*;
+
 public class TestAutomata {
 
 	private static final int MAX_VERBOSE = 3;
@@ -36,6 +38,9 @@ public class TestAutomata {
 
     	if (!runGUIInputTestRoutine())
     		passedAllTests = false;
+
+        if (!runIntersectionTestRoutine())
+            passedAllTests = false;
 
     		/* Print summary of all tests */
 
@@ -166,7 +171,7 @@ public class TestAutomata {
 
     	TestCounter counter = new TestCounter();
 
-    		/* Basic Event Creation Tests */
+    		/* Basic State Creation Tests */
 
     	printTestOutput("BASIC STATE CREATION: ", 2);
 
@@ -191,9 +196,9 @@ public class TestAutomata {
     	printTestCase("Ensuring that the added state has the proper label", a.getState(2).getLabel().equals("secondState"), counter);
     	printTestCase("Ensuring that the added state is unmarked", !a.getState(2).isMarked(), counter);
     	
-    		/* Event ID Assignment Tests */
+    		/* State ID Assignment Tests */
 
-    	// printTestOutput("EVENT ID ASSIGNMENTS: ", 2);
+    	// printTestOutput("STATE ID ASSIGNMENTS: ", 2);
 
     	// printTestOutput("Instantiating empty automaton...", 3);
     	// a = new Automaton();
@@ -307,47 +312,90 @@ public class TestAutomata {
 
     private static boolean runGUIInputTestRoutine() {
 
-    	String testRoutineName = "GUI INPUT";
+        String testRoutineName = "GUI INPUT";
 
-    	printTestOutput("RUNNING " + testRoutineName + " TEST ROUTINE...", 1);
+        printTestOutput("RUNNING " + testRoutineName + " TEST ROUTINE...", 1);
 
-    	TestCounter counter = new TestCounter();
+        TestCounter counter = new TestCounter();
 
-    		/* Basic GUI Input Tests */
+            /* Basic GUI Input Tests */
 
-    	printTestOutput("BASIC GUI INPUT: ", 2);
+        printTestOutput("BASIC GUI INPUT: ", 2);
 
-    	printTestOutput("Instantiating automaton from simple GUI input code...", 3);
-    	Automaton a = AutomataGUI.generateAutomaton(
-    			"a,T,T\nb,T,F\nc,F,T\nd,F,F", // Events
-    			"e,T\nf,F", // States	
-    			"e,a,f\nf,b,e", // Transitions
-    			false, // We do not want it to be verbose
-    			null // Use temporary files to store automaton
-    		);
-    	a.generateInputForGUI();
-    	printTestCase("Ensuring the event input was saved and loaded correctly", a.getEventInput().equals("a,T,T\nb,T,F\nc,F,T\nd,F,F"), counter);
-    	printTestCase("Ensuring the state input was saved and loaded correctly", a.getStateInput().equals("e,T\nf,F"), counter);
-    	printTestCase("Ensuring the transition input was saved and loaded correctly", a.getTransitionInput().equals("e,a,f\nf,b,e"), counter);
+        printTestOutput("Instantiating automaton from simple GUI input code...", 3);
+        Automaton a = AutomataGUI.generateAutomaton(
+                "a,T,T\nb,T,F\nc,F,T\nd,F,F", // Events
+                "e,T\nf,F", // States   
+                "e,a,f\nf,b,e", // Transitions
+                false, // We do not want it to be verbose
+                null // Use temporary files to store automaton
+            );
+        a.generateInputForGUI();
+        printTestCase("Ensuring the event input was saved and loaded correctly", a.getEventInput().equals("a,T,T\nb,T,F\nc,F,T\nd,F,F"), counter);
+        printTestCase("Ensuring the state input was saved and loaded correctly", a.getStateInput().equals("e,T\nf,F"), counter);
+        printTestCase("Ensuring the transition input was saved and loaded correctly", a.getTransitionInput().equals("e,a,f\nf,b,e"), counter);
 
-    	printTestOutput("Instantiating automaton from GUI input code with duplicate labels, omitted optional parameters, and an initial state...", 3);
-    	a = AutomataGUI.generateAutomaton(
-    			"a\nb,F\na,F,F\nb", // Events
-    			"*c\nc,F", // States	
-    			"", // Transitions
-    			false, // We do not want it to be verbose
-    			null // Use temporary files to store automaton
-    		);
-    	a.generateInputForGUI();
-    	printTestCase("Ensuring the event input was saved and loaded correctly", a.getEventInput().equals("a,T,T\nb,F,T"), counter);
-    	printTestCase("Ensuring the state input was saved and loaded correctly", a.getStateInput().equals("*c,T"), counter);
-    	printTestCase("Ensuring the transition input was saved and loaded correctly", a.getTransitionInput().equals(""), counter);
+        printTestOutput("Instantiating automaton from GUI input code with duplicate labels, omitted optional parameters, and an initial state...", 3);
+        a = AutomataGUI.generateAutomaton(
+                "a\nb,F\na,F,F\nb", // Events
+                "*c\nc,F", // States    
+                "", // Transitions
+                false, // We do not want it to be verbose
+                null // Use temporary files to store automaton
+            );
+        a.generateInputForGUI();
+        printTestCase("Ensuring the event input was saved and loaded correctly", a.getEventInput().equals("a,T,T\nb,F,T"), counter);
+        printTestCase("Ensuring the state input was saved and loaded correctly", a.getStateInput().equals("*c,T"), counter);
+        printTestCase("Ensuring the transition input was saved and loaded correctly", a.getTransitionInput().equals(""), counter);
 
-    		/* Print summary of this test routine */
+            /* Print summary of this test routine */
 
-    	printTestRoutineSummary(testRoutineName, counter);
+        printTestRoutineSummary(testRoutineName, counter);
 
-    	return counter.getPassedTests() == counter.getTotalTests();
+        return counter.getPassedTests() == counter.getTotalTests();
+
+    }
+
+    private static boolean runIntersectionTestRoutine() {
+
+        String testRoutineName = "INTERSECTION";
+
+        printTestOutput("RUNNING " + testRoutineName + " TEST ROUTINE...", 1);
+
+        TestCounter counter = new TestCounter();
+
+            /* Basic GUI Input Tests */
+
+        printTestOutput("BASIC AUTOMATA INTERSECTION: ", 2);
+
+        printTestOutput("Instantiating automaton from Figure 2.1...", 3);
+        Automaton fig2_1 = AutomataGUI.generateAutomaton(
+                "a,T,T\nb,T,T\ng,T,T", // Events
+                "*x,T\ny,F\nz,T", // States 
+                "x,a,x\nx,g,z\ny,b,y\ny,a,x\nz,b,z\nz,a,y\nz,g,y", // Transitions
+                false, // We do not want it to be verbose
+                new File("fig2_1.hdr")
+            );
+        printTestOutput("Instantiating automaton from Figure 2.2...", 3);
+        Automaton fig2_2 = AutomataGUI.generateAutomaton(
+                "a,T,T\nb,T,T", // Events
+                "*zero,F\none,T", // States 
+                "zero,b,zero\nzero,a,one\none,a,one\none,b,zero", // Transitions
+                false, // We do not want it to be verbose
+                new File("fig2_2.hdr")
+            );
+        Automaton product = Automaton.intersection(fig2_1, fig2_2);
+
+        product.generateInputForGUI();
+        printTestCase("Ensuring the events are correct", product.getEventInput().equals("a,T,T\nb,T,T"), counter);
+        printTestCase("Ensuring the states are correct", product.getStateInput().equals("*x_zero,F\nx_one,T"), counter);
+        printTestCase("Ensuring the transition are correct", product.getTransitionInput().equals("x_zero,a,x_one\nx_one,a,x_one"), counter);
+
+            /* Print summary of this test routine */
+
+        printTestRoutineSummary(testRoutineName, counter);
+
+        return counter.getPassedTests() == counter.getTotalTests();
 
     }
 

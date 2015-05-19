@@ -282,7 +282,7 @@ public class Automaton {
 
     		// Add new state
     		automaton.addStateAt(
-    				"_" + state1.getLabel() + "_" + state2.getLabel(),
+    				state1.getLabel() + "_" + state2.getLabel(),
     				state1.isMarked() && state2.isMarked(),
     				new ArrayList<Transition>(),
     				id1 == first.getInitialStateID() && id2 == second.getInitialStateID(),
@@ -756,7 +756,7 @@ public class Automaton {
 
 	private void recreateBodyFile(long newStateCapacity, int newTransitionCapacity, int newLabelLength, int newNBytesPerStateID, long newNBytesPerState) {
 
-		System.out.println("Re-creating body file.");
+		System.out.println("DEBUG: Re-creating body file.");
 
 			/* Setup files */
 
