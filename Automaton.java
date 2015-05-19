@@ -163,6 +163,73 @@ public class Automaton {
 
     	/** AUTOMATA OPERATIONS **/
 
+    public Automaton accessible() {
+
+    		/* Setup */
+
+    	Automaton automaton = new Automaton(new File("accessible.hdr"), true);
+    	Stack<Long> stack = new Stack<Long>(); 
+
+    	// Add the initial state to the stack
+    	stack.push(getInitialStateID());
+
+    		/* Build automaton from the accessible part of this automaton */
+
+    	// Add events
+    	for (Event e : events)
+    		automaton.addEvent(e.getLabel(), e.isObservable(), e.isControllable());
+
+    	// Add states and transition
+    	while (stack.size() > 0) {
+
+    		// Get next ID
+    		long id = stack.pop();
+
+    		// Error checking
+    		if (id == 0) {
+    			System.out.println("ERROR: Bad state ID.");
+    			continue;
+    		}
+
+    		// This state has already been created in the new automaton, so it does not need to be created again
+    		if (automaton.stateExists(id))
+    			continue;
+
+    		// Get state and transitions
+    		State state = getState(id);
+    		ArrayList<Transition> transitions = state.getTransitions();
+
+    		// Add new state
+    		automaton.addStateAt(
+    				state.getLabel(),
+    				state.isMarked(),
+    				new ArrayList<Transition>(),
+    				id == getInitialStateID(),
+    				id
+    			);
+
+    		// Traverse each transition
+    		for (Transition t : transitions) {
+
+				// Add the target state to the stack
+				stack.add(t.getTargetStateID());
+
+				// Add transition to the new automaton
+				automaton.addTransition(id, t.getEvent().getID(), t.getTargetStateID());
+
+			}
+
+    	}
+
+    		/* Re-number states (by removing empty ones) */
+
+    	automaton.renumberStates();
+
+    		/* Return accessible automaton */
+
+    	return automaton;
+    }
+
     public static Automaton intersection(Automaton first, Automaton second) {
 
     		/* Setup */
@@ -370,7 +437,7 @@ public class Automaton {
     		// Get state from file
     		State state = getState(s);
 
-    		// Draw states
+    		// Draw state
     		if (state.isMarked())
     			str.append(state.getLabel() + " [peripheries=2];");
     		else
@@ -700,8 +767,28 @@ public class Automaton {
 
 			/* Copy over body file */
 
-		for (long s = 1; s <= nStates; s++) {
+		long counter = 0; // Keeps track of blank states
+		byte[] buffer = new byte[(int) nBytesPerState];
+
+		for (long s = 1; s <= nStates + counter; s++) {
 			State state = getState(s);
+
+			// Check for non-existent state
+			if (state == null) {
+
+				// Pad with zeroes, which will indicate a non-existent state
+				try {
+					newBodyRAFile.write(buffer);
+				} catch (IOException e) {
+	    			e.printStackTrace();
+		    	}
+
+				counter++;
+				
+				continue;	
+			}
+
+			// Try writing to file
 			if (!state.writeToFile(newBodyRAFile, newNBytesPerState, newLabelLength, newNBytesPerStateID, newTransitionCapacity)) {
 				System.out.println("ERROR: Could not write copy over state to file. Aborting re-creation of .bdy file.");
 				return;

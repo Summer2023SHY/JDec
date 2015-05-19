@@ -6,7 +6,7 @@ import java.awt.image.*;
 import java.io.*;
 import javax.swing.filechooser.*;
 
-public class AutomataGUI extends JFrame implements ActionListener, KeyListener {
+public class AutomataGUI extends JFrame implements ActionListener {
 
 		/* Private instance variables */
 
@@ -510,6 +510,12 @@ public class AutomataGUI extends JFrame implements ActionListener, KeyListener {
         menu = new JMenu("Operation");
         menuBar.add(menu);
 
+        menuItem = new JMenuItem("Accessible");
+        menuItem.addActionListener(this);
+        menu.add(menuItem);
+
+        menu.addSeparator();
+
         menuItem = new JMenuItem("Intersection");
         menuItem.addActionListener(this);
         menu.add(menuItem);
@@ -532,7 +538,7 @@ public class AutomataGUI extends JFrame implements ActionListener, KeyListener {
 
         switch (event.getActionCommand()) {
 
-                /* File */
+                /* File Stuff */
 
             case "Clear":
 
@@ -570,12 +576,7 @@ public class AutomataGUI extends JFrame implements ActionListener, KeyListener {
 
             case "Refresh":
 
-                // Load Automaton from file, filling the input fields with its data
-                automata.set(index, new Automaton(automataFile.get(index), false));
-                automata.get(index).generateInputForGUI();
-                eventInput.get(index).setText(automata.get(index).getEventInput());
-                stateInput.get(index).setText(automata.get(index).getStateInput());
-                transitionInput.get(index).setText(automata.get(index).getTransitionInput());
+                refresh(index);
 
                 break;
 
@@ -584,13 +585,30 @@ public class AutomataGUI extends JFrame implements ActionListener, KeyListener {
                 closeCurrentTab();
                 break;
 
-                /* Operation */
+                /* Automata Operations */
+
+            case "Accessible":
+
+                // Create new tab
+                createTab();
+                int newIndex = tabbedPane.getTabCount() - 1;
+
+                // Set tab values
+                automataFile.set(newIndex, new File("accessible.hdr"));
+                tabbedPane.setTitleAt(newIndex, automataFile.get(newIndex).getName());
+                automata.set(newIndex, automata.get(index).accessible());
+                automata.get(newIndex).generateInputForGUI();
+                eventInput.get(newIndex).setText(automata.get(newIndex).getEventInput());
+                stateInput.get(newIndex).setText(automata.get(newIndex).getStateInput());
+                transitionInput.get(newIndex).setText(automata.get(newIndex).getTransitionInput());
+
+                break;
 
             case "Intersection":
 
                 // Create new tab
                 createTab();
-                int newIndex = tabbedPane.getTabCount() - 1;
+                newIndex = tabbedPane.getTabCount() - 1;
 
                 // Set tab values
                 automataFile.set(newIndex, new File("intersection.hdr"));
@@ -607,16 +625,16 @@ public class AutomataGUI extends JFrame implements ActionListener, KeyListener {
 
     }
 
-    @Override public void keyPressed(KeyEvent e) {
+    // Load Automaton from file, filling the input fields with its data
+    private void refresh(int index) {
 
-        if (e.getKeyCode() == KeyEvent.VK_TAB) {
-            System.out.println("change focus");
-        }
+        automata.set(index, new Automaton(automataFile.get(index), false));
+        automata.get(index).generateInputForGUI();
+        eventInput.get(index).setText(automata.get(index).getEventInput());
+        stateInput.get(index).setText(automata.get(index).getStateInput());
+        transitionInput.get(index).setText(automata.get(index).getTransitionInput());
 
     }
-
-    @Override public void keyReleased(KeyEvent e) { }
-    @Override public void keyTyped(KeyEvent e) { }
 
     /** 
      *  Opens up a JFileChooser for the user to choose a file from their file system.
