@@ -6,7 +6,7 @@ import java.awt.image.*;
 import java.io.*;
 import javax.swing.filechooser.*;
 
-public class AutomataGUI extends JFrame implements ActionListener {
+public class AutomataGUI extends JFrame implements ActionListener, KeyListener {
 
 		/* Private instance variables */
 
@@ -32,6 +32,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
             /* Create tabbed pane and add a tab to it */
 
         tabbedPane = new JTabbedPane();
+        tabbedPane.setFocusable(false);
         createTab();
         add(tabbedPane);
 
@@ -180,6 +181,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
             ),c);
 
         eventInput.set(index, new JTextPane());
+        eventInput.get(index).setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
+        eventInput.get(index).setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
         JScrollPane eventInputScrollPane = new JScrollPane(eventInput.get(index)) {
             @Override public Dimension getPreferredSize() {
                 return new Dimension(100, 100);    
@@ -210,6 +213,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
             ),c);
 
         stateInput.set(index, new JTextPane());
+        stateInput.get(index).setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
+        stateInput.get(index).setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
         JScrollPane stateInputScrollPane = new JScrollPane(stateInput.get(index)) {
             @Override public Dimension getPreferredSize() {
                 return new Dimension(100, 100);    
@@ -240,6 +245,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
             ),c);
 
         transitionInput.set(index, new JTextPane());
+        transitionInput.get(index).setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
+        transitionInput.get(index).setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
         JScrollPane transitionInputScrollPane = new JScrollPane(transitionInput.get(index)) {
             @Override public Dimension getPreferredSize() {
                 return new Dimension(100, 100);    
@@ -255,6 +262,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
             /* Generate Automaton (NOTE: It is assumed that Automatons that are typed in by hand will not be extremely large) */
 
         JButton generateAutomatonButton = new JButton("Generate Automaton");
+        generateAutomatonButton.setFocusable(false);
         generateAutomatonButton.addActionListener(new ActionListener() {
  
             public void actionPerformed(ActionEvent e) {
@@ -572,6 +580,17 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     }
 
+    @Override public void keyPressed(KeyEvent e) {
+
+        if (e.getKeyCode() == KeyEvent.VK_TAB) {
+            System.out.println("change focus");
+        }
+
+    }
+
+    @Override public void keyReleased(KeyEvent e) { }
+    @Override public void keyTyped(KeyEvent e) { }
+
     /** 
      *  Opens up a JFileChooser for the user to choose a file from their file system.
      *  @param title - The title to put in the file chooser dialog box
@@ -669,6 +688,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
 	    	// Create tooltip
 	        JButton openTooltip = new JButton("?");
+            openTooltip.setFocusable(false);
 	        openTooltip.setToolTipText(tooltipText);
 
 	        // Position components

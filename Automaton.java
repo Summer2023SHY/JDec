@@ -278,6 +278,7 @@ public class Automaton {
 						System.out.println("ERROR: Could not write state to file.");
 
 				}
+				
 			}
 
 				/* Remove old body file and mappings file */
