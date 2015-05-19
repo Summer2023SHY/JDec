@@ -317,8 +317,122 @@ public class Automaton {
 
     public static Automaton union(Automaton first, Automaton second) {
 
+    		/* Setup */
 
-    	return new Automaton(); // temporary
+    	Automaton automaton = new Automaton(new File("union.hdr"), true);
+
+    	// These two stacks should always have the same size
+    	Stack<Long> stack1 = new Stack<Long>(); 
+    	Stack<Long> stack2 = new Stack<Long>();
+
+    	// Add the initial states to the stack
+    	stack1.push(first.getInitialStateID());
+    	stack2.push(second.getInitialStateID());
+
+    		/* Build automata by parallel composition */
+
+    	// Create two sets containing each automata's private events
+    	Set<Event> privateEvents1 = new TreeSet<Event>();
+    	privateEvents1.addAll(first.getEvents());
+    	privateEvents1.removeAll(second.getEvents());
+    	Set<Event> privateEvents2 = new TreeSet<Event>();
+    	privateEvents2.addAll(second.getEvents());
+    	privateEvents2.removeAll(first.getEvents());
+
+    	// Create event set (union of both event sets)
+    	for (Event e : first.getEvents())
+    		automaton.addEvent(e.getLabel(), e.isObservable(), e.isControllable());
+    	for (Event e : second.getEvents())
+    		automaton.addEvent(e.getLabel(), e.isObservable(), e.isControllable());
+
+    	// Add states and transition
+    	while (stack1.size() > 0) {
+
+    		// Get next IDs
+    		long id1 = stack1.pop();
+    		long id2 = stack2.pop();
+
+    		// Error checking
+    		if (id1 == 0 || id2 == 0) {
+    			System.out.println("ERROR: Bad state ID.");
+    			continue;
+    		}
+
+    		// Create combined ID
+    		long newStateID = calculateCombinedID(id1, first, id2, second);
+
+    		// This state has already been created, so it does not need to be created again
+    		if (automaton.stateExists(newStateID))
+    			continue;
+
+    		// Get states and transitions
+    		State state1 = first.getState(id1);
+    		State state2 = second.getState(id2);
+    		ArrayList<Transition> transitions1 = state1.getTransitions();
+    		ArrayList<Transition> transitions2 = state2.getTransitions();
+
+    		// Add new state
+    		automaton.addStateAt(
+    				state1.getLabel() + "_" + state2.getLabel(),
+    				state1.isMarked() && state2.isMarked(),
+    				new ArrayList<Transition>(),
+    				id1 == first.getInitialStateID() && id2 == second.getInitialStateID(),
+    				newStateID
+    			);
+
+    		// Find every pair of transitions that have the same events (this accounts for public events)
+    		for (Transition t1 : transitions1)
+    			for (Transition t2 : transitions2)
+    				if (t1.getEvent().equals(t2.getEvent())) {
+
+						// Add this pair to the stack
+    					stack1.add(t1.getTargetStateID());
+    					stack2.add(t2.getTargetStateID());
+
+    					// Add transition to the new automaton
+    					long targetID = calculateCombinedID(t1.getTargetStateID(), first, t2.getTargetStateID(), second);
+    					automaton.addTransition(newStateID, t1.getEvent().getID(), targetID);
+
+    				}
+
+    		// Take care of the first automaton's private events
+    		for (Transition t : transitions1)
+    			if (privateEvents1.contains(t.getEvent())) {
+
+					// Add the pair of states to the stack
+					stack1.add(t.getTargetStateID());
+					stack2.add(id2);
+
+					// Add transition to the new automaton
+					long targetID = calculateCombinedID(t.getTargetStateID(), first, id2, second);
+					automaton.addTransition(newStateID, t.getEvent().getID(), targetID);
+
+    			}
+
+    		// Take care of the second automaton's private events
+    		for (Transition t : transitions2)
+    			if (privateEvents2.contains(t.getEvent())) {
+
+					// Add the pair of states to the stack
+					stack1.add(id1);
+					stack2.add(t.getTargetStateID());
+
+					// Add transition to the new automaton
+					long targetID = calculateCombinedID(id1, first, t.getTargetStateID(), second);
+					automaton.addTransition(newStateID, t.getEvent().getID(), targetID);
+
+    			}
+
+    	}
+
+    		/* Re-number states (by removing empty ones) */
+
+    	automaton.renumberStates();
+
+    		/* Return generated automaton */
+
+    	return automaton;
+
     }
 
 	/**
