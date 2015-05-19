@@ -39,7 +39,7 @@ public class TestAutomata {
     	if (!runGUIInputTestRoutine())
     		passedAllTests = false;
 
-        if (!runIntersectionTestRoutine())
+        if (!runAutomataIntersectionTestRoutine())
             passedAllTests = false;
 
     		/* Print summary of all tests */
@@ -356,9 +356,9 @@ public class TestAutomata {
 
     }
 
-    private static boolean runIntersectionTestRoutine() {
+    private static boolean runAutomataIntersectionTestRoutine() {
 
-        String testRoutineName = "INTERSECTION";
+        String testRoutineName = "AUTOMATA INTERSECTION";
 
         printTestOutput("RUNNING " + testRoutineName + " TEST ROUTINE...", 1);
 
@@ -366,7 +366,7 @@ public class TestAutomata {
 
             /* Basic GUI Input Tests */
 
-        printTestOutput("BASIC AUTOMATA INTERSECTION: ", 2);
+        printTestOutput("BASIC AUTOMATA INTERSECTIONS: ", 2);
 
         printTestOutput("Instantiating automaton from Figure 2.1...", 3);
         Automaton fig2_1 = AutomataGUI.generateAutomaton(
@@ -384,12 +384,31 @@ public class TestAutomata {
                 false, // We do not want it to be verbose
                 new File("fig2_2.hdr")
             );
+
+        printTestOutput("Taking the product of Figure 2.1 and Figure 2.2 (and comparing the result to the first automaton in Figure 2.15)...", 3);
         Automaton product = Automaton.intersection(fig2_1, fig2_2);
 
         product.generateInputForGUI();
         printTestCase("Ensuring the events are correct", product.getEventInput().equals("a,T,T\nb,T,T"), counter);
         printTestCase("Ensuring the states are correct", product.getStateInput().equals("*x_zero,F\nx_one,T"), counter);
-        printTestCase("Ensuring the transition are correct", product.getTransitionInput().equals("x_zero,a,x_one\nx_one,a,x_one"), counter);
+        printTestCase("Ensuring the transitions are correct", product.getTransitionInput().equals("x_zero,a,x_one\nx_one,a,x_one"), counter);
+
+        printTestOutput("Instantiating automaton from Figure 2.13(b)...", 3);
+        Automaton fig2_13b = AutomataGUI.generateAutomaton(
+                "a,T,T\nb,T,T\ng,T,T", // Events
+                "*zero,F\none,F\ntwo,T", // States 
+                "zero,a,one\none,b,two\ntwo,g,zero", // Transitions
+                false, // We do not want it to be verbose
+                new File("fig2_13b.hdr")
+            );
+
+        printTestOutput("Taking the product of Figure 2.2 and Figure 2.13(b) (and comparing the result to second automaton in Figure 2.15)...", 3);
+        product = Automaton.intersection(fig2_2, fig2_13b);
+
+        product.generateInputForGUI();
+        printTestCase("Ensuring the events are correct", product.getEventInput().equals("a,T,T\nb,T,T"), counter);
+        printTestCase("Ensuring the states are correct", product.getStateInput().equals("*zero_zero,F\none_one,F\nzero_two,F"), counter);
+        printTestCase("Ensuring the transitions are correct", product.getTransitionInput().equals("zero_zero,a,one_one\none_one,b,zero_two"), counter);
 
             /* Print summary of this test routine */
 
