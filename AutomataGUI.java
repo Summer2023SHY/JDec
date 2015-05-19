@@ -323,43 +323,47 @@ public class AutomataGUI extends JFrame implements ActionListener, KeyListener {
 
             // Check to see if this is a duplicate state label
             if (stateMapping.get(label) != null) {
-
                 if (verbose)
                     System.out.println("ERROR: Could not store '" + line + "' as a state, since there is already a state with this label.");
+                continue;
+            }
 
             // Try to add the state
-            } else if (splitLine.length >= 1 && label.length() > 0) {
+            if (splitLine.length >= 1 && label.length() > 0) {
 
                 boolean isInitialState = (label.charAt(0) == '*');
 
                 // Ensure the user didn't only have an asterisk as the name of the label (since the asterisk gets removed, we are left with an empty string)
                 if (isInitialState && label.length() == 1) {
-                    
                     if (verbose)
                         System.out.println("ERROR: Could not parse '" + line + "' as a state (state name must be at least 1 character long).");
-
-                } else {
-
-                    // Remove '*' from the label name
-                    if (isInitialState)
-                        label = label.substring(1);
-
-                    long id = automaton.addState(label, splitLine.length < 2 || isTrue(splitLine[1]), isInitialState);
-
-                    // Error checking
-                    if (id == 0) {
-                        if (verbose)
-                            System.out.println("ERROR: Could not store '" + line + "' as a state.");
-                    }
-                    
-                    // Add state
-                    else
-                        stateMapping.put(label, id);
+                    continue;
 
                 }
 
-            }
-            else if (line.length() > 0 && verbose)
+                // Remove '*' from the label name
+                if (isInitialState)
+                    label = label.substring(1);
+
+                // Check for invalid label
+                if (!isValidLabel(label)) {
+                    System.out.println("ERROR: Invalid label.");
+                    continue;
+                }
+
+                long id = automaton.addState(label, splitLine.length < 2 || isTrue(splitLine[1]), isInitialState);
+
+                // Error checking
+                if (id == 0) {
+                    if (verbose)
+                        System.out.println("ERROR: Could not store '" + line + "' as a state.");
+                    continue;
+                }
+                
+                // Add state
+                stateMapping.put(label, id);
+
+            } else if (line.length() > 0 && verbose)
                 System.out.println("ERROR: Could not parse '" + line + "' as a state.");
         }
 
@@ -377,24 +381,32 @@ public class AutomataGUI extends JFrame implements ActionListener, KeyListener {
 
             // Check to see if this is a duplicate event label
             if (eventMapping.get(label) != null) {
-
                 if (verbose)
                     System.out.println("ERROR: Could not store '" + line + "' as an event, since there is already an event with this label.");
+                continue;
+            }
 
             // Try to add the event
-            } else if (splitLine.length >= 1 && label.length() > 0) {
+            if (splitLine.length >= 1 && label.length() > 0) {
+
                 int id = automaton.addEvent(label, splitLine.length < 2 || isTrue(splitLine[1]), splitLine.length < 3 || isTrue(splitLine[2]));
+
+                // Check for invalid label
+                if (!isValidLabel(label)) {
+                    System.out.println("ERROR: Invalid label.");
+                    continue;
+                }
 
                 // Error checking
                  if (id == 0) {
                     if (verbose)
                         System.out.println("ERROR: Could not store '" + line + "' as an event.");
+                    continue;
                  }
                     
                 
                 // Add event
-                else
-                     eventMapping.put(label, id);
+                eventMapping.put(label, id);
             }
             else if (line.length() > 0 && verbose)
                 System.out.println("ERROR: Could not parse '" + line + "' as an event.");
@@ -434,6 +446,17 @@ public class AutomataGUI extends JFrame implements ActionListener, KeyListener {
 
     private static boolean isTrue(String str) {
         return str.equals("T") || str.equals("True");
+    }
+
+    /* Label must consist of only letters or the underscore characters (other characters, including digits cause complications with GraphViz) */
+    private static boolean isValidLabel(String label) {
+
+        for (int i = 0; i < label.length(); i++)
+            if (!Character.isLetter(label.charAt(i)) && label.charAt(i) != '_')
+                return false;
+
+        return true;
+
     }
 
     /**

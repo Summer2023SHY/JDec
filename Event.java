@@ -26,9 +26,9 @@ public class Event implements Comparable<Event> {
 		this.controllable = controllable;
 	}
 
-	public boolean hasSameID(Event other) {
-		return this.id == other.id;
-	}
+	// public boolean hasSameID(Event other) {
+	// 	return this.id == other.id;
+	// }
 
 		/** STANDARD ACCESSOR AND MUTATOR METHODS **/
 
@@ -71,24 +71,24 @@ public class Event implements Comparable<Event> {
 	}
 
 	@Override public int compareTo(Event other) {
+
+		if (this.label.equals(other.label))
+			return 0;
+
 		return (new Integer(id)).compareTo(other.getID());
 	}
 
 	/**
-	 *	Check for equality using the label
+	 *	Check for equality by comparing labels.
 	 *	NOTE: This method is used to check to see if an event is unique and should be added to the event set.
 	 *	@param obj - The event to compare this one to
 	 *	@return whether or not the events are equal
 	 **/
 	@Override public boolean equals(Object obj) {
 
-		Event event = (Event) obj;
+		Event other = (Event) obj;
 
-		return this.label.equals(event.label);
-
-		// Events with identical names and 
-			// && this.observable == event.observable
-			// && this.controllable == event.controllable;
+		return this.label.equals(other.label);
 
 	}
 
