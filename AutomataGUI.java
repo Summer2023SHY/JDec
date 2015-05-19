@@ -520,9 +520,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
-        menuItem = new JMenuItem("Product");
-        menuItem.addActionListener(this);
-        menu.add(menuItem);
+        // menuItem = new JMenuItem("Union");
+        // menuItem.addActionListener(this);
+        // menu.add(menuItem);
 
         this.setJMenuBar(menuBar);
 
@@ -606,6 +606,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
             case "Intersection":
 
+                // Allow user to pick other automaton
+                Automaton otherAutomaton = automata.get(pickAutomaton("Which automaton would you like to take the intersection with?", index));
+
                 // Create new tab
                 createTab();
                 newIndex = tabbedPane.getTabCount() - 1;
@@ -613,7 +616,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 // Set tab values
                 automataFile.set(newIndex, new File("intersection.hdr"));
                 tabbedPane.setTitleAt(newIndex, automataFile.get(newIndex).getName());
-                automata.set(newIndex, Automaton.intersection(automata.get(0), automata.get(1)));
+                automata.set(newIndex, Automaton.intersection(automata.get(index), otherAutomaton));
                 automata.get(newIndex).generateInputForGUI();
                 eventInput.get(newIndex).setText(automata.get(newIndex).getEventInput());
                 stateInput.get(newIndex).setText(automata.get(newIndex).getStateInput());
@@ -722,6 +725,57 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         return file;
         
+    }
+
+    private int pickAutomaton(String str, int indexToSkip) {
+
+        String[] options = null;
+
+        // All automatons can be chosen
+        if (indexToSkip < 0) {
+
+            options = new String[tabbedPane.getTabCount()];
+
+            for (int i = 0; i < tabbedPane.getTabCount(); i++)
+                options[i] = automataFile.get(i).getName();
+
+        // One automaton cannot be chosen
+        } else {
+
+            options = new String[tabbedPane.getTabCount() - 1];
+            int counter = 0;
+
+            for (int i = 0; i < tabbedPane.getTabCount(); i++) {
+                
+                // Skip automaton
+                if (i == indexToSkip)
+                    continue;
+
+                // Add automaton to list of options
+                options[counter++] = automataFile.get(i).getName();
+
+            }
+
+        }
+
+        
+        // Display prompt
+        String choice = (String) JOptionPane.showInputDialog(
+                null,
+                str,
+                "Choose Automaton",
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                options,
+                options[0]
+            );
+
+       for (int i = 0; i < tabbedPane.getTabCount(); i++)
+            if (automataFile.get(i).getName().equals(choice))
+                return i;
+
+        return -1;
+
     }
 
     /**
