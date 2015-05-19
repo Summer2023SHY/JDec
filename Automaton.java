@@ -164,7 +164,7 @@ public class Automaton {
     	/** AUTOMATA OPERATIONS **/
 
     /**
-     * Create a new copy of this automaton that has any unreachable removed.
+     * Create a new copy of this automaton that has all unreachable states and transitions removed.
      **/
     public Automaton accessible() {
 
@@ -565,14 +565,37 @@ public class Automaton {
     			str.append(state.getLabel()  + " [peripheries=1];");
 
     		// Draw each of its transitions
-    		for (Transition t : state.getTransitions()) {
-    			str.append(state.getLabel() + "->" + State.readLabelFromFile(this, bodyRAFile, t.getTargetStateID()));
-    			str.append(" [constraint=false,label=\"" + t.getEvent().getLabel() + "\"");
+    		ArrayList<Transition> transitionsToSkip = new ArrayList<Transition>();
+    		for (Transition t1 : state.getTransitions()) {
+
+    			// Skip it if this was already taken care of (grouped into another transition going to the same target state)
+    			if (transitionsToSkip.contains(t1))
+    				continue;
+
+    			String label = "";
+
+    			// Look for all transitions that can be group with this one (for simplicity of code, this will also include 't1')
+    			for (Transition t2 : state.getTransitions()) {
+
+    				// Skip it if this was already taken care of (grouped into another transition going to the same target state)
+	    			if (transitionsToSkip.contains(t2))
+	    				continue;
+
+	    			// Check to see if both transitions lead to the same event
+    				if (t1.getTargetStateID() == t2.getTargetStateID()) {
+    					label += "," + t2.getEvent().getLabel();
+	    				transitionsToSkip.add(t2);
+	    			}
+
+    			}
+
+    			str.append(state.getLabel() + "->" + State.readLabelFromFile(this, bodyRAFile, t1.getTargetStateID()));
+    			str.append(" [constraint=false,label=\"" + label.substring(1) + "\"");
     			
-    			if (!t.getEvent().isObservable())
+    			if (!t1.getEvent().isObservable())
     				str.append(",style=dotted");
 
-    			if (!t.getEvent().isControllable())
+    			if (!t1.getEvent().isControllable())
     				str.append(",color=red");
 
     			str.append("];");

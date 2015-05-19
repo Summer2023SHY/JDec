@@ -28,4 +28,12 @@ public class Transition {
 			+ ")";
 	}
 
+	@Override public boolean equals(Object obj) {
+
+		Transition other = (Transition) obj;
+
+		return event.equals(other.getEvent()) && targetStateID == other.getTargetStateID();
+
+	}
+
 }
