@@ -1248,6 +1248,11 @@ public class Automaton {
 	 **/
 	public int addEvent(String label, boolean observable, boolean controllable) {
 
+		// Ensure that no other event already exists with this label (this is necessary because of the strange comparison criteria in Event.compareTo())
+		for (Event e : events)
+			if (e.getLabel().equals(label))
+				return 0; 
+
 		// Keep track of the original 
 		long originalSize = events.size();
 

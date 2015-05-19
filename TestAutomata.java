@@ -39,7 +39,7 @@ public class TestAutomata {
     	if (!runGUIInputTestRoutine())
     		passedAllTests = false;
 
-        if (!runAutomataIntersectionTestRoutine())
+        if (!runAutomataOperationsTestRoutine())
             passedAllTests = false;
 
     		/* Print summary of all tests */
@@ -360,9 +360,9 @@ public class TestAutomata {
 
     }
 
-    private static boolean runAutomataIntersectionTestRoutine() {
+    private static boolean runAutomataOperationsTestRoutine() {
 
-        String testRoutineName = "AUTOMATA INTERSECTION";
+        String testRoutineName = "AUTOMATA OPERATIONS";
 
         if (verbose > 1)
             printTestOutput("RUNNING " + testRoutineName + " TEST ROUTINE...", 1);
@@ -371,7 +371,7 @@ public class TestAutomata {
 
             /* Basic GUI Input Tests */
 
-        printTestOutput("BASIC AUTOMATA INTERSECTIONS: ", 2);
+        printTestOutput("AUTOMATA INTERSECTIONS: ", 2);
 
         printTestOutput("Instantiating automaton from Figure 2.1...", 3);
         Automaton fig2_1 = AutomataGUI.generateAutomaton(
@@ -391,12 +391,12 @@ public class TestAutomata {
             );
 
         printTestOutput("Taking the product of Figure 2.1 and Figure 2.2 (and comparing the result to the first automaton in Figure 2.15)...", 3);
-        Automaton product = Automaton.intersection(fig2_1, fig2_2);
+        Automaton result = Automaton.intersection(fig2_1, fig2_2);
 
-        product.generateInputForGUI();
-        printTestCase("Ensuring the events are correct", product.getEventInput().equals("a,T,T\nb,T,T"), counter);
-        printTestCase("Ensuring the states are correct", product.getStateInput().equals("*x_zero,F\nx_one,T"), counter);
-        printTestCase("Ensuring the transitions are correct", product.getTransitionInput().equals("x_zero,a,x_one\nx_one,a,x_one"), counter);
+        result.generateInputForGUI();
+        printTestCase("Ensuring the events are correct", result.getEventInput().equals("a,T,T\nb,T,T"), counter);
+        printTestCase("Ensuring the states are correct", result.getStateInput().equals("*x_zero,F\nx_one,T"), counter);
+        printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("x_zero,a,x_one\nx_one,a,x_one"), counter);
 
         printTestOutput("Instantiating automaton from Figure 2.13(b)...", 3);
         Automaton fig2_13b = AutomataGUI.generateAutomaton(
@@ -407,13 +407,23 @@ public class TestAutomata {
                 new File("fig2_13b.hdr")
             );
 
-        printTestOutput("Taking the product of Figure 2.2 and Figure 2.13(b) (and comparing the result to second automaton in Figure 2.15)...", 3);
-        product = Automaton.intersection(fig2_2, fig2_13b);
+        printTestOutput("Taking the product of Figure 2.2 and Figure 2.13(b) (and comparing the result to the second automaton in Figure 2.15)...", 3);
+        result = Automaton.intersection(fig2_2, fig2_13b);
 
-        product.generateInputForGUI();
-        printTestCase("Ensuring the events are correct", product.getEventInput().equals("a,T,T\nb,T,T"), counter);
-        printTestCase("Ensuring the states are correct", product.getStateInput().equals("*zero_zero,F\none_one,F\nzero_two,F"), counter);
-        printTestCase("Ensuring the transitions are correct", product.getTransitionInput().equals("zero_zero,a,one_one\none_one,b,zero_two"), counter);
+        result.generateInputForGUI();
+        printTestCase("Ensuring the events are correct", result.getEventInput().equals("a,T,T\nb,T,T"), counter);
+        printTestCase("Ensuring the states are correct", result.getStateInput().equals("*zero_zero,F\none_one,F\nzero_two,F"), counter);
+        printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("zero_zero,a,one_one\none_one,b,zero_two"), counter);
+
+        printTestOutput("Taking the union of Figure 2.1 and Figure 2.2 (and comparing the result the automaton in Figure 2.16)...", 3);
+        result = Automaton.union(fig2_1, fig2_2);
+
+        result.generateInputForGUI();
+        printTestCase("Ensuring the events are correct", result.getEventInput().equals("a,T,T\nb,T,T\ng,T,T"), counter);
+        printTestCase("Ensuring the states are correct", result.getStateInput().equals("*x_zero,F\ny_zero,F\nz_zero,F\nx_one,T\ny_one,F\nz_one,T"), counter);
+        printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("x_zero,a,x_one\nx_zero,g,z_zero\ny_zero,b,y_zero\n"
+            + "y_zero,a,x_one\nz_zero,b,z_zero\nz_zero,a,y_one\nz_zero,g,y_zero\nx_one,a,x_one\nx_one,g,z_one\ny_one,b,y_zero\ny_one,a,x_one\nz_one,b,z_zero\n"
+            + "z_one,a,y_one\nz_one,g,y_one"), counter);
 
             /* Print summary of this test routine */
 

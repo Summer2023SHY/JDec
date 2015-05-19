@@ -520,18 +520,18 @@ public class AutomataGUI extends JFrame implements ActionListener {
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
-        // menuItem = new JMenuItem("Union");
-        // menuItem.addActionListener(this);
-        // menu.add(menuItem);
+        menuItem = new JMenuItem("Union");
+        menuItem.addActionListener(this);
+        menu.add(menuItem);
 
         this.setJMenuBar(menuBar);
 
     }
 
     /**
-    *   This method handles all of the actions triggered when the user interacts with the main menu.
-    *   @param event - The triggered event
-    **/
+     * This method handles all of the actions triggered when the user interacts with the main menu.
+     * @param event - The triggered event
+     **/
     public void actionPerformed(ActionEvent event) {
 
         int index = tabbedPane.getSelectedIndex();
@@ -623,12 +623,32 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 transitionInput.get(newIndex).setText(automata.get(newIndex).getTransitionInput());
 
                 break;
+
+            case "Union":
+
+                // Allow user to pick other automaton
+                otherAutomaton = automata.get(pickAutomaton("Which automaton would you like to take the union with?", index));
+
+                // Create new tab
+                createTab();
+                newIndex = tabbedPane.getTabCount() - 1;
+
+                // Set tab values
+                automataFile.set(newIndex, new File("union.hdr"));
+                tabbedPane.setTitleAt(newIndex, automataFile.get(newIndex).getName());
+                automata.set(newIndex, Automaton.union(automata.get(index), otherAutomaton));
+                automata.get(newIndex).generateInputForGUI();
+                eventInput.get(newIndex).setText(automata.get(newIndex).getEventInput());
+                stateInput.get(newIndex).setText(automata.get(newIndex).getStateInput());
+                transitionInput.get(newIndex).setText(automata.get(newIndex).getTransitionInput());
+
+                break;
             
         }
 
     }
 
-    // Load Automaton from file, filling the input fields with its data
+    // Load automaton from file, filling the input fields with its data
     private void refresh(int index) {
 
         automata.set(index, new Automaton(automataFile.get(index), false));
