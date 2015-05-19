@@ -163,6 +163,9 @@ public class Automaton {
 
     	/** AUTOMATA OPERATIONS **/
 
+    /**
+     * Create a new copy of this automaton that has any unreachable removed.
+     **/
     public Automaton accessible() {
 
     		/* Setup */
@@ -412,6 +415,10 @@ public class Automaton {
 
     	/** IMAGE GENERATION **/
 
+    /**
+     * Output this automaton in a format that is readable by GraphViz's dot program, which is used to generate the graph's image.
+     * @param size - The requested width and height in pixels
+     **/
     public boolean outputDOT(int size) {
 
     		/* Abort the operation if the automaton is too large to do this in a reasonable amount of time */
@@ -1216,30 +1223,58 @@ public class Automaton {
     	return observableEvents;
     }
 
+    /**
+     * Get the number of states that are currently in this automaton.
+     * @return number of states
+     **/
     public long getNumberOfStates() {
     	return nStates;
     }
 
+    /**
+     * Get the number of states that can be held in this automaton.
+     * @return current state capacity
+     **/
     public long getStateCapacity() {
     	return stateCapacity;
     }
 
+    /**
+     * Get the number of transitions that can be attached to each state.
+     * @return current transition capacity
+     **/
     public int getTransitionCapacity() {
     	return transitionCapacity;
     }
 
+    /**
+     * Get the number of characters that can be used for a state's label.
+     * @return current maximum label length
+     **/
     public int getLabelLength() {
     	return labelLength;
     }
 
+    /**
+     * Get the amount of space needed to store a state ID.
+     * @return number of bytes per state ID
+     **/
     public int getSizeOfStateID() {
     	return nBytesPerStateID;
     }
 
+    /**
+     * Get the amount of space needed to store a state.
+     * @return number of bytes per state
+     **/
     public long getSizeOfState() {
     	return nBytesPerState;
     }
 
+    /**
+     * Get the ID of the state where the automaton begins (the entry point).
+     * @return ID of the initial state
+     **/
     public long getInitialStateID() {
     	return initialState;
     }

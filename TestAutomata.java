@@ -1,6 +1,6 @@
 public class TestAutomata {
 
-	public static final int MAX_VERBOSE = 3;
+	private static final int MAX_VERBOSE = 3;
 	private static int verbose = 1;
     
     public static void main(String[] args) {
