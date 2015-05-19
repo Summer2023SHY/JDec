@@ -1,4 +1,4 @@
-public class Event {
+public class Event implements Comparable<Event> {
     
     	/* Class constants */
 
@@ -7,7 +7,6 @@ public class Event {
     public static final int MAX_NUMBER_OF_EVENTS = 255;
 	public static final int N_BYTES_OF_ID = 1; 
 
- 
     	/* Private instance variables */
 
     private String label;
@@ -69,6 +68,10 @@ public class Event {
 
 	@Override public int hashCode() {
 		return label.hashCode();
+	}
+
+	@Override public int compareTo(Event other) {
+		return (new Integer(id)).compareTo(other.getID());
 	}
 
 	/**

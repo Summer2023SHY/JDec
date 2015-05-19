@@ -19,9 +19,14 @@ public class Automaton {
 
 	public static final long LIMIT_OF_STATES_FOR_PICTURE = 10000; // Arbitrary value which will be revised once we have tried generating large automata
 
+	private static final String DEFAULT_HEADER_FILE_NAME = "temp.hdr",
+								DEFAULT_BODY_FILE_NAME = "temp.bdy";
+	private static final File 	DEFAULT_HEADER_FILE = new File(DEFAULT_HEADER_FILE_NAME),
+								DEFAULT_BODY_FILE = new File(DEFAULT_BODY_FILE_NAME);
+
 		/* Private instance variables */
 
-	private Set<Event> 	events = new HashSet<Event>(),
+	private Set<Event> 	events = new TreeSet<Event>(),
 						activeEvents = new HashSet<Event>(),
 						controllableEvents = new HashSet<Event>(),
 						observableEvents = new HashSet<Event>();
@@ -37,15 +42,8 @@ public class Automaton {
 	// Initialized based on the above capacities
 	private int nBytesPerStateID;
 	private long nBytesPerState;
-
-
-	// Files
 	
-	private static String 	DEFAULT_HEADER_FILE_NAME = "temp.hdr",
-							DEFAULT_BODY_FILE_NAME = "temp.bdy";
-	private static final File 	DEFAULT_HEADER_FILE = new File(DEFAULT_HEADER_FILE_NAME),
-								DEFAULT_BODY_FILE = new File(DEFAULT_BODY_FILE_NAME);
-
+	// File variables
 	private String 	headerFileName = DEFAULT_HEADER_FILE_NAME,
 					bodyFileName = DEFAULT_BODY_FILE_NAME;
 	private File 	headerFile,
@@ -56,7 +54,7 @@ public class Automaton {
 		/** CONSTRUCTORS **/
 
     /**
-     * Default constructor: create empty automaton
+     * Default constructor: create empty automaton with default capacity
      **/
     public Automaton() {
     	this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, DEFAULT_STATE_CAPACITY, DEFAULT_TRANSITION_CAPACITY, DEFAULT_LABEL_LENGTH, true);
@@ -84,7 +82,7 @@ public class Automaton {
 	 *			NOTE: the initial state capacity may be higher than the value you give it, since it has to be 256^x
 	 *	@param transitionCapacity - The initial maximum number of transitions per state (increases by 1 whenever it is exeeded)
 	 *	@param labelLength - The initial maximum number characters per state label (increases by 1 whenever it is exeeded)
-	 *	@param clearFiles - Whether or not the header and body files should be cleared
+	 *	@param clearFiles - Whether or not the header and body files should be cleared prior to use
      **/
     public Automaton(long stateCapacity, int transitionCapacity, int labelLength, boolean clearFiles) {
     	this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, stateCapacity, transitionCapacity, labelLength, clearFiles);
@@ -97,18 +95,17 @@ public class Automaton {
 	 *  @param stateCapacity - The initial state capacity (increases by a factor of 256 when it is exceeded)
 	 *	@param transitionCapacity - The initial maximum number of transitions per state (increases by 1 whenever it is exeeded)
 	 *	@param labelLength - The initial maximum number characters per state label (increases by 1 whenever it is exeeded)
-	 *	@param clearFiles - Whether or not the header and body files should be cleared
+	 *	@param clearFiles - Whether or not the header and body files should be cleared prior to use
      **/
 
 	public Automaton(File headerFile, File bodyFile, long stateCapacity, int transitionCapacity, int labelLength, boolean clearFiles) {
 
 		this.headerFile = headerFile;
 		this.bodyFile = bodyFile;
-
 		this.headerFileName = headerFile.getName();
 		this.bodyFileName = bodyFile.getName();
 
-		// Will be overridden if we are loading information from file
+		// These variables will be overridden if we are loading information from file
 		this.stateCapacity = stateCapacity;
 		this.transitionCapacity = transitionCapacity;
 		this.labelLength = labelLength;
@@ -141,7 +138,7 @@ public class Automaton {
 
     	/** AUTOMATA OPERATIONS **/
 
-    static Automaton intersection(Automaton first, Automaton second) {
+    public static Automaton intersection(Automaton first, Automaton second) {
 
     		/* Setup */
 
@@ -151,6 +148,7 @@ public class Automaton {
     	Stack<Long> stack1 = new Stack<Long>(); 
     	Stack<Long> stack2 = new Stack<Long>();
 
+    	// Add the initial states to the stack
     	stack1.push(first.getInitialStateID());
     	stack2.push(second.getInitialStateID());
 
@@ -160,8 +158,6 @@ public class Automaton {
     	for (Event e : first.getEvents())
     		if (second.getEvents().contains(e))
     			automaton.addEvent(e.getLabel(), e.isObservable(), e.isControllable());
-
-    	System.out.println("number of events: " + automaton.getEvents().size());
 
     	// Add states and transition
     	while (stack1.size() > 0) {
@@ -179,55 +175,141 @@ public class Automaton {
     		// Create combined ID
     		long newStateID = calculateCombinedID(id1, first, id2, second);
 
-    		// This state has already been created, so we don't need to create it again
+    		// This state has already been created, so it does not need to be created again
     		if (automaton.stateExists(newStateID))
     			continue;
 
     		// Get states and transitions
-    		System.out.println("about to get state1");
     		State state1 = first.getState(id1);
-    		System.out.println("about to get state2");
     		State state2 = second.getState(id2);
     		ArrayList<Transition> transitions1 = state1.getTransitions();
     		ArrayList<Transition> transitions2 = state2.getTransitions();
 
     		// Add new state
     		automaton.addStateAt(
-    				state1.getLabel() + "-" + state2.getLabel(),
+    				"_" + state1.getLabel() + "_" + state2.getLabel(),
     				state1.isMarked() && state2.isMarked(),
     				new ArrayList<Transition>(),
     				id1 == first.getInitialStateID() && id2 == second.getInitialStateID(),
     				newStateID
     			);
 
-    		System.out.println("added state");
-
     		// Find every pair of transitions that have the same events
     		for (Transition t1 : transitions1)
     			for (Transition t2 : transitions2)
     				if (t1.getEvent().equals(t2.getEvent())) {
+
+    					// Add this pair to the stack
     					stack1.add(t1.getTargetStateID());
     					stack2.add(t2.getTargetStateID());
-    					long targetID = calculateCombinedID(id1, first, id2, second);
+
+    					// Add transition to the new automaton
+    					long targetID = calculateCombinedID(t1.getTargetStateID(), first, t2.getTargetStateID(), second);
     					automaton.addTransition(newStateID, t1.getEvent().getID(), targetID);
-    					System.out.println("added transition");
+
     				}
 
     	}
 
     		/* Re-number states (by removing empty ones) */
 
+    	automaton.renumberStates();
+
     	return automaton;
+    }
+
+    /**
+     * This method looks for blank spots in the .bdy file (which indicates that no state exists there),
+     * and re-numbers all of the states accordingly. This must be done after operations such as intersection or union.
+     * NOTE: To make this method more efficient we could make the buffer larger.
+     **/
+    private void renumberStates() {
+
+		try {
+
+				/* Create a file containing the mappings (where the new IDs can be indexed using the old IDs) */
+
+			File mappingFile = new File("mappings.tmp");
+			RandomAccessFile mappingRAFile = new RandomAccessFile(mappingFile, "rw");
+
+			long newID = 1;
+			for (long s = 1; s <= stateCapacity; s++)
+				if (stateExists(s)) {
+					byte[] buffer = new byte[nBytesPerStateID];
+					mappingRAFile.seek(nBytesPerStateID * s);
+					ByteManipulator.writeLongAsBytes(buffer, 0, newID++, nBytesPerStateID);
+					mappingRAFile.write(buffer);
+				}
+
+				/* Create new .bdy file with renumbered states */
+
+			File newBodyFile = new File("body.tmp");
+			RandomAccessFile newBodyRAFile = new RandomAccessFile(newBodyFile, "rw");
+
+			for (long s = 1; s <= stateCapacity; s++) {
+
+				State state = null;
+
+				if ( (state = getState(s)) != null ) {
+					
+					// Get new ID of state
+					byte[] buffer = new byte[nBytesPerStateID];
+					mappingRAFile.seek(nBytesPerStateID * s);
+					mappingRAFile.read(buffer);
+					long newStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
+
+					// Update ID of state
+					state.setID(newStateID);
+
+					// Update IDs of the target state of each
+					for (Transition t : state.getTransitions()) {
+
+						// Get new id of state
+						buffer = new byte[nBytesPerStateID];
+						mappingRAFile.seek(nBytesPerStateID * t.getTargetStateID());
+						mappingRAFile.read(buffer);
+						long newTargetStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
+
+						t.setTargetStateID(newTargetStateID);
+					}
+
+					// Write the updated state to the new file
+					if (!state.writeToFile(newBodyRAFile, nBytesPerState, labelLength, nBytesPerStateID, transitionCapacity))
+						System.out.println("ERROR: Could not write state to file.");
+
+				}
+			}
+
+				/* Remove old body file and mappings file */
+
+			try {
+
+				bodyRAFile.close();
+	    		bodyFile.delete();
+	    		mappingFile.delete();
+
+	    	} catch (SecurityException e) {
+	    		e.printStackTrace();
+	    	}
+	    		/* Rename new body file */
+
+			newBodyFile.renameTo(new File(bodyFileName));
+			bodyRAFile = newBodyRAFile;
+
+	    } catch (IOException e) {
+	    		e.printStackTrace();
+    	}
+
     }
 
     // Unique ID created in a way that no other combination of valid id1 and id2 from the same pair of automatons will map to this ID
     private static long calculateCombinedID(long id1, Automaton first, long id2, Automaton second) {
 
-    	return ((id2 - 1) * first.getStateCapacity() + id1);
+    	return ((id2 - 1) * first.getNumberOfStates() + id1);
 
     }
 
-    static Automaton union(Automaton first, Automaton second) {
+    public static Automaton union(Automaton first, Automaton second) {
 
 
     	return new Automaton(); // temporary
@@ -354,7 +436,14 @@ public class Automaton {
 
 		/** MUTATOR METHODS **/  
 
-	// CURRENTLY IN-EFFICENT!!!!!!!!!! (rewrites the entire state to file instead of only writing the new transition)
+	/**
+	 * Adds a transition based on the specified IDs (which means that the states and event must already exist).
+	 * NOTE: This method could be made more efficient since the entire state is written to file instead of only
+	 * writing the new transition to file.
+	 * @param startingStateID - The ID of the state where the transition originates from
+	 * @param eventID - The ID of the event that triggers the transition
+	 * @param targetStateID - The ID of the state where the transition leads to
+	 **/
 	public boolean addTransition(long startingStateID, int eventID, long targetStateID) {
 
 		// Create starting state from ID
@@ -432,6 +521,7 @@ public class Automaton {
 				return 0;
 			}
 
+			// Re-create binary file
 			recreateBodyFile(
 					stateCapacity,
 					transitionCapacity,
@@ -451,6 +541,7 @@ public class Automaton {
 				return 0;
 			}
 
+			// Re-create binary file
 			recreateBodyFile(
 					stateCapacity,
 					transitions.size(),
@@ -495,7 +586,9 @@ public class Automaton {
 	}
 
 	/**
-	 *	Add the specified state to the automaton
+	 *	Add the specified state to the automaton. NOTE: This method assumes that no state already exists with the specified id.
+	 *  The method renumberStates() must be called some time after using this method has been called since it can create empty
+	 *	spots in the .bdy file where states don't actually exist (this happens during automata operations such as intersection).
 	 *	@param 	label - The "name" of the new state
 	 *	@param 	marked - Whether or not the states is marked
 	 *	@param 	transitions - The list of transitions
@@ -796,7 +889,7 @@ public class Automaton {
 
 			/* Copy over body file */
 
-		for (int s = 1; s <= nStates; s++) {
+		for (long s = 1; s <= nStates; s++) {
 			State state = getState(s);
 			if (!state.writeToFile(newBodyRAFile, newNBytesPerState, newLabelLength, newNBytesPerStateID, newTransitionCapacity)) {
 				System.out.println("ERROR: Could not write copy over state to file. Aborting re-creation of .bdy file.");
@@ -877,7 +970,7 @@ public class Automaton {
 
 		boolean firstTransitionInStringBuilder = true;
 
-		for (int s = 1; s <= nStates; s++) {
+		for (long s = 1; s <= nStates; s++) {
 
 			State state = getState(s);
 

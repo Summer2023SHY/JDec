@@ -58,6 +58,13 @@ public class State {
 		return id;
 	}
 
+	/**
+	 *	Change the ID number of the state
+	 **/
+	public void setID(long id) {
+		this.id = id;
+	}
+
 	public ArrayList<Transition> getTransitions() {
 		return transitions;
 	}
@@ -71,7 +78,7 @@ public class State {
 		transitions.add(transition);
 	}
 
-	public boolean writeToFile(RandomAccessFile file, long nBytesPerState, int labelCapacity, int nBytesPerStateID, int transitionCapacity) {
+	public boolean writeToFile(RandomAccessFile file, long nBytesPerState, int labelLength, int nBytesPerStateID, int transitionCapacity) {
 
 			/* Setup */
 
@@ -90,7 +97,7 @@ public class State {
 
 			/* Transitions */
 		
-		int index = 1 + labelCapacity;
+		int index = 1 + labelLength;
 		for (Transition t : transitions) {
 
 			// Event

@@ -553,12 +553,18 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
             case "Intersection":
 
-                Automaton automaton = Automaton.intersection(automata.get(0), automata.get(1));
-                System.out.println("Generated!");
-                automaton.generateInputForGUI();
-                System.out.println("E:" + automaton.getEventInput());
-                System.out.println("S:" + automaton.getStateInput());
-                System.out.println("T:" + automaton.getTransitionInput());
+                // Create new tab
+                createTab();
+                int newIndex = tabbedPane.getTabCount() - 1;
+
+                // Set tab values
+                automataFile.set(newIndex, new File("intersection.hdr"));
+                tabbedPane.setTitleAt(newIndex, automataFile.get(newIndex).getName());
+                automata.set(newIndex, Automaton.intersection(automata.get(0), automata.get(1)));
+                automata.get(newIndex).generateInputForGUI();
+                eventInput.get(newIndex).setText(automata.get(newIndex).getEventInput());
+                stateInput.get(newIndex).setText(automata.get(newIndex).getStateInput());
+                transitionInput.get(newIndex).setText(automata.get(newIndex).getTransitionInput());
 
                 break;
             
