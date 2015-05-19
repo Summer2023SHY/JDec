@@ -11,7 +11,7 @@
 <b>Testing:</b>
 
     javac *.java
-    java TestAutomata
+    java TestAutomata [-v]
    
 <b>Creating Javadocs:</b>
 
