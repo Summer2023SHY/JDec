@@ -749,37 +749,25 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     private int pickAutomaton(String str, int indexToSkip) {
 
-        String[] options = null;
+            /* Create list of options */
 
-        // All automatons can be chosen
-        if (indexToSkip < 0) {
+        ArrayList<String> optionsList = new ArrayList<String>();
 
-            options = new String[tabbedPane.getTabCount()];
-
-            for (int i = 0; i < tabbedPane.getTabCount(); i++)
-                options[i] = automataFile.get(i).getName();
-
-        // One automaton cannot be chosen
-        } else {
-
-            options = new String[tabbedPane.getTabCount() - 1];
-            int counter = 0;
-
-            for (int i = 0; i < tabbedPane.getTabCount(); i++) {
+        for (int i = 0; i < tabbedPane.getTabCount(); i++) {
                 
-                // Skip automaton
-                if (i == indexToSkip)
-                    continue;
+            // Skip automaton
+            if (i == indexToSkip || automataFile.get(i) == null)
+                continue;
 
-                // Add automaton to list of options
-                options[counter++] = automataFile.get(i).getName();
-
-            }
+            // Add automaton to list of options
+            optionsList.add(automataFile.get(i).getName());
 
         }
 
+        String[] options = optionsList.toArray(new String[optionsList.size()]);
         
-        // Display prompt
+            /* Display prompt to user */
+        
         String choice = (String) JOptionPane.showInputDialog(
                 null,
                 str,
@@ -790,8 +778,10 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 options[0]
             );
 
+            /* Return index of chosen automaton */
+
        for (int i = 0; i < tabbedPane.getTabCount(); i++)
-            if (automataFile.get(i).getName().equals(choice))
+            if (automataFile.get(i) != null && automataFile.get(i).getName().equals(choice))
                 return i;
 
         return -1;
