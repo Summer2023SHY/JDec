@@ -8,7 +8,11 @@ import javax.swing.filechooser.*;
 
 public class AutomataGUI extends JFrame implements ActionListener {
 
-		/* Private instance variables */
+        /** Class Constants **/
+
+    private static final String GUI_DATA_FILE_NAME = "gui.data";
+
+		/** Private instance variables **/
 
     private JTabbedPane tabbedPane;
 
@@ -22,10 +26,14 @@ public class AutomataGUI extends JFrame implements ActionListener {
     private File currentDirectory = null;
     private ArrayList<File> automataFile = new ArrayList<File>();
     private ArrayList<Automaton> automata = new ArrayList<Automaton>();
+
+        /** MAIN METHOD **/
     
     public static void main(String[] args) {
 		new AutomataGUI();
     }
+
+        /** CONSTRUCTOR **/
 
     public AutomataGUI() {
 
@@ -129,7 +137,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         try {
 
-            Scanner sc = new Scanner(new File("gui.data"));
+            Scanner sc = new Scanner(new File(GUI_DATA_FILE_NAME));
 
             if (sc.hasNextLine())
                 currentDirectory = new File(sc.nextLine());
@@ -146,7 +154,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
             try {
 
-                PrintWriter writer = new PrintWriter(new FileWriter("gui.data", false));
+                PrintWriter writer = new PrintWriter(new FileWriter(GUI_DATA_FILE_NAME, false));
                 writer.println(currentDirectory.getPath());
                 writer.close();
 
@@ -452,7 +460,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
         return str.equals("T") || str.equals("True");
     }
 
-    /* Label must consist of only letters or the underscore characters (other characters, including digits cause complications with GraphViz) */
+    /**
+     * Label must consist of only letters or the underscore characters (other characters, including digits cause complications with GraphViz).
+     * @param label The label to validate
+     * @return whether or not the label is valid
+     **/
     private static boolean isValidLabel(String label) {
 
         for (int i = 0; i < label.length(); i++)

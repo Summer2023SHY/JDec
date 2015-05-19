@@ -103,11 +103,11 @@ public class Automaton {
      *	Implicit constructor: create automaton with specified initial capacities
      *	NOTE: 	Choosing larger values increases the amount of space needed to store the binary file.
      *			Choosing smaller values increases the frequency that you need to re-write the entire binary file in order to expand it
-	 *	@param stateCapacity - The initial state capacity (increases by a factor of 256 when it is exceeded)
-	 *			NOTE: the initial state capacity may be higher than the value you give it, since it has to be 256^x
-	 *	@param transitionCapacity - The initial maximum number of transitions per state (increases by 1 whenever it is exceeded)
-	 *	@param labelLength - The initial maximum number characters per state label (increases by 1 whenever it is exceeded)
-	 *	@param clearFiles - Whether or not the header and body files should be cleared prior to use
+	 *	@param stateCapacity		The initial state capacity (increases by a factor of 256 when it is exceeded)
+	 *								(NOTE: the initial state capacity may be higher than the value you give it, since it has to be 256^x)
+	 *	@param transitionCapacity	The initial maximum number of transitions per state (increases by 1 whenever it is exceeded)
+	 *	@param labelLength			The initial maximum number characters per state label (increases by 1 whenever it is exceeded)
+	 *	@param clearFiles			Whether or not the header and body files should be cleared prior to use
      **/
     public Automaton(long stateCapacity, int transitionCapacity, int labelLength, boolean clearFiles) {
     	this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, stateCapacity, transitionCapacity, labelLength, clearFiles);
@@ -115,12 +115,12 @@ public class Automaton {
 
     /**
      *	Implicit constructor: create automaton from a binary file
-	 *	@param headerFile - The binary file to load the header information of the automaton from (information about events, etc.)
-	 *	@param bodyFile - The binary file to load the body information of the automaton from (states and transitions)
-	 *  @param stateCapacity - The initial state capacity (increases by a factor of 256 when it is exceeded)
-	 *	@param transitionCapacity - The initial maximum number of transitions per state (increases by 1 whenever it is exceeded)
-	 *	@param labelLength - The initial maximum number characters per state label (increases by 1 whenever it is exceeded)
-	 *	@param clearFiles - Whether or not the header and body files should be cleared prior to use
+	 *	@param headerFile			The binary file to load the header information of the automaton from (information about events, etc.)
+	 *	@param bodyFile				The binary file to load the body information of the automaton from (states and transitions)
+	 *  @param stateCapacity		The initial state capacity (increases by a factor of 256 when it is exceeded)
+	 *	@param transitionCapacity	The initial maximum number of transitions per state (increases by 1 whenever it is exceeded)
+	 *	@param labelLength			The initial maximum number characters per state label (increases by 1 whenever it is exceeded)
+	 *	@param clearFiles			Whether or not the header and body files should be cleared prior to use
      **/
 
 	public Automaton(File headerFile, File bodyFile, long stateCapacity, int transitionCapacity, int labelLength, boolean clearFiles) {
@@ -531,7 +531,7 @@ public class Automaton {
 
     /**
      * Output this automaton in a format that is readable by GraphViz's dot program, which is used to generate the graph's image.
-     * @param size - The requested width and height in pixels
+     * @param size	The requested width and height in pixels
      **/
     public boolean outputDOT(int size) {
 
@@ -943,9 +943,9 @@ public class Automaton {
 
 	/**
 	 * Calculate the amount of space required to store a state, given the specified conditions.
-	 * @param newNBytesPerStateID - The number of bytes per state ID
-	 * @param newTransitionCapacity - The transition capacity
-	 * @param newLabelLength - The maximum label length
+	 * @param newNBytesPerStateID	The number of bytes per state ID
+	 * @param newTransitionCapacity	The transition capacity
+	 * @param newLabelLength		The maximum label length
 	 **/
 	private long calculateNumberOfBytesPerState(long newNBytesPerStateID, int newTransitionCapacity, int newLabelLength) {
 		return
@@ -996,9 +996,9 @@ public class Automaton {
 	 * Adds a transition based on the specified IDs (which means that the states and event must already exist).
 	 * NOTE: This method could be made more efficient since the entire state is written to file instead of only
 	 * writing the new transition to file.
-	 * @param startingStateID - The ID of the state where the transition originates from
-	 * @param eventID - The ID of the event that triggers the transition
-	 * @param targetStateID - The ID of the state where the transition leads to
+	 * @param startingStateID	The ID of the state where the transition originates from
+	 * @param eventID			The ID of the event that triggers the transition
+	 * @param targetStateID		The ID of the state where the transition leads to
 	 **/
 	public boolean addTransition(long startingStateID, int eventID, long targetStateID) {
 
@@ -1043,9 +1043,9 @@ public class Automaton {
 
 	/**
 	 *	Add the specified state to the automaton with an empty transition list
-	 *	@param 	label - The "name" of the new state
-	 *	@param 	marked - Whether or not the states is marked
-	 *	@param 	isInitialState - Whether or not this is the initial state
+	 *	@param 	label			The "name" of the new state
+	 *	@param 	marked			Whether or not the states is marked
+	 *	@param 	isInitialState	Whether or not this is the initial state
 	 *	@return the ID of the added state (0 indicates the addition was unsuccessful)
 	 **/
 	public long addState(String label, boolean marked, boolean isInitialState) {
@@ -1054,10 +1054,10 @@ public class Automaton {
 
 	/**
 	 *	Add the specified state to the automaton
-	 *	@param 	label - The "name" of the new state
-	 *	@param 	marked - Whether or not the states is marked
-	 *	@param 	transitions - The list of transitions
-	 *	@param 	isInitialState - Whether or not this is the initial state
+	 *	@param 	label			The "name" of the new state
+	 *	@param 	marked			Whether or not the states is marked
+	 *	@param 	transitions		The list of transitions
+	 *	@param 	isInitialState	Whether or not this is the initial state
 	 *	@return the ID of the added state (0 indicates the addition was unsuccessful)
 	 **/
 	public long addState(String label, boolean marked, ArrayList<Transition> transitions, boolean isInitialState) {
@@ -1145,11 +1145,11 @@ public class Automaton {
 	 *	Add the specified state to the automaton. NOTE: This method assumes that no state already exists with the specified id.
 	 *  The method renumberStates() must be called some time after using this method has been called since it can create empty
 	 *	spots in the .bdy file where states don't actually exist (this happens during automata operations such as intersection).
-	 *	@param 	label - The "name" of the new state
-	 *	@param 	marked - Whether or not the states is marked
-	 *	@param 	transitions - The list of transitions
-	 *	@param 	isInitialState - Whether or not this is the initial state
-	 *	@param 	id - The index where the state should be added at
+	 *	@param 	label			The "name" of the new state
+	 *	@param 	marked			Whether or not the states is marked
+	 *	@param 	transitions		The list of transitions
+	 *	@param 	isInitialState	Whether or not this is the initial state
+	 *	@param 	id				The index where the state should be added at
 	 *	@return whether or not the addition was successful (returns false if a state already existed there)
 	 **/
 	public boolean addStateAt(String label, boolean marked, ArrayList<Transition> transitions, boolean isInitialState, long id) {
@@ -1241,9 +1241,9 @@ public class Automaton {
 
 	/**
 	 *	Add the specified event to the set (events with identical labels and different properties are currently considered unique)
-	 *	@param label - The "name" of the new event
-	 *	@param observable - Whether or not the event is observable
-	 *	@param controllable - Whether or not the event is controllable
+	 *	@param label		The "name" of the new event
+	 *	@param observable	Whether or not the event is observable
+	 *	@param controllable	Whether or not the event is controllable
 	 *	@return the ID of the added event (0 indicates the addition was unsuccessful, which means the set did not change in size)
 	 **/
 	public int addEvent(String label, boolean observable, boolean controllable) {
@@ -1280,7 +1280,7 @@ public class Automaton {
 	 * Check to see if a state exists.
 	 * NOTE: 	This is a light-weight method which can be used instead of calling "getState(id) != null").
 	 * 			It does not load all of the state information, but only checks the first byte to see if it exists or not.
-	 * @param id - The unique identifier corresponding to the state we are looking for
+	 * @param id	The unique identifier corresponding to the state we are looking for
 	 **/
 	public boolean stateExists(long id) {
 		return State.stateExists(this, bodyRAFile, id);
@@ -1288,8 +1288,8 @@ public class Automaton {
 
     /**
      *	Given the ID number of a state, get the state information
-	 *	@param id - The unique identifier corresponding to the requested state
-	 *	@return state - the requested state
+	 *	@param id	The unique identifier corresponding to the requested state
+	 *	@return the requested state
      **/
     public State getState(long id) {
     	return State.readFromFile(this, bodyRAFile, id);
@@ -1297,8 +1297,8 @@ public class Automaton {
 
     /**
      *	Given the ID number of an event, get the event information
-	 *	@param id - The unique identifier corresponding to the requested event
-	 *	@return state - the requested event (or null if it does not exist)
+	 *	@param id	The unique identifier corresponding to the requested event
+	 *	@return the requested event (or null if it does not exist)
      **/
     public Event getEvent(int id) {
 
