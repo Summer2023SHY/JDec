@@ -546,7 +546,7 @@ public class Automaton {
 
     	StringBuilder str = new StringBuilder();
     	str.append("digraph G {");
-    	str.append("node [shape=circle, style=bold];");
+    	str.append("node [shape=circle, style=bold, constraint=false];");
     	double inches = ((double) size) / 96.0; // Assuming DPI is 96
     	str.append("size=\"" + inches + "," + inches + "\";");
     	str.append("ratio=fill;");
@@ -590,7 +590,7 @@ public class Automaton {
     			}
 
     			str.append(state.getLabel() + "->" + State.readLabelFromFile(this, bodyRAFile, t1.getTargetStateID()));
-    			str.append(" [constraint=false,label=\"" + label.substring(1) + "\"");
+    			str.append(" [label=\"" + label.substring(1) + "\"");
     			
     			if (!t1.getEvent().isObservable())
     				str.append(",style=dotted");
@@ -624,7 +624,9 @@ public class Automaton {
 	        Process process = new ProcessBuilder("dot", "-Tpng", "out.tmp", "-o", "image.png").start();
 
 	        // Wait for it to finish
-	        process.waitFor();
+	       	if (process.waitFor() != 0) {
+	       		System.out.println("ERROR: GraphViz failed to generate image of graph.");
+	       	}
 
 	    } catch (IOException | InterruptedException e) {
 			e.printStackTrace();
