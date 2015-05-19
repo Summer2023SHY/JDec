@@ -47,7 +47,7 @@ public class TestAutomata {
     	if (passedAllTests)
     		System.out.println("\nPASSED ALL TESTS");
     	else
-    		System.out.println("\nDID NOT PASS ALL TESTS");
+    		System.out.println("\n*** DID NOT PASS ALL TESTS ***");
 
     	return passedAllTests;
 
@@ -57,7 +57,8 @@ public class TestAutomata {
 
     	String testRoutineName = "EVENT CREATION";
 
-    	printTestOutput("RUNNING " + testRoutineName + " TESTS...", 1);
+        if (verbose > 1)
+    	   printTestOutput("RUNNING " + testRoutineName + " TESTS...", 1);
 
     	TestCounter counter = new TestCounter();
 
@@ -167,7 +168,8 @@ public class TestAutomata {
 
     	String testRoutineName = "STATE CREATION";
 
-    	printTestOutput("RUNNING " + testRoutineName + " TESTS...", 1);
+        if (verbose > 1)
+    	   printTestOutput("RUNNING " + testRoutineName + " TESTS...", 1);
 
     	TestCounter counter = new TestCounter();
 
@@ -239,7 +241,8 @@ public class TestAutomata {
 
     	String testRoutineName = "AUTOMATON CAPACITY";
 
-    	printTestOutput("RUNNING " + testRoutineName + " TEST ROUTINE...", 1);
+        if (verbose > 1)
+    	   printTestOutput("RUNNING " + testRoutineName + " TEST ROUTINE...", 1);
 
     	TestCounter counter = new TestCounter();
 
@@ -314,7 +317,8 @@ public class TestAutomata {
 
         String testRoutineName = "GUI INPUT";
 
-        printTestOutput("RUNNING " + testRoutineName + " TEST ROUTINE...", 1);
+        if (verbose > 1)
+            printTestOutput("RUNNING " + testRoutineName + " TEST ROUTINE...", 1);
 
         TestCounter counter = new TestCounter();
 
@@ -360,7 +364,8 @@ public class TestAutomata {
 
         String testRoutineName = "AUTOMATA INTERSECTION";
 
-        printTestOutput("RUNNING " + testRoutineName + " TEST ROUTINE...", 1);
+        if (verbose > 1)
+            printTestOutput("RUNNING " + testRoutineName + " TEST ROUTINE...", 1);
 
         TestCounter counter = new TestCounter();
 
