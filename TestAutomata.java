@@ -390,6 +390,18 @@ public class TestAutomata {
         printTestCase("Ensuring the states are correct", result.getStateInput().equals("*zero,F\none,F\ntwo,T\nsix,F"), counter);
         printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("zero,a,one\none,b,two\ntwo,g,zero\nsix,b,two"), counter);
 
+            /* Trim Operation Tests */
+
+        printTestOutput("TRIM OPERATION: ", 2);
+
+        printTestOutput("Trimming the automaton in Figure 2.12 (and comparing the result to the automaton in Figure 2.13b)...", 3);
+        result = fig2_12.trim();
+
+        result.generateInputForGUI();
+        printTestCase("Ensuring the events are correct", result.getEventInput().equals("a,T,T\nb,T,T\ng,T,T"), counter);
+        printTestCase("Ensuring the states are correct", result.getStateInput().equals("*zero,F\none,F\ntwo,T"), counter);
+        printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("zero,a,one\none,b,two\ntwo,g,zero"), counter);
+
             /* Intersection Operation Tests */
 
         printTestOutput("INTERSECTION OPERATION: ", 2);

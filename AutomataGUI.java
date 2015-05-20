@@ -606,6 +606,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 if (selectFile("Select Automaton") == null)
                     break;
 
+                canvas.get(index).setImage(null);
+
                 tabbedPane.setTitleAt(index, automataFile.get(index).getName());
 
             case "Refresh":
