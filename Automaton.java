@@ -39,10 +39,14 @@ public class Automaton {
 
 	public static final long LIMIT_OF_STATES_FOR_PICTURE = 10000; // Arbitrary value which will be revised once we have tried generating large automata
 
+	private static final String GRAPH_IMAGE_FILE_NAME = "image.png";
+
 	private static final String DEFAULT_HEADER_FILE_NAME = "temp.hdr",
 								DEFAULT_BODY_FILE_NAME = "temp.bdy";
 	private static final File 	DEFAULT_HEADER_FILE = new File(DEFAULT_HEADER_FILE_NAME),
 								DEFAULT_BODY_FILE = new File(DEFAULT_BODY_FILE_NAME);
+
+
 
 		/** PRIVATE INSTANCE VARIABLES **/
 
@@ -130,33 +134,40 @@ public class Automaton {
 		this.headerFileName = headerFile.getName();
 		this.bodyFileName = bodyFile.getName();
 
-		// These variables will be overridden if we are loading information from file
+			/* These variables will be overridden if we are loading information from file */
+
 		this.stateCapacity = stateCapacity;
 		this.transitionCapacity = transitionCapacity;
 		this.labelLength = labelLength;
 
-		// The automaton should have room for at least 1 transition per state (otherwise our automaton will be pretty boring)
+			/* The automaton should have room for at least 1 transition per state (otherwise our automaton will be pretty boring) */
+
 		if (this.transitionCapacity < 1)
 			this.transitionCapacity = 1;
 
-		// The requested length of the state labels should not exceed the limit, nor should it be non-positive
+			/* The requested length of the state labels should not exceed the limit, nor should it be non-positive */
+
 		if (this.labelLength < 1)
 			this.labelLength = 1;
 		if (this.labelLength > MAX_LABEL_LENGTH)
 			this.labelLength = MAX_LABEL_LENGTH;
 
-		// Clear files
+			/* Clear files */
+
 		if (clearFiles)
 			deleteFiles();
 		
-		// Open files and try to load data from header
+			/* Open files and try to load data from header */
+
 		openRAFiles();
 
-	    // Finish setting up
+	    	/* Finish setting up */
+
 	    initializeVariables();
     	nBytesPerState = calculateNumberOfBytesPerState(nBytesPerStateID, this.transitionCapacity, this.labelLength);
 
-    	// Update header file
+    		/* Update header file */
+
 		writeHeaderFile();
 
     }
@@ -520,7 +531,16 @@ public class Automaton {
 
     }
 
-    // Unique ID created in a way that no other combination of valid id1 and id2 from the same pair of automatons will map to this ID
+    /**
+     * Given two state IDs and their respective automatons, create a combined ID by using a 1-to-1 mapping.
+     * NOTE: The reasoning behind this formula is analogous to the following: if you have a table with N rows and M columns, every cell
+     * is guaranteed to have a different combination of row and column indexes.
+     * @param id1		The state ID from the first automaton
+     * @param first		The first automaton
+     * @param id2		The state ID from the second automaton
+     * @param second	The second automaton
+     * @return the combined ID
+     **/ 
     private static long calculateCombinedID(long id1, Automaton first, long id2, Automaton second) {
 
     	return ((id2 - 1) * first.getNumberOfStates() + id1);
@@ -530,10 +550,11 @@ public class Automaton {
     	/** IMAGE GENERATION **/
 
     /**
-     * Output this automaton in a format that is readable by GraphViz's dot program, which is used to generate the graph's image.
+     * Output this automaton in a format that is readable by GraphViz's dot program, then use it to generate the graph's image.
      * @param size	The requested width and height in pixels
+     * @return whether or not the image was successfully generated
      **/
-    public boolean outputDOT(int size) {
+    public boolean generateImage(int size) {
 
     		/* Abort the operation if the automaton is too large to do this in a reasonable amount of time */
     	
@@ -603,9 +624,8 @@ public class Automaton {
 
     	}
 
-    		/* Finish up */
+    		/* Add arrow towards initial state */
 
-    	// Create arrow towards initial state (currently assumed to be the first state)
     	if (initialState > 0) {
     		str.append("node [shape=plaintext];");
     		str.append("entry->" + State.readLabelFromFile(this, bodyRAFile, initialState) + ";");
@@ -613,7 +633,8 @@ public class Automaton {
 
     	str.append("}");
 
-    	// Generate image
+    		/* Generate image */
+
     	try {
 
     		// Write DOT language to file
@@ -621,25 +642,31 @@ public class Automaton {
 			out.print(str.toString());
 
 			// Produce PNG from DOT language
-	        Process process = new ProcessBuilder("dot", "-Tpng", "out.tmp", "-o", "image.png").start();
+	        Process process = new ProcessBuilder("dot", "-Tpng", "out.tmp", "-o", GRAPH_IMAGE_FILE_NAME).start();
 
 	        // Wait for it to finish
 	       	if (process.waitFor() != 0) {
 	       		System.out.println("ERROR: GraphViz failed to generate image of graph.");
+	       		return false;
 	       	}
 
 	    } catch (IOException | InterruptedException e) {
 			e.printStackTrace();
+			return false;
 		}
     	
     	return true;
 
     }
 
+    /**
+     * Load the generated graph image from file.
+     * @return image, or null if it could not be loaded
+     **/
     public BufferedImage loadImageFromFile() {
 
     	try {
-			return ImageIO.read(getClass().getResource("image.png"));
+			return ImageIO.read(getClass().getResource(GRAPH_IMAGE_FILE_NAME));
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
@@ -649,6 +676,9 @@ public class Automaton {
 
 		/** GUI INPUT CODE GENERATION **/
 
+	/**
+	 * Generates GUI input code from this automaton (which is useful when loading automaton from file in the GUI).
+	 **/
 	public void generateInputForGUI() {
 
 		eventInputBuilder = new StringBuilder();
@@ -715,6 +745,11 @@ public class Automaton {
 
 	}
 
+	/**
+	 * Get the event input code.
+	 * NOTE: Must call generateInputForGUI() prior to use.
+	 * @return input code in the form of a String
+	 **/
 	public String getEventInput() {
 
 		if (eventInputBuilder == null)
@@ -724,6 +759,11 @@ public class Automaton {
 
 	}
 
+	/**
+	 * Get the state input code.
+	 * NOTE: Must call generateInputForGUI() prior to use.
+	 * @return input code in the form of a String
+	 **/
 	public String getStateInput() {
 
 		if (stateInputBuilder == null)
@@ -733,6 +773,11 @@ public class Automaton {
 
 	}
 
+	/**
+	 * Get the transition input code.
+	 * NOTE: Must call generateInputForGUI() prior to use.
+	 * @return input code in the form of a String
+	 **/
 	public String getTransitionInput() {
 
 		if (transitionInputBuilder == null)
@@ -744,6 +789,9 @@ public class Automaton {
 
 		/** WORKING WITH FILES **/
 
+	/**
+	 * Open the header and body files, and read in the header file.
+	 **/
 	private void openRAFiles() {
 
 		try {
@@ -759,6 +807,9 @@ public class Automaton {
 
 	}
 
+	/**
+	 * Delete the current header and body files.
+	 **/
 	private void deleteFiles() {
 
 		try {
@@ -773,7 +824,7 @@ public class Automaton {
 	}
 
 	/**
-	 * Delete the temporary files (if they exist)
+	 * Delete the temporary header and body files (if they exist).
 	 **/
 	public static void clearTemporaryFiles() {
 
@@ -789,7 +840,7 @@ public class Automaton {
     }
 
     /**
-     *	Write all of the header information to file.
+     * Write all of the header information to file.
 	 **/
 	private void writeHeaderFile() {
 
@@ -839,7 +890,7 @@ public class Automaton {
 	}
 
 	/**
-	 *	Read all of the header information from file.
+	 * Read all of the header information from file.
 	 **/
 	private void readHeaderFile() {
 
@@ -893,9 +944,19 @@ public class Automaton {
 
 	}
 
-	private void recreateBodyFile(long newStateCapacity, int newTransitionCapacity, int newLabelLength, int newNBytesPerStateID, long newNBytesPerState) {
+	/**
+	 * Re-create the body file to accommodate some increase in capacity.
+	 * NOTE: This operation can clearly be expensive for large automata, so we need to try to reduce the number of times this method is called.
+	 * @param newStateCapacity		The number of states that the automaton will be able to hold
+	 * @param newTransitionCapacity	The number of transitions that each state will be able to hold
+	 * @param newLabelLength		The maximum number of characters that each state label will be allowed
+	 * @param newNBytesPerStateID	The number of bytes that are now required to represent each state ID
+	 **/
+	private void recreateBodyFile(long newStateCapacity, int newTransitionCapacity, int newLabelLength, int newNBytesPerStateID) {
 
 		System.out.println("DEBUG: Re-creating body file.");
+
+		long newNBytesPerState = calculateNumberOfBytesPerState(newNBytesPerStateID, newTransitionCapacity, newLabelLength);
 
 			/* Setup files */
 
@@ -1003,13 +1064,15 @@ public class Automaton {
 		for (int i = 0; i < nBytesPerStateID; i++)
 			stateCapacity <<= 8;
 
-		// Special case when the user gives a value between 2^56 - 1 and 2^64 (exclusive)
+			/* Special case when the user gives a value between 2^56 - 1 and 2^64 (exclusive) */
+
 		if (stateCapacity == 0)
 			stateCapacity = MAX_STATE_CAPACITY;
 		else
 			stateCapacity--;
 
-		// Cap the state capacity
+			/* Cap the state capacity */
+
 		if (stateCapacity > MAX_STATE_CAPACITY)
 			stateCapacity = MAX_STATE_CAPACITY;
 
@@ -1044,8 +1107,7 @@ public class Automaton {
 					stateCapacity,
 					transitionCapacity + 1,
 					labelLength,
-					nBytesPerStateID,
-					calculateNumberOfBytesPerState(nBytesPerStateID, transitionCapacity + 1, labelLength)
+					nBytesPerStateID
 				);
 
 			// Update header file
@@ -1067,33 +1129,35 @@ public class Automaton {
 	}
 
 	/**
-	 *	Add the specified state to the automaton with an empty transition list
-	 *	@param 	label			The "name" of the new state
-	 *	@param 	marked			Whether or not the states is marked
-	 *	@param 	isInitialState	Whether or not this is the initial state
-	 *	@return the ID of the added state (0 indicates the addition was unsuccessful)
+	 * Add the specified state to the automaton with an empty transition list.
+	 * @param label				The "name" of the new state
+	 * @param marked			Whether or not the states is marked
+	 * @param isInitialState	Whether or not this is the initial state
+	 * @return the ID of the added state (0 indicates the addition was unsuccessful)
 	 **/
 	public long addState(String label, boolean marked, boolean isInitialState) {
 		return addState(label, marked, new ArrayList<Transition>(), isInitialState);
 	}
 
 	/**
-	 *	Add the specified state to the automaton
-	 *	@param 	label			The "name" of the new state
-	 *	@param 	marked			Whether or not the states is marked
-	 *	@param 	transitions		The list of transitions
-	 *	@param 	isInitialState	Whether or not this is the initial state
-	 *	@return the ID of the added state (0 indicates the addition was unsuccessful)
+	 * Add the specified state to the automaton.
+	 * @param label				The "name" of the new state
+	 * @param marked			Whether or not the states is marked
+	 * @param transitions		The list of transitions
+	 * @param isInitialState	Whether or not this is the initial state
+	 * @return the ID of the added state (0 indicates the addition was unsuccessful)
 	 **/
 	public long addState(String label, boolean marked, ArrayList<Transition> transitions, boolean isInitialState) {
 
-		// Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs)
+			/* Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs) */
+
 		if (nStates == MAX_STATE_CAPACITY) {
 			System.out.println("ERROR: Could not write state to file.");
 			return 0;
 		}
 
-		// Increase the maximum allowed characters per state label
+			/* Increase the maximum allowed characters per state label */
+
 		if (label.length() > labelLength) {
 
 			// If we cannot increase the capacity, indicate a failure
@@ -1107,13 +1171,13 @@ public class Automaton {
 					stateCapacity,
 					transitionCapacity,
 					label.length(),
-					nBytesPerStateID,
-					calculateNumberOfBytesPerState(nBytesPerStateID, transitionCapacity, label.length())
+					nBytesPerStateID
 				);
 
 		}
 
-		// Increase the maximum allowed transitions per state
+			/* Increase the maximum allowed transitions per state */
+		
 		if (transitions.size() > transitionCapacity) {
 
 			// If we cannot increase the capacity, indicate a failure (NOTE: This will likely never happen)
@@ -1122,18 +1186,18 @@ public class Automaton {
 				return 0;
 			}
 
-			// Re-create binary file
+				/* Re-create binary file */
 			recreateBodyFile(
 					stateCapacity,
 					transitions.size(),
 					labelLength,
-					nBytesPerStateID,
-					calculateNumberOfBytesPerState(nBytesPerStateID, transitions.size(), labelLength)
+					nBytesPerStateID
 				);
 
 		}
 
-		// Check to see if we need to re-write the entire binary file
+			/* Check to see if we need to re-write the entire binary file */
+		
 		if (nStates == stateCapacity) {
 
 			// Re-create binary file
@@ -1141,51 +1205,55 @@ public class Automaton {
 					((stateCapacity + 1) << 8) - 1,
 					transitionCapacity,
 					labelLength,
-					nBytesPerStateID + 1,
-					calculateNumberOfBytesPerState(nBytesPerStateID + 1, transitionCapacity, labelLength)
+					nBytesPerStateID + 1
 				);
 
 		}
 
 		long id = ++nStates;
 
-		// Write new state to file
+			/* Write new state to file */
+		
 		State state = new State(label, id, marked, transitions);
 		if (!state.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID, transitionCapacity)) {
 			System.out.println("ERROR: Could not write state to file.");
 			return 0;
 		}
 
-		// Change initial state
+			/* Change initial state */
+		
 		if (isInitialState)
 			initialState = id;
 
-		// Update header file
+			/* Update header file */
+		
 		writeHeaderFile();
 
 		return id;
 	}
 
 	/**
-	 *	Add the specified state to the automaton. NOTE: This method assumes that no state already exists with the specified id.
-	 *  The method renumberStates() must be called some time after using this method has been called since it can create empty
-	 *	spots in the .bdy file where states don't actually exist (this happens during automata operations such as intersection).
-	 *	@param 	label			The "name" of the new state
-	 *	@param 	marked			Whether or not the states is marked
-	 *	@param 	transitions		The list of transitions
-	 *	@param 	isInitialState	Whether or not this is the initial state
-	 *	@param 	id				The index where the state should be added at
-	 *	@return whether or not the addition was successful (returns false if a state already existed there)
+	 * Add the specified state to the automaton. NOTE: This method assumes that no state already exists with the specified id.
+	 * The method renumberStates() must be called some time after using this method has been called since it can create empty
+	 * spots in the .bdy file where states don't actually exist (this happens during automata operations such as intersection).
+	 * @param label				The "name" of the new state
+	 * @param marked			Whether or not the states is marked
+	 * @param transitions		The list of transitions
+	 * @param isInitialState	Whether or not this is the initial state
+	 * @param id				The index where the state should be added at
+	 * @return whether or not the addition was successful (returns false if a state already existed there)
 	 **/
 	public boolean addStateAt(String label, boolean marked, ArrayList<Transition> transitions, boolean isInitialState, long id) {
 
-		// Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs)
+			/* Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs) */
+		
 		if (nStates == MAX_STATE_CAPACITY) {
 			System.out.println("ERROR: Could not write state to file.");
 			return false;
 		}
 
-		// Increase the maximum allowed characters per state label
+			/* Increase the maximum allowed characters per state label */
+		
 		if (label.length() > labelLength) {
 
 			// If we cannot increase the capacity, indicate a failure
@@ -1198,13 +1266,13 @@ public class Automaton {
 					stateCapacity,
 					transitionCapacity,
 					label.length(),
-					nBytesPerStateID,
-					calculateNumberOfBytesPerState(nBytesPerStateID, transitionCapacity, label.length())
+					nBytesPerStateID
 				);
 
 		}
 
-		// Increase the maximum allowed transitions per state
+			/* Increase the maximum allowed transitions per state */
+
 		if (transitions.size() > transitionCapacity) {
 
 			// If we cannot increase the capacity, indicate a failure (NOTE: This will likely never happen)
@@ -1217,13 +1285,13 @@ public class Automaton {
 					stateCapacity,
 					transitions.size(),
 					labelLength,
-					nBytesPerStateID,
-					calculateNumberOfBytesPerState(nBytesPerStateID, transitions.size(), labelLength)
+					nBytesPerStateID
 				);
 
 		}
 
-		// Check to see if we need to re-write the entire binary file
+			/* Check to see if we need to re-write the entire binary file */
+
 		if (id > stateCapacity) {
 
 			// Determine how much stateCapacity and nBytesPerStateID need to be increased by
@@ -1239,14 +1307,15 @@ public class Automaton {
 					newStateCapacity,
 					transitionCapacity,
 					labelLength,
-					newNBytesPerStateID,
-					calculateNumberOfBytesPerState(newNBytesPerStateID, transitionCapacity, labelLength)
+					newNBytesPerStateID
 				);
 
 		}
 
-		// Write new state to file
+			/* Write new state to file */
+		
 		State state = new State(label, id, marked, transitions);
+		
 		if (!state.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID, transitionCapacity)) {
 			System.out.println("ERROR: Could not write state to file.");
 			return false;
@@ -1254,22 +1323,24 @@ public class Automaton {
 
 		nStates++;
 
-		// Change initial state
+			/* Update initial state */
+		
 		if (isInitialState)
 			initialState = id;
 
-		// Update header file
+			/* Update header file */
+		
 		writeHeaderFile();
 
 		return true;
 	}
 
 	/**
-	 *	Add the specified event to the set (events with identical labels and different properties are currently considered unique)
-	 *	@param label		The "name" of the new event
-	 *	@param observable	Whether or not the event is observable
-	 *	@param controllable	Whether or not the event is controllable
-	 *	@return the ID of the added event (0 indicates the addition was unsuccessful, which means the set did not change in size)
+	 * Add the specified event to the set.
+	 * @param label			The "name" of the new event
+	 * @param observable	Whether or not the event is observable
+	 * @param controllable	Whether or not the event is controllable
+	 * @return the ID of the added event (0 indicates the addition was unsuccessful, which implies that the set did not change in size)
 	 **/
 	public int addEvent(String label, boolean observable, boolean controllable) {
 
@@ -1278,11 +1349,9 @@ public class Automaton {
 			if (e.getLabel().equals(label))
 				return 0; 
 
-		// Keep track of the original 
-		long originalSize = events.size();
-
 		// Create and add the event
-		Event event = new Event(label, events.size() + 1, observable, controllable);
+		int id = events.size() + 1;
+		Event event = new Event(label, id, observable, controllable);
 		events.add(event);
 
 		// Add event to corresponding lists
@@ -1294,8 +1363,7 @@ public class Automaton {
 		// Update header file
 		writeHeaderFile();
 
-		// If the number of events have changed, that means that this was a unique event
-		return originalSize != events.size() ? events.size() : 0;
+		return id;
 
 	}
 
@@ -1303,8 +1371,8 @@ public class Automaton {
 
 	/**
 	 * Check to see if a state exists.
-	 * NOTE: 	This is a light-weight method which can be used instead of calling "getState(id) != null").
-	 * 			It does not load all of the state information, but only checks the first byte to see if it exists or not.
+	 * NOTE: This is a light-weight method which can be used instead of calling "getState(id) != null").
+	 * It does not load all of the state information, but only checks the first byte to see if it exists or not.
 	 * @param id	The unique identifier corresponding to the state we are looking for
 	 **/
 	public boolean stateExists(long id) {
@@ -1312,18 +1380,18 @@ public class Automaton {
 	}
 
     /**
-     *	Given the ID number of a state, get the state information
-	 *	@param id	The unique identifier corresponding to the requested state
-	 *	@return the requested state
+     * Given the ID number of a state, get the state information
+	 * @param id	The unique identifier corresponding to the requested state
+	 * @return the requested state
      **/
     public State getState(long id) {
     	return State.readFromFile(this, bodyRAFile, id);
     }
 
     /**
-     *	Given the ID number of an event, get the event information
-	 *	@param id	The unique identifier corresponding to the requested event
-	 *	@return the requested event (or null if it does not exist)
+     * Given the ID number of an event, get the event information
+	 * @param id	The unique identifier corresponding to the requested event
+	 * @return the requested event (or null if it does not exist)
      **/
     public Event getEvent(int id) {
 
@@ -1336,24 +1404,24 @@ public class Automaton {
     }
 
     /**
-     *	Return the set of all events (in order by ID).
-	 *	@return the set of all events
+     * Return the set of all events (in order by ID).
+	 * @return the set of all events
      **/
     public Set<Event> getEvents() {
     	return events;
     }
 
     /**
-     *	Return the set of all active events.
-	 *	@return the set of all active events
+     * Return the set of all active events.
+	 * @return the set of all active events
      **/
     public Set<Event> getActiveEvents() {
     	return activeEvents;
     }
 
     /**
-     *	Return the set of all controllable events.
-	 *	@return the set of all controllable events
+     * Return the set of all controllable events.
+	 * @return the set of all controllable events
      **/
     public Set<Event> getControllableEvents() {
     	return controllableEvents;

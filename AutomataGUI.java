@@ -312,7 +312,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
             canvas.get(index).setImage(null);
 
         // Try to create graph image, displaying it on the screen
-        else if (automaton.outputDOT(imageSize))
+        else if (automaton.generateImage(imageSize))
             canvas.get(index).setImage(automaton.loadImageFromFile());
 
     }
