@@ -369,9 +369,30 @@ public class TestAutomata {
 
         TestCounter counter = new TestCounter();
 
-            /* Basic GUI Input Tests */
+            /* Co-Accessible Operation Tests */
 
-        printTestOutput("AUTOMATA INTERSECTIONS: ", 2);
+        printTestOutput("CO-ACCESSIBLE OPERATION: ", 2);
+
+        printTestOutput("Instantiating automaton from Figure 2.1...", 3);
+        Automaton fig2_12 = AutomataGUI.generateAutomaton(
+                "a,T,T\nb,T,T\ng,T,T", // Events
+                "*zero,F\none,F\ntwo,T\nthree,F\nfour,F\nfive,F\nsix,F", // States 
+                "zero,a,one\none,a,three\none,b,two\none,g,five\ntwo,g,zero\nthree,b,four\nfour,g,four\nfour,a,three\nsix,a,three\nsix,b,two", // Transitions
+                false, // We do not want it to be verbose
+                new File("fig2_12.hdr")
+            );
+
+        printTestOutput("Taking the co-accessible part of Figure 2.12 (and comparing the result to the automaton in Figure 2.13a)...", 3);
+        Automaton result = fig2_12.coaccessible();
+
+        result.generateInputForGUI();
+        printTestCase("Ensuring the events are correct", result.getEventInput().equals("a,T,T\nb,T,T\ng,T,T"), counter);
+        printTestCase("Ensuring the states are correct", result.getStateInput().equals("*zero,F\none,F\ntwo,T\nsix,F"), counter);
+        printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("zero,a,one\none,b,two\ntwo,g,zero\nsix,b,two"), counter);
+
+            /* Intersection Operation Tests */
+
+        printTestOutput("INTERSECTION OPERATION: ", 2);
 
         printTestOutput("Instantiating automaton from Figure 2.1...", 3);
         Automaton fig2_1 = AutomataGUI.generateAutomaton(
@@ -390,8 +411,8 @@ public class TestAutomata {
                 new File("fig2_2.hdr")
             );
 
-        printTestOutput("Taking the product of Figure 2.1 and Figure 2.2 (and comparing the result to the first automaton in Figure 2.15)...", 3);
-        Automaton result = Automaton.intersection(fig2_1, fig2_2);
+        printTestOutput("Taking the intersection of Figure 2.1 and Figure 2.2 (and comparing the result to the first automaton in Figure 2.15)...", 3);
+        result = Automaton.intersection(fig2_1, fig2_2);
 
         result.generateInputForGUI();
         printTestCase("Ensuring the events are correct", result.getEventInput().equals("a,T,T\nb,T,T"), counter);
@@ -407,13 +428,17 @@ public class TestAutomata {
                 new File("fig2_13b.hdr")
             );
 
-        printTestOutput("Taking the product of Figure 2.2 and Figure 2.13(b) (and comparing the result to the second automaton in Figure 2.15)...", 3);
+        printTestOutput("Taking the intersection of Figure 2.2 and Figure 2.13(b) (and comparing the result to the second automaton in Figure 2.15)...", 3);
         result = Automaton.intersection(fig2_2, fig2_13b);
 
         result.generateInputForGUI();
         printTestCase("Ensuring the events are correct", result.getEventInput().equals("a,T,T\nb,T,T"), counter);
         printTestCase("Ensuring the states are correct", result.getStateInput().equals("*zero_zero,F\none_one,F\nzero_two,F"), counter);
         printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("zero_zero,a,one_one\none_one,b,zero_two"), counter);
+
+            /* Union Operation Tests */
+
+        printTestOutput("UNION OPERATION: ", 2);
 
         printTestOutput("Taking the union of Figure 2.1 and Figure 2.2 (and comparing the result the automaton in Figure 2.16)...", 3);
         result = Automaton.union(fig2_1, fig2_2);

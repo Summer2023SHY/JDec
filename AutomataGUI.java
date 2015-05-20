@@ -494,7 +494,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
     }
 
     /**
-     *  Adds the menu system to the application.
+     * Adds the menu system to the application.
      **/
     private void addMenu() {
 
@@ -626,9 +626,14 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 createTab(new File("accessible.hdr"), automata.get(index).accessible());
                 break;
 
-             case "Co-Accessible":
+            case "Co-Accessible":
 
                 createTab(new File("coaccessible.hdr"), automata.get(index).coaccessible());
+                break;
+
+            case "Trim":
+
+                createTab(new File("trim.hdr"), automata.get(index).trim());
                 break;
 
             case "Intersection":

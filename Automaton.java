@@ -176,6 +176,7 @@ public class Automaton {
 
     /**
      * Create a new copy of this automaton that has all unreachable states and transitions removed.
+     * @return the accessible automaton
      **/
     public Automaton accessible() {
 
@@ -246,6 +247,7 @@ public class Automaton {
 
     /**
      * Create a new copy of this automaton that has all states removed which are unable to reach a marked state.
+     * @return the co-accessible automaton
      **/
     public Automaton coaccessible() {
 
@@ -307,7 +309,7 @@ public class Automaton {
     		State stateWithInvertedTransitions = invertedAutomaton.getState(s);
 
     		// Add this state (and it's transitions) to the co-accessible automaton
-    		automaton.addState(state.getLabel(), state.isMarked(), s == automaton.getInitialStateID());
+    		automaton.addStateAt(state.getLabel(), state.isMarked(), new ArrayList<Transition>(), s == this.getInitialStateID(), s);
 
     		// Add all directly reachable states from this one to the stack
     		for (Transition t : stateWithInvertedTransitions.getTransitions()) {
@@ -340,6 +342,19 @@ public class Automaton {
     		/* Return co-accessible automaton */
 
     	return automaton;
+    }
+
+    /**
+     * Create a new copy of this automaton that is trim (both accessible and co-accessible).
+     * NOTE: I am taking the accessible part of the automaton before the co-accessible part of the automaton
+     * because the accessible() method has less overhead than the coaccessible() method.
+     * @return the trim automaton
+     **/
+
+    public Automaton trim() {
+
+    	return accessible().coaccessible();
+
     }
 
     /**
@@ -1092,6 +1107,7 @@ public class Automaton {
 		byte[] buffer = new byte[(int) nBytesPerState];
 
 		for (long s = 1; s <= nStates + counter; s++) {
+
 			State state = getState(s);
 
 			// Check for non-existent state
@@ -1207,6 +1223,11 @@ public class Automaton {
 			/* Create starting state from ID */
 
 		State startingState = getState(startingStateID);
+
+		if (startingState == null) {
+			System.out.println("ERROR: Could not add transition to file (starting state does not exist).");
+			return false;
+		}
 
 			/* Increase the maximum allowed transitions per state */
 
