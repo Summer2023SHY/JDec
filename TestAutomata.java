@@ -448,6 +448,32 @@ public class TestAutomata {
         printTestCase("Ensuring the states are correct", result.getStateInput().equals("*zero_zero,F\none_one,F\nzero_two,F"), counter);
         printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("zero_zero,a,one_one\none_one,b,zero_two"), counter);
 
+        printTestOutput("Instantiating the first automaton from Figure 2.20...", 3);
+        Automaton fig2_20a = AutomataGUI.generateAutomaton(
+                "a1\na2\nb\nr", // Events
+                "*x1,F\nx2,F\nx3,T", // States 
+                "x1,a1,x2\nx1,a2,x2\nx2,b,x3\nx3,r,x1", // Transitions
+                false, // We do not want it to be verbose
+                new File("fig2_20a.hdr")
+            );
+
+        printTestOutput("Instantiating the second automaton from Figure 2.20...", 3);
+        Automaton fig2_20b = AutomataGUI.generateAutomaton(
+                "a1\nb\nc1\nr\na2\nc2", // Events
+                "*y1,F\ny2,F\ny3,F\ny4,F\ny5,F\ny6,F", // States 
+                "y1,a1,y2\ny2,b,y4\ny4,r,y1\ny4,c1,y6\ny6,r,y1\ny1,a2,y3\ny3,b,y5\ny5,c2,y6\ny5,r,y1", // Transitions
+                false, // We do not want it to be verbose
+                new File("fig2_20b.hdr")
+            );
+
+        printTestOutput("Taking the intersection of the first two automata in Figure 2.20 (and comparing the result to the third automaton in Figure 2.20)...", 3);
+        result = Automaton.intersection(fig2_20a, fig2_20b);
+
+        result.generateInputForGUI();
+        printTestCase("Ensuring the events are correct", result.getEventInput().equals("a1,T,T\na2,T,T\nb,T,T\nr,T,T"), counter);
+        printTestCase("Ensuring the states are correct", result.getStateInput().equals("*x1_y1,F\nx2_y2,F\nx2_y3,F\nx3_y4,F\nx3_y5,F"), counter);
+        printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("x1_y1,a1,x2_y2\nx1_y1,a2,x2_y3\nx2_y2,b,x3_y4\nx2_y3,b,x3_y5\nx3_y4,r,x1_y1\nx3_y5,r,x1_y1"), counter);
+
             /* Union Operation Tests */
 
         printTestOutput("UNION OPERATION: ", 2);

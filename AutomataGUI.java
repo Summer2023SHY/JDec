@@ -479,14 +479,23 @@ public class AutomataGUI extends JFrame implements ActionListener {
     }
 
     /**
-     * Label must consist of only letters or the underscore characters (other characters, including digits cause complications with GraphViz).
+     * Label must consist of only letters, digits, or underscores (leading digits cause complications with GraphViz).
      * @param label The label to validate
      * @return whether or not the label is valid
      **/
     private static boolean isValidLabel(String label) {
 
-        for (int i = 0; i < label.length(); i++)
-            if (!Character.isLetter(label.charAt(i)) && label.charAt(i) != '_')
+        // Must be at least one character long
+        if (label.length() < 1)
+            return false;
+
+        // First character can be a letter or underscore
+        if (!Character.isLetter(label.charAt(0)) && label.charAt(0) != '_')
+            return false;
+
+        // All of the remaining characters can be letters, numbers, or underscores
+        for (int i = 1; i < label.length(); i++)
+            if (!Character.isLetterOrDigit(label.charAt(i)) && label.charAt(i) != '_')
                 return false;
 
         return true;
