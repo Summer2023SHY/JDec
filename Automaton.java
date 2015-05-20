@@ -1,6 +1,6 @@
 /**
  * Automaton - 	This extensive class is able to fully represent an automaton. The usage of .hdr and .bdy files
- * 				gives the flexibility to work with very large automata, since the entire automaton does not need
+ * 				gives the potential to work with very large automata, since the entire automaton does not need
  *				to be stored in memory.
  *
  * @author Micah Stairs
@@ -596,6 +596,10 @@ public class Automaton {
 					mappingRAFile.read(buffer);
 					long newStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
 
+					// Update initial state ID (if necessary)
+					if (initialState == s)
+						initialState = newStateID;
+
 					// Update ID of state
 					state.setID(newStateID);
 
@@ -738,7 +742,7 @@ public class Automaton {
 
     	if (initialState > 0) {
     		str.append("node [shape=plaintext];");
-    		str.append("entry->" + getStateExcludingTransitions(initialState).getLabel() + ";");
+    		str.append("\" \"->" + getStateExcludingTransitions(initialState).getLabel() + " [color=green3];");
     	}
 
     	str.append("}");
@@ -1093,7 +1097,7 @@ public class Automaton {
 			// Check for non-existent state
 			if (state == null) {
 
-				// Pad with zeroes, which will indicate a non-existent state
+				// Pad with zeros, which will indicate a non-existent state
 				try {
 					newBodyRAFile.write(buffer);
 				} catch (IOException e) {
