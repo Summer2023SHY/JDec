@@ -452,7 +452,7 @@ public class TestAutomata {
 
         printTestOutput("UNION OPERATION: ", 2);
 
-        printTestOutput("Taking the union of Figure 2.1 and Figure 2.2 (and comparing the result the automaton in Figure 2.16)...", 3);
+        printTestOutput("Taking the union of Figure 2.1 and Figure 2.2 (and comparing the result to the automaton in Figure 2.16)...", 3);
         result = Automaton.union(fig2_1, fig2_2);
 
         result.generateInputForGUI();
@@ -461,6 +461,45 @@ public class TestAutomata {
         printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("x_zero,a,x_one\nx_zero,g,z_zero\ny_zero,b,y_zero\n"
             + "y_zero,a,x_one\nz_zero,b,z_zero\nz_zero,a,y_one\nz_zero,g,y_zero\nx_one,a,x_one\nx_one,g,z_one\ny_one,b,y_zero\ny_one,a,x_one\nz_one,b,z_zero\n"
             + "z_one,a,y_one\nz_one,g,y_one"), counter);
+
+        printTestOutput("Instantiating the first automaton from Figure 2.17...", 3);
+        Automaton fig2_17a = AutomataGUI.generateAutomaton(
+                "a,T,T\nb,T,T\nc,T,T", // Events
+                "*one,T\ntwo,F", // States 
+                "one,c,one\none,a,two\ntwo,b,two", // Transitions
+                false, // We do not want it to be verbose
+                new File("fig2_17a.hdr")
+            );
+
+        printTestOutput("Instantiating the second automaton from Figure 2.17...", 3);
+        Automaton fig2_17b = AutomataGUI.generateAutomaton(
+                "b,T,T\na,T,T\nd,T,T", // Events
+                "*A,T\nB,F", // States 
+                "A,b,A\nA,a,B\nB,d,B", // Transitions
+                false, // We do not want it to be verbose
+                new File("fig2_17b.hdr")
+            );
+
+        printTestOutput("Instantiating the third automaton from Figure 2.17...", 3);
+        Automaton fig2_17c = AutomataGUI.generateAutomaton(
+                "c,T,T\nb,T,T\na,T,T", // Events
+                "*D,T\nE,F", // States 
+                "D,c,D\nD,a,E\nE,a,E", // Transitions
+                false, // We do not want it to be verbose
+                new File("fig2_17c.hdr")
+            );
+
+        printTestOutput("Taking the union of the three automata in Figure 2.17 (and comparing the result to the automaton described in Example 2.17)...", 3);
+        // result = Automaton.union(fig2_17a, fig2_17b);
+        result = Automaton.union(Automaton.union(fig2_17a, fig2_17b), fig2_17c);
+
+        result.generateInputForGUI();
+        System.out.println(result.getEventInput());
+        System.out.println(result.getStateInput());
+        System.out.println(result.getTransitionInput());
+        printTestCase("Ensuring the events are correct", result.getEventInput().equals("a,T,T\nb,T,T\nc,T,T\nd,T,T"), counter);
+        printTestCase("Ensuring the states are correct", result.getStateInput().equals("*one_A_D"), counter);
+        printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("one_A_D,c,one_A_D"), counter);
 
             /* Print summary of this test routine */
 

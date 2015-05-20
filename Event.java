@@ -75,7 +75,13 @@ public class Event implements Comparable<Event> {
 		if (this.label.equals(other.label))
 			return 0;
 
-		return (new Integer(id)).compareTo(other.getID());
+		int comparedValue = (new Integer(id)).compareTo(other.getID());
+
+		// This check is necessary in case events are coming from different automata (so they may have the same ID but have different labels)
+		if (comparedValue == 0)
+			return -1;
+
+		return comparedValue;
 	}
 
 	/**

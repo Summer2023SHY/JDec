@@ -519,7 +519,7 @@ public class Automaton {
     		// Find every pair of transitions that have the same events (this accounts for public events)
     		for (Transition t1 : transitions1)
     			for (Transition t2 : transitions2)
-    				if (t1.getEvent().equals(t2.getEvent())) {
+    				if (t1.getEvent().getLabel().equals(t2.getEvent().getLabel())) {
 
 						// Add this pair to the stack
     					stack1.add(t1.getTargetStateID());
@@ -527,7 +527,7 @@ public class Automaton {
 
     					// Add transition to the new automaton
     					long targetID = calculateCombinedID(t1.getTargetStateID(), first, t2.getTargetStateID(), second);
-    					automaton.addTransition(newStateID, t1.getEvent().getID(), targetID);
+    					automaton.addTransition(newStateID, t1.getEvent().getLabel(), targetID);
 
     				}
 
@@ -541,7 +541,7 @@ public class Automaton {
 
 					// Add transition to the new automaton
 					long targetID = calculateCombinedID(t.getTargetStateID(), first, id2, second);
-					automaton.addTransition(newStateID, t.getEvent().getID(), targetID);
+					automaton.addTransition(newStateID, t.getEvent().getLabel(), targetID);
 
     			}
 
@@ -555,7 +555,7 @@ public class Automaton {
 
 					// Add transition to the new automaton
 					long targetID = calculateCombinedID(id1, first, t.getTargetStateID(), second);
-					automaton.addTransition(newStateID, t.getEvent().getID(), targetID);
+					automaton.addTransition(newStateID, t.getEvent().getLabel(), targetID);
 
     			}
 
@@ -1208,7 +1208,23 @@ public class Automaton {
 
 	}
 
-		/** MUTATOR METHODS **/  
+		/** MUTATOR METHODS **/
+
+	/**
+	 * Adds a transition based th label of the event (instead the ID).
+	 * @param startingStateID	The ID of the state where the transition originates from
+	 * @param eventLabel		The label of the event that triggers the transition
+	 * @param targetStateID		The ID of the state where the transition leads to
+	 **/
+	public boolean addTransition(long startingStateID, String eventLabel, long targetStateID) {
+
+		for (Event e : events)
+			if (eventLabel.equals(e.getLabel()))
+				return addTransition(startingStateID, e.getID(), targetStateID);
+
+		return false;
+
+	}
 
 	/**
 	 * Adds a transition based on the specified IDs (which means that the states and event must already exist).
