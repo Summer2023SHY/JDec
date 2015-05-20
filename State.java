@@ -151,20 +151,20 @@ public class State {
 	}
 
 	/**
-	 *	Light-weight method used just to get the label (because loading transitions as well take a bit of time) 
-	 *	NOTE: This method assumes that the state exists in the first place 
+	 * Light-weight method used when the transitions are not needed (because loading them takes a bit of time)
+	 * NOTE: When using this method to load a state, it assumed that you will not be accessing or modifying the transitions.
 	 **/
-	public static String readLabelFromFile(Automaton automaton, RandomAccessFile file, long id) {
+	public static State readFromFileExcludingTransitions(Automaton automaton, RandomAccessFile file, long id) {
 
-		/* Setup */
+			/* Setup */
 
-		byte[] bytesRead = new byte[automaton.getLabelLength()];
+		byte[] bytesRead = new byte[1 + automaton.getLabelLength()];
 
 			/* Read bytes */
 
 		try {
 
-			file.seek((id * automaton.getSizeOfState()) + 1);
+			file.seek((id * automaton.getSizeOfState()));
 			file.read(bytesRead);
 			
 	    } catch (IOException e) {
@@ -173,24 +173,34 @@ public class State {
             return null;
 
 	    }
+
+	    	/* Exists and marked status */
+
+	    boolean marked = (bytesRead[0] & MARKED_MASK) > 0;
+	    boolean exists = (bytesRead[0] & EXISTS_MASK) > 0;
+
+	    // Return null if this state doesn't actually exist
+	    if (!exists)
+	    	return null;
+
 	    	/* State's label */
 
 	    char[] arr = new char[automaton.getLabelLength()];
 		for (int i = 0; i < arr.length; i++) {
 
 			// Indicates end of label
-			if (bytesRead[i] == 0) {
+			if (bytesRead[i + 1] == 0) {
 
 				arr = Arrays.copyOfRange(arr, 0, i);
 				break;
 
 			// Read and store character
 			} else
-				arr[i] = (char) bytesRead[i];
+				arr[i] = (char) bytesRead[i + 1];
 
 		}
 
-		return new String(arr);
+		return new State(new String(arr), id, marked);
 
 	}
 

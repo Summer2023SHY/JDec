@@ -245,6 +245,104 @@ public class Automaton {
     }
 
     /**
+     * Create a new copy of this automaton that has all states removed which are unable to reach a marked state.
+     **/
+    public Automaton coaccessible() {
+
+    		/* Create a new automaton that has each of the transitions going the opposite direction */
+
+    	Automaton invertedAutomaton = new Automaton(stateCapacity, transitionCapacity, labelLength, true);
+
+    	// Add events
+    	for (Event e : events)
+    		invertedAutomaton.addEvent(e.getLabel(), e.isObservable(), e.isControllable());
+
+    	// Add states
+    	for (long s = 1; s <= nStates; s++) {
+
+    		State state = getStateExcludingTransitions(s);
+    		invertedAutomaton.addState(state.getLabel(), state.isMarked(), s == initialState);
+
+    	}
+
+    	// Add transitions
+    	for (long s = 1; s <= nStates; s++) {
+
+    		State state = getState(s);
+
+    		for (Transition t : state.getTransitions())
+    			invertedAutomaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), s);
+
+    	}
+
+    		/* Build co-accessible automaton by seeing which states are accessible from the marked states in the inverted automaton */
+
+    	Automaton automaton = new Automaton(new File("coaccessible.hdr"), true); 
+
+    	// Add events
+    	for (Event e : events)
+    		automaton.addEvent(e.getLabel(), e.isObservable(), e.isControllable());
+
+    	// Add all marked states to the stack (NOTE: This may have complications if there are more than Integer.MAX_VALUE marked states)
+		Stack<Long> stack = new Stack<Long>();
+		for (long s = 1; s <= nStates; s++) {
+
+    		State state = invertedAutomaton.getStateExcludingTransitions(s);
+
+    		if (state.isMarked())
+    			stack.push(s);
+
+    	}
+
+    	// Add all reachable states to the co-accessible automaton
+    	while (stack.size() > 0) {
+
+    		long s = stack.pop();
+
+    		// Skip this state is it has already been taken care of
+    		if (automaton.stateExists(s))
+    			continue;
+
+    		State state = getState(s);
+    		State stateWithInvertedTransitions = invertedAutomaton.getState(s);
+
+    		// Add this state (and it's transitions) to the co-accessible automaton
+    		automaton.addState(state.getLabel(), state.isMarked(), s == automaton.getInitialStateID());
+
+    		// Add all directly reachable states from this one to the stack
+    		for (Transition t : stateWithInvertedTransitions.getTransitions()) {
+
+    			// Add transition if both states already exist in the co-accessible automaton
+    			if (automaton.stateExists(t.getTargetStateID()))
+					automaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), s);
+
+    			// Otherwise add this to the stack since it is not yet in the co-accessible automaton
+    			else
+					stack.push(t.getTargetStateID());
+
+    		}
+
+    		// Required to catch transitions if we didn't add them the first time around (since this state was not yet in the co-accessible automaton)
+    		for (Transition t : state.getTransitions()) {
+
+    			// Add transition if both states already exist in the co-accessible automaton
+    			if (automaton.stateExists(t.getTargetStateID()))
+    				automaton.addTransition(s, t.getEvent().getID(), t.getTargetStateID());
+
+    		}
+		
+    	}
+
+    		/* Re-number states (by removing empty ones) */
+
+    	automaton.renumberStates();
+
+    		/* Return co-accessible automaton */
+
+    	return automaton;
+    }
+
+    /**
      * Generate the intersection of the two specified automata.
      * @param first		The first automaton
      * @param second	The second automaton
@@ -622,7 +720,7 @@ public class Automaton {
 
     			}
 
-    			str.append(state.getLabel() + "->" + State.readLabelFromFile(this, bodyRAFile, t1.getTargetStateID()));
+    			str.append(state.getLabel() + "->" + getStateExcludingTransitions(t1.getTargetStateID()).getLabel());
     			str.append(" [label=\"" + label.substring(1) + "\"");
     			
     			if (!t1.getEvent().isObservable())
@@ -640,7 +738,7 @@ public class Automaton {
 
     	if (initialState > 0) {
     		str.append("node [shape=plaintext];");
-    		str.append("entry->" + State.readLabelFromFile(this, bodyRAFile, initialState) + ";");
+    		str.append("entry->" + getStateExcludingTransitions(initialState).getLabel() + ";");
     	}
 
     	str.append("}");
@@ -749,7 +847,7 @@ public class Automaton {
 				transitionInputBuilder.append(
 						state.getLabel()
 						+ "," + t.getEvent().getLabel()
-						+ "," + State.readLabelFromFile(this, bodyRAFile, t.getTargetStateID())
+						+ "," + getStateExcludingTransitions(t.getTargetStateID()).getLabel()
 					);
 			
 			}
@@ -1395,7 +1493,7 @@ public class Automaton {
 	}
 
     /**
-     * Given the ID number of a state, get the state information
+     * Given the ID number of a state, get the state information.
 	 * @param id	The unique identifier corresponding to the requested state
 	 * @return the requested state
      **/
@@ -1404,7 +1502,17 @@ public class Automaton {
     }
 
     /**
-     * Given the ID number of an event, get the event information
+     * Given the ID number of a state, get the state information (excluding transitions).
+	 * NOTE: This is a light-weight method which is used when accessing or modifying the transitions is not needed.
+	 * @param id	The unique identifier corresponding to the requested state
+	 * @return the requested state
+     **/
+    public State getStateExcludingTransitions(long id) {
+    	return State.readFromFileExcludingTransitions(this, bodyRAFile, id);
+    }
+
+    /**
+     * Given the ID number of an event, get the event information.
 	 * @param id	The unique identifier corresponding to the requested event
 	 * @return the requested event (or null if it does not exist)
      **/
