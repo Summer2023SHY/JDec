@@ -90,6 +90,24 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     }
 
+    private void createTab(File automatonFile, Automaton automaton) {
+
+        // Create new tab
+        createTab();
+
+        int newIndex = tabbedPane.getTabCount() - 1;
+
+        // Set tab values
+        automataFile.set(newIndex, automatonFile);
+        tabbedPane.setTitleAt(newIndex, automataFile.get(newIndex).getName());
+        automata.set(newIndex, automaton);
+        automata.get(newIndex).generateInputForGUI();
+        eventInput.get(newIndex).setText(automata.get(newIndex).getEventInput());
+        stateInput.get(newIndex).setText(automata.get(newIndex).getStateInput());
+        transitionInput.get(newIndex).setText(automata.get(newIndex).getTransitionInput());
+
+    }
+
     private void closeCurrentTab() {
 
             /* Get index of the currently selected tab */
@@ -526,6 +544,10 @@ public class AutomataGUI extends JFrame implements ActionListener {
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
+        menuItem = new JMenuItem("Co-Accessible");
+        menuItem.addActionListener(this);
+        menu.add(menuItem);
+
         menu.addSeparator();
 
         menuItem = new JMenuItem("Intersection");
@@ -550,7 +572,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         switch (event.getActionCommand()) {
 
-                /* File Stuff */
+                /* FILE STUFF */
 
             case "Clear":
 
@@ -597,23 +619,16 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 closeCurrentTab();
                 break;
 
-                /* Automata Operations */
+                /* AUTOMATA OPERATIONS */
 
             case "Accessible":
 
-                // Create new tab
-                createTab();
-                int newIndex = tabbedPane.getTabCount() - 1;
+                createTab(new File("accessible.hdr"), automata.get(index).accessible());
+                break;
 
-                // Set tab values
-                automataFile.set(newIndex, new File("accessible.hdr"));
-                tabbedPane.setTitleAt(newIndex, automataFile.get(newIndex).getName());
-                automata.set(newIndex, automata.get(index).accessible());
-                automata.get(newIndex).generateInputForGUI();
-                eventInput.get(newIndex).setText(automata.get(newIndex).getEventInput());
-                stateInput.get(newIndex).setText(automata.get(newIndex).getStateInput());
-                transitionInput.get(newIndex).setText(automata.get(newIndex).getTransitionInput());
+             case "Co-Accessible":
 
+                createTab(new File("coaccessible.hdr"), automata.get(index).coaccessible());
                 break;
 
             case "Intersection":
@@ -621,19 +636,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 // Allow user to pick other automaton
                 Automaton otherAutomaton = automata.get(pickAutomaton("Which automaton would you like to take the intersection with?", index));
 
-                // Create new tab
-                createTab();
-                newIndex = tabbedPane.getTabCount() - 1;
-
-                // Set tab values
-                automataFile.set(newIndex, new File("intersection.hdr"));
-                tabbedPane.setTitleAt(newIndex, automataFile.get(newIndex).getName());
-                automata.set(newIndex, Automaton.intersection(automata.get(index), otherAutomaton));
-                automata.get(newIndex).generateInputForGUI();
-                eventInput.get(newIndex).setText(automata.get(newIndex).getEventInput());
-                stateInput.get(newIndex).setText(automata.get(newIndex).getStateInput());
-                transitionInput.get(newIndex).setText(automata.get(newIndex).getTransitionInput());
-
+                // Create new tab with the intersection
+                createTab(new File("intersection.hdr"), Automaton.intersection(automata.get(index), otherAutomaton));
+                
                 break;
 
             case "Union":
@@ -641,18 +646,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 // Allow user to pick other automaton
                 otherAutomaton = automata.get(pickAutomaton("Which automaton would you like to take the union with?", index));
 
-                // Create new tab
-                createTab();
-                newIndex = tabbedPane.getTabCount() - 1;
-
-                // Set tab values
-                automataFile.set(newIndex, new File("union.hdr"));
-                tabbedPane.setTitleAt(newIndex, automataFile.get(newIndex).getName());
-                automata.set(newIndex, Automaton.union(automata.get(index), otherAutomaton));
-                automata.get(newIndex).generateInputForGUI();
-                eventInput.get(newIndex).setText(automata.get(newIndex).getEventInput());
-                stateInput.get(newIndex).setText(automata.get(newIndex).getStateInput());
-                transitionInput.get(newIndex).setText(automata.get(newIndex).getTransitionInput());
+                // Create new tab with the union
+                createTab(new File("union.hdr"), Automaton.union(automata.get(index), otherAutomaton));
 
                 break;
             
