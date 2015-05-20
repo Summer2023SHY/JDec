@@ -484,21 +484,17 @@ public class TestAutomata {
         Automaton fig2_17c = AutomataGUI.generateAutomaton(
                 "c,T,T\nb,T,T\na,T,T", // Events
                 "*D,T\nE,F", // States 
-                "D,c,D\nD,a,E\nE,a,E", // Transitions
+                "D,c,D\nD,b,E\nE,a,E", // Transitions
                 false, // We do not want it to be verbose
                 new File("fig2_17c.hdr")
             );
 
         printTestOutput("Taking the union of the three automata in Figure 2.17 (and comparing the result to the automaton described in Example 2.17)...", 3);
-        // result = Automaton.union(fig2_17a, fig2_17b);
         result = Automaton.union(Automaton.union(fig2_17a, fig2_17b), fig2_17c);
 
         result.generateInputForGUI();
-        System.out.println(result.getEventInput());
-        System.out.println(result.getStateInput());
-        System.out.println(result.getTransitionInput());
         printTestCase("Ensuring the events are correct", result.getEventInput().equals("a,T,T\nb,T,T\nc,T,T\nd,T,T"), counter);
-        printTestCase("Ensuring the states are correct", result.getStateInput().equals("*one_A_D"), counter);
+        printTestCase("Ensuring the states are correct", result.getStateInput().equals("*one_A_D,T"), counter);
         printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("one_A_D,c,one_A_D"), counter);
 
             /* Print summary of this test routine */

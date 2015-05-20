@@ -1,3 +1,5 @@
+import java.util.*;
+
 public class Event implements Comparable<Event> {
     
     	/* Class constants */
@@ -29,6 +31,18 @@ public class Event implements Comparable<Event> {
 	// public boolean hasSameID(Event other) {
 	// 	return this.id == other.id;
 	// }
+
+	// This is necessary when every element of the set needs to be checked (and we can't rely on using .contains because of how it handles HashSets and TreeSets).
+	// This method is only needed to be used in cases where events are coming from different automata (so the IDs are all out of whack)
+	public static boolean isElementOfSet(Set<Event> set, Event event) {
+
+		for (Event e : set)
+			if (e.equals(event))
+				return true;
+
+		return false;
+
+	}
 
 		/** STANDARD ACCESSOR AND MUTATOR METHODS **/
 
@@ -72,16 +86,18 @@ public class Event implements Comparable<Event> {
 
 	@Override public int compareTo(Event other) {
 
-		if (this.label.equals(other.label))
-			return 0;
+		// if (this.label.equals(other.label))
+		// 	return 0;
 
-		int comparedValue = (new Integer(id)).compareTo(other.getID());
+		return (new Integer(id)).compareTo(other.getID());
 
-		// This check is necessary in case events are coming from different automata (so they may have the same ID but have different labels)
-		if (comparedValue == 0)
-			return -1;
+		// int comparedValue = (new Integer(id)).compareTo(other.getID());
 
-		return comparedValue;
+		// // This check is necessary in case events are coming from different automata (so they may have the same ID but have different labels)
+		// if (comparedValue == 0)
+		// 	return 1;
+
+		// return comparedValue;
 	}
 
 	/**

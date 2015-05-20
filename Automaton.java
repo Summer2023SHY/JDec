@@ -468,12 +468,14 @@ public class Automaton {
     		/* Build automata by parallel composition */
 
     	// Create two sets containing each automata's private events
-    	Set<Event> privateEvents1 = new TreeSet<Event>();
+    	Set<Event> privateEvents1 = new HashSet<Event>();
     	privateEvents1.addAll(first.getEvents());
-    	privateEvents1.removeAll(second.getEvents());
-    	Set<Event> privateEvents2 = new TreeSet<Event>();
+    	for (Event e : second.getEvents())
+    		privateEvents1.remove(e);
+    	Set<Event> privateEvents2 = new HashSet<Event>();
     	privateEvents2.addAll(second.getEvents());
-    	privateEvents2.removeAll(first.getEvents());
+    	for (Event e : first.getEvents())
+    		privateEvents2.remove(e);
 
     	// Create event set (union of both event sets)
     	for (Event e : first.getEvents())
@@ -519,7 +521,7 @@ public class Automaton {
     		// Find every pair of transitions that have the same events (this accounts for public events)
     		for (Transition t1 : transitions1)
     			for (Transition t2 : transitions2)
-    				if (t1.getEvent().getLabel().equals(t2.getEvent().getLabel())) {
+    				if (t1.getEvent().equals(t2.getEvent())) {
 
 						// Add this pair to the stack
     					stack1.add(t1.getTargetStateID());
@@ -534,7 +536,7 @@ public class Automaton {
     		// Take care of the first automaton's private events
     		for (Transition t : transitions1)
     			if (privateEvents1.contains(t.getEvent())) {
-
+    			
 					// Add the pair of states to the stack
 					stack1.add(t.getTargetStateID());
 					stack2.add(id2);
@@ -548,7 +550,7 @@ public class Automaton {
     		// Take care of the second automaton's private events
     		for (Transition t : transitions2)
     			if (privateEvents2.contains(t.getEvent())) {
-
+    			
 					// Add the pair of states to the stack
 					stack1.add(id1);
 					stack2.add(t.getTargetStateID());
@@ -1083,7 +1085,7 @@ public class Automaton {
 	 **/
 	private void recreateBodyFile(long newStateCapacity, int newTransitionCapacity, int newLabelLength, int newNBytesPerStateID) {
 
-		System.out.println("DEBUG: Re-creating body file.");
+		// System.out.println("DEBUG: Re-creating body file.");
 
 		long newNBytesPerState = calculateNumberOfBytesPerState(newNBytesPerStateID, newTransitionCapacity, newLabelLength);
 
