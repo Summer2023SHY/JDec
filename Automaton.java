@@ -244,6 +244,12 @@ public class Automaton {
     	return automaton;
     }
 
+    /**
+     * Generate the intersection of the two specified automata.
+     * @param first		The first automaton
+     * @param second	The second automaton
+     * @return the intersection
+     **/
     public static Automaton intersection(Automaton first, Automaton second) {
 
     		/* Setup */
@@ -326,6 +332,12 @@ public class Automaton {
     	return automaton;
     }
 
+	/**
+     * Generate the union of the two specified automata.
+     * @param first		The first automaton
+     * @param second	The second automaton
+     * @return the union
+     **/
     public static Automaton union(Automaton first, Automaton second) {
 
     		/* Setup */
@@ -1090,10 +1102,12 @@ public class Automaton {
 	 **/
 	public boolean addTransition(long startingStateID, int eventID, long targetStateID) {
 
-		// Create starting state from ID
+			/* Create starting state from ID */
+
 		State startingState = getState(startingStateID);
 
-		// Increase the maximum allowed transitions per state
+			/* Increase the maximum allowed transitions per state */
+
 		if (startingState.getNumberOfTransitions() == transitionCapacity) {
 
 			// If we cannot increase the capacity, return false (NOTE: This will likely never happen)
@@ -1115,7 +1129,8 @@ public class Automaton {
 
 		}
 
-		// Add transition and update the file
+			/* Add transition and update the file */
+
 		Event event = getEvent(eventID);
 		startingState.addTransition(new Transition(event, targetStateID));
 		if (!startingState.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID, transitionCapacity)) {
