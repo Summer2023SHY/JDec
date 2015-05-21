@@ -357,6 +357,74 @@ public class Automaton {
 
     }
 
+    public Automaton observer() {
+
+    		/* Setup */
+
+    	Automaton automaton = new Automaton(new File("observer.hdr"), true);
+
+    	Stack<List<Long>> stackOfConnectedIDs = new Stack<List<Long>>();
+
+    	// Find all connecting states
+		List<Long> statesConnectingToInitial = new ArrayList<Long>();
+		findConnectingStates(statesConnectingToInitial, initialState);
+
+    	stackOfConnectedIDs.push(statesConnectingToInitial);
+
+    		/* Build observer */
+
+    	while (stackOfConnectedIDs.size() > 0) {
+
+    		// Find all connecting states
+    		List<Long> list = new ArrayList<Long>();
+    		for (Long id : stackOfConnectedIDs.pop())
+    			findConnectingStates(list, id);
+
+    		long id = createCombinedIDWithList(list);
+
+
+    	}
+
+    		/* Re-number states (by removing empty ones) */
+
+    	automaton.renumberStates();
+
+    		/* Return observer automaton */
+
+    	return automaton;
+
+    }
+
+    private void findConnectingStates(List<Long> list, long id) {
+
+    	// Base case
+    	if (list.contains(id))
+    		return;
+
+    	list.add(id);
+
+    	// Find all unobservable events leading from this state, and add the target states to the list
+    	for (Transition t : getState(id).getTransitions())
+    		if (!t.getEvent().isObservable())
+    			findConnectingStates(list, t.getTargetStateID());
+
+    }
+
+    // Similar to calculateCombinedID(), but due to the nature of this algorithm, there are gaps in the numbering (IDs that will never get mapped to).
+    // This, however, is better than having overlap.
+    private long createCombinedIDWithList(List<Long> list) {
+
+    	long combinedID = 0;
+
+    	for (Long id : list) {
+    		combinedID *= nStates;
+    		combinedID += id;
+    	}
+
+    	return combinedID;
+
+    }
+
     /**
      * Generate the intersection of the two specified automata.
      * @param first		The first automaton
@@ -664,8 +732,8 @@ public class Automaton {
 
     /**
      * Given two state IDs and their respective automatons, create a combined ID by using a 1-to-1 mapping.
-     * NOTE: The reasoning behind this formula is analogous to the following: if you have a table with N rows and M columns, every cell
-     * is guaranteed to have a different combination of row and column indexes.
+     * NOTE: The reasoning behind this formula is analogous to the following: if you have a table with N rows and M columns,
+     * every cell is guaranteed to have a different combination of row and column indexes.
      * @param id1		The state ID from the first automaton
      * @param first		The first automaton
      * @param id2		The state ID from the second automaton
@@ -1389,7 +1457,7 @@ public class Automaton {
 	}
 
 	/**
-	 * Add the specified state to the automaton. NOTE: This method assumes that no state already exists with the specified id.
+	 * Add the specified state to the automaton. NOTE: This method assumes that no state already exists with the specified ID.
 	 * The method renumberStates() must be called some time after using this method has been called since it can create empty
 	 * spots in the .bdy file where states don't actually exist (this happens during automata operations such as intersection).
 	 * @param label				The "name" of the new state
@@ -1403,7 +1471,7 @@ public class Automaton {
 
 			/* Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs) */
 		
-		if (nStates == MAX_STATE_CAPACITY) {
+		if (id > MAX_STATE_CAPACITY) {
 			System.out.println("ERROR: Could not write state to file.");
 			return false;
 		}
