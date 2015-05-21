@@ -348,7 +348,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         
         for (String line : stateInputText.split("\n")) {
             
-            String[] splitLine = line.split(",");
+            String[] splitLine = line.trim().split(",");
             String label = splitLine[0];
 
             // Check to see if this is a duplicate state label
@@ -377,7 +377,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
                 // Check for invalid label
                 if (!isValidLabel(label)) {
-                    System.out.println("ERROR: Invalid label.");
+                    System.out.println("ERROR: Invalid label ('" + label + "').");
                     continue;
                 }
 
@@ -406,7 +406,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         for (String line : eventInputText.split("\n")) {
             
-            String[] splitLine = line.split(",");
+            String[] splitLine = line.trim().split(",");
             String label = splitLine[0];
 
             // Check to see if this is a duplicate event label
@@ -423,7 +423,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
                 // Check for invalid label
                 if (!isValidLabel(label)) {
-                    System.out.println("ERROR: Invalid label.");
+                    System.out.println("ERROR: Invalid label ('" + label + "').");
                     continue;
                 }
 
@@ -447,7 +447,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         for (String line : transitionInputText.split("\n")) {
             
-            String[] splitLine = line.split(",");
+            String[] splitLine = line.trim().split(",");
 
             // Ensure that all 3 parameters are present
             if (splitLine.length == 3) {
