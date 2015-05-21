@@ -159,7 +159,7 @@ public class Automaton {
 		
 			/* Open files and try to load data from header */
 
-		openRAFiles();
+		openFiles();
 
 	    	/* Finish setting up */
 
@@ -387,7 +387,7 @@ public class Automaton {
 
     		// Get the states and add them to a list
     		List<State> listOfStates = new ArrayList<State>();
-    		for (long id : listOfIDs)
+    		for (long id : setOfIDs)
     			listOfStates.add(getState(id));
 
     		// Create a label for this state, and determine whether or not this state should be marked
@@ -416,13 +416,13 @@ public class Automaton {
 
     			// Generate list of the IDs of all reachable states from the current event
     			Set<Long> reachableStates = new HashSet<Long>();
-    			for (State s : listOfStates) {
+    			for (State s : listOfStates)
     				for (Transition t : s.getTransitions())
     					if (t.getEvent().equals(e))
     						reachableStates.add(t.getTargetStateID());
 
     			if (reachableStates.size() > 0) {
-    				automaton.addTransition();
+    				// automaton.addTransition();
     			}
 
     		}
@@ -775,8 +775,12 @@ public class Automaton {
 			try {
 
 				bodyRAFile.close();
-	    		bodyFile.delete();
-	    		mappingFile.delete();
+
+	    		if (!bodyFile.delete())
+                    System.out.println("ERROR: Could not delete old body file.");
+                
+                if (!mappingFile.delete())
+                    System.out.println("ERROR: Could not delete mapping file.");
 
 	    	} catch (SecurityException e) {
 	    		e.printStackTrace();
@@ -1053,7 +1057,7 @@ public class Automaton {
 	/**
 	 * Open the header and body files, and read in the header file.
 	 **/
-	private void openRAFiles() {
+	private void openFiles() {
 
 		try {
 
@@ -1068,6 +1072,23 @@ public class Automaton {
 
 	}
 
+    /**
+     * This is needed on Windows operating system because there are problems trying to delete files if they are in use.
+     * NOTE: Do not attempt to use the automaton again unless the files are re-opened using openFiles().
+     **/
+    public void closeFiles() {
+
+        try {
+
+            headerRAFile.close();
+            bodyRAFile.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
 	/**
 	 * Delete the current header and body files.
 	 **/
@@ -1075,8 +1096,18 @@ public class Automaton {
 
 		try {
 
-    		headerFile.delete();
-    		bodyFile.delete();
+            // try {
+            //     java.nio.file.Files.delete(headerFile.toPath());
+            //     java.nio.file.Files.delete(bodyFile.toPath());
+            // } catch (IOException e) {
+            //     e.printStackTrace();
+            // }
+
+    		if (!headerFile.delete() && headerFile.exists())
+                System.out.println("ERROR: Could not delete header file.");
+    		
+            if (!bodyFile.delete() && headerFile.exists())
+                System.out.println("ERROR: Could not delete body file.");
 
     	} catch (SecurityException e) {
     		e.printStackTrace();

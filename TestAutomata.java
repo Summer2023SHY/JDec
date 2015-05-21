@@ -57,8 +57,7 @@ public class TestAutomata {
 
     	String testRoutineName = "EVENT CREATION";
 
-        if (verbose > 1)
-    	   printTestOutput("RUNNING " + testRoutineName + " TESTS...", 1);
+        printTestOutput("RUNNING " + testRoutineName + " TESTS...", 1);
 
     	TestCounter counter = new TestCounter();
 
@@ -104,28 +103,9 @@ public class TestAutomata {
     	printTestCase("Ensuring that 'controllableEvents' set was not expanded", a.getControllableEvents().size() == 2, counter);
     	printTestCase("Ensuring that 'observableEvents' set was not expanded", a.getObservableEvents().size() == 2, counter);
 
-    	// printTestOutput("Adding an event with a pre-existing label, but with a different observability property...", 3);
-    	// a.addEvent("firstEvent", false, true);
-    	// printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 5, counter);
-    	// printTestCase("Ensuring that 'activeEvents' set was not expanded", a.getActiveEvents().size() == 0, counter);
-    	// printTestCase("Ensuring that 'controllableEvents' set was expanded", a.getControllableEvents().size() == 3, counter);
-    	// printTestCase("Ensuring that 'observableEvents' set was not expanded", a.getObservableEvents().size() == 2, counter);
-
-    	// printTestOutput("Adding an event with a pre-existing label, but with a different controllability property...", 3);
-    	// a.addEvent("secondEvent", true, true);
-    	// printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 6, counter);
-    	// printTestCase("Ensuring that 'activeEvents' set was not expanded", a.getActiveEvents().size() == 0, counter);
-    	// printTestCase("Ensuring that 'controllableEvents' set was expanded", a.getControllableEvents().size() == 4, counter);
-    	// printTestCase("Ensuring that 'observableEvents' set was expanded", a.getObservableEvents().size() == 3, counter);
-
-    	// printTestOutput("Adding an event with a pre-existing label, but with different controllability and observability properties...", 3);
-    	// a.addEvent("thirdEvent", true, false);
-    	// printTestCase("Ensuring that 'events' set was expanded", a.getEvents().size() == 7, counter);
-    	// printTestCase("Ensuring that 'activeEvents' set was not expanded", a.getActiveEvents().size() == 0, counter);
-    	// printTestCase("Ensuring that 'controllableEvents' set was not expanded", a.getControllableEvents().size() == 4, counter);
-    	// printTestCase("Ensuring that 'observableEvents' set was expanded", a.getObservableEvents().size() == 4, counter);
-
-    		/* Event ID Assignment Tests */
+        a.closeFiles();
+    	
+        	/* Event ID Assignment Tests */
 
     	printTestOutput("EVENT ID ASSIGNMENTS: ", 2);
 
@@ -156,6 +136,8 @@ public class TestAutomata {
     			passed = false;
     	printTestCase("Ensuring that no event has an ID of 3", passed, counter);
 
+        a.closeFiles();
+
     		/* Print summary of this test routine */
 
     	printTestRoutineSummary(testRoutineName, counter);
@@ -168,8 +150,7 @@ public class TestAutomata {
 
     	String testRoutineName = "STATE CREATION";
 
-        if (verbose > 1)
-    	   printTestOutput("RUNNING " + testRoutineName + " TESTS...", 1);
+        printTestOutput("RUNNING " + testRoutineName + " TESTS...", 1);
 
     	TestCounter counter = new TestCounter();
 
@@ -197,8 +178,10 @@ public class TestAutomata {
     	printTestCase("Ensuring that the added state was labeled the initial state", a.getInitialStateID() == 2, counter);
     	printTestCase("Ensuring that the added state has the proper label", a.getState(2).getLabel().equals("secondState"), counter);
     	printTestCase("Ensuring that the added state is unmarked", !a.getState(2).isMarked(), counter);
+
+        a.closeFiles();
     	
-    		/* State ID Assignment Tests */
+    		/* State ID Assignment Tests !!!!!!!!!!NOT YET ADDED!!!!!!!!!!! */
 
     	// printTestOutput("STATE ID ASSIGNMENTS: ", 2);
 
@@ -229,6 +212,8 @@ public class TestAutomata {
     	// 		passed = false;
     	// printTestCase("Ensuring that no event has an ID of 3", passed, counter);
 
+        // a.closeFiles();
+
     		/* Print summary of this test routine */
 
     	printTestRoutineSummary(testRoutineName, counter);
@@ -241,8 +226,7 @@ public class TestAutomata {
 
     	String testRoutineName = "AUTOMATON CAPACITY";
 
-        if (verbose > 1)
-    	   printTestOutput("RUNNING " + testRoutineName + " TEST ROUTINE...", 1);
+        printTestOutput("RUNNING " + testRoutineName + " TEST ROUTINE...", 1);
 
     	TestCounter counter = new TestCounter();
 
@@ -257,6 +241,7 @@ public class TestAutomata {
     	printTestCase("Ensuring that 'labelLength' was reset to '1'", a.getLabelLength() == 1, counter);
     	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '1'", a.getSizeOfStateID() == 1, counter);
     	printTestCase("Ensuring that 'nBytesPerState' was initialized to '4'", a.getSizeOfState() == 4, counter);
+        a.closeFiles();
 
     	printTestOutput("Instantiating empty automaton (State capacity: -1, Transition capacity: -1, Label length: -1)...", 3);
     	a = new Automaton(-1, -1, -1, true);
@@ -265,6 +250,7 @@ public class TestAutomata {
     	printTestCase("Ensuring that 'labelLength' was reset to '1'", a.getLabelLength() == 1, counter);
     	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '1'", a.getSizeOfStateID() == 1, counter);
     	printTestCase("Ensuring that 'nBytesPerState' was initialized to '4'", a.getSizeOfState() == 4, counter);
+        a.closeFiles();
 
     	printTestOutput("Instantiating empty automaton (State capacity: 255, Transition capacity: 2, Label length: 1)...", 3);
     	a = new Automaton(255, 2, 1, true);
@@ -273,6 +259,7 @@ public class TestAutomata {
     	printTestCase("Ensuring that 'labelLength' was left at '1'", a.getLabelLength() == 1, counter);
     	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '1'", a.getSizeOfStateID() == 1, counter);
     	printTestCase("Ensuring that 'nBytesPerState' was initialized to '6'", a.getSizeOfState() == 6, counter);
+        a.closeFiles();
 
     	printTestOutput("Instantiating empty automaton (State capacity: 256, Transition capacity: 1, Label length: 100)...", 3);
     	a = new Automaton(256, 1, 100, true);
@@ -281,6 +268,7 @@ public class TestAutomata {
     	printTestCase("Ensuring that 'labelLength' was left at '100'", a.getLabelLength() == 100, counter);
     	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '2'", a.getSizeOfStateID() == 2, counter);
     	printTestCase("Ensuring that 'nBytesPerState' was initialized to '104'", a.getSizeOfState() == 104, counter);
+        a.closeFiles();
 
     	printTestOutput("Instantiating empty automaton (State capacity: Long.MAX_VALUE, Transition capacity: Integer.MAX_VALUE, Label length: 101)...", 3);
     	a = new Automaton(Long.MAX_VALUE, Integer.MAX_VALUE, 101, true);
@@ -289,6 +277,7 @@ public class TestAutomata {
     	printTestCase("Ensuring that 'labelLength' was reduced to '100'", a.getLabelLength() == 100, counter);
     	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '8'", a.getSizeOfStateID() == 8, counter);
     	printTestCase("Ensuring that 'nBytesPerState' was initialized to '101 + 9 * Integer.MAX_VALUE'", a.getSizeOfState() == 101 + 9 * (long) Integer.MAX_VALUE, counter);
+        a.closeFiles();
 
     	printTestOutput("Instantiating empty automaton (State capacity: Long.MAX_VALUE - 1, Transition capacity: Integer.MAX_VALUE - 1, Label length: 1)...", 3);
     	a = new Automaton(Long.MAX_VALUE - 1, Integer.MAX_VALUE - 1, 1, true);
@@ -296,15 +285,18 @@ public class TestAutomata {
     	printTestCase("Ensuring that 'transitionCapacity' remained at 'Integer.MAX_VALUE - 1'", a.getTransitionCapacity() == Integer.MAX_VALUE - 1, counter);
     	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '8'", a.getSizeOfStateID() == 8, counter);
     	printTestCase("Ensuring that 'nBytesPerState' was initialized to '2 + 9 * (Integer.MAX_VALUE - 1)'", a.getSizeOfState() == 2 + 9 * (long) (Integer.MAX_VALUE - 1), counter);
+        a.closeFiles();
 
     	printTestOutput("Instantiating empty automaton (State capacity: (Long.MAX_VALUE >> 7) + 1, Transition capacity: 1, Label length: 1)...", 3);
     	a = new Automaton((Long.MAX_VALUE >> 7) + 1, 1, 1, true);
     	printTestCase("Ensuring that 'stateCapacity' was increased to 'Long.MAX_VALUE'", a.getStateCapacity() == Long.MAX_VALUE, counter);
+        a.closeFiles();
 
     	printTestOutput("Instantiating empty automaton (State capacity: Long.MAX_VALUE >> 7, Transition capacity: 1, Label length: 1)...", 3);
     	a = new Automaton(Long.MAX_VALUE >> 7, 1, 1, true);
     	printTestCase("Ensuring that 'stateCapacity' remained at 'Long.MAX_VALUE >> 7'", a.getStateCapacity() == Long.MAX_VALUE >> 7, counter);
-    	
+    	a.closeFiles();
+
     		/* Print summary of this test routine */
 
     	printTestRoutineSummary(testRoutineName, counter);
@@ -317,8 +309,7 @@ public class TestAutomata {
 
         String testRoutineName = "GUI INPUT";
 
-        if (verbose > 1)
-            printTestOutput("RUNNING " + testRoutineName + " TEST ROUTINE...", 1);
+        printTestOutput("RUNNING " + testRoutineName + " TEST ROUTINE...", 1);
 
         TestCounter counter = new TestCounter();
 
@@ -338,6 +329,8 @@ public class TestAutomata {
         printTestCase("Ensuring the event input was saved and loaded correctly", a.getEventInput().equals("a,T,T\nb,T,F\nc,F,T\nd,F,F"), counter);
         printTestCase("Ensuring the state input was saved and loaded correctly", a.getStateInput().equals("e,T\nf,F"), counter);
         printTestCase("Ensuring the transition input was saved and loaded correctly", a.getTransitionInput().equals("e,a,f\nf,b,e"), counter);
+
+        a.closeFiles();
 
         printTestOutput("Instantiating automaton from GUI input code with duplicate labels, omitted optional parameters, and an initial state...", 3);
         a = AutomataGUI.generateAutomaton(
@@ -364,8 +357,7 @@ public class TestAutomata {
 
         String testRoutineName = "AUTOMATA OPERATIONS";
 
-        if (verbose > 1)
-            printTestOutput("RUNNING " + testRoutineName + " TEST ROUTINE...", 1);
+        printTestOutput("RUNNING " + testRoutineName + " TEST ROUTINE...", 1);
 
         TestCounter counter = new TestCounter();
 

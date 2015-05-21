@@ -474,8 +474,15 @@ public class AutomataGUI extends JFrame implements ActionListener {
         return automaton;
     }
 
+    /**
+     * Simple helper method to detect whether the given String is either "T" or "TRUE" after it has been converted to upper case.
+     * @param str   The String to parse
+     * @return whether or not the String represents "TRUE" 
+     **/
+
     private static boolean isTrue(String str) {
-        return str.equals("T") || str.equals("True");
+        str = str.toUpperCase();
+        return str.equals("T") || str.equals("TRUE");
     }
 
     /**
@@ -557,6 +564,10 @@ public class AutomataGUI extends JFrame implements ActionListener {
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
+        menuItem = new JMenuItem("Observer");
+        menuItem.addActionListener(this);
+        menu.add(menuItem);
+
         menu.addSeparator();
 
         menuItem = new JMenuItem("Intersection");
@@ -605,7 +616,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 // Prompt user to save Automaton to the specified file
                 saveFile("Choose .hdr File");
                 tabbedPane.setTitleAt(index, automataFile.get(index).getName());
-                generateAutomatonButtonPressed(); // This actually saves it to the new file
+                generateAutomatonButtonPressed(); // This is what actually saves it to the new file
                     
                 break;
 
@@ -645,6 +656,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
             case "Trim":
 
                 createTab(new File("trim.hdr"), automata.get(index).trim());
+                break;
+
+            case "Observer":
+
+                createTab(new File("observer.hdr"), automata.get(index).observer());
                 break;
 
             case "Intersection":
