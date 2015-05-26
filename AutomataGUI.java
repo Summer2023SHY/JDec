@@ -564,10 +564,6 @@ public class AutomataGUI extends JFrame implements ActionListener {
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
-        menuItem = new JMenuItem("Observer");
-        menuItem.addActionListener(this);
-        menu.add(menuItem);
-
         menu.addSeparator();
 
         menuItem = new JMenuItem("Intersection");
@@ -656,11 +652,6 @@ public class AutomataGUI extends JFrame implements ActionListener {
             case "Trim":
 
                 createTab(new File("trim.hdr"), automata.get(index).trim());
-                break;
-
-            case "Observer":
-
-                createTab(new File("observer.hdr"), automata.get(index).observer());
                 break;
 
             case "Intersection":

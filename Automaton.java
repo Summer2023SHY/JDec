@@ -358,134 +358,134 @@ public class Automaton {
     }
 
     // WIP
-    public Automaton observer() {
+  //   public Automaton observer() {
 
-    		/* Setup */
+  //   		/* Setup */
 
-    	Automaton automaton = new Automaton(new File("observer.hdr"), true);
-    	Stack<Set<Long>> stackOfConnectedIDs = new Stack<Set<Long>>();
+  //   	Automaton automaton = new Automaton(new File("observer.hdr"), true);
+  //   	Stack<Set<Long>> stackOfConnectedIDs = new Stack<Set<Long>>();
 
-    	// Find all connecting states
-		Set<Long> statesConnectingToInitial = new TreeSet<Long>();
-		findConnectingStates(statesConnectingToInitial, initialState);
+  //   	// Find all connecting states
+		// Set<Long> statesConnectingToInitial = new TreeSet<Long>();
+		// findConnectingStates(statesConnectingToInitial, initialState);
 
-		// Push initial list to the stack
-    	stackOfConnectedIDs.push(statesConnectingToInitial);
-    	boolean isInitialState = true;
+		// // Push initial list to the stack
+  //   	stackOfConnectedIDs.push(statesConnectingToInitial);
+  //   	boolean isInitialState = true;
 
-    		/* Build observer */
+  //   		/* Build observer */
 
-    	while (stackOfConnectedIDs.size() > 0) {
+  //   	while (stackOfConnectedIDs.size() > 0) {
 
-    		// Get set from stack and generate unique ID
-    		Set<Long> setOfIDs =  stackOfConnectedIDs.pop();
-    		long combinedID = createCombinedIDWithOrderedSet(setOfIDs);
+  //   		// Get set from stack and generate unique ID
+  //   		Set<Long> setOfIDs =  stackOfConnectedIDs.pop();
+  //   		long combinedID = createCombinedIDWithOrderedSet(setOfIDs);
 
-    		// Skip if this state already exists
-    		if (automaton.stateExists(combinedID))
-    			continue;
+  //   		// Skip if this state already exists
+  //   		if (automaton.stateExists(combinedID))
+  //   			continue;
 
-    		// Get the states and add them to a list
-    		List<State> listOfStates = new ArrayList<State>();
-    		for (long id : setOfIDs)
-    			listOfStates.add(getState(id));
+  //   		// Get the states and add them to a list
+  //   		List<State> listOfStates = new ArrayList<State>();
+  //   		for (long id : setOfIDs)
+  //   			listOfStates.add(getState(id));
 
-    		// Create a label for this state, and determine whether or not this state should be marked
-    		String label = "";
-    		boolean marked = false;
-    		for (State s : listOfStates) {
-    			label += s.getLabel();
-    			if (s.isMarked())
-    				marked = true;
-    		}
-    		label = label.substring(1);
+  //   		// Create a label for this state, and determine whether or not this state should be marked
+  //   		String label = "";
+  //   		boolean marked = false;
+  //   		for (State s : listOfStates) {
+  //   			label += s.getLabel();
+  //   			if (s.isMarked())
+  //   				marked = true;
+  //   		}
+  //   		label = label.substring(1);
 
-    		// Add new state
-    		automaton.addStateAt(
-    				label,
-    				marked,
-    				new ArrayList<Transition>(),
-    				isInitialState,
-    				combinedID
-    			);
+  //   		// Add new state
+  //   		automaton.addStateAt(
+  //   				label,
+  //   				marked,
+  //   				new ArrayList<Transition>(),
+  //   				isInitialState,
+  //   				combinedID
+  //   			);
 
-    		isInitialState = false;
+  //   		isInitialState = false;
 
-    		// Loop through event event
-    		for (Event e : events) {
+  //   		// Loop through event event
+  //   		for (Event e : events) {
 
-    			// Generate list of the IDs of all reachable states from the current event
-    			Set<Long> reachableStates = new HashSet<Long>();
-    			for (State s : listOfStates)
-    				for (Transition t : s.getTransitions())
-    					if (t.getEvent().equals(e))
-    						reachableStates.add(t.getTargetStateID());
+  //   			// Generate list of the IDs of all reachable states from the current event
+  //   			Set<Long> reachableStates = new HashSet<Long>();
+  //   			for (State s : listOfStates)
+  //   				for (Transition t : s.getTransitions())
+  //   					if (t.getEvent().equals(e))
+  //   						reachableStates.add(t.getTargetStateID());
 
-    			if (reachableStates.size() > 0) {
-    				// automaton.addTransition();
-    			}
+  //   			if (reachableStates.size() > 0) {
+  //   				// automaton.addTransition();
+  //   			}
 
-    		}
+  //   		}
 
-    	}
+  //   	}
 
-    		/* Re-number states (by removing empty ones) */
+  //   		/* Re-number states (by removing empty ones) */
 
-    	automaton.renumberStates();
+  //   	automaton.renumberStates();
 
-    		/* Return observer automaton */
+  //   		/* Return observer automaton */
 
-    	return automaton;
+  //   	return automaton;
 
-    }
+  //   }
 
-    // UNTESTED
-    private void findConnectingStates(Set<Long> set, long id) {
+  //   // UNTESTED
+  //   private void findConnectingStates(Set<Long> set, long id) {
 
-    	// Base case
-    	if (set.contains(id))
-    		return;
+  //   	// Base case
+  //   	if (set.contains(id))
+  //   		return;
 
-    	set.add(id);
+  //   	set.add(id);
 
-    	// Find all unobservable events leading from this state, and add the target states to the set
-    	for (Transition t : getState(id).getTransitions())
-    		if (!t.getEvent().isObservable())
-    			findConnectingStates(set, t.getTargetStateID());
+  //   	// Find all unobservable events leading from this state, and add the target states to the set
+  //   	for (Transition t : getState(id).getTransitions())
+  //   		if (!t.getEvent().isObservable())
+  //   			findConnectingStates(set, t.getTargetStateID());
 
-    }
+  //   }
 
-    // Similar to calculateCombinedID(), but due to the nature of this algorithm, there are gaps in the numbering (IDs that will never get mapped to).
-    // This, however, is better than having overlap.
-    // UNTESTED
-    private long createCombinedIDWithOrderedSet(Set<Long> list) {
+  //   // Similar to calculateCombinedID(), but due to the nature of this algorithm, there are gaps in the numbering (IDs that will never get mapped to).
+  //   // This, however, is better than having overlap.
+  //   // UNTESTED
+  //   private long createCombinedIDWithOrderedSet(Set<Long> list) {
 
-    	long combinedID = 0;
+  //   	long combinedID = 0;
 
-    	for (Long id : list) {
-    		combinedID *= nStates + 1;
-    		combinedID += id;
-    	}
+  //   	for (Long id : list) {
+  //   		combinedID *= nStates + 1;
+  //   		combinedID += id;
+  //   	}
 
-    	return combinedID;
+  //   	return combinedID;
 
-    }
+  //   }
 
-    // UNTESTED
-    private Set<Long> createOrderedSetWithCombinedID(long combinedID) {
+  //   // UNTESTED
+  //   private Set<Long> createOrderedSetWithCombinedID(long combinedID) {
 
-    	Set<Long> set = new TreeSet<Long>();
+  //   	Set<Long> set = new TreeSet<Long>();
 
-    	while (combinedID > 0) {
+  //   	while (combinedID > 0) {
 
-    		set.add(combinedID % (nStates + 1));
-    		combinedID /= (nStates + 1);
+  //   		set.add(combinedID % (nStates + 1));
+  //   		combinedID /= (nStates + 1);
 
-    	}
+  //   	}
 
-    	return set;
+  //   	return set;
 
-    }
+  //   }
 
     /**
      * Generate the intersection of the two specified automata.
