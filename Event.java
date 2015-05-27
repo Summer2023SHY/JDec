@@ -59,7 +59,7 @@ public class Event implements Comparable<Event> {
 	}
 
 	/**
-	 *	Get the observability property of the event
+	 *	Get the observability property of the event for each controller.
  	 *	@return whether or not the event is observable
 	 **/
 	public boolean[] isObservable() {
@@ -67,7 +67,7 @@ public class Event implements Comparable<Event> {
 	}
 
 	/**
-	 *	Get the controllability property of the event.
+	 *	Get the controllability property of the event for each controller.
  	 *	@return whether or not the event is controllable
 	 **/
 	public boolean[] isControllable() {

@@ -448,9 +448,101 @@ public class Automaton {
 
   //   }
 
-    public Automaton uStructure() {
+    public Automaton synchronizedComposition() {
 
-    	return null;
+    		/* Setup */
+
+    	Stack<Long> stack = new Stack<Long>();
+    	Automaton automaton = new Automaton(new File("synchronizedComposition.hdr"), true);
+
+    		/* Add initial state to the stack */
+
+    	{
+	    	List<Long> listOfInitialIDs = new ArrayList<Long>();
+	    	String combinedLabel = "";
+	    	State startingState = getState(initialState);
+
+	    	for (int i = 0; i <= nControllers; i++) {
+	    		listOfInitialIDs.add(initialState);
+	    		combinedLabel += "," + startingState.getLabel();
+	    	}
+
+	    	long combinedID = combineIDs(listOfInitialIDs, nStates);
+	    	stack.push(combinedID);
+	    	automaton.addStateAt(combinedLabel.substring(1), false, new ArrayList<Transition>(), true, combinedID);
+
+	    }
+
+    		/* Continue until the stack is empty */
+
+    	while (stack.size() > 0) {
+
+    		long combinedID = stack.pop();
+
+    		// Get list of IDs and states
+    		List<Long> listOfIDs = separateIDs(combinedID, nStates);
+    		List<State> listOfStates = new ArrayList<State>();
+    		for (long id : listOfIDs)
+    			listOfStates.add(getState(id));
+
+    		// For each transition in the system automaton
+    		outer: for (Transition t1 : listOfStates.get(0).getTransitions()) {
+
+    			Event e = t1.getEvent();
+
+    			List<Long> listOfTargetIDs = new ArrayList<Long>();
+
+    			String eventVector = "";
+
+    			// For each controller
+    			for (int i = 0; i < nControllers; i++) {
+
+    				// Observable events by this controller
+    				if (e.isObservable()[i]) {
+
+    					// If the event is observable, but not possible at this current time, then we can skip this altogether
+    					long targetID = 0;
+    					for (Transition t2 : listOfStates.get(i + 1).getTransitions())
+    						if (t2.getEvent().equals(e))
+    							targetID = t2.getTargetStateID();
+    					if (targetID == 0)
+    						continue outer;
+
+    					eventVector += "," + e.getLabel();
+    					listOfTargetIDs.add(targetID);
+
+    				// Unobservable events by this controller
+    				} else {
+    					eventVector += ",ɛ";
+    					listOfTargetIDs.add(listOfIDs.get(i));
+    				}
+
+    			}
+
+    			eventVector = "<" + eventVector.substring(1) + ">";
+
+    			long combinedTargetID = combineIDs(listOfTargetIDs, nStates);
+
+    			// Add state if it doesn't already exist
+    			if (!automaton.stateExists(combinedTargetID)) {
+
+    				String combinedLabel = "";
+    				for (int i = 0; i <= nControllers; i++)
+    					combinedLabel += "," + listOfStates.get(i).getLabel();
+
+    				automaton.addStateAt(combinedLabel.substring(1), false, new ArrayList<Transition>(), false, combinedTargetID);
+ 
+    				stack.push(combinedTargetID);
+    			}
+
+    			automaton.addTransition(combinedID, e.getID(), combinedTargetID);
+
+    		}
+
+
+    	} // while
+
+    	return automaton;
 
     }
 
@@ -786,7 +878,7 @@ public class Automaton {
      * @param maxID	The largest possible value to be used as an ID
      * @return the combined ID
      **/
-    public static long combineIDs(ArrayList<Long> list, long maxID) {
+    public static long combineIDs(List<Long> list, long maxID) {
 
     	long combinedID = 0;
 
@@ -805,9 +897,9 @@ public class Automaton {
      * @param maxID			The largest possible value to be used as an ID
      * @return the original list of IDs
      **/
-    public static ArrayList<Long> separateIDs(long combinedID, long maxID) {
+    public static List<Long> separateIDs(long combinedID, long maxID) {
 
-    	ArrayList<Long> list = new ArrayList<Long>();
+    	List<Long> list = new ArrayList<Long>();
 
     	while (combinedID > 0) {
 
