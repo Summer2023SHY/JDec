@@ -8,7 +8,8 @@ public class TestAutomata {
     public static final String RESET = "\u001B[0m";
     public static final String RED = "\u001B[31m";
     public static final String GREEN = "\u001B[32m";
-    
+    public static final String PURPLE = "\u001B[35m";
+
     // Verbose levels
 	private static final int MAX_VERBOSE = 3;
 	private static int verbose = 1;
@@ -29,7 +30,7 @@ public class TestAutomata {
 
     private static void runTests() {
 
-    	System.out.println("RUNNING ALL TESTS...");
+    	System.out.println(PURPLE + "RUNNING ALL TESTS..." + RESET);
 
         TestCounter counter = new TestCounter();
 
@@ -576,7 +577,7 @@ public class TestAutomata {
     		System.out.print("\t");
 
     	// Print output
-    	System.out.println(str);
+    	System.out.println(PURPLE + str + RESET);
 
     }
 
@@ -609,8 +610,8 @@ public class TestAutomata {
      **/
     private static void printTestRoutineSummary(String testRoutineName, TestCounter counter) {
 
-    	String passed = (counter.getPassedTests() > 0) ? String.format("\n\t\tPASSED: %d/%d", counter.getPassedTests(), counter.getTotalTests()) : "";
-    	String failed = (counter.getFailedTests() > 0) ? String.format("\n\t\tFAILED: %d/%d", counter.getFailedTests(), counter.getTotalTests()) : "";
+    	String passed = (counter.getPassedTests() > 0) ? String.format("\n\t\t%sPASSED: %d/%d%s", GREEN, counter.getPassedTests(), counter.getTotalTests(), RESET) : "";
+    	String failed = (counter.getFailedTests() > 0) ? String.format("\n\t\t%s*** FAILED: %d/%d% ***s", RED, counter.getFailedTests(), counter.getTotalTests(), RESET) : "";
 
     	printTestOutput(testRoutineName + " TEST ROUTINE SUMMARY:" + passed + failed, 1);
 
