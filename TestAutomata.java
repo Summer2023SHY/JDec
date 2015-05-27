@@ -5,10 +5,10 @@ public class TestAutomata {
 
     // Colored output makes it more readable (doesn't work on all operating systems)
     // Example: System.out.println("This will be purple: " + PURPLE + "Purple!" + RESET + " normal color");
-    public static final String RESET = "\u001B[0m";
-    public static final String RED = "\u001B[31m";
-    public static final String GREEN = "\u001B[32m";
-    public static final String PURPLE = "\u001B[35m";
+    public static String RESET = "\u001B[0m";
+    public static String RED = "\u001B[31m";
+    public static String GREEN = "\u001B[32m";
+    public static String PURPLE = "\u001B[35m";
 
     // Verbose levels
 	private static final int MAX_VERBOSE = 3;
@@ -16,11 +16,20 @@ public class TestAutomata {
     
     public static void main(String[] args) {
 
-    		/* Turn verbose on if "-v" flag was used */
+    		/* Turn verbose on if "-v" flag was used, turn on colored output if "-c" flag was used */
 
-    	if (args.length > 0)
-    		if (args[0].length() >=2 && args[0].substring(0, 2).equals("-v"))
-    			verbose = MAX_VERBOSE;
+        boolean coloredOutput = false;
+
+        for (String arg : args)
+    		if (arg.length() >=2) {
+                if (arg.substring(0, 2).equals("-v"))
+                    verbose = MAX_VERBOSE;
+                else if (arg.substring(0, 2).equals("-c"))
+                    coloredOutput = true;
+            }
+
+        if (!coloredOutput)
+            RESET = RED = GREEN = PURPLE = "";
 		
 			/* Run the testing suite */
     	
