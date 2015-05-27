@@ -28,7 +28,7 @@ public class Automaton {
 
 		/** CLASS CONSTANTS **/
 
-	private static final int HEADER_SIZE = 32; // This is the fixed amount of space needed to hold the main variables in the .hdr file
+	private static final int HEADER_SIZE = 36; // This is the fixed amount of space needed to hold the main variables in the .hdr file
 
 	public static final long DEFAULT_STATE_CAPACITY = 255;
 	public static final long MAX_STATE_CAPACITY = Long.MAX_VALUE;
@@ -36,6 +36,8 @@ public class Automaton {
 	public static final int MAX_TRANSITION_CAPACITY = Integer.MAX_VALUE;
 	public static final int DEFAULT_LABEL_LENGTH = 1;
 	public static final int MAX_LABEL_LENGTH = 100;
+	public static final int DEFAULT_NUMBER_OF_CONTROLLERS = 1;
+	public static final int MAX_NUMBER_OF_CONTROLLERS = 10;
 
 	public static final long LIMIT_OF_STATES_FOR_PICTURE = 10000; // Arbitrary value which will be revised once we have tried generating large automata
 
@@ -51,12 +53,11 @@ public class Automaton {
 		/** PRIVATE INSTANCE VARIABLES **/
 
 	private Set<Event> 	events = new TreeSet<Event>(),
-						activeEvents = new HashSet<Event>(),
-						controllableEvents = new HashSet<Event>(),
-						observableEvents = new HashSet<Event>();
+						activeEvents = new HashSet<Event>();
 
 	private long nStates = 0;
 	private long initialState = 0;
+	private int nControllers;
 	
 	// Variables which determine how large the .bdy file will become
 	private long stateCapacity;
@@ -86,7 +87,7 @@ public class Automaton {
      * Default constructor: create empty automaton with default capacity
      **/
     public Automaton() {
-    	this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, DEFAULT_STATE_CAPACITY, DEFAULT_TRANSITION_CAPACITY, DEFAULT_LABEL_LENGTH, true);
+    	this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, DEFAULT_STATE_CAPACITY, DEFAULT_TRANSITION_CAPACITY, DEFAULT_LABEL_LENGTH, DEFAULT_NUMBER_OF_CONTROLLERS, true);
     }
 
     /**
@@ -99,35 +100,38 @@ public class Automaton {
     			DEFAULT_STATE_CAPACITY,
     			DEFAULT_TRANSITION_CAPACITY,
     			DEFAULT_LABEL_LENGTH,
+    			DEFAULT_NUMBER_OF_CONTROLLERS,
     			clearFiles
     		);
     }
 
     /**
-     *	Implicit constructor: create automaton with specified initial capacities
-     *	NOTE: 	Choosing larger values increases the amount of space needed to store the binary file.
+     * Implicit constructor: create automaton with specified initial capacities
+     * NOTE: 	Choosing larger values increases the amount of space needed to store the binary file.
      *			Choosing smaller values increases the frequency that you need to re-write the entire binary file in order to expand it
-	 *	@param stateCapacity		The initial state capacity (increases by a factor of 256 when it is exceeded)
-	 *								(NOTE: the initial state capacity may be higher than the value you give it, since it has to be 256^x)
-	 *	@param transitionCapacity	The initial maximum number of transitions per state (increases by 1 whenever it is exceeded)
-	 *	@param labelLength			The initial maximum number characters per state label (increases by 1 whenever it is exceeded)
-	 *	@param clearFiles			Whether or not the header and body files should be cleared prior to use
+	 * @param stateCapacity			The initial state capacity (increases by a factor of 256 when it is exceeded)
+	 *								(NOTE: the initial state capacity may be higher than the value you give it, since it has to be in the form 256^x)
+	 * @param transitionCapacity	The initial maximum number of transitions per state (increases by 1 whenever it is exceeded)
+	 * @param labelLength			The initial maximum number characters per state label (increases by 1 whenever it is exceeded)
+	 * @param nControllers			The number of controllers that the automaton has (1 implies centralized control, >1 implies decentralized control)
+	 * @param clearFiles			Whether or not the header and body files should be cleared prior to use
      **/
-    public Automaton(long stateCapacity, int transitionCapacity, int labelLength, boolean clearFiles) {
-    	this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, stateCapacity, transitionCapacity, labelLength, clearFiles);
+    public Automaton(long stateCapacity, int transitionCapacity, int labelLength, int nControllers, boolean clearFiles) {
+    	this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, stateCapacity, transitionCapacity, labelLength, nControllers, clearFiles);
     }
 
     /**
-     *	Implicit constructor: create automaton from a binary file
-	 *	@param headerFile			The binary file to load the header information of the automaton from (information about events, etc.)
-	 *	@param bodyFile				The binary file to load the body information of the automaton from (states and transitions)
-	 *  @param stateCapacity		The initial state capacity (increases by a factor of 256 when it is exceeded)
-	 *	@param transitionCapacity	The initial maximum number of transitions per state (increases by 1 whenever it is exceeded)
-	 *	@param labelLength			The initial maximum number characters per state label (increases by 1 whenever it is exceeded)
-	 *	@param clearFiles			Whether or not the header and body files should be cleared prior to use
+     * Implicit constructor: create automaton from a binary file
+	 * @param headerFile			The binary file to load the header information of the automaton from (information about events, etc.)
+	 * @param bodyFile				The binary file to load the body information of the automaton from (states and transitions)
+	 * @param stateCapacity			The initial state capacity (increases by a factor of 256 when it is exceeded)
+	 * @param transitionCapacity	The initial maximum number of transitions per state (increases by 1 whenever it is exceeded)
+	 * @param labelLength			The initial maximum number characters per state label (increases by 1 whenever it is exceeded)
+	 * @param nControllers			The number of controllers that the automaton has (1 implies centralized control, >1 implies decentralized control)
+	 * @param clearFiles			Whether or not the header and body files should be cleared prior to use
      **/
 
-	public Automaton(File headerFile, File bodyFile, long stateCapacity, int transitionCapacity, int labelLength, boolean clearFiles) {
+	public Automaton(File headerFile, File bodyFile, long stateCapacity, int transitionCapacity, int labelLength, int nControllers, boolean clearFiles) {
 
 		this.headerFile = headerFile;
 		this.bodyFile = bodyFile;
@@ -139,6 +143,16 @@ public class Automaton {
 		this.stateCapacity = stateCapacity;
 		this.transitionCapacity = transitionCapacity;
 		this.labelLength = labelLength;
+		this.nControllers = nControllers;
+
+			/* Clear files */
+
+		if (clearFiles)
+			deleteFiles();
+		
+			/* Open files and try to load data from header */
+
+		openFiles();
 
 			/* The automaton should have room for at least 1 transition per state (otherwise our automaton will be pretty boring) */
 
@@ -152,14 +166,12 @@ public class Automaton {
 		if (this.labelLength > MAX_LABEL_LENGTH)
 			this.labelLength = MAX_LABEL_LENGTH;
 
-			/* Clear files */
+			/* The number of controllers should be greater than 0, but it should not exceed the maximum */
 
-		if (clearFiles)
-			deleteFiles();
-		
-			/* Open files and try to load data from header */
-
-		openFiles();
+		if (this.nControllers < 1)
+			this.nControllers = 1;
+		if (this.nControllers > MAX_NUMBER_OF_CONTROLLERS)
+			this.nControllers = MAX_NUMBER_OF_CONTROLLERS;
 
 	    	/* Finish setting up */
 
@@ -253,7 +265,7 @@ public class Automaton {
 
     		/* Create a new automaton that has each of the transitions going the opposite direction */
 
-    	Automaton invertedAutomaton = new Automaton(stateCapacity, transitionCapacity, labelLength, true);
+    	Automaton invertedAutomaton = new Automaton(stateCapacity, transitionCapacity, labelLength, nControllers, true);
 
     	// Add events
     	for (Event e : events)
@@ -878,11 +890,11 @@ public class Automaton {
     			str.append(state.getLabel() + "->" + getStateExcludingTransitions(t1.getTargetStateID()).getLabel());
     			str.append(" [label=\"" + label.substring(1) + "\"");
     			
-    			if (!t1.getEvent().isObservable())
-    				str.append(",style=dotted");
+    			// if (!t1.getEvent().isObservable())
+    			// 	str.append(",style=dotted");
 
-    			if (!t1.getEvent().isControllable())
-    				str.append(",color=red");
+    			// if (!t1.getEvent().isControllable())
+    			// 	str.append(",color=red");
 
     			str.append("];");
     		}
@@ -956,8 +968,10 @@ public class Automaton {
 		for (Event e : events) {
 
 			eventInputBuilder.append(e.getLabel());
-			eventInputBuilder.append((e.isObservable() ? ",T" : ",F"));
-			eventInputBuilder.append((e.isControllable() ? ",T" : ",F"));
+			for (int i = 0; i < nControllers; i++) {
+				eventInputBuilder.append((e.isObservable()[i] ? ",T" : ",F"));
+				eventInputBuilder.append((e.isControllable()[i] ? ",T" : ",F"));
+			}
 			
 			if (++counter < events.size())
 				eventInputBuilder.append("\n");
@@ -1145,7 +1159,8 @@ public class Automaton {
 		ByteManipulator.writeLongAsBytes(buffer, 12, transitionCapacity, 4);
 		ByteManipulator.writeLongAsBytes(buffer, 16, labelLength, 4);
 		ByteManipulator.writeLongAsBytes(buffer, 20, initialState, 8);
-		ByteManipulator.writeLongAsBytes(buffer, 28, events.size(), 4);
+		ByteManipulator.writeLongAsBytes(buffer, 28, nControllers, 4);
+		ByteManipulator.writeLongAsBytes(buffer, 32, events.size(), 4);
 
 		try {
 
@@ -1157,17 +1172,21 @@ public class Automaton {
 			for (Event e : events) {
 			
 				// Fill the buffer
-				buffer = new byte[2 + 4 + e.getLabel().length()];
+				buffer = new byte[ (2 * nControllers) + 4 + e.getLabel().length()];
 
 				// Read event properties
-				buffer[0] = (byte) (e.isObservable() ? 1 : 0);
-				buffer[1] = (byte) (e.isControllable() ? 1 : 0);
+				int index = 0;
+				for (int i = 0; i < nControllers; i++) {
+					buffer[index] = (byte) (e.isObservable()[i] ? 1 : 0);
+					buffer[index + 1] = (byte) (e.isControllable()[i] ? 1 : 0);
+					index += 2;
+				}
 
 				// Write the length of the label
-				ByteManipulator.writeLongAsBytes(buffer, 2, e.getLabel().length(), 4);
+				ByteManipulator.writeLongAsBytes(buffer, index, e.getLabel().length(), 4);
+				index += 4;
 
 				// Write each character of the label
-				int index = 6;
 				for (int i = 0; i < e.getLabel().length(); i++)
 					buffer[index++] = (byte) e.getLabel().charAt(i);
 
@@ -1204,14 +1223,19 @@ public class Automaton {
 			transitionCapacity = (int) ByteManipulator.readBytesAsLong(buffer, 12, 4);
 			labelLength = (int) ByteManipulator.readBytesAsLong(buffer, 16, 4);
 			initialState = ByteManipulator.readBytesAsLong(buffer, 20, 8);
-			int nEvents = (int) ByteManipulator.readBytesAsLong(buffer, 28, 4);
+			nControllers = (int) ByteManipulator.readBytesAsLong(buffer, 28, 4);
+			int nEvents = (int) ByteManipulator.readBytesAsLong(buffer, 32, 4);
 
 			// Read in the events
 			for (int e = 1; e <= nEvents; e++) {
 
 				// Read properties
-				boolean observable = (headerRAFile.readByte()) == 1;
-				boolean controllable = (headerRAFile.readByte()) == 1;
+				boolean[] 	observable = new boolean[nControllers],
+							controllable = new boolean[nControllers];
+				for (int i = 0; i < nControllers; i++) {
+				 	observable[i] = (headerRAFile.readByte() == 1);
+				 	controllable[i] = (headerRAFile.readByte() == 1);
+				}
 
 				// Read the number of characters in the label
 				buffer = new byte[4];
@@ -1503,7 +1527,7 @@ public class Automaton {
 				return 0;
 			}
 
-				/* Re-create binary file */
+			// Re-create binary file
 			recreateBodyFile(
 					stateCapacity,
 					transitions.size(),
@@ -1659,7 +1683,7 @@ public class Automaton {
 	 * @param controllable	Whether or not the event is controllable
 	 * @return the ID of the added event (0 indicates the addition was unsuccessful, which implies that the set did not change in size)
 	 **/
-	public int addEvent(String label, boolean observable, boolean controllable) {
+	public int addEvent(String label, boolean[] observable, boolean[] controllable) {
 
 		// Ensure that no other event already exists with this label (this is necessary because of the strange comparison criteria in Event.compareTo())
 		for (Event e : events)
@@ -1670,12 +1694,6 @@ public class Automaton {
 		int id = events.size() + 1;
 		Event event = new Event(label, id, observable, controllable);
 		events.add(event);
-
-		// Add event to corresponding lists
-		if (observable)
-			observableEvents.add(event);
-		if (controllable)
-			controllableEvents.add(event);
 
 		// Update header file
 		writeHeaderFile();
@@ -1747,22 +1765,6 @@ public class Automaton {
     }
 
     /**
-     * Return the set of all controllable events.
-	 * @return the set of all controllable events
-     **/
-    public Set<Event> getControllableEvents() {
-    	return controllableEvents;
-    }
-
-    /**
-     *	Return the set of all observable events.
-	 *	@return the set of all observable events
-     **/
-    public Set<Event> getObservableEvents() {
-    	return observableEvents;
-    }
-
-    /**
      * Get the number of states that are currently in this automaton.
      * @return number of states
      **/
@@ -1816,6 +1818,14 @@ public class Automaton {
      **/
     public long getInitialStateID() {
     	return initialState;
+    }
+
+    /**
+     * Get the the number of controllers in the automaton (>1 indicates decentralized control).
+     * @return number of controllers
+     **/
+    public int getNumberOfControllers() {
+    	return nControllers;
     }
 
 }

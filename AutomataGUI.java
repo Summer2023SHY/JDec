@@ -14,18 +14,13 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
 		/** Private instance variables **/
 
-    private JTabbedPane tabbedPane;
+    private static JTabbedPane tabbedPane;
 
-	private ArrayList<JTextPane>   eventInput = new ArrayList<JTextPane>(),
-	                               stateInput = new ArrayList<JTextPane>(),
-	                               transitionInput = new ArrayList<JTextPane>();
+    private static ArrayList<AutomatonTab> tabs = new ArrayList<AutomatonTab>();
 
-    private ArrayList<Canvas> canvas = new ArrayList<Canvas>();
     private int imageSize = 587;
 
     private File currentDirectory = null;
-    private ArrayList<File> automataFile = new ArrayList<File>();
-    private ArrayList<Automaton> automata = new ArrayList<Automaton>();
 
         /** MAIN METHOD **/
     
@@ -59,37 +54,26 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     }
 
+    /**
+     * Create an empty tab.
+     **/
     private void createTab() {
-
-            /* Setup */
-
-        eventInput.add(null);
-        stateInput.add(null);
-        transitionInput.add(null);
-        canvas.add(null);
-        automataFile.add(null);
-        automata.add(null);
 
         int index = tabbedPane.getTabCount();
 
-            /* Create input boxes */
+        AutomatonTab tab = new AutomatonTab(index);
+        tabs.add(tab);
 
-        Container container = new Container();
-        container.setLayout(new FlowLayout());
-        container.add(createInputContainer(index));
-
-            /* Create canvas */
-
-        canvas.set(index, new Canvas());
-        container.add(canvas.get(index));
-
-            /* Add to tabs */
-
-        tabbedPane.addTab("untitled", null, container, "");
+        tabbedPane.addTab("untitled", null, tab, "");
         tabbedPane.setSelectedIndex(index);
 
     }
 
+    /**
+     * Create a tab, and load in an automaton.
+     * @param automatonFile The header file of the stored automaton
+     * @param automaton     The automaton object
+     **/
     private void createTab(File automatonFile, Automaton automaton) {
 
         // Create new tab
@@ -98,59 +82,63 @@ public class AutomataGUI extends JFrame implements ActionListener {
         int newIndex = tabbedPane.getTabCount() - 1;
 
         // Set tab values
-        automataFile.set(newIndex, automatonFile);
-        tabbedPane.setTitleAt(newIndex, automataFile.get(newIndex).getName());
-        automata.set(newIndex, automaton);
-        automata.get(newIndex).generateInputForGUI();
-        eventInput.get(newIndex).setText(automata.get(newIndex).getEventInput());
-        stateInput.get(newIndex).setText(automata.get(newIndex).getStateInput());
-        transitionInput.get(newIndex).setText(automata.get(newIndex).getTransitionInput());
+        AutomatonTab tab = tabs.get(newIndex);
+        tab.file = automatonFile;
+        tabbedPane.setTitleAt(newIndex, tab.file.getName());
+        tab.automaton = automaton;
+        tab.automaton.generateInputForGUI();
+        tab.eventInput.setText(tab.automaton.getEventInput());
+        tab.stateInput.setText(tab.automaton.getStateInput());
+        tab.transitionInput.setText(tab.automaton.getTransitionInput());
 
     }
 
+    /**
+     * Close the current tab.
+     **/
     private void closeCurrentTab() {
 
             /* Get index of the currently selected tab */
 
         int index = tabbedPane.getSelectedIndex();
 
-            /* Remove elements from each of the ArrayLists corresponding with this tab */
-
-        eventInput.remove(index);
-        stateInput.remove(index);
-        transitionInput.remove(index);
-        canvas.remove(index);
-        automataFile.remove(index);
-        automata.remove(index);
-
             /* Remove tab */
 
         tabbedPane.remove(index);
+        tabs.remove(index);
     }
 
     /**
-     *  Set some default GUI Properties.
+     * Set some default GUI Properties.
      **/
     private void setGUIproperties() {
 
-        // Pack things in nicely
+            /* Pack things in nicely */
+
         pack();
         
-        // Ensure our application will be closed when the user presses the "X" */
+            /* Ensure our application will be closed when the user presses the "X" */
+
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         // setResizable(false);
 
-        // Sets screen location in the center of the screen (only works after calling pack)
+            /* Sets screen location in the center of the screen (only works after calling pack) */
+
         setLocationRelativeTo(null);
 
-        // Update title
+            /* Update title */
+
         setTitle("Automata Manipulator");
 
-        // Show screen
+            /* Show screen */
+
         setVisible(true);
 
     }
 
+    /**
+     * Load the current directory from file (so that the current directory is maintained even after the program has been closed).
+     **/
     private void loadCurrentDirectory() {
 
         try {
@@ -166,6 +154,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     }
 
+    /**
+     * Saved the current directory to file (so that the current directory is maintained even after the program has been closed).
+     **/
     private void saveCurrentDirectory() {
 
         if (currentDirectory != null) {
@@ -184,159 +175,35 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     }
 
-    private Container createInputContainer(int index) {
-
-            /* Setup */
-
-        Container container = new Container();
-        container.setLayout(new GridBagLayout());
-        GridBagConstraints c = new GridBagConstraints();
-        c.fill = GridBagConstraints.HORIZONTAL;
-
-            /* Event Input */
-
-        JLabel eventInputInstructions = new JLabel("Enter events:");
-        c.ipady = 0;
-        c.weightx = 0.5;
-        c.weighty = 0.0;
-        c.gridx = 0;
-        c.gridy = 0;
-        container.add(new TooltipComponent(
-                eventInputInstructions,
-                "<html>1 event per line, formatted as <i>LABEL[,OBSERVABLE[,CONTROLLABLE]]</i>.<br>"
-                + "<b><u>EXAMPLE</u></b>: '<i>EventName,True,False</i>' denotes an event called <b>EventName</b> "
-                + "that is <b>observable</b> but <b>not controllable</b>.<br>"
-                + "<b><u>NOTE</u></b>: '<i>True</i>' and '<i>False</i>' can be abbreviated as '<i>T</i>' and '<i>F</i>', "
-                + "respectively. If omitted, the default value is '<i>True</i>'.</html>"
-            ),c);
-
-        eventInput.set(index, new JTextPane());
-        eventInput.get(index).setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
-        eventInput.get(index).setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
-        JScrollPane eventInputScrollPane = new JScrollPane(eventInput.get(index)) {
-            @Override public Dimension getPreferredSize() {
-                return new Dimension(100, 100);    
-            }
-        };
-        c.ipady = 100;
-        c.weightx = 0.5;
-        c.weighty = 1.0;
-        c.gridx = 0;
-        c.gridy = 1;
-        container.add(eventInputScrollPane, c);
-
-            /* State Input */
-
-        JLabel stateInputInstructions = new JLabel("Enter states:");
-        c.ipady = 0;
-        c.weightx = 0.5;
-        c.weighty = 0.0;
-        c.gridx = 1;
-        c.gridy = 0;
-        container.add(new TooltipComponent(
-                stateInputInstructions,
-                "<html>1 state per line, formatted as <i>[*]LABEL[,MARKED]</i> (where the asterisk denotes that this is the initial state).<br>"
-                + "<b><u>EXAMPLE</u></b>: <i>'StateName,False'</i> denotes a state called <b>StateName</b> that is <b>unmarked</b>.<br>"
-                + "<b><u>EXAMPLE</u></b>: <i>'*StateName'</i> denotes a state called <b>StateName</b> that is the <b>initial state</b> and is <b>marked</b>.<br>"
-                + "<b><u>NOTES</u></b>: <i>'True'</i> and <i>'False'</i> can be abbreviated as <i>'T'</i> and <i>'F'</i>, respectively. "
-                + "If omitted, the default value is '<i>True</i>'. There is only allowed to be one initial state.</html>"
-            ),c);
-
-        stateInput.set(index, new JTextPane());
-        stateInput.get(index).setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
-        stateInput.get(index).setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
-        JScrollPane stateInputScrollPane = new JScrollPane(stateInput.get(index)) {
-            @Override public Dimension getPreferredSize() {
-                return new Dimension(100, 100);    
-            }
-        };
-        c.ipady = 100;
-        c.weightx = 0.5;
-        c.weighty = 1.0;
-        c.gridx = 1;
-        c.gridy = 1;
-        container.add(stateInputScrollPane, c);
-
-            /* Transition Input */
-
-        c.gridwidth = 2;
-
-        JLabel transitionInputInstructions = new JLabel("Enter transitions:");
-        c.ipady = 0;
-        c.weightx = 1.0;
-        c.weighty = 0.0;
-        c.gridx = 0;
-        c.gridy = 2;
-        container.add(new TooltipComponent(
-                transitionInputInstructions,
-                "<html>1 transition per line, formatted as <i>INITIAL_STATE,EVENT,TARGET_STATE</i>.<br>"
-                + "<b><u>EXAMPLE</u></b>: <i>'FirstState,Event,SecondState'</i> denotes a transition that goes from "
-                + "the state <b>'FirstState'</b> to the state <b>'SecondState'</b> by the event called <b>'Event'</b>.</html>"
-            ),c);
-
-        transitionInput.set(index, new JTextPane());
-        transitionInput.get(index).setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
-        transitionInput.get(index).setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
-        JScrollPane transitionInputScrollPane = new JScrollPane(transitionInput.get(index)) {
-            @Override public Dimension getPreferredSize() {
-                return new Dimension(100, 100);    
-            }
-        };
-        c.ipady = 200;
-        c.weightx = 0.5;
-        c.weighty = 1.0;
-        c.gridx = 0;
-        c.gridy = 3;
-        container.add(transitionInputScrollPane, c);
-
-            /* Generate Automaton (NOTE: It is assumed that Automatons that are typed in by hand will not be extremely large) */
-
-        JButton generateAutomatonButton = new JButton("Generate Automaton");
-        generateAutomatonButton.setFocusable(false);
-        generateAutomatonButton.addActionListener(new ActionListener() {
- 
-            public void actionPerformed(ActionEvent e) {
-                generateAutomatonButtonPressed();
-            }
-
-        });
-        c.ipady = 0;
-        c.weightx = 0.5;
-        c.weighty = 1.0;
-        c.gridx = 0;
-        c.gridy = 4;
-        container.add(generateAutomatonButton, c);
-
-        return container;
-
-    }
-
     private void generateAutomatonButtonPressed() {
 
         int index = tabbedPane.getSelectedIndex();
 
+        AutomatonTab tab = tabs.get(index);
+
         // Create automaton from input code
         Automaton automaton = generateAutomaton(
-                eventInput.get(index).getText(),
-                stateInput.get(index).getText(),
-                transitionInput.get(index).getText(),
+                tab.eventInput.getText(),
+                tab.stateInput.getText(),
+                tab.transitionInput.getText(),
+                (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue(),
                 true,
-                automataFile.get(index)
+                tab.file
             );
-        automata.set(index, automaton);
+        tab.automaton = automaton;
 
         // Set the image blank if there were no states entered
         if (automaton == null)
-            canvas.get(index).setImage(null);
+            tab.canvas.setImage(null);
 
         // Try to create graph image, displaying it on the screen
         else if (automaton.generateImage(imageSize))
-            canvas.get(index).setImage(automaton.loadImageFromFile());
+            tab.canvas.setImage(automaton.loadImageFromFile());
 
     }
 
-    /* In order to use TestAutomata.java to run some test routines on it, this method was made public and had some parameters added */
-    public static Automaton generateAutomaton(String eventInputText, String stateInputText, String transitionInputText, boolean verbose, File headerFile) {
+    /* In order to use TestAutomata to run some test routines on it, this method was made public and had some parameters added */
+    public static Automaton generateAutomaton(String eventInputText, String stateInputText, String transitionInputText, int nControllers, boolean verbose, File headerFile) {
 
             /* Setup */
         
@@ -419,7 +286,31 @@ public class AutomataGUI extends JFrame implements ActionListener {
             // Try to add the event
             if (splitLine.length >= 1 && label.length() > 0) {
 
-                int id = automaton.addEvent(label, splitLine.length < 2 || isTrue(splitLine[1]), splitLine.length < 3 || isTrue(splitLine[2]));
+                // Setup
+                boolean[]   observable = new boolean[nControllers],
+                            controllable = new boolean[nControllers];
+                Arrays.fill(observable, true);
+                Arrays.fill(controllable, true);
+
+                // Parse controller properties
+                if (splitLine.length == 3) {
+                    if (splitLine[1].length() == nControllers && splitLine[2].length() == nControllers) {
+                        observable = isTrueArray(splitLine[1]);
+                        controllable = isTrueArray(splitLine[2]);
+                    } else {
+                        System.out.println(
+                            String.format(
+                                "ERROR: The number of controllers (%d) does not match the number of properties specified (%d and %d).",
+                                nControllers,
+                                splitLine[1].length(),
+                                splitLine[2].length()
+                            )
+                        );
+                    }
+                }
+
+                // Try to add event to automaton
+                int id = automaton.addEvent(label, observable, controllable);
 
                 // Check for invalid label
                 if (!isValidLabel(label)) {
@@ -449,8 +340,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
             
             String[] splitLine = line.trim().split(",");
 
-            // Ensure that all 3 parameters are present
-            if (splitLine.length == 3) {
+            // Ensure that all 3 required parameters are present
+            if (splitLine.length >= 3) {
 
                 // Get ID's of initial state, event, and target state
                 Long initialStateID = stateMapping.get(splitLine[0]);
@@ -475,14 +366,29 @@ public class AutomataGUI extends JFrame implements ActionListener {
     }
 
     /**
-     * Simple helper method to detect whether the given String is either "T" or "TRUE" after it has been converted to upper case.
+     * Simple helper method to detect whether the given String is either "T" or "t".
      * @param str   The String to parse
      * @return whether or not the String represents "TRUE" 
      **/
+    public static boolean isTrue(String str) {
+        return str.toUpperCase().equals("T");
+    }
 
-    private static boolean isTrue(String str) {
+
+    public static boolean[] isTrueArray(String str) {
+
+            /* Setup */
+
         str = str.toUpperCase();
-        return str.equals("T") || str.equals("TRUE");
+        boolean[] arr = new boolean[str.length()];
+
+            /* Determine which characters represent "TRUE" */
+
+        for (int i = 0; i < str.length(); i++)
+            arr[i] = (str.charAt(i) == 'T');
+
+        return arr;
+
     }
 
     /**
@@ -564,6 +470,10 @@ public class AutomataGUI extends JFrame implements ActionListener {
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
+        menuItem = new JMenuItem("Trim");
+        menuItem.addActionListener(this);
+        menu.add(menuItem);
+
         menu.addSeparator();
 
         menuItem = new JMenuItem("Intersection");
@@ -585,7 +495,13 @@ public class AutomataGUI extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent event) {
 
         int index = tabbedPane.getSelectedIndex();
+        AutomatonTab tab = null;
 
+        // Only get the tab if it actually exists
+        if (index < tabbedPane.getTabCount())
+            tab = tabs.get(index);
+
+        // Execute the appropriate command
         switch (event.getActionCommand()) {
 
                 /* FILE STUFF */
@@ -593,12 +509,12 @@ public class AutomataGUI extends JFrame implements ActionListener {
             case "Clear":
 
                 // Clear input fields
-                eventInput.get(index).setText("");
-                stateInput.get(index).setText("");
-                transitionInput.get(index).setText("");
+                tab.eventInput.setText("");
+                tab.stateInput.setText("");
+                tab.transitionInput.setText("");
 
                 // Set blank image
-                canvas.get(index).setImage(null);
+                tab.canvas.setImage(null);
 
                 break;
 
@@ -611,7 +527,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
                 // Prompt user to save Automaton to the specified file
                 saveFile("Choose .hdr File");
-                tabbedPane.setTitleAt(index, automataFile.get(index).getName());
+                tabbedPane.setTitleAt(index, tab.file.getName());
                 generateAutomatonButtonPressed(); // This is what actually saves it to the new file
                     
                 break;
@@ -622,9 +538,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 if (selectFile("Select Automaton") == null)
                     break;
 
-                canvas.get(index).setImage(null);
+                tab.canvas.setImage(null);
 
-                tabbedPane.setTitleAt(index, automataFile.get(index).getName());
+                tabbedPane.setTitleAt(index, tab.file.getName());
 
             case "Refresh":
 
@@ -641,36 +557,36 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
             case "Accessible":
 
-                createTab(new File("accessible.hdr"), automata.get(index).accessible());
+                createTab(new File("accessible.hdr"), tab.automaton.accessible());
                 break;
 
             case "Co-Accessible":
 
-                createTab(new File("coaccessible.hdr"), automata.get(index).coaccessible());
+                createTab(new File("coaccessible.hdr"), tab.automaton.coaccessible());
                 break;
 
             case "Trim":
 
-                createTab(new File("trim.hdr"), automata.get(index).trim());
+                createTab(new File("trim.hdr"), tab.automaton.trim());
                 break;
 
             case "Intersection":
 
                 // Allow user to pick other automaton
-                Automaton otherAutomaton = automata.get(pickAutomaton("Which automaton would you like to take the intersection with?", index));
+                Automaton otherAutomaton = tabs.get(pickAutomaton("Which automaton would you like to take the intersection with?", index)).automaton;
 
                 // Create new tab with the intersection
-                createTab(new File("intersection.hdr"), Automaton.intersection(automata.get(index), otherAutomaton));
+                createTab(new File("intersection.hdr"), Automaton.intersection(tab.automaton, otherAutomaton));
                 
                 break;
 
             case "Union":
 
                 // Allow user to pick other automaton
-                otherAutomaton = automata.get(pickAutomaton("Which automaton would you like to take the union with?", index));
+                otherAutomaton = tabs.get(pickAutomaton("Which automaton would you like to take the union with?", index)).automaton;
 
                 // Create new tab with the union
-                createTab(new File("union.hdr"), Automaton.union(automata.get(index), otherAutomaton));
+                createTab(new File("union.hdr"), Automaton.union(tab.automaton, otherAutomaton));
 
                 break;
             
@@ -681,11 +597,13 @@ public class AutomataGUI extends JFrame implements ActionListener {
     // Load automaton from file, filling the input fields with its data
     private void refresh(int index) {
 
-        automata.set(index, new Automaton(automataFile.get(index), false));
-        automata.get(index).generateInputForGUI();
-        eventInput.get(index).setText(automata.get(index).getEventInput());
-        stateInput.get(index).setText(automata.get(index).getStateInput());
-        transitionInput.get(index).setText(automata.get(index).getTransitionInput());
+        AutomatonTab tab = tabs.get(index);
+
+        tab.automaton = new Automaton(tab.file, false);
+        tab.automaton.generateInputForGUI();
+        tab.eventInput.setText(tab.automaton.getEventInput());
+        tab.stateInput.setText(tab.automaton.getStateInput());
+        tab.transitionInput.setText(tab.automaton.getTransitionInput());
 
     }
 
@@ -718,7 +636,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
             /* Update last file opened and update current directory */
 
         if (fileChooser.getSelectedFile() != null) {
-            automataFile.set(tabbedPane.getSelectedIndex(), fileChooser.getSelectedFile());
+            tabs.get(tabbedPane.getSelectedIndex()).file = fileChooser.getSelectedFile();
             currentDirectory = fileChooser.getSelectedFile().getParentFile();
             saveCurrentDirectory();
         }
@@ -769,7 +687,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
             /* Update last file opened and update current directory */
 
-        automataFile.set(tabbedPane.getSelectedIndex(), file);
+        tabs.get(tabbedPane.getSelectedIndex()).file = file;
         currentDirectory = file.getParentFile();
         saveCurrentDirectory();
 
@@ -784,13 +702,15 @@ public class AutomataGUI extends JFrame implements ActionListener {
         ArrayList<String> optionsList = new ArrayList<String>();
 
         for (int i = 0; i < tabbedPane.getTabCount(); i++) {
+
+            AutomatonTab tab = tabs.get(i);
                 
             // Skip automaton
-            if (i == indexToSkip || automataFile.get(i) == null)
+            if (i == indexToSkip || tab.file == null)
                 continue;
 
             // Add automaton to list of options
-            optionsList.add(automataFile.get(i).getName());
+            optionsList.add(tab.file.getName());
 
         }
 
@@ -811,7 +731,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
             /* Return index of chosen automaton */
 
        for (int i = 0; i < tabbedPane.getTabCount(); i++)
-            if (automataFile.get(i) != null && automataFile.get(i).getName().equals(choice))
+            if (tabs.get(i).file != null && tabs.get(i).file.getName().equals(choice))
                 return i;
 
         return -1;
@@ -902,5 +822,196 @@ public class AutomataGUI extends JFrame implements ActionListener {
         }
 
      } // Canvas class
+
+     /**
+     * Private class to maintain all GUI information about a single automaton.
+     **/
+    private class AutomatonTab extends Container {
+
+            /* Public instance variables */
+
+        public JTextPane    eventInput = null,
+                            stateInput = null,
+                            transitionInput = null;
+
+        public JSpinner controllerInput = null;
+
+        public Canvas canvas = null;
+
+        public File file = null;
+
+        public Automaton automaton;
+
+            /* Constructor */
+
+        public AutomatonTab() {
+            super();
+        }
+
+        public AutomatonTab(int index) {
+
+            super();
+
+                /* Setup */
+
+            setLayout(new FlowLayout());
+            add(createInputContainer(index));
+
+                /* Create canvas */
+
+            canvas = new Canvas();
+            add(canvas);
+        }
+
+        private Container createInputContainer(int index) {
+
+                /* Setup */
+
+            Container container = new Container();
+            container.setLayout(new GridBagLayout());
+            GridBagConstraints c = new GridBagConstraints();
+            c.fill = GridBagConstraints.HORIZONTAL;
+
+                /* Controller Input */
+
+            JLabel controllerInputLabel = new JLabel("# Controllers:");
+            c.ipady = 0;
+            c.weightx = 0.5;
+            c.weighty = 0.0;
+            c.gridx = 0;
+            c.gridy = 0;
+            container.add(controllerInputLabel, c);
+
+            controllerInput = new JSpinner(new SpinnerNumberModel(1, 1, Automaton.MAX_NUMBER_OF_CONTROLLERS, 1));
+            c.ipady = 0;
+            c.weightx = 0.5;
+            c.weighty = 0.0;
+            c.gridx = 1;
+            c.gridy = 0;
+            container.add(controllerInput, c);
+
+                /* Event Input */
+
+            JLabel eventInputInstructions = new JLabel("Enter events:");
+            c.ipady = 0;
+            c.weightx = 0.5;
+            c.weighty = 0.0;
+            c.gridx = 0;
+            c.gridy = 1;
+            container.add(new TooltipComponent(
+                    eventInputInstructions,
+                    "<html>1 event per line, formatted as <i>LABEL[,OBSERVABLE,CONTROLLABLE]</i>.<br>"
+                    + "<b><u>EXAMPLE</u></b>: '<i>EventName,T,F</i>' denotes an event called <b>EventName</b> "
+                    + "that is <b>observable</b> but <b>not controllable</b> for 1 controller.<br>"
+                    + "<b><u>EXAMPLE</u></b>: '<i>EventName,TT,FT</i>' denotes an event called <b>EventName</b> "
+                    + "that is <b>observable</b> but <b>not controllable</b> for the first controller, and is "
+                    + "<b>observable</b> and <b>controllable</b> for the second controller.<br><b><u>NOTE</u></b>: "
+                    + "'<i>T</i>' and '<i>F</i>' are case in-sensitive. If the observable and controllable properties are "
+                    + "omitted, then it is assumed that they are observable and controllable for all controllers.<br>"
+                    + "It is not possible, however, to omit the properties for some controllers, but not all.</html>"
+                ),c);
+
+            eventInput = new JTextPane();
+            eventInput.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
+            eventInput.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
+            JScrollPane eventInputScrollPane = new JScrollPane(eventInput) {
+                @Override public Dimension getPreferredSize() {
+                    return new Dimension(100, 100);    
+                }
+            };
+            c.ipady = 100;
+            c.weightx = 0.5;
+            c.weighty = 1.0;
+            c.gridx = 0;
+            c.gridy = 2;
+            container.add(eventInputScrollPane, c);
+
+                /* State Input */
+
+            JLabel stateInputInstructions = new JLabel("Enter states:");
+            c.ipady = 0;
+            c.weightx = 0.5;
+            c.weighty = 0.0;
+            c.gridx = 1;
+            c.gridy = 1;
+            container.add(new TooltipComponent(
+                    stateInputInstructions,
+                    "<html>1 state per line, formatted as <i>[*]LABEL[,MARKED]</i> (where the asterisk denotes that this is the initial state).<br>"
+                    + "<b><u>EXAMPLE</u></b>: <i>'StateName,F'</i> denotes a state called <b>StateName</b> that is <b>unmarked</b>.<br>"
+                    + "<b><u>EXAMPLE</u></b>: <i>'*StateName'</i> denotes a state called <b>StateName</b> that is the <b>initial state</b> and is "
+                    + "<b>marked</b>.<br><b><u>NOTE</u></b>: '<i>T</i>' and '<i>F</i>' are case in-sensitive. If omitted, the default value is "
+                    + "'<i>T</i>'. There is only allowed to be one initial state.</html>"
+                ),c);
+
+            stateInput = new JTextPane();
+            stateInput.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
+            stateInput.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
+            JScrollPane stateInputScrollPane = new JScrollPane(stateInput) {
+                @Override public Dimension getPreferredSize() {
+                    return new Dimension(100, 100);    
+                }
+            };
+            c.ipady = 100;
+            c.weightx = 0.5;
+            c.weighty = 1.0;
+            c.gridx = 1;
+            c.gridy = 2;
+            container.add(stateInputScrollPane, c);
+
+                /* Transition Input */
+
+            c.gridwidth = 2;
+
+            JLabel transitionInputInstructions = new JLabel("Enter transitions:");
+            c.ipady = 0;
+            c.weightx = 1.0;
+            c.weighty = 0.0;
+            c.gridx = 0;
+            c.gridy = 3;
+            container.add(new TooltipComponent(
+                    transitionInputInstructions,
+                    "<html>1 transition per line, formatted as <i>INITIAL_STATE,EVENT,TARGET_STATE</i>.<br>"
+                    + "<b><u>EXAMPLE</u></b>: <i>'FirstState,Event,SecondState'</i> denotes a transition that goes from "
+                    + "the state <b>'FirstState'</b> to the state <b>'SecondState'</b> by the event called <b>'Event'</b>.</html>"
+                ),c);
+
+            transitionInput = new JTextPane();
+            transitionInput.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
+            transitionInput.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
+            JScrollPane transitionInputScrollPane = new JScrollPane(transitionInput) {
+                @Override public Dimension getPreferredSize() {
+                    return new Dimension(100, 100);    
+                }
+            };
+            c.ipady = 200;
+            c.weightx = 0.5;
+            c.weighty = 1.0;
+            c.gridx = 0;
+            c.gridy = 4;
+            container.add(transitionInputScrollPane, c);
+
+                /* Generate Automaton (NOTE: It is assumed that Automatons that are typed in by hand will not be extremely large) */
+
+            JButton generateAutomatonButton = new JButton("Generate Automaton");
+            generateAutomatonButton.setFocusable(false);
+            generateAutomatonButton.addActionListener(new ActionListener() {
+     
+                public void actionPerformed(ActionEvent e) {
+                    generateAutomatonButtonPressed();
+                }
+
+            });
+            c.ipady = 0;
+            c.weightx = 0.5;
+            c.weighty = 1.0;
+            c.gridx = 0;
+            c.gridy = 5;
+            container.add(generateAutomatonButton, c);
+
+            return container;
+
+        }
+
+    } // AutomatonTab
 
 }

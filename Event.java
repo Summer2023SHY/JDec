@@ -13,7 +13,7 @@ public class Event implements Comparable<Event> {
 
     private String label;
     private int id;
-    private boolean observable, controllable;
+    private boolean[] observable, controllable;
 
     /**
      * 	Construct a new event with the specified properties.
@@ -21,16 +21,12 @@ public class Event implements Comparable<Event> {
      *	@param observable - Whether or not the event can be observed
      *	@param controllable - Whether or not the event can be controlled
      **/
-	public Event(String label, int id, boolean observable, boolean controllable) {
+	public Event(String label, int id, boolean[] observable, boolean[] controllable) {
 		this.label = label;
 		this.id = id;
 		this.observable = observable;
 		this.controllable = controllable;
 	}
-
-	// public boolean hasSameID(Event other) {
-	// 	return this.id == other.id;
-	// }
 
 	// This is necessary when every element of the set needs to be checked (and we can't rely on using .contains because of how it handles HashSets and TreeSets).
 	// This method is only needed to be used in cases where events are coming from different automata (so the IDs are all out of whack)
@@ -66,15 +62,15 @@ public class Event implements Comparable<Event> {
 	 *	Get the observability property of the event
  	 *	@return whether or not the event is observable
 	 **/
-	public boolean isObservable() {
+	public boolean[] isObservable() {
 		return observable;
 	}
 
 	/**
-	 *	Get the controllability property of the event
+	 *	Get the controllability property of the event.
  	 *	@return whether or not the event is controllable
 	 **/
-	public boolean isControllable() {
+	public boolean[] isControllable() {
 		return controllable;
 	}
 
@@ -101,10 +97,10 @@ public class Event implements Comparable<Event> {
 	}
 
 	/**
-	 *	Check for equality by comparing labels.
-	 *	NOTE: This method is used to check to see if an event is unique and should be added to the event set.
-	 *	@param obj - The event to compare this one to
-	 *	@return whether or not the events are equal
+	 * Check for equality by comparing labels.
+	 * NOTE: This method is used to check to see if an event is unique and should be added to the event set.
+	 * @param obj - The event to compare this one to
+	 * @return whether or not the events are equal
 	 **/
 	@Override public boolean equals(Object obj) {
 
@@ -115,11 +111,12 @@ public class Event implements Comparable<Event> {
 	}
 
 	@Override public String toString() {
+
 		return "("
 			+ label + ",ID:"
 			+ id + ","
-			+ (controllable ? "Controllable" : "Not Controllable") + ","
-			+ (observable ? "Observable" : "Not Observable")
+			+ "Observable=" + Arrays.toString(observable) + ","
+			+ "Controllable=" + Arrays.toString(controllable)
 			+ ")";
 	}
 
