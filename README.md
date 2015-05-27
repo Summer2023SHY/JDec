@@ -16,7 +16,7 @@
 <b>Testing:</b>
 
     javac *.java
-    java TestAutomata [-v]
+    java TestAutomata (-v flag is used for verbose mode, -c flag is used to enable colored output)
    
 <b>Creating Javadocs:</b>
 
