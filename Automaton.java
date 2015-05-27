@@ -154,25 +154,6 @@ public class Automaton {
 
 		openFiles();
 
-			/* The automaton should have room for at least 1 transition per state (otherwise our automaton will be pretty boring) */
-
-		if (this.transitionCapacity < 1)
-			this.transitionCapacity = 1;
-
-			/* The requested length of the state labels should not exceed the limit, nor should it be non-positive */
-
-		if (this.labelLength < 1)
-			this.labelLength = 1;
-		if (this.labelLength > MAX_LABEL_LENGTH)
-			this.labelLength = MAX_LABEL_LENGTH;
-
-			/* The number of controllers should be greater than 0, but it should not exceed the maximum */
-
-		if (this.nControllers < 1)
-			this.nControllers = 1;
-		if (this.nControllers > MAX_NUMBER_OF_CONTROLLERS)
-			this.nControllers = MAX_NUMBER_OF_CONTROLLERS;
-
 	    	/* Finish setting up */
 
 	    initializeVariables();
@@ -467,37 +448,11 @@ public class Automaton {
 
   //   }
 
-  //   // Similar to calculateCombinedID(), but due to the nature of this algorithm, there are gaps in the numbering (IDs that will never get mapped to).
-  //   // This, however, is better than having overlap.
-  //   // UNTESTED
-  //   private long createCombinedIDWithOrderedSet(Set<Long> list) {
+    public Automaton uStructure() {
 
-  //   	long combinedID = 0;
+    	return null;
 
-  //   	for (Long id : list) {
-  //   		combinedID *= nStates + 1;
-  //   		combinedID += id;
-  //   	}
-
-  //   	return combinedID;
-
-  //   }
-
-  //   // UNTESTED
-  //   private Set<Long> createOrderedSetWithCombinedID(long combinedID) {
-
-  //   	Set<Long> set = new TreeSet<Long>();
-
-  //   	while (combinedID > 0) {
-
-  //   		set.add(combinedID % (nStates + 1));
-  //   		combinedID /= (nStates + 1);
-
-  //   	}
-
-  //   	return set;
-
-  //   }
+    }
 
     /**
      * Generate the intersection of the two specified automata.
@@ -540,7 +495,7 @@ public class Automaton {
     		}
 
     		// Create combined ID
-    		long newStateID = calculateCombinedID(id1, first, id2, second);
+    		long newStateID = combineTwoIDs(id1, first, id2, second);
 
     		// This state has already been created, so it does not need to be created again
     		if (automaton.stateExists(newStateID))
@@ -571,7 +526,7 @@ public class Automaton {
     					stack2.add(t2.getTargetStateID());
 
     					// Add transition to the new automaton
-    					long targetID = calculateCombinedID(t1.getTargetStateID(), first, t2.getTargetStateID(), second);
+    					long targetID = combineTwoIDs(t1.getTargetStateID(), first, t2.getTargetStateID(), second);
     					automaton.addTransition(newStateID, t1.getEvent().getID(), targetID);
 
     				}
@@ -639,7 +594,7 @@ public class Automaton {
     		}
 
     		// Create combined ID
-    		long newStateID = calculateCombinedID(id1, first, id2, second);
+    		long newStateID = combineTwoIDs(id1, first, id2, second);
 
     		// This state has already been created, so it does not need to be created again
     		if (automaton.stateExists(newStateID))
@@ -670,7 +625,7 @@ public class Automaton {
     					stack2.add(t2.getTargetStateID());
 
     					// Add transition to the new automaton
-    					long targetID = calculateCombinedID(t1.getTargetStateID(), first, t2.getTargetStateID(), second);
+    					long targetID = combineTwoIDs(t1.getTargetStateID(), first, t2.getTargetStateID(), second);
     					automaton.addTransition(newStateID, t1.getEvent().getLabel(), targetID);
 
     				}
@@ -684,7 +639,7 @@ public class Automaton {
 					stack2.add(id2);
 
 					// Add transition to the new automaton
-					long targetID = calculateCombinedID(t.getTargetStateID(), first, id2, second);
+					long targetID = combineTwoIDs(t.getTargetStateID(), first, id2, second);
 					automaton.addTransition(newStateID, t.getEvent().getLabel(), targetID);
 
     			}
@@ -698,7 +653,7 @@ public class Automaton {
 					stack2.add(t.getTargetStateID());
 
 					// Add transition to the new automaton
-					long targetID = calculateCombinedID(id1, first, t.getTargetStateID(), second);
+					long targetID = combineTwoIDs(id1, first, t.getTargetStateID(), second);
 					automaton.addTransition(newStateID, t.getEvent().getLabel(), targetID);
 
     			}
@@ -809,7 +764,7 @@ public class Automaton {
     }
 
     /**
-     * Given two state IDs and their respective automatons, create a combined ID by using a 1-to-1 mapping.
+     * Given two state IDs and their respective automatons, create a unique combined ID.
      * NOTE: The reasoning behind this formula is analogous to the following: if you have a table with N rows and M columns,
      * every cell is guaranteed to have a different combination of row and column indexes.
      * @param id1		The state ID from the first automaton
@@ -818,9 +773,50 @@ public class Automaton {
      * @param second	The second automaton
      * @return the combined ID
      **/ 
-    private static long calculateCombinedID(long id1, Automaton first, long id2, Automaton second) {
+    private static long combineTwoIDs(long id1, Automaton first, long id2, Automaton second) {
 
     	return ((id2 - 1) * first.getNumberOfStates() + id1);
+
+    }
+
+
+    /**
+     * Given a list of IDs and a maximum possible ID, create a unique combined ID.
+     * @param list	The list of IDs
+     * @param maxID	The largest possible value to be used as an ID
+     * @return the combined ID
+     **/
+    public static long combineIDs(ArrayList<Long> list, long maxID) {
+
+    	long combinedID = 0;
+
+    	for (Long id : list) {
+    		combinedID *= maxID + 1;
+    		combinedID += id;
+    	}
+
+    	return combinedID;
+
+    }
+
+    /**
+     * Given a combined ID, obtain the list of original IDs by reversing the process.
+     * @param combinedID	The combined ID
+     * @param maxID			The largest possible value to be used as an ID
+     * @return the original list of IDs
+     **/
+    public static ArrayList<Long> separateIDs(long combinedID, long maxID) {
+
+    	ArrayList<Long> list = new ArrayList<Long>();
+
+    	while (combinedID > 0) {
+
+    		list.add(0, combinedID % (maxID + 1));
+    		combinedID /= (maxID + 1);
+
+    	}
+
+    	return list;
 
     }
 
@@ -1349,6 +1345,7 @@ public class Automaton {
 	 * @param newNBytesPerStateID	The number of bytes per state ID
 	 * @param newTransitionCapacity	The transition capacity
 	 * @param newLabelLength		The maximum label length
+	 * @return the number of bytes needed to store a state
 	 **/
 	private long calculateNumberOfBytesPerState(long newNBytesPerStateID, int newTransitionCapacity, int newLabelLength) {
 		return
@@ -1361,6 +1358,25 @@ public class Automaton {
 	 * Resets nBytesPerStateID and stateCapacity as appropriate.
 	 **/
 	private void initializeVariables() {
+
+			/* The automaton should have room for at least 1 transition per state (otherwise our automaton will be pretty boring) */
+
+		if (transitionCapacity < 1)
+			transitionCapacity = 1;
+
+			/* The requested length of the state labels should not exceed the limit, nor should it be non-positive */
+
+		if (labelLength < 1)
+			labelLength = 1;
+		if (labelLength > MAX_LABEL_LENGTH)
+			labelLength = MAX_LABEL_LENGTH;
+
+			/* The number of controllers should be greater than 0, but it should not exceed the maximum */
+
+		if (nControllers < 1)
+			nControllers = 1;
+		if (nControllers > MAX_NUMBER_OF_CONTROLLERS)
+			nControllers = MAX_NUMBER_OF_CONTROLLERS;
 
 			/* Calculate the amount of space needed to store each state ID */
 

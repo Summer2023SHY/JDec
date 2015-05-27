@@ -484,6 +484,12 @@ public class AutomataGUI extends JFrame implements ActionListener {
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
+        menu.addSeparator();
+
+        menuItem = new JMenuItem("U-Structure");
+        menuItem.addActionListener(this);
+        menu.add(menuItem);
+
         this.setJMenuBar(menuBar);
 
     }
@@ -587,6 +593,13 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
                 // Create new tab with the union
                 createTab(new File("union.hdr"), Automaton.union(tab.automaton, otherAutomaton));
+
+                break;
+
+            case "U-Structure":
+
+                // Create new tab with the u-structure
+                createTab(new File("u-structure.hdr"), tab.automaton.uStructure());
 
                 break;
             

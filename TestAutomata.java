@@ -35,7 +35,7 @@ public class TestAutomata {
 
     		/* Run tests */
 
-        counter.add(runGUIParsingTestRoutine());
+        counter.add(runHelperMethodTestRoutine());
         counter.add(runEventCreationTestRoutine());
         counter.add(runStateCreationTestRoutine());
         counter.add(runAutomatonCapacityTestRoutine());
@@ -51,9 +51,9 @@ public class TestAutomata {
 
     }
 
-    private static TestCounter runGUIParsingTestRoutine() {
+    private static TestCounter runHelperMethodTestRoutine() {
 
-        String testRoutineName = "GUI PARSING";
+        String testRoutineName = "HELPER METHOD";
 
         printTestOutput("RUNNING " + testRoutineName + " TESTS...", 1);
 
@@ -61,7 +61,7 @@ public class TestAutomata {
 
             /* isTrue() Tests */
 
-        printTestOutput("isTrue(): ", 2);
+        printTestOutput("GUI Parsing - isTrue(): ", 2);
 
         printTestCase("Ensuring that 'T' is parsed correctly", AutomataGUI.isTrue("T"), counter);
         printTestCase("Ensuring that 't' is parsed correctly", AutomataGUI.isTrue("t"), counter);
@@ -70,7 +70,7 @@ public class TestAutomata {
 
             /* isTrueArray() Tests */
 
-        printTestOutput("isTrueArray(): ", 2);
+        printTestOutput("GUI Parsing - isTrueArray(): ", 2);
         
         boolean[] expected = new boolean[] { true };
         boolean[] actual = AutomataGUI.isTrueArray("T");
@@ -83,6 +83,19 @@ public class TestAutomata {
         expected = new boolean[] { true, false, true };
         actual = AutomataGUI.isTrueArray("TFT");
         printTestCase("Ensuring that 'TFT' is parsed correctly", Arrays.equals(actual, expected), counter);
+
+            /* createCombinedIDWithOrderedSet() Tests */
+
+        printTestOutput("Combining IDs - combineIDs(): ", 2);
+        
+        ArrayList<Long> list = new ArrayList<Long>();
+        list.add(4L);
+        list.add(2L);
+        list.add(7L);
+        printTestCase("Ensuring that {4,2,7} with a max ID of 7 maps to 279", Automaton.combineIDs(list, 7) == 279, counter);
+
+        printTestOutput("Separating IDs - separateIDs(): ", 2);
+        printTestCase("Ensuring that 279 with a max ID of 7 maps back to {4,2,7}", list.equals(Automaton.separateIDs(279, 7)), counter);
 
             /* Print summary of this test routine */
 
