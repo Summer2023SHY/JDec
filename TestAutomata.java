@@ -373,7 +373,7 @@ public class TestAutomata {
         printTestOutput("Instantiating automaton from GUI input code with duplicate labels, omitted optional parameters, and an initial state...", 3);
         a = AutomataGUI.generateAutomaton(
                 "a\nb,F,F\na,F,F\nb", // Events
-                "*c\nc,F", // States    
+                "@c\nc,F", // States    
                 "", // Transitions
                 1, // Number of controllers
                 false, // We do not want it to be verbose
@@ -381,7 +381,7 @@ public class TestAutomata {
             );
         a.generateInputForGUI();
         printTestCase("Ensuring the event input was saved and loaded correctly", a.getEventInput().equals("a,T,T\nb,F,F"), counter);
-        printTestCase("Ensuring the state input was saved and loaded correctly", a.getStateInput().equals("*c,T"), counter);
+        printTestCase("Ensuring the state input was saved and loaded correctly", a.getStateInput().equals("@c,T"), counter);
         printTestCase("Ensuring the transition input was saved and loaded correctly", a.getTransitionInput().equals(""), counter);
         a.closeFiles();
 
@@ -408,7 +408,7 @@ public class TestAutomata {
         printTestOutput("Instantiating automaton from Figure 2.1...", 3);
         Automaton fig2_12 = AutomataGUI.generateAutomaton(
                 "a,T,T\nb,T,T\ng,T,T", // Events
-                "*zero,F\none,F\ntwo,T\nthree,F\nfour,F\nfive,F\nsix,F", // States 
+                "@zero,F\none,F\ntwo,T\nthree,F\nfour,F\nfive,F\nsix,F", // States 
                 "zero,a,one\none,a,three\none,b,two\none,g,five\ntwo,g,zero\nthree,b,four\nfour,g,four\nfour,a,three\nsix,a,three\nsix,b,two", // Transitions
                 1, // Number of controllers
                 false, // We do not want it to be verbose
@@ -420,7 +420,7 @@ public class TestAutomata {
 
         result.generateInputForGUI();
         printTestCase("Ensuring the events are correct", result.getEventInput().equals("a,T,T\nb,T,T\ng,T,T"), counter);
-        printTestCase("Ensuring the states are correct", result.getStateInput().equals("*zero,F\none,F\ntwo,T\nsix,F"), counter);
+        printTestCase("Ensuring the states are correct", result.getStateInput().equals("@zero,F\none,F\ntwo,T\nsix,F"), counter);
         printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("zero,a,one\none,b,two\ntwo,g,zero\nsix,b,two"), counter);
 
             /* Trim Operation Tests */
@@ -432,7 +432,7 @@ public class TestAutomata {
 
         result.generateInputForGUI();
         printTestCase("Ensuring the events are correct", result.getEventInput().equals("a,T,T\nb,T,T\ng,T,T"), counter);
-        printTestCase("Ensuring the states are correct", result.getStateInput().equals("*zero,F\none,F\ntwo,T"), counter);
+        printTestCase("Ensuring the states are correct", result.getStateInput().equals("@zero,F\none,F\ntwo,T"), counter);
         printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("zero,a,one\none,b,two\ntwo,g,zero"), counter);
 
             /* Intersection Operation Tests */
@@ -442,7 +442,7 @@ public class TestAutomata {
         printTestOutput("Instantiating automaton from Figure 2.1...", 3);
         Automaton fig2_1 = AutomataGUI.generateAutomaton(
                 "a,T,T\nb,T,T\ng,T,T", // Events
-                "*x,T\ny,F\nz,T", // States 
+                "@x,T\ny,F\nz,T", // States 
                 "x,a,x\nx,g,z\ny,b,y\ny,a,x\nz,b,z\nz,a,y\nz,g,y", // Transitions
                 1, // Number of controllers
                 false, // We do not want it to be verbose
@@ -451,7 +451,7 @@ public class TestAutomata {
         printTestOutput("Instantiating automaton from Figure 2.2...", 3);
         Automaton fig2_2 = AutomataGUI.generateAutomaton(
                 "a,T,T\nb,T,T", // Events
-                "*zero,F\none,T", // States 
+                "@zero,F\none,T", // States 
                 "zero,b,zero\nzero,a,one\none,a,one\none,b,zero", // Transitions
                 1, // Number of controllers
                 false, // We do not want it to be verbose
@@ -463,13 +463,13 @@ public class TestAutomata {
 
         result.generateInputForGUI();
         printTestCase("Ensuring the events are correct", result.getEventInput().equals("a,T,T\nb,T,T"), counter);
-        printTestCase("Ensuring the states are correct", result.getStateInput().equals("*x_zero,F\nx_one,T"), counter);
+        printTestCase("Ensuring the states are correct", result.getStateInput().equals("@x_zero,F\nx_one,T"), counter);
         printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("x_zero,a,x_one\nx_one,a,x_one"), counter);
 
         printTestOutput("Instantiating automaton from Figure 2.13(b)...", 3);
         Automaton fig2_13b = AutomataGUI.generateAutomaton(
                 "a,T,T\nb,T,T\ng,T,T", // Events
-                "*zero,F\none,F\ntwo,T", // States 
+                "@zero,F\none,F\ntwo,T", // States 
                 "zero,a,one\none,b,two\ntwo,g,zero", // Transitions
                 1, // Number of controllers
                 false, // We do not want it to be verbose
@@ -481,13 +481,13 @@ public class TestAutomata {
 
         result.generateInputForGUI();
         printTestCase("Ensuring the events are correct", result.getEventInput().equals("a,T,T\nb,T,T"), counter);
-        printTestCase("Ensuring the states are correct", result.getStateInput().equals("*zero_zero,F\none_one,F\nzero_two,F"), counter);
+        printTestCase("Ensuring the states are correct", result.getStateInput().equals("@zero_zero,F\none_one,F\nzero_two,F"), counter);
         printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("zero_zero,a,one_one\none_one,b,zero_two"), counter);
 
         printTestOutput("Instantiating the first automaton from Figure 2.20...", 3);
         Automaton fig2_20a = AutomataGUI.generateAutomaton(
                 "a1\na2\nb\nr", // Events
-                "*x1,F\nx2,F\nx3,T", // States 
+                "@x1,F\nx2,F\nx3,T", // States 
                 "x1,a1,x2\nx1,a2,x2\nx2,b,x3\nx3,r,x1", // Transitions
                 1, // Number of controllers
                 false, // We do not want it to be verbose
@@ -497,7 +497,7 @@ public class TestAutomata {
         printTestOutput("Instantiating the second automaton from Figure 2.20...", 3);
         Automaton fig2_20b = AutomataGUI.generateAutomaton(
                 "a1\nb\nc1\nr\na2\nc2", // Events
-                "*y1,F\ny2,F\ny3,F\ny4,F\ny5,F\ny6,F", // States 
+                "@y1,F\ny2,F\ny3,F\ny4,F\ny5,F\ny6,F", // States 
                 "y1,a1,y2\ny2,b,y4\ny4,r,y1\ny4,c1,y6\ny6,r,y1\ny1,a2,y3\ny3,b,y5\ny5,c2,y6\ny5,r,y1", // Transitions
                 1, // Number of controllers
                 false, // We do not want it to be verbose
@@ -509,7 +509,7 @@ public class TestAutomata {
 
         result.generateInputForGUI();
         printTestCase("Ensuring the events are correct", result.getEventInput().equals("a1,T,T\na2,T,T\nb,T,T\nr,T,T"), counter);
-        printTestCase("Ensuring the states are correct", result.getStateInput().equals("*x1_y1,F\nx2_y2,F\nx2_y3,F\nx3_y4,F\nx3_y5,F"), counter);
+        printTestCase("Ensuring the states are correct", result.getStateInput().equals("@x1_y1,F\nx2_y2,F\nx2_y3,F\nx3_y4,F\nx3_y5,F"), counter);
         printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("x1_y1,a1,x2_y2\nx1_y1,a2,x2_y3\nx2_y2,b,x3_y4\nx2_y3,b,x3_y5\nx3_y4,r,x1_y1\nx3_y5,r,x1_y1"), counter);
 
             /* Union Operation Tests */
@@ -521,7 +521,7 @@ public class TestAutomata {
 
         result.generateInputForGUI();
         printTestCase("Ensuring the events are correct", result.getEventInput().equals("a,T,T\nb,T,T\ng,T,T"), counter);
-        printTestCase("Ensuring the states are correct", result.getStateInput().equals("*x_zero,F\ny_zero,F\nz_zero,F\nx_one,T\ny_one,F\nz_one,T"), counter);
+        printTestCase("Ensuring the states are correct", result.getStateInput().equals("@x_zero,F\ny_zero,F\nz_zero,F\nx_one,T\ny_one,F\nz_one,T"), counter);
         printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("x_zero,a,x_one\nx_zero,g,z_zero\ny_zero,b,y_zero\n"
             + "y_zero,a,x_one\nz_zero,b,z_zero\nz_zero,a,y_one\nz_zero,g,y_zero\nx_one,a,x_one\nx_one,g,z_one\ny_one,b,y_zero\ny_one,a,x_one\nz_one,b,z_zero\n"
             + "z_one,a,y_one\nz_one,g,y_one"), counter);
@@ -529,7 +529,7 @@ public class TestAutomata {
         printTestOutput("Instantiating the first automaton from Figure 2.17...", 3);
         Automaton fig2_17a = AutomataGUI.generateAutomaton(
                 "a,T,T\nb,T,T\nc,T,T", // Events
-                "*one,T\ntwo,F", // States 
+                "@one,T\ntwo,F", // States 
                 "one,c,one\none,a,two\ntwo,b,two", // Transitions
                 1, // Number of controllers
                 false, // We do not want it to be verbose
@@ -539,7 +539,7 @@ public class TestAutomata {
         printTestOutput("Instantiating the second automaton from Figure 2.17...", 3);
         Automaton fig2_17b = AutomataGUI.generateAutomaton(
                 "b,T,T\na,T,T\nd,T,T", // Events
-                "*A,T\nB,F", // States 
+                "@A,T\nB,F", // States 
                 "A,b,A\nA,a,B\nB,d,B", // Transitions
                 1, // Number of controllers
                 false, // We do not want it to be verbose
@@ -549,7 +549,7 @@ public class TestAutomata {
         printTestOutput("Instantiating the third automaton from Figure 2.17...", 3);
         Automaton fig2_17c = AutomataGUI.generateAutomaton(
                 "c,T,T\nb,T,T\na,T,T", // Events
-                "*D,T\nE,F", // States 
+                "@D,T\nE,F", // States 
                 "D,c,D\nD,b,E\nE,a,E", // Transitions
                 1, // Number of controllers
                 false, // We do not want it to be verbose
@@ -561,7 +561,7 @@ public class TestAutomata {
 
         result.generateInputForGUI();
         printTestCase("Ensuring the events are correct", result.getEventInput().equals("a,T,T\nb,T,T\nc,T,T\nd,T,T"), counter);
-        printTestCase("Ensuring the states are correct", result.getStateInput().equals("*one_A_D,T"), counter);
+        printTestCase("Ensuring the states are correct", result.getStateInput().equals("@one_A_D,T"), counter);
         printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("one_A_D,c,one_A_D"), counter);
 
             /* Print summary of this test routine */
@@ -620,7 +620,7 @@ public class TestAutomata {
     private static void printTestRoutineSummary(String testRoutineName, TestCounter counter) {
 
     	String passed = (counter.getPassedTests() > 0) ? String.format("\n\t\t%sPASSED: %d/%d%s", GREEN, counter.getPassedTests(), counter.getTotalTests(), RESET) : "";
-    	String failed = (counter.getFailedTests() > 0) ? String.format("\n\t\t%s*** FAILED: %d/%d% ***s", RED, counter.getFailedTests(), counter.getTotalTests(), RESET) : "";
+    	String failed = (counter.getFailedTests() > 0) ? String.format("\n\t\t%s*** FAILED: %d/%d ***%s", RED, counter.getFailedTests(), counter.getTotalTests(), RESET) : "";
 
     	printTestOutput(testRoutineName + " TEST ROUTINE SUMMARY:" + passed + failed, 1);
 

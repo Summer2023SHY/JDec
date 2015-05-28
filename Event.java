@@ -113,7 +113,7 @@ public class Event implements Comparable<Event> {
 	@Override public String toString() {
 
 		return "("
-			+ label + ",ID:"
+			+ "\"" + label + "\",ID:"
 			+ id + ","
 			+ "Observable=" + Arrays.toString(observable) + ","
 			+ "Controllable=" + Arrays.toString(controllable)

@@ -229,9 +229,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
             // Try to add the state
             if (splitLine.length >= 1 && label.length() > 0) {
 
-                boolean isInitialState = (label.charAt(0) == '*');
+                boolean isInitialState = (label.charAt(0) == '@');
 
-                // Ensure the user didn't only have an asterisk as the name of the label (since the asterisk gets removed, we are left with an empty string)
+                // Ensure the user didn't only have a '@' symbolas the name of the label (since '@' gets removed, we are left with an empty string)
                 if (isInitialState && label.length() == 1) {
                     if (verbose)
                         System.out.println("ERROR: Could not parse '" + line + "' as a state (state name must be at least 1 character long).");
@@ -239,7 +239,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
                 }
 
-                // Remove '*' from the label name
+                // Remove '@' from the label name
                 if (isInitialState)
                     label = label.substring(1);
 
@@ -393,7 +393,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
     }
 
     /**
-     * Label must consist of only letters, digits, or underscores (leading digits cause complications with GraphViz).
+     * Label must consist of only letters, digits, underscores (although underscore indicate the combination of labels, so it is advised not to used them),
+     * and/or a small set of special characters.
      * @param label The label to validate
      * @return whether or not the label is valid
      **/
@@ -403,13 +404,13 @@ public class AutomataGUI extends JFrame implements ActionListener {
         if (label.length() < 1)
             return false;
 
-        // First character can be a letter or underscore
-        if (!Character.isLetter(label.charAt(0)) && label.charAt(0) != '_')
-            return false;
-
-        // All of the remaining characters can be letters, numbers, or underscores
-        for (int i = 1; i < label.length(); i++)
-            if (!Character.isLetterOrDigit(label.charAt(i)) && label.charAt(i) != '_')
+        // All characters must be letters, numbers, underscores, or one of the allowed special characters
+        for (int i = 0; i < label.length(); i++)
+            if (!Character.isLetterOrDigit(label.charAt(i))
+                    && label.charAt(i) != '_'
+                    && label.charAt(i) != '*'
+                    && label.charAt(i) != '<'
+                    && label.charAt(i) != '>')
                 return false;
 
         return true;
@@ -951,9 +952,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
             c.gridy = 1;
             container.add(new TooltipComponent(
                     stateInputInstructions,
-                    "<html>1 state per line, formatted as <i>[*]LABEL[,MARKED]</i> (where the asterisk denotes that this is the initial state).<br>"
+                    "<html>1 state per line, formatted as <i>[@]LABEL[,MARKED]</i> (where the '@' symbol denotes that this is the initial state).<br>"
                     + "<b><u>EXAMPLE</u></b>: <i>'StateName,F'</i> denotes a state called <b>StateName</b> that is <b>unmarked</b>.<br>"
-                    + "<b><u>EXAMPLE</u></b>: <i>'*StateName'</i> denotes a state called <b>StateName</b> that is the <b>initial state</b> and is "
+                    + "<b><u>EXAMPLE</u></b>: <i>'@StateName'</i> denotes a state called <b>StateName</b> that is the <b>initial state</b> and is "
                     + "<b>marked</b>.<br><b><u>NOTE</u></b>: '<i>T</i>' and '<i>F</i>' are case in-sensitive. If omitted, the default value is "
                     + "'<i>T</i>'. There is only allowed to be one initial state.</html>"
                 ),c);

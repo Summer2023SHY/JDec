@@ -7,7 +7,7 @@ public abstract class ByteManipulator {
 
 		for (int i = nBytes - 1; i >= 0; i--) {
 			n <<= 8;
-			n += arr[index++];
+			n += (arr[index++] & 0xFF); // Makes the byte unsigned, before adding it
 		}
 
 		return n;

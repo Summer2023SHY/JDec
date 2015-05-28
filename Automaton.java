@@ -688,17 +688,14 @@ public class Automaton {
     		/* Setup */
 
     	Stack<Long> stack = new Stack<Long>();
+    	HashSet<Long> valuesInStack = new HashSet<Long>();
     	Automaton automaton = new Automaton(new File("synchronizedComposition.hdr"), true);
-
-    		/* Add events to the new automaton */
-
-    	automaton.addAllEvents(events);
 
     		/* Add initial state to the stack */
 
     	{
 	    	List<Long> listOfInitialIDs = new ArrayList<Long>();
-	    	String combinedLabel = "";
+	    	String combinedStateLabel = "";
 	    	State startingState = getState(initialState);
 
 	    	// Error checking
@@ -710,12 +707,14 @@ public class Automaton {
 	    	// Create list of initial IDs and build the label
 	    	for (int i = 0; i <= nControllers; i++) {
 	    		listOfInitialIDs.add(initialState);
-	    		combinedLabel += "," + startingState.getLabel();
+	    		combinedStateLabel += "_" + startingState.getLabel();
 	    	}
 
 	    	long combinedID = combineIDs(listOfInitialIDs, nStates);
 	    	stack.push(combinedID);
-	    	automaton.addStateAt(combinedLabel.substring(1), false, new ArrayList<Transition>(), true, combinedID);
+	    	valuesInStack.add(combinedID);
+
+	    	automaton.addStateAt(combinedStateLabel.substring(1), false, new ArrayList<Transition>(), true, combinedID);
 
 	    }
 
@@ -724,10 +723,10 @@ public class Automaton {
     	while (stack.size() > 0) {
 
     		long combinedID = stack.pop();
+    		valuesInStack.remove(combinedID);
 
     		// Get list of IDs and states
     		List<Long> listOfIDs = separateIDs(combinedID, nStates);
-    		System.out.println("DEBUG: " + listOfIDs.toString());
     		List<State> listOfStates = new ArrayList<State>();
     		for (long id : listOfIDs)
     			listOfStates.add(getState(id));
@@ -740,8 +739,9 @@ public class Automaton {
     			List<Long> listOfTargetIDs = new ArrayList<Long>();
     			listOfTargetIDs.add(t1.getTargetStateID());
 
-    			String eventVector = e.getLabel();
-
+    			String combinedEventLabel = e.getLabel();
+    			String combinedStateLabel = getStateExcludingTransitions(t1.getTargetStateID()).getLabel();
+    					
     			// For each controller
     			for (int i = 0; i < nControllers; i++) {
 
@@ -750,41 +750,116 @@ public class Automaton {
 
     					// If the event is observable, but not possible at this current time, then we can skip this altogether
     					long targetID = 0;
+    					String label = null;
     					for (Transition t2 : listOfStates.get(i + 1).getTransitions())
-    						if (t2.getEvent().equals(e))
+    						if (t2.getEvent().equals(e)) {
     							targetID = t2.getTargetStateID();
+    							label = getStateExcludingTransitions(t2.getTargetStateID()).getLabel();
+    						}
     					if (targetID == 0)
     						continue outer;
 
-    					eventVector += "," + e.getLabel();
+    					combinedEventLabel += "_" + e.getLabel();
+    					combinedStateLabel += "_" + label;
     					listOfTargetIDs.add(targetID);
 
     				// Unobservable events by this controller
     				} else {
-    					eventVector += ",ɛ";
-    					listOfTargetIDs.add(listOfIDs.get(i));
+    					combinedEventLabel += "_*";
+    					combinedStateLabel += "_" + listOfStates.get(i + 1).getLabel();
+    					listOfTargetIDs.add(listOfIDs.get(i + 1));
     				}
 
     			}
 
-    			eventVector = "<" + eventVector.substring(1) + ">";
+    			combinedEventLabel = "<" + combinedEventLabel + ">";
 
     			long combinedTargetID = combineIDs(listOfTargetIDs, nStates);
 
     			// Add state if it doesn't already exist
     			if (!automaton.stateExists(combinedTargetID)) {
 
-    				String combinedLabel = "";
-    				for (int i = 0; i <= nControllers; i++)
-    					combinedLabel += "," + listOfStates.get(i).getLabel();
+    				// Add event
+    				automaton.addEvent(combinedEventLabel, new boolean[] {true}, new boolean[] {true} );
 
-    				automaton.addStateAt(combinedLabel.substring(1), false, new ArrayList<Transition>(), false, combinedTargetID);
- 
-    				stack.push(combinedTargetID);
+    				// Add state
+    				if (!automaton.addStateAt(combinedStateLabel, false, new ArrayList<Transition>(), false, combinedTargetID)) {
+    					System.out.println("ERROR: Failed to add state. Synchronized composition aborted.");
+    					return null;
+    				}
+ 					
+ 					// Only add the ID if it's not already waiting to be processed
+ 					if (!valuesInStack.contains(combinedTargetID)) {
+    					stack.push(combinedTargetID);
+    					valuesInStack.add(combinedTargetID);
+ 					} else {
+ 						System.out.println("DEBUG: Prevented adding of state since it was already in the stack.");
+ 					}
     			}
 
-    			automaton.addTransition(combinedID, e.getID(), combinedTargetID);
-    			System.out.println(combinedTargetID);
+    			automaton.addTransition(combinedID, combinedEventLabel, combinedTargetID);
+
+    		}
+
+    		// For each unobservable transition in the each controller automata
+    		outer: for (int i = 0; i < nControllers; i++) {
+
+    			for (Transition t : listOfStates.get(i + 1).getTransitions()) {
+    				if (!t.getEvent().isObservable()[i]) {
+
+    					List<Long> listOfTargetIDs = new ArrayList<Long>();
+    					String combinedEventLabel = "";
+    					String combinedStateLabel = "";
+
+    					for (int j = 0; j <= nControllers; j++) {
+
+    						// The current controller
+    						if (j == i + 1) {
+    							listOfTargetIDs.add(t.getTargetStateID());
+    							combinedEventLabel += "_" + t.getEvent().getLabel();
+    							combinedStateLabel += "_" + getStateExcludingTransitions(t.getTargetStateID()).getLabel();
+    						} else {
+    							listOfTargetIDs.add(listOfIDs.get(j));
+    							combinedEventLabel += "_*";
+    							combinedStateLabel += "_" + listOfStates.get(i + 1).getLabel(); 
+    						}
+
+
+    					}
+
+    					combinedEventLabel = "<" + combinedEventLabel.substring(1) + ">";
+    					combinedStateLabel = combinedStateLabel.substring(1);
+    					long combinedTargetID = combineIDs(listOfTargetIDs, nStates);
+
+    					// Add state if it doesn't already exist
+		    			if (!automaton.stateExists(combinedTargetID)) {
+
+		    				// Add event
+		    				automaton.addEvent(combinedEventLabel, new boolean[] {true}, new boolean[] {true} );
+
+		    				// Add state
+		    				if (!automaton.addStateAt(combinedStateLabel, false, new ArrayList<Transition>(), false, combinedTargetID)) {
+		    					System.out.println("ERROR: Failed to add state. Synchronized composition aborted.");
+		    					return null;
+		    				}
+		 					
+		 					// Only add the ID if it's not already waiting to be processed
+		 					if (!valuesInStack.contains(combinedTargetID)) {
+		    					stack.push(combinedTargetID);
+		    					valuesInStack.add(combinedTargetID);
+		 					} else {
+		 						System.out.println("DEBUG: Prevented adding of state since it was already in the stack.");
+		 					}
+		    			}
+
+    					// Add transition
+    					System.out.println(combinedID + " " + combinedEventLabel + " " + combinedTargetID);
+    					automaton.addTransition(combinedID, combinedEventLabel, combinedTargetID);
+    					System.out.println(automaton.getNumberOfStates());
+    					System.out.println("adding!!!!!!!");
+
+    				}
+    			}
 
     		}
 
@@ -853,7 +928,6 @@ public class Automaton {
 
 						// Get new id of state
 						buffer = new byte[nBytesPerStateID];
-						System.out.println(t.getTargetStateID());
 						mappingRAFile.seek(nBytesPerStateID * t.getTargetStateID());
 						mappingRAFile.read(buffer);
 						long newTargetStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
@@ -986,9 +1060,9 @@ public class Automaton {
 
     		// Draw state
     		if (state.isMarked())
-    			str.append(state.getLabel() + " [peripheries=2];");
+    			str.append(String.format("\"_%s\" [peripheries=2,label=\"%s\"];", state.getLabel(), state.getLabel()));
     		else
-    			str.append(state.getLabel()  + " [peripheries=1];");
+    			str.append(String.format("\"_%s\" [peripheries=1,label=\"%s\"];", state.getLabel(), state.getLabel()));
 
     		// Draw each of its transitions
     		ArrayList<Transition> transitionsToSkip = new ArrayList<Transition>();
@@ -1015,14 +1089,16 @@ public class Automaton {
 
     			}
 
-    			str.append(state.getLabel() + "->" + getStateExcludingTransitions(t1.getTargetStateID()).getLabel());
+    			str.append("\"_" + state.getLabel() + "\" -> \"_" + getStateExcludingTransitions(t1.getTargetStateID()).getLabel() + "\"");
     			str.append(" [label=\"" + label.substring(1) + "\"");
     			
-    			// if (!t1.getEvent().isObservable())
-    			// 	str.append(",style=dotted");
+    			if (nControllers == 1) {
+	    			if (!t1.getEvent().isObservable()[0])
+	    				str.append(",style=dotted");
 
-    			// if (!t1.getEvent().isControllable())
-    			// 	str.append(",color=red");
+	    			if (!t1.getEvent().isControllable()[0])
+	    				str.append(",color=red");
+	    		}
 
     			str.append("];");
     		}
@@ -1033,7 +1109,7 @@ public class Automaton {
 
     	if (initialState > 0) {
     		str.append("node [shape=plaintext];");
-    		str.append("\" \"->" + getStateExcludingTransitions(initialState).getLabel() + " [color=green3];");
+    		str.append("\" \"-> \"_" + getStateExcludingTransitions(initialState).getLabel() + "\" [color=green3];");
     	}
 
     	str.append("}");
@@ -1130,9 +1206,9 @@ public class Automaton {
 				continue;
 			}
 
-			// Place asterisk before label if this is the initial state
+			// Place '@' before label only if this is the initial state
 			if (s == initialState)
-				stateInputBuilder.append("*");
+				stateInputBuilder.append("@");
 
 			// Append label and properties
 			stateInputBuilder.append(state.getLabel());
@@ -1369,11 +1445,13 @@ public class Automaton {
 			for (int e = 1; e <= nEvents; e++) {
 
 				// Read properties
+				buffer = new byte[nControllers * 2];
+				headerRAFile.read(buffer);
 				boolean[] 	observable = new boolean[nControllers],
 							controllable = new boolean[nControllers];
 				for (int i = 0; i < nControllers; i++) {
-				 	observable[i] = (headerRAFile.readByte() == 1);
-				 	controllable[i] = (headerRAFile.readByte() == 1);
+				 	observable[i] = (buffer[2 * i] == 1);
+				 	controllable[i] = (buffer[(2 * i) + 1] == 1);
 				}
 
 				// Read the number of characters in the label
