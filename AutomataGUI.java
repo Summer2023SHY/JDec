@@ -176,7 +176,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     }
 
-    private void generateAutomatonButtonPressed() {
+    private void export() {
 
         int index = tabbedPane.getSelectedIndex();
 
@@ -197,9 +197,53 @@ public class AutomataGUI extends JFrame implements ActionListener {
         if (automaton == null)
             tab.canvas.setImage(null);
 
+        // Try to create graph image
+        else {
+
+            String fileName = tab.file.getName();
+            String destinationFileName = currentDirectory + "/" + fileName.substring(0, fileName.length() - 4) + ".svg";
+
+            if (automaton.generateImage(imageSize, Automaton.OutputMode.SVG, destinationFileName))
+                JOptionPane.showMessageDialog(null, "The image of the graph has been exported to '" + destinationFileName + "'.", "Export Complete", JOptionPane.INFORMATION_MESSAGE);
+            else
+                JOptionPane.showMessageDialog(null, "The image of the graph could not be exported!", "Export Failed", JOptionPane.ERROR_MESSAGE);
+
+        }
+
+    }
+
+    private void generateAutomatonButtonPressed() {
+
+        int index = tabbedPane.getSelectedIndex();
+
+        AutomatonTab tab = tabs.get(index);
+
+        // Create automaton from input code
+        Automaton automaton = generateAutomaton(
+                tab.eventInput.getText(),
+                tab.stateInput.getText(),
+                tab.transitionInput.getText(),
+                (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue(),
+                true,
+                tab.file
+            );
+        tab.automaton = automaton;
+
+        String fileName = tab.file.getName();
+        String destinationFileName = currentDirectory + "/" + fileName.substring(0, fileName.length() - 4) + ".png";
+
+        // Set the image blank if there were no states entered
+        if (automaton == null)
+            tab.canvas.setImage(null);
+
         // Try to create graph image, displaying it on the screen
-        else if (automaton.generateImage(imageSize))
-            tab.canvas.setImage(automaton.loadImageFromFile());
+        else if (automaton.generateImage(imageSize, Automaton.OutputMode.PNG, destinationFileName))
+            tab.canvas.setImage(automaton.loadImageFromFile(destinationFileName));
+
+        // Display error message
+        else
+            JOptionPane.showMessageDialog(null, "Something went wrong while loading the generated image from file!", "Error", JOptionPane.ERROR_MESSAGE);
+
 
     }
 
@@ -394,7 +438,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     /**
      * Label must consist of only letters, digits, underscores (although underscore indicate the combination of labels, so it is advised not to used them),
-     * and/or a small set of special characters.
+     * and/or a small set of other special characters.
      * @param label The label to validate
      * @return whether or not the label is valid
      **/
@@ -404,7 +448,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         if (label.length() < 1)
             return false;
 
-        // All characters must be letters, numbers, underscores, or one of the allowed special characters
+        // All characters must be either letters, digits, or one of the allowed special characters
         for (int i = 0; i < label.length(); i++)
             if (!Character.isLetterOrDigit(label.charAt(i))
                     && label.charAt(i) != '_'
@@ -444,6 +488,10 @@ public class AutomataGUI extends JFrame implements ActionListener {
         menu.add(menuItem);
 
         menuItem = new JMenuItem("Save As...");
+        menuItem.addActionListener(this);
+        menu.add(menuItem);
+
+        menuItem = new JMenuItem("Export as SVG");
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
@@ -554,6 +602,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
                 refresh(index);
 
+                break;
+
+            case "Export as SVG":
+
+                export();
                 break;
 
             case "Close":

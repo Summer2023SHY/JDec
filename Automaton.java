@@ -39,16 +39,17 @@ public class Automaton {
 	public static final int DEFAULT_NUMBER_OF_CONTROLLERS = 1;
 	public static final int MAX_NUMBER_OF_CONTROLLERS = 10;
 
-	public static final long LIMIT_OF_STATES_FOR_PICTURE = 10000; // Arbitrary value which will be revised once we have tried generating large automata
-
-	private static final String GRAPH_IMAGE_FILE_NAME = "image.png";
-
 	private static final String DEFAULT_HEADER_FILE_NAME = "temp.hdr",
 								DEFAULT_BODY_FILE_NAME = "temp.bdy";
 	private static final File 	DEFAULT_HEADER_FILE = new File(DEFAULT_HEADER_FILE_NAME),
 								DEFAULT_BODY_FILE = new File(DEFAULT_BODY_FILE_NAME);
 
+		/** ENUM **/
 
+	public static enum OutputMode {
+		PNG,
+		SVG
+	}
 
 		/** PRIVATE INSTANCE VARIABLES **/
 
@@ -1029,27 +1030,25 @@ public class Automaton {
     	/** IMAGE GENERATION **/
 
     /**
-     * Output this automaton in a format that is readable by GraphViz's dot program, then use it to generate the graph's image.
-     * @param size	The requested width and height in pixels
-     * @return whether or not the image was successfully generated
+     * Output this automaton in a format that is readable by GraphViz, then export as appropriate.
+     * @param size				The requested width and height in pixels
+     * @param mode				The output type
+     * @param outputFileName	The location to put the generated output
+     * @return whether or not the output was successfully generated
      **/
-    public boolean generateImage(int size) {
-
-    		/* Abort the operation if the automaton is too large to do this in a reasonable amount of time */
-    	
-    	if (nStates > LIMIT_OF_STATES_FOR_PICTURE) {
-    		System.out.println("ERROR: Aborted due to the fact that this graph is quite large!");
-    		return false;
-    	}
+    public boolean generateImage(int size, OutputMode mode, String outputFileName) {
 
     		/* Setup */
 
     	StringBuilder str = new StringBuilder();
     	str.append("digraph G {");
     	str.append("node [shape=circle, style=bold, constraint=false];");
-    	double inches = ((double) size) / 96.0; // Assuming DPI is 96
-    	str.append("size=\"" + inches + "," + inches + "\";");
-    	str.append("ratio=fill;");
+
+    	if (mode == OutputMode.PNG) {
+	    	double inches = ((double) size) / 96.0; // Assuming DPI is 96
+	    	str.append("size=\"" + inches + "," + inches + "\";");
+	    	str.append("ratio=fill;");
+	    }
     	
     		/* Draw all states and their transitions */
 
@@ -1123,7 +1122,13 @@ public class Automaton {
 			out.print(str.toString());
 
 			// Produce PNG from DOT language
-	        Process process = new ProcessBuilder("dot", "-Tpng", "out.tmp", "-o", GRAPH_IMAGE_FILE_NAME).start();
+	        Process process = new ProcessBuilder(
+	        	"dot",
+	        	(mode == OutputMode.PNG) ? "-Tpng" : "-Tsvg",
+	        	"out.tmp",
+	        	"-o",
+	        	outputFileName
+	        ).start();
 
 	        // Wait for it to finish
 	       	if (process.waitFor() != 0) {
@@ -1142,12 +1147,13 @@ public class Automaton {
 
     /**
      * Load the generated graph image from file.
+     * @param fileName	The name of the image to be loaded
      * @return image, or null if it could not be loaded
      **/
-    public BufferedImage loadImageFromFile() {
+    public BufferedImage loadImageFromFile(String fileName) {
 
     	try {
-			return ImageIO.read(getClass().getResource(GRAPH_IMAGE_FILE_NAME));
+			return ImageIO.read(new File(fileName));
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
