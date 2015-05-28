@@ -52,9 +52,11 @@ public class Automaton {
 
 		/** PRIVATE INSTANCE VARIABLES **/
 
+	// Events
 	private Set<Event> 	events = new TreeSet<Event>(),
 						activeEvents = new HashSet<Event>();
 
+	// Basic properties of the automaton
 	private long nStates = 0;
 	private long initialState = 0;
 	private int nControllers;
@@ -84,14 +86,33 @@ public class Automaton {
 		/** CONSTRUCTORS **/
 
     /**
-     * Default constructor: create empty automaton with default capacity
+     * Default constructor: create empty automaton with default capacity, wiping any previous data existing in the files.
      **/
     public Automaton() {
     	this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, DEFAULT_STATE_CAPACITY, DEFAULT_TRANSITION_CAPACITY, DEFAULT_LABEL_LENGTH, DEFAULT_NUMBER_OF_CONTROLLERS, true);
     }
 
     /**
-     * Implicit constructor: load automaton from file
+     * Implicit constructor: create an automaton with a specified number of controllers.
+     * @param headerFile	The file where the header should be stored
+     * @param nControllers	The number of controllers that this automaton has
+     **/
+    public Automaton(File headerFile, int nControllers) {
+    	this(
+    			(headerFile == null) ? DEFAULT_HEADER_FILE : headerFile,
+    			(headerFile == null) ? DEFAULT_BODY_FILE : new File(headerFile.getName().substring(0, headerFile.getName().length() - 4) + ".bdy"),
+    			DEFAULT_STATE_CAPACITY,
+    			DEFAULT_TRANSITION_CAPACITY,
+    			DEFAULT_LABEL_LENGTH,
+    			nControllers,
+    			true
+    		);
+    }
+
+    /**
+     * Implicit constructor: load automaton from file.
+     * @param headerFile	The file where the header should be stored
+     * @param clearFiles	Whether or not the header and body files should be wiped before use
      **/
     public Automaton(File headerFile, boolean clearFiles) {
     	this(
@@ -106,7 +127,7 @@ public class Automaton {
     }
 
     /**
-     * Implicit constructor: create automaton with specified initial capacities
+     * Implicit constructor: create automaton with specified initial capacities.
      * NOTE: 	Choosing larger values increases the amount of space needed to store the binary file.
      *			Choosing smaller values increases the frequency that you need to re-write the entire binary file in order to expand it
 	 * @param stateCapacity			The initial state capacity (increases by a factor of 256 when it is exceeded)
@@ -121,7 +142,7 @@ public class Automaton {
     }
 
     /**
-     * Implicit constructor: create automaton from a binary file
+     * Main constructor.
 	 * @param headerFile			The binary file to load the header information of the automaton from (information about events, etc.)
 	 * @param bodyFile				The binary file to load the body information of the automaton from (states and transitions)
 	 * @param stateCapacity			The initial state capacity (increases by a factor of 256 when it is exceeded)
@@ -130,7 +151,6 @@ public class Automaton {
 	 * @param nControllers			The number of controllers that the automaton has (1 implies centralized control, >1 implies decentralized control)
 	 * @param clearFiles			Whether or not the header and body files should be cleared prior to use
      **/
-
 	public Automaton(File headerFile, File bodyFile, long stateCapacity, int transitionCapacity, int labelLength, int nControllers, boolean clearFiles) {
 
 		this.headerFile = headerFile;
@@ -184,8 +204,7 @@ public class Automaton {
     		/* Build automaton from the accessible part of this automaton */
 
     	// Add events
-    	for (Event e : events)
-    		automaton.addEvent(e.getLabel(), e.isObservable(), e.isControllable());
+    	automaton.addAllEvents(events);
 
     	// Add states and transition
     	while (stack.size() > 0) {
@@ -249,8 +268,7 @@ public class Automaton {
     	Automaton invertedAutomaton = new Automaton(stateCapacity, transitionCapacity, labelLength, nControllers, true);
 
     	// Add events
-    	for (Event e : events)
-    		invertedAutomaton.addEvent(e.getLabel(), e.isObservable(), e.isControllable());
+    	invertedAutomaton.addAllEvents(events);
 
     	// Add states
     	for (long s = 1; s <= nStates; s++) {
@@ -275,8 +293,7 @@ public class Automaton {
     	Automaton automaton = new Automaton(new File("coaccessible.hdr"), true); 
 
     	// Add events
-    	for (Event e : events)
-    		automaton.addEvent(e.getLabel(), e.isObservable(), e.isControllable());
+    	automaton.addAllEvents(events);
 
     	// Add all marked states to the stack (NOTE: This may have complications if there are more than Integer.MAX_VALUE marked states)
 		Stack<Long> stack = new Stack<Long>();
@@ -448,104 +465,6 @@ public class Automaton {
 
   //   }
 
-    public Automaton synchronizedComposition() {
-
-    		/* Setup */
-
-    	Stack<Long> stack = new Stack<Long>();
-    	Automaton automaton = new Automaton(new File("synchronizedComposition.hdr"), true);
-
-    		/* Add initial state to the stack */
-
-    	{
-	    	List<Long> listOfInitialIDs = new ArrayList<Long>();
-	    	String combinedLabel = "";
-	    	State startingState = getState(initialState);
-
-	    	for (int i = 0; i <= nControllers; i++) {
-	    		listOfInitialIDs.add(initialState);
-	    		combinedLabel += "," + startingState.getLabel();
-	    	}
-
-	    	long combinedID = combineIDs(listOfInitialIDs, nStates);
-	    	stack.push(combinedID);
-	    	automaton.addStateAt(combinedLabel.substring(1), false, new ArrayList<Transition>(), true, combinedID);
-
-	    }
-
-    		/* Continue until the stack is empty */
-
-    	while (stack.size() > 0) {
-
-    		long combinedID = stack.pop();
-
-    		// Get list of IDs and states
-    		List<Long> listOfIDs = separateIDs(combinedID, nStates);
-    		List<State> listOfStates = new ArrayList<State>();
-    		for (long id : listOfIDs)
-    			listOfStates.add(getState(id));
-
-    		// For each transition in the system automaton
-    		outer: for (Transition t1 : listOfStates.get(0).getTransitions()) {
-
-    			Event e = t1.getEvent();
-
-    			List<Long> listOfTargetIDs = new ArrayList<Long>();
-
-    			String eventVector = "";
-
-    			// For each controller
-    			for (int i = 0; i < nControllers; i++) {
-
-    				// Observable events by this controller
-    				if (e.isObservable()[i]) {
-
-    					// If the event is observable, but not possible at this current time, then we can skip this altogether
-    					long targetID = 0;
-    					for (Transition t2 : listOfStates.get(i + 1).getTransitions())
-    						if (t2.getEvent().equals(e))
-    							targetID = t2.getTargetStateID();
-    					if (targetID == 0)
-    						continue outer;
-
-    					eventVector += "," + e.getLabel();
-    					listOfTargetIDs.add(targetID);
-
-    				// Unobservable events by this controller
-    				} else {
-    					eventVector += ",ɛ";
-    					listOfTargetIDs.add(listOfIDs.get(i));
-    				}
-
-    			}
-
-    			eventVector = "<" + eventVector.substring(1) + ">";
-
-    			long combinedTargetID = combineIDs(listOfTargetIDs, nStates);
-
-    			// Add state if it doesn't already exist
-    			if (!automaton.stateExists(combinedTargetID)) {
-
-    				String combinedLabel = "";
-    				for (int i = 0; i <= nControllers; i++)
-    					combinedLabel += "," + listOfStates.get(i).getLabel();
-
-    				automaton.addStateAt(combinedLabel.substring(1), false, new ArrayList<Transition>(), false, combinedTargetID);
- 
-    				stack.push(combinedTargetID);
-    			}
-
-    			automaton.addTransition(combinedID, e.getID(), combinedTargetID);
-
-    		}
-
-
-    	} // while
-
-    	return automaton;
-
-    }
-
     /**
      * Generate the intersection of the two specified automata.
      * @param first		The first automaton
@@ -667,10 +586,8 @@ public class Automaton {
     		privateEvents2.remove(e);
 
     	// Create event set (union of both event sets)
-    	for (Event e : first.getEvents())
-    		automaton.addEvent(e.getLabel(), e.isObservable(), e.isControllable());
-    	for (Event e : second.getEvents())
-    		automaton.addEvent(e.getLabel(), e.isObservable(), e.isControllable());
+    	automaton.addAllEvents(first.getEvents());
+    	automaton.addAllEvents(second.getEvents());
 
     	// Add states and transition
     	while (stack1.size() > 0) {
@@ -762,6 +679,128 @@ public class Automaton {
 
     }
 
+    /**
+     * Apply the synchronized composition algorithm to an automaton to produce the U-Structure.
+     * @return the U-Structure
+     **/
+    public Automaton synchronizedComposition() {
+
+    		/* Setup */
+
+    	Stack<Long> stack = new Stack<Long>();
+    	Automaton automaton = new Automaton(new File("synchronizedComposition.hdr"), true);
+
+    		/* Add events to the new automaton */
+
+    	automaton.addAllEvents(events);
+
+    		/* Add initial state to the stack */
+
+    	{
+	    	List<Long> listOfInitialIDs = new ArrayList<Long>();
+	    	String combinedLabel = "";
+	    	State startingState = getState(initialState);
+
+	    	// Error checking
+	    	if (startingState == null) {
+	    		System.out.println("ERROR: No starting state.");
+	    		return null;
+	    	}
+
+	    	// Create list of initial IDs and build the label
+	    	for (int i = 0; i <= nControllers; i++) {
+	    		listOfInitialIDs.add(initialState);
+	    		combinedLabel += "," + startingState.getLabel();
+	    	}
+
+	    	long combinedID = combineIDs(listOfInitialIDs, nStates);
+	    	stack.push(combinedID);
+	    	automaton.addStateAt(combinedLabel.substring(1), false, new ArrayList<Transition>(), true, combinedID);
+
+	    }
+
+    		/* Continue until the stack is empty */
+
+    	while (stack.size() > 0) {
+
+    		long combinedID = stack.pop();
+
+    		// Get list of IDs and states
+    		List<Long> listOfIDs = separateIDs(combinedID, nStates);
+    		System.out.println("DEBUG: " + listOfIDs.toString());
+    		List<State> listOfStates = new ArrayList<State>();
+    		for (long id : listOfIDs)
+    			listOfStates.add(getState(id));
+
+    		// For each transition in the system automaton
+    		outer: for (Transition t1 : listOfStates.get(0).getTransitions()) {
+
+    			Event e = t1.getEvent();
+
+    			List<Long> listOfTargetIDs = new ArrayList<Long>();
+    			listOfTargetIDs.add(t1.getTargetStateID());
+
+    			String eventVector = e.getLabel();
+
+    			// For each controller
+    			for (int i = 0; i < nControllers; i++) {
+
+    				// Observable events by this controller
+    				if (e.isObservable()[i]) {
+
+    					// If the event is observable, but not possible at this current time, then we can skip this altogether
+    					long targetID = 0;
+    					for (Transition t2 : listOfStates.get(i + 1).getTransitions())
+    						if (t2.getEvent().equals(e))
+    							targetID = t2.getTargetStateID();
+    					if (targetID == 0)
+    						continue outer;
+
+    					eventVector += "," + e.getLabel();
+    					listOfTargetIDs.add(targetID);
+
+    				// Unobservable events by this controller
+    				} else {
+    					eventVector += ",ɛ";
+    					listOfTargetIDs.add(listOfIDs.get(i));
+    				}
+
+    			}
+
+    			eventVector = "<" + eventVector.substring(1) + ">";
+
+    			long combinedTargetID = combineIDs(listOfTargetIDs, nStates);
+
+    			// Add state if it doesn't already exist
+    			if (!automaton.stateExists(combinedTargetID)) {
+
+    				String combinedLabel = "";
+    				for (int i = 0; i <= nControllers; i++)
+    					combinedLabel += "," + listOfStates.get(i).getLabel();
+
+    				automaton.addStateAt(combinedLabel.substring(1), false, new ArrayList<Transition>(), false, combinedTargetID);
+ 
+    				stack.push(combinedTargetID);
+    			}
+
+    			automaton.addTransition(combinedID, e.getID(), combinedTargetID);
+    			System.out.println(combinedTargetID);
+
+    		}
+
+
+    	} // while
+
+    		/* Re-number states (by removing empty ones) */
+
+    	automaton.renumberStates();
+
+    		/* Return produced automaton */
+
+    	return automaton;
+
+    }
+
 	/**
 	 * This method looks for blank spots in the .bdy file (which indicates that no state exists there),
 	 * and re-numbers all of the states accordingly. This must be done after operations such as intersection or union.
@@ -814,6 +853,7 @@ public class Automaton {
 
 						// Get new id of state
 						buffer = new byte[nBytesPerStateID];
+						System.out.println(t.getTargetStateID());
 						mappingRAFile.seek(nBytesPerStateID * t.getTargetStateID());
 						mappingRAFile.read(buffer);
 						long newTargetStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
@@ -1043,6 +1083,8 @@ public class Automaton {
 
 	/**
 	 * Generates GUI input code from this automaton (which is useful when loading automaton from file in the GUI).
+	 * NOTE: Further calls to getEventInput(), getStateInput(), and/or getTransitionInput() are needed to actually
+	 * get the generated input code.
 	 **/
 	public void generateInputForGUI() {
 
@@ -1053,14 +1095,23 @@ public class Automaton {
 			/* Generate event input */
 
 		int counter = 0;
+
 		for (Event e : events) {
 
-			eventInputBuilder.append(e.getLabel());
-			for (int i = 0; i < nControllers; i++) {
-				eventInputBuilder.append((e.isObservable()[i] ? ",T" : ",F"));
-				eventInputBuilder.append((e.isControllable()[i] ? ",T" : ",F"));
-			}
+			// Label
+			eventInputBuilder.append(e.getLabel() + ",");
+
+			// Observability properties
+			for (int i = 0; i < nControllers; i++)
+				eventInputBuilder.append((e.isObservable()[i] ? "T" : "F"));
+
+			eventInputBuilder.append(",");
+
+			// Controllability properties
+			for (int i = 0; i < nControllers; i++)
+				eventInputBuilder.append((e.isControllable()[i] ? "T" : "F"));
 			
+			// End of line character
 			if (++counter < events.size())
 				eventInputBuilder.append("\n");
 
@@ -1357,8 +1408,6 @@ public class Automaton {
 	 * @param newNBytesPerStateID	The number of bytes that are now required to represent each state ID
 	 **/
 	private void recreateBodyFile(long newStateCapacity, int newTransitionCapacity, int newLabelLength, int newNBytesPerStateID) {
-
-		// System.out.println("DEBUG: Re-creating body file.");
 
 		long newNBytesPerState = calculateNumberOfBytesPerState(newNBytesPerStateID, newTransitionCapacity, newLabelLength);
 
@@ -1807,6 +1856,17 @@ public class Automaton {
 		writeHeaderFile();
 
 		return id;
+
+	}
+
+	/**
+	 * Add the entire set of events to the automaton.
+	 * @param label	The set of events to add
+	 **/
+	private void addAllEvents(Set<Event> newEvents) {
+
+		for (Event e : newEvents)
+			addEvent(e.getLabel(), e.isObservable(), e.isControllable());
 
 	}
 

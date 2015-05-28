@@ -87,6 +87,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         tabbedPane.setTitleAt(newIndex, tab.file.getName());
         tab.automaton = automaton;
         tab.automaton.generateInputForGUI();
+        tab.controllerInput.setValue(tab.automaton.getNumberOfControllers());
         tab.eventInput.setText(tab.automaton.getEventInput());
         tab.stateInput.setText(tab.automaton.getStateInput());
         tab.transitionInput.setText(tab.automaton.getTransitionInput());
@@ -207,9 +208,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
             /* Setup */
         
-        Automaton automaton = new Automaton(headerFile, true);
-        HashMap<String, Integer> eventMapping = new HashMap<String, Integer>(); // Maps the events's labels to the events's ID
-        HashMap<String, Long> stateMapping = new HashMap<String, Long>(); // Maps the state's labels to the state's ID
+        Automaton automaton = new Automaton(headerFile, nControllers);
+        HashMap<String, Integer> eventMapping = new HashMap<String, Integer>(); // Maps the events' labels to the events' ID
+        HashMap<String, Long> stateMapping = new HashMap<String, Long>(); // Maps the states' labels to the state's ID
 
             /* States */
         
@@ -614,6 +615,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         tab.automaton = new Automaton(tab.file, false);
         tab.automaton.generateInputForGUI();
+        tab.controllerInput.setValue(tab.automaton.getNumberOfControllers());
         tab.eventInput.setText(tab.automaton.getEventInput());
         tab.stateInput.setText(tab.automaton.getStateInput());
         tab.transitionInput.setText(tab.automaton.getTransitionInput());
