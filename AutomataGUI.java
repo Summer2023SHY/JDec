@@ -231,6 +231,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
             );
         tab.automaton = automaton;
 
+        generateImage();
+
     }
 
     private void generateImage() {

@@ -1203,7 +1203,7 @@ public class Automaton {
 
 			// Produce PNG from DOT language
 	        Process process = new ProcessBuilder(
-	        	"dot",
+            "dot",
 	        	(mode == OutputMode.PNG) ? "-Tpng" : "-Tsvg",
 	        	"out.tmp",
 	        	"-o",
