@@ -92,6 +92,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
         tab.stateInput.setText(tab.automaton.getStateInput());
         tab.transitionInput.setText(tab.automaton.getTransitionInput());
 
+        generateImage();
+
     }
 
     /**
@@ -229,21 +231,30 @@ public class AutomataGUI extends JFrame implements ActionListener {
             );
         tab.automaton = automaton;
 
-        String fileName = tab.file.getName();
-        String destinationFileName = currentDirectory + "/" + fileName.substring(0, fileName.length() - 4) + ".png";
+    }
+
+    private void generateImage() {
+
+        AutomatonTab tab = tabs.get(tabbedPane.getSelectedIndex());
+
+        // Create destination file name
+        String destinationFileName = "untitled.png";
+        if (tab.file != null) {
+            String fileName = tab.file.getName();
+            destinationFileName = currentDirectory + "/" + fileName.substring(0, fileName.length() - 4) + ".png";
+        }
 
         // Set the image blank if there were no states entered
-        if (automaton == null)
+        if (tab.automaton == null)
             tab.canvas.setImage(null);
 
         // Try to create graph image, displaying it on the screen
-        else if (automaton.generateImage(imageSize, Automaton.OutputMode.PNG, destinationFileName))
-            tab.canvas.setImage(automaton.loadImageFromFile(destinationFileName));
+        else if (tab.automaton.generateImage(imageSize, Automaton.OutputMode.PNG, destinationFileName))
+            tab.canvas.setImage(tab.automaton.loadImageFromFile(destinationFileName));
 
         // Display error message
         else
             JOptionPane.showMessageDialog(null, "Something went wrong while loading the generated image from file!", "Error", JOptionPane.ERROR_MESSAGE);
-
 
     }
 
@@ -411,7 +422,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 else {
                     if (automaton.addTransition(initialStateID, eventID, targetStateID)) {
                         if (badTransition)
-                            automaton.addBadTransition(initialStateID, eventID, targetStateID);
+                            automaton.markTransitionAsBad(initialStateID, eventID, targetStateID);
                     } else
                         System.out.println("ERROR: Could not add '" + line + "' as a transition.");
                 }
@@ -685,6 +696,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
         tab.eventInput.setText(tab.automaton.getEventInput());
         tab.stateInput.setText(tab.automaton.getStateInput());
         tab.transitionInput.setText(tab.automaton.getTransitionInput());
+
+        generateImage();
 
     }
 
@@ -1051,7 +1064,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
             c.gridy = 3;
             container.add(new TooltipComponent(
                     transitionInputInstructions,
-                    "<html>1 transition per line, formatted as <i>[*]INITIAL_STATE,EVENT,TARGET_STATE</i> (where the '*' symbol"
+                    "<html>1 transition per line, formatted as <i>[*]INITIAL_STATE,EVENT,TARGET_STATE</i> (where the '*' symbol "
                     + "denotes that this transition is <i>bad</i>, which is used in the synchronized composition operation).<br>"
                     + "<b><u>EXAMPLE</u></b>: <i>'FirstState,Event,SecondState'</i> denotes a transition that goes from "
                     + "the state <b>'FirstState'</b> to the state <b>'SecondState'</b> by the event called <b>'Event'</b>.</html>"

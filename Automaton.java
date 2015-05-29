@@ -28,7 +28,7 @@ public class Automaton {
 
 		/** CLASS CONSTANTS **/
 
-	private static final int HEADER_SIZE = 36; // This is the fixed amount of space needed to hold the main variables in the .hdr file
+	private static final int HEADER_SIZE = 40; // This is the fixed amount of space needed to hold the main variables in the .hdr file
 
 	public static final long DEFAULT_STATE_CAPACITY = 255;
 	public static final long MAX_STATE_CAPACITY = Long.MAX_VALUE;
@@ -71,8 +71,11 @@ public class Automaton {
 	private int nBytesPerStateID;
 	private long nBytesPerState;
 
-	// Bad transitions (used by synchronized composition)
-	List<TransitionData> badTransitions = new ArrayList<TransitionData>();
+	// Special transitions (used by synchronized composition)
+	private List<TransitionData> badTransitions = new ArrayList<TransitionData>();
+	private List<TransitionData> unconditionalViolations = new ArrayList<TransitionData>();
+	private List<TransitionData> conditionalViolations = new ArrayList<TransitionData>();
+
 	
 	// File variables
 	private String 	headerFileName = DEFAULT_HEADER_FILE_NAME,
@@ -745,7 +748,10 @@ public class Automaton {
 
     			String combinedEventLabel = e.getLabel();
     			String combinedStateLabel = getStateExcludingTransitions(t1.getTargetStateID()).getLabel();
-    					
+
+    			// If this is the system has a bad transition, then it is illegal by default until we've found a controller that prevents it
+    			boolean isUnconditionalViolation = badTransitions.contains(new TransitionData(listOfStates.get(0).getID(), e.getID(), t1.getTargetStateID()));
+
     			// For each controller
     			for (int i = 0; i < nControllers; i++) {
 
@@ -766,6 +772,11 @@ public class Automaton {
     					combinedEventLabel += "_" + e.getLabel();
     					combinedStateLabel += "_" + label;
     					listOfTargetIDs.add(targetID);
+
+    					// Check to see if this can prevent an unconditional violation
+    					if (isUnconditionalViolation && e.isControllable()[i])
+    						if (badTransitions.contains(new TransitionData(listOfStates.get(i + 1).getID(), e.getID(), targetID)))
+    							isUnconditionalViolation = false;
 
     				// Unobservable events by this controller
     				} else {
@@ -791,19 +802,22 @@ public class Automaton {
     					System.out.println("ERROR: Failed to add state. Synchronized composition aborted.");
     					return null;
     				}
- 					
- 					// Only add the ID if it's not already waiting to be processed
- 					if (!valuesInStack.contains(combinedTargetID)) {
-    					stack.push(combinedTargetID);
-    					valuesInStack.add(combinedTargetID);
- 					} else {
- 						System.out.println("DEBUG: Prevented adding of state since it was already in the stack.");
- 					}
+   					
+   					// Only add the ID if it's not already waiting to be processed
+   					if (!valuesInStack.contains(combinedTargetID)) {
+      					stack.push(combinedTargetID);
+      					valuesInStack.add(combinedTargetID);
+   					} else {
+   						System.out.println("DEBUG: Prevented adding of state since it was already in the stack.");
+   					}
     			}
 
-    			automaton.addTransition(combinedID, combinedEventLabel, combinedTargetID);
+          // Add transition
+    			int eventID = automaton.addTransition(combinedID, combinedEventLabel, combinedTargetID);
+    			if (isUnconditionalViolation)
+    				automaton.addUnconditionalViolation(new TransitionData(combinedID, eventID, combinedTargetID));
 
-    		}
+    		} // for
 
     		// For each unobservable transition in the each controller automata
     		outer: for (int i = 0; i < nControllers; i++) {
@@ -862,7 +876,7 @@ public class Automaton {
     				}
     			}
 
-    		}
+    		} // for
 
 
     	} // while
@@ -927,7 +941,7 @@ public class Automaton {
 					// Update IDs of the target state of each
 					for (Transition t : state.getTransitions()) {
 
-						// Get new id of state
+						// Get new ID of state
 						buffer = new byte[nBytesPerStateID];
 						mappingRAFile.seek(nBytesPerStateID * t.getTargetStateID());
 						mappingRAFile.read(buffer);
@@ -941,6 +955,55 @@ public class Automaton {
 						System.out.println("ERROR: Could not write state to file.");
 
 				}
+
+			}
+
+				/* Update the special transitions in the header file */
+
+			byte[] buffer = new byte[nBytesPerStateID];
+
+			// Bad transitions
+			for (TransitionData t : badTransitions) {
+
+				// Update initialStateID
+				mappingRAFile.seek(nBytesPerStateID * t.initialStateID);
+				mappingRAFile.read(buffer);
+				t.initialStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
+
+				// Update targetStateID
+				mappingRAFile.seek(nBytesPerStateID * t.targetStateID);
+				mappingRAFile.read(buffer);
+				t.targetStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
+
+			}
+
+			// Unconditional violations
+			for (TransitionData t : unconditionalViolations) {
+
+				// Update initialStateID
+				mappingRAFile.seek(nBytesPerStateID * t.initialStateID);
+				mappingRAFile.read(buffer);
+				t.initialStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
+
+				// Update targetStateID
+				mappingRAFile.seek(nBytesPerStateID * t.targetStateID);
+				mappingRAFile.read(buffer);
+				t.targetStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
+
+			}
+
+			// Conditional violations
+			for (TransitionData t : conditionalViolations) {
+
+				// Update initialStateID
+				mappingRAFile.seek(nBytesPerStateID * t.initialStateID);
+				mappingRAFile.read(buffer);
+				t.initialStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
+
+				// Update targetStateID
+				mappingRAFile.seek(nBytesPerStateID * t.targetStateID);
+				mappingRAFile.read(buffer);
+				t.targetStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
 
 			}
 
@@ -1038,18 +1101,27 @@ public class Automaton {
      **/
     public boolean generateImage(int size, OutputMode mode, String outputFileName) {
 
-    		/* Setup */
+        /* Setup */
 
     	StringBuilder str = new StringBuilder();
     	str.append("digraph G {");
     	str.append("node [shape=circle, style=bold, constraint=false];");
 
-    	// Constrain the size of the image if it's a PNG (since we will be displaying it on the GUI)
+        /* Constrain the size of the image if it's a PNG (since we will be displaying it on the GUI) */
+
     	if (mode == OutputMode.PNG) {
 	    	double inches = ((double) size) / 96.0; // Assuming DPI is 96
 	    	str.append("size=\"" + inches + "," + inches + "\";");
 	    	str.append("ratio=fill;");
 	    }
+
+        /* Mark unconditional violations with a red arrow (NOTE: Only changes the color property of the already existing transition) */
+
+      HashMap<String, String> additionalEdgeProperties = new HashMap<String, String>();
+      for (TransitionData t : unconditionalViolations) {
+        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
+        additionalEdgeProperties.put(edge, ",color=red"); 
+      }
     	
     		/* Draw all states and their transitions */
 
@@ -1089,16 +1161,23 @@ public class Automaton {
 
     			}
 
-    			str.append("\"_" + state.getLabel() + "\" -> \"_" + getStateExcludingTransitions(t1.getTargetStateID()).getLabel() + "\"");
+          // Add transition
+          String edge = "\"_" + state.getLabel() + "\" -> \"_" + getStateExcludingTransitions(t1.getTargetStateID()).getLabel() + "\"";
+    			str.append(edge);
     			str.append(" [label=\"" + label.substring(1) + "\"");
-    			
-    			if (nControllers == 1) {
-	    			if (!t1.getEvent().isObservable()[0])
-	    				str.append(",style=dotted");
 
-	    			if (!t1.getEvent().isControllable()[0])
-	    				str.append(",color=red");
-	    		}
+          // Add additional properties (if applicable)
+          String properties = additionalEdgeProperties.get(edge);
+          if (edge != null)
+            str.append(properties);
+    			
+    			// if (nControllers == 1) {
+	    		// 	if (!t1.getEvent().isObservable()[0])
+	    		// 		str.append(",style=dotted");
+
+	    		// 	if (!t1.getEvent().isControllable()[0])
+	    		// 		str.append(",color=red");
+	    		// }
 
     			str.append("];");
     		}
@@ -1234,6 +1313,10 @@ public class Automaton {
 				else
 					transitionInputBuilder.append("\n");
 
+				// Append '*' before the transition if this is a "bad" transition
+				if (badTransitions.contains(new TransitionData(s, t.getEvent().getID(), t.getTargetStateID())))
+					transitionInputBuilder.append("*");
+
 				// Append transition
 				transitionInputBuilder.append(
 						state.getLabel()
@@ -1332,13 +1415,6 @@ public class Automaton {
 
 		try {
 
-            // try {
-            //     java.nio.file.Files.delete(headerFile.toPath());
-            //     java.nio.file.Files.delete(bodyFile.toPath());
-            // } catch (IOException e) {
-            //     e.printStackTrace();
-            // }
-
     		if (!headerFile.delete() && headerFile.exists())
                 System.out.println("ERROR: Could not delete header file.");
     		
@@ -1383,6 +1459,7 @@ public class Automaton {
 		ByteManipulator.writeLongAsBytes(buffer, 20, initialState, 8);
 		ByteManipulator.writeLongAsBytes(buffer, 28, nControllers, 4);
 		ByteManipulator.writeLongAsBytes(buffer, 32, events.size(), 4);
+		ByteManipulator.writeLongAsBytes(buffer, 36, badTransitions.size(), 4);
 
 		try {
 
@@ -1396,7 +1473,7 @@ public class Automaton {
 				// Fill the buffer
 				buffer = new byte[ (2 * nControllers) + 4 + e.getLabel().length()];
 
-				// Read event properties
+				// Read event properties (NOTE: If we ever need to condense the space required to hold an event in a file, we can place a property in each bit instead of each byte)
 				int index = 0;
 				for (int i = 0; i < nControllers; i++) {
 					buffer[index] = (byte) (e.isObservable()[i] ? 1 : 0);
@@ -1415,6 +1492,18 @@ public class Automaton {
 				headerRAFile.write(buffer);
 
 			}
+
+				/* Write bad transitions to the .hdr file */
+
+			buffer = new byte[badTransitions.size() * 20];
+			int index = 0;
+			for (TransitionData t : badTransitions) {
+				ByteManipulator.writeLongAsBytes(buffer, index, t.initialStateID, 8);
+				ByteManipulator.writeLongAsBytes(buffer, index + 8, t.eventID, 4);
+				ByteManipulator.writeLongAsBytes(buffer, index + 12, t.targetStateID, 8);
+				index += 20;
+			}
+			headerRAFile.write(buffer);
 
 		} catch (IOException e) {
             e.printStackTrace();
@@ -1447,6 +1536,7 @@ public class Automaton {
 			initialState = ByteManipulator.readBytesAsLong(buffer, 20, 8);
 			nControllers = (int) ByteManipulator.readBytesAsLong(buffer, 28, 4);
 			int nEvents = (int) ByteManipulator.readBytesAsLong(buffer, 32, 4);
+			int nBadTransitions = (int) ByteManipulator.readBytesAsLong(buffer, 36, 4);
 
 			// Read in the events
 			for (int e = 1; e <= nEvents; e++) {
@@ -1473,9 +1563,21 @@ public class Automaton {
 				for (int i = 0; i < arr.length; i++)
 					arr[i] = (char) buffer[i];
 
-				// Crete the event and add it to the list
+				// Create the event and add it to the list
 				addEvent(new String(arr), observable, controllable);
 
+			}
+
+			// Read in bad transitions
+			buffer = new byte[nBadTransitions * 20];
+			headerRAFile.read(buffer);
+			int index = 0;
+			for (int t = 0; t < nBadTransitions; t++) {
+				long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
+				int eventID = (int) ByteManipulator.readBytesAsLong(buffer, index + 8, 4);
+				long targetStateID = ByteManipulator.readBytesAsLong(buffer, index + 12, 8);
+				badTransitions.add(new TransitionData(initialStateID, eventID, targetStateID));
+				index += 20;
 			}
 
 		} catch (IOException e) {
@@ -1644,14 +1746,19 @@ public class Automaton {
 	 * @param startingStateID	The ID of the state where the transition originates from
 	 * @param eventLabel		The label of the event that triggers the transition
 	 * @param targetStateID		The ID of the state where the transition leads to
+	 * @return the ID of the event label (returns 0 if the addition was unsuccessful)
 	 **/
-	public boolean addTransition(long startingStateID, String eventLabel, long targetStateID) {
+	public int addTransition(long startingStateID, String eventLabel, long targetStateID) {
 
 		for (Event e : events)
-			if (eventLabel.equals(e.getLabel()))
-				return addTransition(startingStateID, e.getID(), targetStateID);
+			if (eventLabel.equals(e.getLabel())) {
+				if (!addTransition(startingStateID, e.getID(), targetStateID))
+					return 0;
+				else
+					return e.getID();
+			}
 
-		return false;
+		return 0;
 
 	}
 
@@ -1956,15 +2063,34 @@ public class Automaton {
 	}
 
 	/**
-	 * 
+	 * Mark the specified as being "bad", which is used in synchronized composition.
 	 * @param initialStateID	The initial state
 	 * @param eventID			The event triggering the transition
 	 * @param targetStateID		The target state
 	 **/
-	public void addBadTransition(long initialStateID, int eventID, long targetStateID) {
+	public void markTransitionAsBad(long initialStateID, int eventID, long targetStateID) {
 
 		badTransitions.add(new TransitionData(initialStateID, eventID, targetStateID));
 
+		// Update header file
+		writeHeaderFile();
+
+	}
+
+	/**
+	 * Add an unconditional violation.
+	 * @param transitionData	The transition data associated with the unconditional violation.
+	 **/
+	public void addUnconditionalViolation(TransitionData transitionData) {
+		unconditionalViolations.add(transitionData);
+	}
+
+	/**
+	 * Add a conditional violation.
+	 * @param transitionData	The transition data associated with the conditional violation.
+	 **/
+	public void addConditionalViolation(TransitionData transitionData) {
+		conditionalViolations.add(transitionData);
 	}
 
 		/** ACCESSOR METHODS **/
@@ -2106,6 +2232,21 @@ public class Automaton {
             this.eventID = eventID;
             this.targetStateID = targetStateID;
         }
+
+    /**
+	 * Check for equality by comparing properties.
+	 * @param obj - The object to compare this one to
+	 * @return whether or not the transitions are equal
+	 **/
+	@Override public boolean equals(Object obj) {
+
+		TransitionData other = (TransitionData) obj;
+
+		return initialStateID == other.initialStateID
+			&& eventID == other.eventID
+			&& targetStateID == other.targetStateID;
+
+	}
 
     } // TransitionData
 
