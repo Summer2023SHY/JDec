@@ -70,6 +70,9 @@ public class Automaton {
 	// Initialized based on the above capacities
 	private int nBytesPerStateID;
 	private long nBytesPerState;
+
+	// Bad transitions (used by synchronized composition)
+	List<TransitionData> badTransitions = new ArrayList<TransitionData>();
 	
 	// File variables
 	private String 	headerFileName = DEFAULT_HEADER_FILE_NAME,
@@ -822,7 +825,7 @@ public class Automaton {
     						} else {
     							listOfTargetIDs.add(listOfIDs.get(j));
     							combinedEventLabel += "_*";
-    							combinedStateLabel += "_" + listOfStates.get(i + 1).getLabel(); 
+    							combinedStateLabel += "_" + listOfStates.get(j).getLabel(); 
     						}
 
 
@@ -854,10 +857,7 @@ public class Automaton {
 		    			}
 
     					// Add transition
-    					System.out.println(combinedID + " " + combinedEventLabel + " " + combinedTargetID);
     					automaton.addTransition(combinedID, combinedEventLabel, combinedTargetID);
-    					System.out.println(automaton.getNumberOfStates());
-    					System.out.println("adding!!!!!!!");
 
     				}
     			}
@@ -1030,7 +1030,7 @@ public class Automaton {
     	/** IMAGE GENERATION **/
 
     /**
-     * Output this automaton in a format that is readable by GraphViz, then export as appropriate.
+     * Output this automaton in a format that is readable by GraphViz, then export as requested.
      * @param size				The requested width and height in pixels
      * @param mode				The output type
      * @param outputFileName	The location to put the generated output
@@ -1044,6 +1044,7 @@ public class Automaton {
     	str.append("digraph G {");
     	str.append("node [shape=circle, style=bold, constraint=false];");
 
+    	// Constrain the size of the image if it's a PNG (since we will be displaying it on the GUI)
     	if (mode == OutputMode.PNG) {
 	    	double inches = ((double) size) / 96.0; // Assuming DPI is 96
 	    	str.append("size=\"" + inches + "," + inches + "\";");
@@ -1954,6 +1955,18 @@ public class Automaton {
 
 	}
 
+	/**
+	 * 
+	 * @param initialStateID	The initial state
+	 * @param eventID			The event triggering the transition
+	 * @param targetStateID		The target state
+	 **/
+	public void addBadTransition(long initialStateID, int eventID, long targetStateID) {
+
+		badTransitions.add(new TransitionData(initialStateID, eventID, targetStateID));
+
+	}
+
 		/** ACCESSOR METHODS **/
 
 	/**
@@ -2079,5 +2092,21 @@ public class Automaton {
     public int getNumberOfControllers() {
     	return nControllers;
     }
+
+    /**
+     * Private class to hold all 3 pieces of information needed to identify a transition.
+     **/
+    private class TransitionData {
+
+        public long initialStateID, targetStateID;
+        public int eventID;
+
+        public TransitionData(long initialStateID, int eventID, long targetStateID) {
+            this.initialStateID = initialStateID;
+            this.eventID = eventID;
+            this.targetStateID = targetStateID;
+        }
+
+    } // TransitionData
 
 }

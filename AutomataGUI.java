@@ -18,7 +18,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     private static ArrayList<AutomatonTab> tabs = new ArrayList<AutomatonTab>();
 
-    private int imageSize = 587;
+    private int imageSize = 600;
 
     private File currentDirectory = null;
 
@@ -275,7 +275,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
                 boolean isInitialState = (label.charAt(0) == '@');
 
-                // Ensure the user didn't only have a '@' symbolas the name of the label (since '@' gets removed, we are left with an empty string)
+                // Ensure the user didn't only have a '@' symbols the name of the label (since '@' gets removed, we are left with an empty string)
                 if (isInitialState && label.length() == 1) {
                     if (verbose)
                         System.out.println("ERROR: Could not parse '" + line + "' as a state (state name must be at least 1 character long).");
@@ -388,6 +388,14 @@ public class AutomataGUI extends JFrame implements ActionListener {
             // Ensure that all 3 required parameters are present
             if (splitLine.length >= 3) {
 
+                boolean badTransition = false;
+
+                // Check to see if this transition is bad
+                if (splitLine[0].length() >= 1 && splitLine[0].charAt(0) == '*') {
+                    badTransition = true;
+                    splitLine[0] = splitLine[0].substring(1);
+                }
+
                 // Get ID's of initial state, event, and target state
                 Long initialStateID = stateMapping.get(splitLine[0]);
                 Integer eventID = eventMapping.get(splitLine[1]);
@@ -400,8 +408,13 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 }
                 
                 // Add transition
-                else
-                    automaton.addTransition(initialStateID, eventID, targetStateID);
+                else {
+                    if (automaton.addTransition(initialStateID, eventID, targetStateID)) {
+                        if (badTransition)
+                            automaton.addBadTransition(initialStateID, eventID, targetStateID);
+                    } else
+                        System.out.println("ERROR: Could not add '" + line + "' as a transition.");
+                }
             
             } else if (line.length() > 0 && verbose)
                 System.out.println("ERROR: Could not parse '" + line + "' as a transition.");
@@ -418,7 +431,6 @@ public class AutomataGUI extends JFrame implements ActionListener {
     public static boolean isTrue(String str) {
         return str.toUpperCase().equals("T");
     }
-
 
     public static boolean[] isTrueArray(String str) {
 
@@ -892,9 +904,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
      } // Canvas class
 
-     /**
-     * Private class to maintain all GUI information about a single automaton.
-     **/
+    /**
+    * Private class to maintain all GUI information about a single automaton.
+    **/
     private class AutomatonTab extends Container {
 
             /* Public instance variables */
@@ -1039,7 +1051,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
             c.gridy = 3;
             container.add(new TooltipComponent(
                     transitionInputInstructions,
-                    "<html>1 transition per line, formatted as <i>INITIAL_STATE,EVENT,TARGET_STATE</i>.<br>"
+                    "<html>1 transition per line, formatted as <i>[*]INITIAL_STATE,EVENT,TARGET_STATE</i> (where the '*' symbol"
+                    + "denotes that this transition is <i>bad</i>, which is used in the synchronized composition operation).<br>"
                     + "<b><u>EXAMPLE</u></b>: <i>'FirstState,Event,SecondState'</i> denotes a transition that goes from "
                     + "the state <b>'FirstState'</b> to the state <b>'SecondState'</b> by the event called <b>'Event'</b>.</html>"
                 ),c);
