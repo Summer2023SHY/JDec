@@ -522,9 +522,7 @@ public class TestAutomata {
         result.generateInputForGUI();
         printTestCase("Ensuring the events are correct", result.getEventInput().equals("a,T,T\nb,T,T\ng,T,T"), counter);
         printTestCase("Ensuring the states are correct", result.getStateInput().equals("@x_zero,F\ny_zero,F\nz_zero,F\nx_one,T\ny_one,F\nz_one,T"), counter);
-        printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("x_zero,a,x_one\nx_zero,g,z_zero\ny_zero,b,y_zero\n"
-            + "y_zero,a,x_one\nz_zero,b,z_zero\nz_zero,a,y_one\nz_zero,g,y_zero\nx_one,a,x_one\nx_one,g,z_one\ny_one,b,y_zero\ny_one,a,x_one\nz_one,b,z_zero\n"
-            + "z_one,a,y_one\nz_one,g,y_one"), counter);
+        printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("x_zero,a,x_one\nx_zero,g,z_zero\ny_zero,b,y_zero\ny_zero,a,x_one\nz_zero,b,z_zero\nz_zero,a,y_one\nz_zero,g,y_zero\nx_one,a,x_one\nx_one,g,z_one\ny_one,b,y_zero\ny_one,a,x_one\nz_one,b,z_zero\nz_one,a,y_one\nz_one,g,y_one"), counter);
 
         printTestOutput("Instantiating the first automaton from Figure 2.17...", 3);
         Automaton fig2_17a = AutomataGUI.generateAutomaton(
@@ -563,6 +561,28 @@ public class TestAutomata {
         printTestCase("Ensuring the events are correct", result.getEventInput().equals("a,T,T\nb,T,T\nc,T,T\nd,T,T"), counter);
         printTestCase("Ensuring the states are correct", result.getStateInput().equals("@one_A_D,T"), counter);
         printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("one_A_D,c,one_A_D"), counter);
+
+            /* Synchronized Composition Operation Tests */
+
+        printTestOutput("SYNCHRONIZED COMPOSITION OPERATION: ", 2);
+
+        printTestOutput("Instantiating an automaton...", 3);
+        Automaton synchronizedCompositionExample = AutomataGUI.generateAutomaton(
+                "a,TF,TF\nb,FT,FT\no,TT,TT", // Events
+                "@1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T", // States
+                "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD", // Transitions
+                2, // Number of controllers
+                false, // We do not want it to be verbose
+                new File("synchronizedCompositionExample.hdr")
+            );
+
+        printTestOutput("Taking the synchronized composition of an automaton...", 3);
+        result = synchronizedCompositionExample.synchronizedComposition();
+
+        result.generateInputForGUI();
+        printTestCase("Ensuring the events are correct", result.getEventInput().equals("<a_a_*>,T,T\n<b_*_b>,T,T\n<*_b_*>,T,T\n<*_*_a>,T,T\n<o_o_o>,T,T"), counter);
+        printTestCase("Ensuring the states are correct", result.getStateInput().equals("@1_1_1,F\n1_1_2,F\n1_3_1,F\n1_3_2,F\n2_2_1,F\n2_2_2,F\n2_4_1,F\n2_4_2,F\n2_5_1,F\n2_5_2,F\n3_1_3,F\n3_1_4,F\n3_1_5,F\n3_3_3,F\n3_3_4,F\n3_3_5,F\n4_2_3,F\n4_2_4,F\n4_2_5,F\n4_4_3,F\n4_4_4,F\n4_4_5,F\n4_5_3,F\n4_5_4,F\n4_5_5,F\n5_2_3,F\n5_2_4,F\n5_2_5,F\n5_4_3,F\n5_4_4,F\n5_4_5,F\n5_5_3,F\n5_5_4,F\n5_5_5,F\n6_6_6,F\n6_6_7,F\n6_7_6,F\n6_7_7,F\n7_6_6,F\n7_6_7,F\n7_7_6,F\n7_7_7,F"), counter);
+        printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("1_1_1,<a_a_*>,2_2_1\n1_1_1,<b_*_b>,3_1_3\n1_1_1,<*_b_*>,1_3_1\n1_1_1,<*_*_a>,1_1_2\n1_1_2,<a_a_*>,2_2_2\n1_1_2,<b_*_b>,3_1_4\n1_1_2,<*_b_*>,1_3_2\n1_3_1,<a_a_*>,2_5_1\n1_3_1,<b_*_b>,3_3_3\n1_3_1,<*_*_a>,1_3_2\n1_3_2,<a_a_*>,2_5_2\n1_3_2,<b_*_b>,3_3_4\n2_2_1,<b_*_b>,4_2_3\n2_2_1,<*_b_*>,2_4_1\n2_2_1,<*_*_a>,2_2_2\n2_2_2,<b_*_b>,4_2_4\n2_2_2,<*_b_*>,2_4_2\n2_4_1,<b_*_b>,4_4_3\n2_4_1,<*_*_a>,2_4_2\n2_4_2,<b_*_b>,4_4_4\n2_5_1,<b_*_b>,4_5_3\n2_5_1,<*_*_a>,2_5_2\n2_5_2,<b_*_b>,4_5_4\n3_1_3,<a_a_*>,5_2_3\n3_1_3,<*_b_*>,3_3_3\n3_1_3,<*_*_a>,3_1_5\n3_1_4,<a_a_*>,5_2_4\n3_1_4,<*_b_*>,3_3_4\n3_1_5,<a_a_*>,5_2_5\n3_1_5,<*_b_*>,3_3_5\n3_3_3,<a_a_*>,5_5_3\n3_3_3,<*_*_a>,3_3_5\n3_3_4,<a_a_*>,5_5_4\n3_3_5,<a_a_*>,5_5_5\n4_2_3,<*_b_*>,4_4_3\n4_2_3,<*_*_a>,4_2_5\n4_2_4,<*_b_*>,4_4_4\n4_2_5,<*_b_*>,4_4_5\n4_4_3,<*_*_a>,4_4_5\n4_4_4,<o_o_o>,6_6_6\n4_4_5,<o_o_o>,6_6_7\n4_5_3,<*_*_a>,4_5_5\n4_5_4,<o_o_o>,6_7_6\n4_5_5,<o_o_o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*_b_*>,5_4_3\n5_2_3,<*_*_a>,5_2_5\n5_2_4,<*_b_*>,5_4_4\n5_2_5,<*_b_*>,5_4_5\n5_4_3,<*_*_a>,5_4_5\n5_4_4,<o_o_o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o_o_o>,7_6_7\n5_5_3,<*_*_a>,5_5_5\n5_5_4,<o_o_o>,7_7_6\n5_5_5,<o_o_o>,7_7_7"), counter);
 
             /* Print summary of this test routine */
 
