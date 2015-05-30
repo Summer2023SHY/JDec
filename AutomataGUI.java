@@ -51,6 +51,50 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     	setGUIproperties();
         loadCurrentDirectory();
+        promptBeforeExit();
+
+    }
+
+    /**
+     * Prompt the user to save files before exiting.
+     **/
+    private void promptBeforeExit() {
+    
+        this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        
+        addWindowListener(new WindowAdapter() {
+            @Override public void windowClosing(WindowEvent event) { 
+
+                    /* Check for unsaved information */
+
+                boolean unSavedInformation = false;
+                for (int i = 0; i < tabbedPane.getTabCount(); i++)
+                    if (tabbedPane.getTitleAt(i).equals("untitled"))
+                        unSavedInformation = true;
+                
+                if (!unSavedInformation)
+                    System.exit(0);
+
+                    /* Prompt user to save */
+
+                String buttons[] = {"Yes","No"};
+                
+                int promptResult = JOptionPane.showOptionDialog(
+                    null,
+                    "Are you sure you want to exit? Any unsaved information will be lost.",
+                    "Unsaved Information",
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.WARNING_MESSAGE,
+                    null,
+                    buttons,
+                    buttons[1]
+                );
+                
+                if (promptResult == JOptionPane.YES_OPTION)
+                    System.exit(0);
+
+            }
+        });
 
     }
 
@@ -521,10 +565,6 @@ public class AutomataGUI extends JFrame implements ActionListener {
         menu = new JMenu("File");
         menuBar.add(menu);
 
-        menuItem = new JMenuItem("Clear");
-        menuItem.addActionListener(this);
-        menu.add(menuItem);
-
         menuItem = new JMenuItem("New Tab");
         menuItem.addActionListener(this);
         menu.add(menuItem);
@@ -537,19 +577,29 @@ public class AutomataGUI extends JFrame implements ActionListener {
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
+        menuItem = new JMenuItem("Refresh Tab");
+        menuItem.addActionListener(this);
+        menu.add(menuItem);
+
+        menu.addSeparator();
+
+        menuItem = new JMenuItem("Clear");
+        menuItem.addActionListener(this);
+        menu.add(menuItem);
+
+        menuItem = new JMenuItem("Close Tab");
+        menuItem.addActionListener(this);
+        menu.add(menuItem);
+
+        menu.addSeparator();
+
         menuItem = new JMenuItem("Export as SVG");
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
         menu.addSeparator();
 
-        menuItem = new JMenuItem("Refresh");
-        menuItem.addActionListener(this);
-        menu.add(menuItem);
-
-        menu.addSeparator();
-
-        menuItem = new JMenuItem("Close");
+        menuItem = new JMenuItem("Quit");
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
@@ -628,9 +678,10 @@ public class AutomataGUI extends JFrame implements ActionListener {
             case "Save As...":
 
                 // Prompt user to save Automaton to the specified file
-                saveFile("Choose .hdr File");
-                tabbedPane.setTitleAt(index, tab.file.getName());
-                generateAutomatonButtonPressed(); // This is what actually saves it to the new file
+                if (saveFile("Choose .hdr File") != null) {
+                    tabbedPane.setTitleAt(index, tab.file.getName());
+                    generateAutomatonButtonPressed(); // This is what actually saves it to the new file
+                }
                     
                 break;
 
@@ -644,7 +695,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
                 tabbedPane.setTitleAt(index, tab.file.getName());
 
-            case "Refresh":
+            case "Refresh Tab":
 
                 refresh(index);
 
@@ -655,9 +706,14 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 export();
                 break;
 
-            case "Close":
+            case "Close Tab":
 
                 closeCurrentTab();
+                break;
+
+            case "Quit":
+
+                dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
                 break;
 
                 /* AUTOMATA OPERATIONS */
