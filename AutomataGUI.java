@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -69,7 +70,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
                 boolean unSavedInformation = false;
                 for (int i = 0; i < tabbedPane.getTabCount(); i++)
-                    if (tabbedPane.getTitleAt(i).equals("untitled"))
+                    if (!tabs.get(i).isSaved())
                         unSavedInformation = true;
                 
                 if (!unSavedInformation)
@@ -77,7 +78,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
                     /* Prompt user to save */
 
-                String buttons[] = {"Yes","No"};
+                String buttons[] = { "Yes", "No" };
                 
                 int promptResult = JOptionPane.showOptionDialog(
                     null,
@@ -128,7 +129,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         // Set tab values
         AutomatonTab tab = tabs.get(newIndex);
         tab.file = automatonFile;
-        tabbedPane.setTitleAt(newIndex, tab.file.getName());
+        tab.updateTabTitle();
         tab.automaton = automaton;
         tab.automaton.generateInputForGUI();
         tab.controllerInput.setValue(tab.automaton.getNumberOfControllers());
@@ -153,6 +154,12 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         tabbedPane.remove(index);
         tabs.remove(index);
+
+            /* Re-number tabs */
+
+        for (int i = 0; i < tabs.size(); i++)
+            tabs.get(i).index = i;
+        
     }
 
     /**
@@ -274,6 +281,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 tab.file
             );
         tab.automaton = automaton;
+        tab.setSaved(true);
 
         generateImage();
 
@@ -650,7 +658,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         AutomatonTab tab = null;
 
         // Only get the tab if it actually exists
-        if (index < tabbedPane.getTabCount())
+        if (index > -1)
             tab = tabs.get(index);
 
         // Execute the appropriate command
@@ -679,7 +687,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
                 // Prompt user to save Automaton to the specified file
                 if (saveFile("Choose .hdr File") != null) {
-                    tabbedPane.setTitleAt(index, tab.file.getName());
+                    tab.setSaved(true);
+                    tab.updateTabTitle();
                     generateAutomatonButtonPressed(); // This is what actually saves it to the new file
                 }
                     
@@ -688,12 +697,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
             case "Open":
 
                 // Prompt user to select Automaton from file (stop if they did not pick a file)
-                if (selectFile("Select Automaton") == null)
+                if (selectFile("Select Automaton", index) == null)
                     break;
 
                 tab.canvas.setImage(null);
-
-                tabbedPane.setTitleAt(index, tab.file.getName());
+                tab.updateTabTitle();
 
             case "Refresh Tab":
 
@@ -782,14 +790,17 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         generateImage();
 
+        tab.setSaved(true);
+
     }
 
     /** 
-     *  Opens up a JFileChooser for the user to choose a file from their file system.
-     *  @param title - The title to put in the file chooser dialog box
-     *  @return a file that the user selected on their computer, or null if they didn't choose anything
+     * Opens up a JFileChooser for the user to choose a file from their file system.
+     * @param title The title to put in the file chooser dialog box
+     * @param index The index of the tab we're selecting a file for
+     * @return a file that the user selected on their computer, or null if they didn't choose anything
      **/
-    private File selectFile (String title) {
+    private File selectFile (String title, int index) {
 
             /* Set up the file chooser */
 
@@ -813,7 +824,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
             /* Update last file opened and update current directory */
 
         if (fileChooser.getSelectedFile() != null) {
-            tabs.get(tabbedPane.getSelectedIndex()).file = fileChooser.getSelectedFile();
+            tabs.get(index).file = fileChooser.getSelectedFile();
             currentDirectory = fileChooser.getSelectedFile().getParentFile();
             saveCurrentDirectory();
         }
@@ -1019,20 +1030,22 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         public Automaton automaton;
 
-            /* Constructor */
+        private boolean saved = true;
 
-        public AutomatonTab() {
-            super();
-        }
+        public int index = -1;
+
+            /* Constructor */
 
         public AutomatonTab(int index) {
 
             super();
+            this.index = index;
 
                 /* Setup */
 
             setLayout(new FlowLayout());
-            add(createInputContainer(index));
+            add(createInputContainer());
+
 
                 /* Create canvas */
 
@@ -1040,7 +1053,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
             add(canvas);
         }
 
-        private Container createInputContainer(int index) {
+        private Container createInputContainer() {
 
                 /* Setup */
 
@@ -1096,6 +1109,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
                     return new Dimension(100, 100);    
                 }
             };
+            watchForChanges(eventInput);
             c.ipady = 100;
             c.weightx = 0.5;
             c.weighty = 1.0;
@@ -1128,6 +1142,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
                     return new Dimension(100, 100);    
                 }
             };
+            watchForChanges(stateInput);
             c.ipady = 100;
             c.weightx = 0.5;
             c.weighty = 1.0;
@@ -1164,6 +1179,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
                     return new Dimension(100, 100);    
                 }
             };
+            watchForChanges(transitionInput);
             c.ipady = 200;
             c.weightx = 0.5;
             c.weighty = 1.0;
@@ -1191,6 +1207,52 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
             return container;
 
+        }
+
+        private void updateTabTitle() {
+
+            String title = "untitled";
+
+            if (file != null)
+                title = file.getName();
+
+            if (!saved)
+                title += "*";
+
+            tabbedPane.setTitleAt(index, title);
+
+        }
+
+        private void watchForChanges(JTextPane textPane) {
+
+            textPane.getDocument().addDocumentListener(new DocumentListener() {
+
+                @Override public void changedUpdate(DocumentEvent e) {
+                    setSaved(false);
+                }
+
+                @Override public void insertUpdate(DocumentEvent e) {
+                    setSaved(false);
+                }
+
+                @Override public void removeUpdate(DocumentEvent e) {
+                    setSaved(false);
+                }
+
+            });    
+        }
+
+        public void setSaved(boolean newSavedStatus) {
+
+            if (newSavedStatus != saved) {
+                saved = newSavedStatus;
+                updateTabTitle();
+            }
+
+        }
+
+        public boolean isSaved() {
+            return saved;
         }
 
     } // AutomatonTab
