@@ -28,7 +28,7 @@ public class Automaton {
 
 		/** CLASS CONSTANTS **/
 
-	private static final int HEADER_SIZE = 40; // This is the fixed amount of space needed to hold the main variables in the .hdr file
+	private static final int HEADER_SIZE = 48; // This is the fixed amount of space needed to hold the main variables in the .hdr file
 
 	public static final long DEFAULT_STATE_CAPACITY = 255;
 	public static final long MAX_STATE_CAPACITY = Long.MAX_VALUE;
@@ -749,8 +749,16 @@ public class Automaton {
     			String combinedEventLabel = e.getLabel();
     			String combinedStateLabel = getStateExcludingTransitions(t1.getTargetStateID()).getLabel();
 
-    			// If this is the system has a bad transition, then it is illegal by default until we've found a controller that prevents it
-    			boolean isUnconditionalViolation = badTransitions.contains(new TransitionData(listOfStates.get(0).getID(), e.getID(), t1.getTargetStateID()));
+    			// If this is the system has a bad transition, then it is an unconditional violation by default until we've found a controller that prevents it
+          boolean isBadTransition = badTransitions.contains(new TransitionData(listOfStates.get(0).getID(), e.getID(), t1.getTargetStateID()));
+    			boolean isUnconditionalViolation = isBadTransition;
+
+          // A conditional violation can only occur when an event is controllable by at least 2 controllers, and the system must have a good transition
+          int counter = 0;
+          for (int i = 0; i < nControllers; i++)
+            if (e.isControllable()[i])
+              counter++;
+          boolean isConditionalViolation = (counter >= 2 && !isBadTransition);
 
     			// For each controller
     			for (int i = 0; i < nControllers; i++) {
@@ -773,10 +781,15 @@ public class Automaton {
     					combinedStateLabel += "_" + label;
     					listOfTargetIDs.add(targetID);
 
-    					// Check to see if this can prevent an unconditional violation
+    					// Check to see if this controller can prevent an unconditional violation
     					if (isUnconditionalViolation && e.isControllable()[i])
     						if (badTransitions.contains(new TransitionData(listOfStates.get(i + 1).getID(), e.getID(), targetID)))
     							isUnconditionalViolation = false;
+
+              // Check to see if this controller can prevent a conditional violation
+              if (isConditionalViolation && e.isControllable()[i])
+                if (!badTransitions.contains(new TransitionData(listOfStates.get(i + 1).getID(), e.getID(), targetID)))
+                  isConditionalViolation = false;
 
     				// Unobservable events by this controller
     				} else {
@@ -815,7 +828,9 @@ public class Automaton {
           // Add transition
     			int eventID = automaton.addTransition(combinedID, combinedEventLabel, combinedTargetID);
     			if (isUnconditionalViolation)
-    				automaton.addUnconditionalViolation(new TransitionData(combinedID, eventID, combinedTargetID));
+    				automaton.addUnconditionalViolation(combinedID, eventID, combinedTargetID);
+          if (isConditionalViolation)
+            automaton.addConditionalViolation(combinedID, eventID, combinedTargetID);
 
     		} // for
 
@@ -1115,12 +1130,29 @@ public class Automaton {
 	    	str.append("ratio=fill;");
 	    }
 
-        /* Mark unconditional violations with a red arrow (NOTE: Only changes the color property of the already existing transition) */
+        /* Mark special transitions */
 
       HashMap<String, String> additionalEdgeProperties = new HashMap<String, String>();
       for (TransitionData t : unconditionalViolations) {
         String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-        additionalEdgeProperties.put(edge, ",color=red"); 
+        if (additionalEdgeProperties.containsKey(edge))
+          additionalEdgeProperties.put(edge, additionalEdgeProperties.get(edge) + ",color=red");
+        else
+          additionalEdgeProperties.put(edge, ",color=red"); 
+      }
+      for (TransitionData t : conditionalViolations) {
+        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
+        if (additionalEdgeProperties.containsKey(edge))
+          additionalEdgeProperties.put(edge, additionalEdgeProperties.get(edge) + ",color=green");
+        else
+          additionalEdgeProperties.put(edge, ",color=green"); 
+      }
+      for (TransitionData t : badTransitions) {
+        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
+        if (additionalEdgeProperties.containsKey(edge))
+          additionalEdgeProperties.put(edge, additionalEdgeProperties.get(edge) + ",style=dotted");
+        else
+          additionalEdgeProperties.put(edge, ",style=dotted"); 
       }
     	
     		/* Draw all states and their transitions */
@@ -1202,19 +1234,31 @@ public class Automaton {
 			out.print(str.toString());
 
 			// Produce PNG from DOT language
-	        Process process = new ProcessBuilder(
-            "dot",
-	        	(mode == OutputMode.PNG) ? "-Tpng" : "-Tsvg",
-	        	"out.tmp",
-	        	"-o",
-	        	outputFileName
-	        ).start();
+        Process process = null;
 
-	        // Wait for it to finish
-	       	if (process.waitFor() != 0) {
-	       		System.out.println("ERROR: GraphViz failed to generate image of graph.");
-	       		return false;
-	       	}
+        if (mode == OutputMode.SVG) 
+          process = new ProcessBuilder(
+            (nStates > 100) ? "neato": "dot",
+            "-Goverlap=scale",
+          	"-Tsvg",
+          	"out.tmp",
+          	"-o",
+          	outputFileName
+          ).start();
+        else if (mode == OutputMode.PNG)
+          process = new ProcessBuilder(
+            (nStates > 100) ? "neato": "dot",
+            "-Tpng",
+            "out.tmp",
+            "-o",
+            outputFileName
+          ).start();
+
+        // Wait for it to finish
+       	if (process.waitFor() != 0) {
+       		System.out.println("ERROR: GraphViz failed to generate image of graph.");
+       		return false;
+       	}
 
 	    } catch (IOException | InterruptedException e) {
 			e.printStackTrace();
@@ -1313,16 +1357,24 @@ public class Automaton {
 				else
 					transitionInputBuilder.append("\n");
 
-				// Append '*' before the transition if this is a "bad" transition
-				if (badTransitions.contains(new TransitionData(s, t.getEvent().getID(), t.getTargetStateID())))
-					transitionInputBuilder.append("*");
-
 				// Append transition
 				transitionInputBuilder.append(
 						state.getLabel()
 						+ "," + t.getEvent().getLabel()
 						+ "," + getStateExcludingTransitions(t.getTargetStateID()).getLabel()
 					);
+
+        // Append special transition information
+        String specialTransition = "";
+        TransitionData transitionData = new TransitionData(s, t.getEvent().getID(), t.getTargetStateID());
+        if (badTransitions.contains(transitionData))
+          specialTransition += ",BAD";
+        if (unconditionalViolations.contains(transitionData))
+          specialTransition += ",UNCONDITIONAL_VIOLATION";
+        if (conditionalViolations.contains(transitionData))
+          specialTransition += ",CONDITIONAL_VIOLATION";
+        if (!specialTransition.equals(""))
+          transitionInputBuilder.append(":" + specialTransition.substring(1));
 			
 			}
 		}
@@ -1459,7 +1511,9 @@ public class Automaton {
 		ByteManipulator.writeLongAsBytes(buffer, 20, initialState, 8);
 		ByteManipulator.writeLongAsBytes(buffer, 28, nControllers, 4);
 		ByteManipulator.writeLongAsBytes(buffer, 32, events.size(), 4);
-		ByteManipulator.writeLongAsBytes(buffer, 36, badTransitions.size(), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 36, badTransitions.size(), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 40, unconditionalViolations.size(), 4);
+		ByteManipulator.writeLongAsBytes(buffer, 44, conditionalViolations.size(), 4);
 
 		try {
 
@@ -1493,23 +1547,37 @@ public class Automaton {
 
 			}
 
-				/* Write bad transitions to the .hdr file */
+				/* Write special transitions to the .hdr file */
 
-			buffer = new byte[badTransitions.size() * 20];
-			int index = 0;
-			for (TransitionData t : badTransitions) {
-				ByteManipulator.writeLongAsBytes(buffer, index, t.initialStateID, 8);
-				ByteManipulator.writeLongAsBytes(buffer, index + 8, t.eventID, 4);
-				ByteManipulator.writeLongAsBytes(buffer, index + 12, t.targetStateID, 8);
-				index += 20;
-			}
-			headerRAFile.write(buffer);
+      writeSpecialTransitionsToHeader(badTransitions);
+      writeSpecialTransitionsToHeader(unconditionalViolations);
+			writeSpecialTransitionsToHeader(conditionalViolations);
 
 		} catch (IOException e) {
             e.printStackTrace();
 	    }	
 
 	}
+
+  /**
+   * A helper method to write a list of special transitions to the header file.
+   * @param list  The list of transition data
+   **/
+  private void writeSpecialTransitionsToHeader(List<TransitionData> list) throws IOException {
+
+    byte[] buffer = new byte[list.size() * 20];
+    int index = 0;
+
+    for (TransitionData t : list) {
+      ByteManipulator.writeLongAsBytes(buffer, index, t.initialStateID, 8);
+      ByteManipulator.writeLongAsBytes(buffer, index + 8, t.eventID, 4);
+      ByteManipulator.writeLongAsBytes(buffer, index + 12, t.targetStateID, 8);
+      index += 20;
+    }
+
+    headerRAFile.write(buffer);
+
+  }
 
 	/**
 	 * Read all of the header information from file.
@@ -1520,15 +1588,18 @@ public class Automaton {
 
 		try {
 
-			// Do not try to load an empty file
+			 /* Do not try to load an empty file */
+
 			if (headerRAFile.length() == 0)
 				return;
 
-			// Go to the proper position and read in the bytes
+			 /* Go to the proper position and read in the bytes */
+
 			headerRAFile.seek(0);
 			headerRAFile.read(buffer);
 
-			// Calculate the values stored in these bytes
+			 /* Calculate the values stored in these bytes */
+
 			nStates = ByteManipulator.readBytesAsLong(buffer, 0, 8);
 			stateCapacity = ByteManipulator.readBytesAsLong(buffer, 8, 8);
 			transitionCapacity = (int) ByteManipulator.readBytesAsLong(buffer, 12, 4);
@@ -1536,9 +1607,12 @@ public class Automaton {
 			initialState = ByteManipulator.readBytesAsLong(buffer, 20, 8);
 			nControllers = (int) ByteManipulator.readBytesAsLong(buffer, 28, 4);
 			int nEvents = (int) ByteManipulator.readBytesAsLong(buffer, 32, 4);
-			int nBadTransitions = (int) ByteManipulator.readBytesAsLong(buffer, 36, 4);
+      int nBadTransitions = (int) ByteManipulator.readBytesAsLong(buffer, 36, 4);
+      int nUnconditionalViolations = (int) ByteManipulator.readBytesAsLong(buffer, 40, 4);
+			int nConditionalViolations = (int) ByteManipulator.readBytesAsLong(buffer, 44, 4);
 
-			// Read in the events
+			 /* Read in the events */
+
 			for (int e = 1; e <= nEvents; e++) {
 
 				// Read properties
@@ -1568,23 +1642,38 @@ public class Automaton {
 
 			}
 
-			// Read in bad transitions
-			buffer = new byte[nBadTransitions * 20];
-			headerRAFile.read(buffer);
-			int index = 0;
-			for (int t = 0; t < nBadTransitions; t++) {
-				long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-				int eventID = (int) ByteManipulator.readBytesAsLong(buffer, index + 8, 4);
-				long targetStateID = ByteManipulator.readBytesAsLong(buffer, index + 12, 8);
-				badTransitions.add(new TransitionData(initialStateID, eventID, targetStateID));
-				index += 20;
-			}
+			 /* Read in special transitions */
+
+      readSpecialTransitionsFromHeader(nBadTransitions, badTransitions);
+      readSpecialTransitionsFromHeader(nUnconditionalViolations, unconditionalViolations);
+      readSpecialTransitionsFromHeader(nConditionalViolations, conditionalViolations);
 
 		} catch (IOException e) {
-            e.printStackTrace();
-	    }	
+      e.printStackTrace();
+    }	
 
 	}
+
+  /**
+   * A helper method to read a list of special transitions from the header file.
+   * @param nTransitions  The number of transitions that need to be read
+   * @param list          The list of transition data
+   **/
+  private void readSpecialTransitionsFromHeader(int nTransitions, List<TransitionData> list) throws IOException {
+
+    byte[] buffer = new byte[nTransitions * 20];
+    headerRAFile.read(buffer);
+    int index = 0;
+
+    for (int t = 0; t < nTransitions; t++) {
+      long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
+      int eventID = (int) ByteManipulator.readBytesAsLong(buffer, index + 8, 4);
+      long targetStateID = ByteManipulator.readBytesAsLong(buffer, index + 12, 8);
+      list.add(new TransitionData(initialStateID, eventID, targetStateID));
+      index += 20;
+    }
+
+  }
 
 	/**
 	 * Re-create the body file to accommodate some increase in capacity.
@@ -2064,9 +2153,9 @@ public class Automaton {
 
 	/**
 	 * Mark the specified as being "bad", which is used in synchronized composition.
-	 * @param initialStateID	The initial state
-	 * @param eventID			The event triggering the transition
-	 * @param targetStateID		The target state
+	 * @param initialStateID   The initial state
+	 * @param eventID          The event triggering the transition
+	 * @param targetStateID    The target state
 	 **/
 	public void markTransitionAsBad(long initialStateID, int eventID, long targetStateID) {
 
@@ -2079,18 +2168,32 @@ public class Automaton {
 
 	/**
 	 * Add an unconditional violation.
-	 * @param transitionData	The transition data associated with the unconditional violation.
-	 **/
-	public void addUnconditionalViolation(TransitionData transitionData) {
-		unconditionalViolations.add(transitionData);
+	 * @param initialStateID   The initial state
+   * @param eventID          The event triggering the transition
+   * @param targetStateID    The target state
+   **/
+	public void addUnconditionalViolation(long initialStateID, int eventID, long targetStateID) {
+
+		unconditionalViolations.add(new TransitionData(initialStateID, eventID, targetStateID));
+
+    // Update header file
+    writeHeaderFile();
+
 	}
 
 	/**
 	 * Add a conditional violation.
-	 * @param transitionData	The transition data associated with the conditional violation.
-	 **/
-	public void addConditionalViolation(TransitionData transitionData) {
-		conditionalViolations.add(transitionData);
+	 * @param initialStateID   The initial state
+   * @param eventID          The event triggering the transition
+   * @param targetStateID    The target state
+   **/
+	public void addConditionalViolation(long initialStateID, int eventID, long targetStateID) {
+
+		conditionalViolations.add(new TransitionData(initialStateID, eventID, targetStateID));
+
+    // Update header file
+    writeHeaderFile();
+
 	}
 
 		/** ACCESSOR METHODS **/
