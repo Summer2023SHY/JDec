@@ -1,7 +1,7 @@
 /**
- * Automaton - 	This extensive class is able to fully represent an automaton. The usage of .hdr and .bdy files
- * 				gives the potential to work with very large automata, since the entire automaton does not need
- *				to be stored in memory.
+ * Automaton -  This extensive class is able to fully represent an automaton. The usage of .hdr and .bdy files
+ *              gives the potential to work with very large automata, since the entire automaton does not need
+ *              to be stored in memory.
  *
  * @author Micah Stairs
  *
@@ -90,74 +90,74 @@ public class Automaton {
 							stateInputBuilder,
 							transitionInputBuilder;
 
-		/** CONSTRUCTORS **/
+	  /** CONSTRUCTORS **/
 
-    /**
-     * Default constructor: create empty automaton with default capacity, wiping any previous data existing in the files.
-     **/
-    public Automaton() {
-    	this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, DEFAULT_STATE_CAPACITY, DEFAULT_TRANSITION_CAPACITY, DEFAULT_LABEL_LENGTH, DEFAULT_NUMBER_OF_CONTROLLERS, true);
-    }
+  /**
+   * Default constructor: create empty automaton with default capacity, wiping any previous data existing in the files.
+   **/
+  public Automaton() {
+  	this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, DEFAULT_STATE_CAPACITY, DEFAULT_TRANSITION_CAPACITY, DEFAULT_LABEL_LENGTH, DEFAULT_NUMBER_OF_CONTROLLERS, true);
+  }
 
-    /**
-     * Implicit constructor: create an automaton with a specified number of controllers.
-     * @param headerFile	The file where the header should be stored
-     * @param nControllers	The number of controllers that this automaton has
-     **/
-    public Automaton(File headerFile, int nControllers) {
-    	this(
-    			(headerFile == null) ? DEFAULT_HEADER_FILE : headerFile,
-    			(headerFile == null) ? DEFAULT_BODY_FILE : new File(headerFile.getName().substring(0, headerFile.getName().length() - 4) + ".bdy"),
-    			DEFAULT_STATE_CAPACITY,
-    			DEFAULT_TRANSITION_CAPACITY,
-    			DEFAULT_LABEL_LENGTH,
-    			nControllers,
-    			true
-    		);
-    }
+  /**
+   * Implicit constructor: create an automaton with a specified number of controllers.
+   * @param headerFile	The file where the header should be stored
+   * @param nControllers	The number of controllers that this automaton has
+   **/
+  public Automaton(File headerFile, int nControllers) {
+  	this(
+  			(headerFile == null) ? DEFAULT_HEADER_FILE : headerFile,
+  			(headerFile == null) ? DEFAULT_BODY_FILE : new File(headerFile.getName().substring(0, headerFile.getName().length() - 4) + ".bdy"),
+  			DEFAULT_STATE_CAPACITY,
+  			DEFAULT_TRANSITION_CAPACITY,
+  			DEFAULT_LABEL_LENGTH,
+  			nControllers,
+  			true
+  		);
+  }
 
-    /**
-     * Implicit constructor: load automaton from file.
-     * @param headerFile	The file where the header should be stored
-     * @param clearFiles	Whether or not the header and body files should be wiped before use
-     **/
-    public Automaton(File headerFile, boolean clearFiles) {
-    	this(
-    			(headerFile == null) ? DEFAULT_HEADER_FILE : headerFile,
-    			(headerFile == null) ? DEFAULT_BODY_FILE : new File(headerFile.getName().substring(0, headerFile.getName().length() - 4) + ".bdy"),
-    			DEFAULT_STATE_CAPACITY,
-    			DEFAULT_TRANSITION_CAPACITY,
-    			DEFAULT_LABEL_LENGTH,
-    			DEFAULT_NUMBER_OF_CONTROLLERS,
-    			clearFiles
-    		);
-    }
+  /**
+   * Implicit constructor: load automaton from file.
+   * @param headerFile	The file where the header should be stored
+   * @param clearFiles	Whether or not the header and body files should be wiped before use
+   **/
+  public Automaton(File headerFile, boolean clearFiles) {
+  	this(
+  			(headerFile == null) ? DEFAULT_HEADER_FILE : headerFile,
+  			(headerFile == null) ? DEFAULT_BODY_FILE : new File(headerFile.getName().substring(0, headerFile.getName().length() - 4) + ".bdy"),
+  			DEFAULT_STATE_CAPACITY,
+  			DEFAULT_TRANSITION_CAPACITY,
+  			DEFAULT_LABEL_LENGTH,
+  			DEFAULT_NUMBER_OF_CONTROLLERS,
+  			clearFiles
+  		);
+  }
 
-    /**
-     * Implicit constructor: create automaton with specified initial capacities.
-     * NOTE: 	Choosing larger values increases the amount of space needed to store the binary file.
-     *			Choosing smaller values increases the frequency that you need to re-write the entire binary file in order to expand it
-	 * @param stateCapacity			The initial state capacity (increases by a factor of 256 when it is exceeded)
-	 *								(NOTE: the initial state capacity may be higher than the value you give it, since it has to be in the form 256^x)
-	 * @param transitionCapacity	The initial maximum number of transitions per state (increases by 1 whenever it is exceeded)
-	 * @param labelLength			The initial maximum number characters per state label (increases by 1 whenever it is exceeded)
-	 * @param nControllers			The number of controllers that the automaton has (1 implies centralized control, >1 implies decentralized control)
-	 * @param clearFiles			Whether or not the header and body files should be cleared prior to use
-     **/
-    public Automaton(long stateCapacity, int transitionCapacity, int labelLength, int nControllers, boolean clearFiles) {
-    	this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, stateCapacity, transitionCapacity, labelLength, nControllers, clearFiles);
-    }
+  /**
+   * Implicit constructor: create automaton with specified initial capacities.
+   * NOTE: Choosing larger values increases the amount of space needed to store the binary file.
+   * Choosing smaller values increases the frequency that you need to re-write the entire binary file in order to expand it
+	 * @param stateCapacity        The initial state capacity (increases by a factor of 256 when it is exceeded)
+	 *								             (NOTE: the initial state capacity may be higher than the value you give it, since it has to be in the form 256^x)
+	 * @param transitionCapacity	 The initial maximum number of transitions per state (increases by 1 whenever it is exceeded)
+	 * @param labelLength          The initial maximum number characters per state label (increases by 1 whenever it is exceeded)
+	 * @param nControllers         The number of controllers that the automaton has (1 implies centralized control, >1 implies decentralized control)
+	 * @param clearFiles           Whether or not the header and body files should be cleared prior to use
+   **/
+  public Automaton(long stateCapacity, int transitionCapacity, int labelLength, int nControllers, boolean clearFiles) {
+  	this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, stateCapacity, transitionCapacity, labelLength, nControllers, clearFiles);
+  }
 
-    /**
-     * Main constructor.
-	 * @param headerFile			The binary file to load the header information of the automaton from (information about events, etc.)
-	 * @param bodyFile				The binary file to load the body information of the automaton from (states and transitions)
-	 * @param stateCapacity			The initial state capacity (increases by a factor of 256 when it is exceeded)
-	 * @param transitionCapacity	The initial maximum number of transitions per state (increases by 1 whenever it is exceeded)
-	 * @param labelLength			The initial maximum number characters per state label (increases by 1 whenever it is exceeded)
-	 * @param nControllers			The number of controllers that the automaton has (1 implies centralized control, >1 implies decentralized control)
-	 * @param clearFiles			Whether or not the header and body files should be cleared prior to use
-     **/
+  /**
+   * Main constructor.
+	 * @param headerFile         The binary file to load the header information of the automaton from (information about events, etc.)
+	 * @param bodyFile           The binary file to load the body information of the automaton from (states and transitions)
+	 * @param stateCapacity      The initial state capacity (increases by a factor of 256 when it is exceeded)
+	 * @param transitionCapacity The initial maximum number of transitions per state (increases by 1 whenever it is exceeded)
+	 * @param labelLength        The initial maximum number characters per state label (increases by 1 whenever it is exceeded)
+	 * @param nControllers       The number of controllers that the automaton has (1 implies centralized control, >1 implies decentralized control)
+	 * @param clearFiles         Whether or not the header and body files should be cleared prior to use
+   **/
 	public Automaton(File headerFile, File bodyFile, long stateCapacity, int transitionCapacity, int labelLength, int nControllers, boolean clearFiles) {
 
 		this.headerFile = headerFile;
