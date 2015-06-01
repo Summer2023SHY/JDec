@@ -191,189 +191,188 @@ public class Automaton {
 
     writeHeaderFile();
 
+  }
+
+    /** AUTOMATA OPERATIONS **/
+
+  /**
+   * Create a new copy of this automaton that has all unreachable states and transitions removed.
+   * @return the accessible automaton
+   **/
+  public Automaton accessible() {
+
+      /* Setup */
+
+    Automaton automaton = new Automaton(new File("accessible.hdr"), true);
+    Stack<Long> stack = new Stack<Long>(); 
+
+    // Add the initial state to the stack
+    stack.push(getInitialStateID());
+
+      /* Build automaton from the accessible part of this automaton */
+
+    // Add events
+    automaton.addAllEvents(events);
+
+    // Add states and transition
+    while (stack.size() > 0) {
+
+      // Get next ID
+      long id = stack.pop();
+
+      // Error checking
+      if (id == 0) {
+        System.out.println("ERROR: Bad state ID.");
+        continue;
+      }
+
+      // This state has already been created in the new automaton, so it does not need to be created again
+      if (automaton.stateExists(id))
+        continue;
+
+      // Get state and transitions
+      State state = getState(id);
+      ArrayList<Transition> transitions = state.getTransitions();
+
+      // Add new state
+      automaton.addStateAt(
+          state.getLabel(),
+          state.isMarked(),
+          new ArrayList<Transition>(),
+          id == getInitialStateID(),
+          id
+        );
+
+      // Traverse each transition
+      for (Transition t : transitions) {
+
+      // Add the target state to the stack
+      stack.add(t.getTargetStateID());
+
+      // Add transition to the new automaton
+      automaton.addTransition(id, t.getEvent().getID(), t.getTargetStateID());
+
     }
 
-      /** AUTOMATA OPERATIONS **/
-
-    /**
-     * Create a new copy of this automaton that has all unreachable states and transitions removed.
-     * @return the accessible automaton
-     **/
-    public Automaton accessible() {
-
-        /* Setup */
-
-      Automaton automaton = new Automaton(new File("accessible.hdr"), true);
-      Stack<Long> stack = new Stack<Long>(); 
-
-      // Add the initial state to the stack
-      stack.push(getInitialStateID());
-
-        /* Build automaton from the accessible part of this automaton */
-
-      // Add events
-      automaton.addAllEvents(events);
-
-      // Add states and transition
-      while (stack.size() > 0) {
-
-        // Get next ID
-        long id = stack.pop();
-
-        // Error checking
-        if (id == 0) {
-          System.out.println("ERROR: Bad state ID.");
-          continue;
-        }
-
-        // This state has already been created in the new automaton, so it does not need to be created again
-        if (automaton.stateExists(id))
-          continue;
-
-        // Get state and transitions
-        State state = getState(id);
-        ArrayList<Transition> transitions = state.getTransitions();
-
-        // Add new state
-        automaton.addStateAt(
-            state.getLabel(),
-            state.isMarked(),
-            new ArrayList<Transition>(),
-            id == getInitialStateID(),
-            id
-          );
-
-        // Traverse each transition
-        for (Transition t : transitions) {
-
-        // Add the target state to the stack
-        stack.add(t.getTargetStateID());
-
-        // Add transition to the new automaton
-        automaton.addTransition(id, t.getEvent().getID(), t.getTargetStateID());
-
-      }
-
-      }
-
-        /* Re-number states (by removing empty ones) */
-
-      automaton.renumberStates();
-
-        /* Return accessible automaton */
-
-      return automaton;
     }
 
-    /**
-     * Create a new copy of this automaton that has all states removed which are unable to reach a marked state.
-     * @return the co-accessible automaton
-     **/
-    public Automaton coaccessible() {
+      /* Re-number states (by removing empty ones) */
 
-        /* Create a new automaton that has each of the transitions going the opposite direction */
+    automaton.renumberStates();
 
-      Automaton invertedAutomaton = new Automaton(stateCapacity, transitionCapacity, labelLength, nControllers, true);
+      /* Return accessible automaton */
 
-      // Add events
-      invertedAutomaton.addAllEvents(events);
+    return automaton;
+  }
 
-      // Add states
-      for (long s = 1; s <= nStates; s++) {
+  /**
+   * Create a new copy of this automaton that has all states removed which are unable to reach a marked state.
+   * @return the co-accessible automaton
+   **/
+  public Automaton coaccessible() {
 
-        State state = getStateExcludingTransitions(s);
-        invertedAutomaton.addState(state.getLabel(), state.isMarked(), s == initialState);
+      /* Create a new automaton that has each of the transitions going the opposite direction */
 
-      }
+    Automaton invertedAutomaton = new Automaton(stateCapacity, transitionCapacity, labelLength, nControllers, true);
 
-      // Add transitions
-      for (long s = 1; s <= nStates; s++) {
+    // Add events
+    invertedAutomaton.addAllEvents(events);
 
-        State state = getState(s);
-
-        for (Transition t : state.getTransitions())
-          invertedAutomaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), s);
-
-      }
-
-        /* Build co-accessible automaton by seeing which states are accessible from the marked states in the inverted automaton */
-
-      Automaton automaton = new Automaton(new File("coaccessible.hdr"), true); 
-
-      // Add events
-      automaton.addAllEvents(events);
-
-      // Add all marked states to the stack (NOTE: This may have complications if there are more than Integer.MAX_VALUE marked states)
-    Stack<Long> stack = new Stack<Long>();
+    // Add states
     for (long s = 1; s <= nStates; s++) {
 
-        State state = invertedAutomaton.getStateExcludingTransitions(s);
+      State state = getStateExcludingTransitions(s);
+      invertedAutomaton.addState(state.getLabel(), state.isMarked(), s == initialState);
 
-        if (state.isMarked())
-          stack.push(s);
+    }
+
+    // Add transitions
+    for (long s = 1; s <= nStates; s++) {
+
+      State state = getState(s);
+
+      for (Transition t : state.getTransitions())
+        invertedAutomaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), s);
+
+    }
+
+      /* Build co-accessible automaton by seeing which states are accessible from the marked states in the inverted automaton */
+
+    Automaton automaton = new Automaton(new File("coaccessible.hdr"), true); 
+
+    // Add events
+    automaton.addAllEvents(events);
+
+    // Add all marked states to the stack (NOTE: This may have complications if there are more than Integer.MAX_VALUE marked states)
+  Stack<Long> stack = new Stack<Long>();
+  for (long s = 1; s <= nStates; s++) {
+
+      State state = invertedAutomaton.getStateExcludingTransitions(s);
+
+      if (state.isMarked())
+        stack.push(s);
+
+    }
+
+    // Add all reachable states to the co-accessible automaton
+    while (stack.size() > 0) {
+
+      long s = stack.pop();
+
+      // Skip this state is it has already been taken care of
+      if (automaton.stateExists(s))
+        continue;
+
+      State state = getState(s);
+      State stateWithInvertedTransitions = invertedAutomaton.getState(s);
+
+      // Add this state (and it's transitions) to the co-accessible automaton
+      automaton.addStateAt(state.getLabel(), state.isMarked(), new ArrayList<Transition>(), s == this.getInitialStateID(), s);
+
+      // Add all directly reachable states from this one to the stack
+      for (Transition t : stateWithInvertedTransitions.getTransitions()) {
+
+        // Add transition if both states already exist in the co-accessible automaton
+        if (automaton.stateExists(t.getTargetStateID()))
+        automaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), s);
+
+        // Otherwise add this to the stack since it is not yet in the co-accessible automaton
+        else
+        stack.push(t.getTargetStateID());
 
       }
 
-      // Add all reachable states to the co-accessible automaton
-      while (stack.size() > 0) {
+      // Required to catch transitions if we didn't add them the first time around (since this state was not yet in the co-accessible automaton)
+      for (Transition t : state.getTransitions()) {
 
-        long s = stack.pop();
+        // Add transition if both states already exist in the co-accessible automaton
+        if (automaton.stateExists(t.getTargetStateID()))
+          automaton.addTransition(s, t.getEvent().getID(), t.getTargetStateID());
 
-        // Skip this state is it has already been taken care of
-        if (automaton.stateExists(s))
-          continue;
-
-        State state = getState(s);
-        State stateWithInvertedTransitions = invertedAutomaton.getState(s);
-
-        // Add this state (and it's transitions) to the co-accessible automaton
-        automaton.addStateAt(state.getLabel(), state.isMarked(), new ArrayList<Transition>(), s == this.getInitialStateID(), s);
-
-        // Add all directly reachable states from this one to the stack
-        for (Transition t : stateWithInvertedTransitions.getTransitions()) {
-
-          // Add transition if both states already exist in the co-accessible automaton
-          if (automaton.stateExists(t.getTargetStateID()))
-          automaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), s);
-
-          // Otherwise add this to the stack since it is not yet in the co-accessible automaton
-          else
-          stack.push(t.getTargetStateID());
-
-        }
-
-        // Required to catch transitions if we didn't add them the first time around (since this state was not yet in the co-accessible automaton)
-        for (Transition t : state.getTransitions()) {
-
-          // Add transition if both states already exist in the co-accessible automaton
-          if (automaton.stateExists(t.getTargetStateID()))
-            automaton.addTransition(s, t.getEvent().getID(), t.getTargetStateID());
-
-        }
-    
       }
-
-        /* Re-number states (by removing empty ones) */
-
-      automaton.renumberStates();
-
-        /* Return co-accessible automaton */
-
-      return automaton;
+  
     }
 
-    /**
-     * Create a new copy of this automaton that is trim (both accessible and co-accessible).
-     * NOTE: I am taking the accessible part of the automaton before the co-accessible part of the automaton
-     * because the accessible() method has less overhead than the coaccessible() method.
-     * @return the trim automaton
-     **/
+      /* Re-number states (by removing empty ones) */
 
-    public Automaton trim() {
+    automaton.renumberStates();
 
-      return accessible().coaccessible();
+      /* Return co-accessible automaton */
 
-    }
+    return automaton;
+  }
+
+  /**
+   * Create a new copy of this automaton that is trim (both accessible and co-accessible).
+   * NOTE: I am taking the accessible part of the automaton before the co-accessible part of the automaton
+   * because the accessible() method has less overhead than the coaccessible() method.
+   * @return the trim automaton
+   **/
+  public Automaton trim() {
+
+    return accessible().coaccessible();
+
+  }
 
     // WIP
   //   public Automaton observer() {
@@ -473,349 +472,409 @@ public class Automaton {
 
   //   }
 
-    /**
-     * Generate the intersection of the two specified automata.
-     * @param first   The first automaton
-     * @param second  The second automaton
-     * @return the intersection
-     **/
-    public static Automaton intersection(Automaton first, Automaton second) {
+  /**
+   * Generate the intersection of the two specified automata.
+   * @param first   The first automaton
+   * @param second  The second automaton
+   * @return the intersection
+   **/
+  public static Automaton intersection(Automaton first, Automaton second) {
 
-        /* Setup */
+      /* Setup */
 
-      Automaton automaton = new Automaton(new File("intersection.hdr"), true);
+    Automaton automaton = new Automaton(new File("intersection.hdr"), true);
 
-      // These two stacks should always have the same size
-      Stack<Long> stack1 = new Stack<Long>(); 
-      Stack<Long> stack2 = new Stack<Long>();
+    // These two stacks should always have the same size
+    Stack<Long> stack1 = new Stack<Long>(); 
+    Stack<Long> stack2 = new Stack<Long>();
 
-      // Add the initial states to the stack
-      stack1.push(first.getInitialStateID());
-      stack2.push(second.getInitialStateID());
+    // Add the initial states to the stack
+    stack1.push(first.getInitialStateID());
+    stack2.push(second.getInitialStateID());
 
-        /* Build product */
+      /* Build product */
 
-      // Create event set (intersection of both event sets)
-      for (Event e : first.getEvents())
-        if (second.getEvents().contains(e))
-          automaton.addEvent(e.getLabel(), e.isObservable(), e.isControllable());
+    // Create event set (intersection of both event sets)
+    for (Event e : first.getEvents())
+      if (second.getEvents().contains(e))
+        automaton.addEvent(e.getLabel(), e.isObservable(), e.isControllable());
 
-      // Add states and transition
-      while (stack1.size() > 0) {
+    // Add states and transition
+    while (stack1.size() > 0) {
 
-        // Get next IDs
-        long id1 = stack1.pop();
-        long id2 = stack2.pop();
+      // Get next IDs
+      long id1 = stack1.pop();
+      long id2 = stack2.pop();
 
-        // Error checking
-        if (id1 == 0 || id2 == 0) {
-          System.out.println("ERROR: Bad state ID.");
-          continue;
-        }
-
-        // Create combined ID
-        long newStateID = combineTwoIDs(id1, first, id2, second);
-
-        // This state has already been created, so it does not need to be created again
-        if (automaton.stateExists(newStateID))
-          continue;
-
-        // Get states and transitions
-        State state1 = first.getState(id1);
-        State state2 = second.getState(id2);
-        ArrayList<Transition> transitions1 = state1.getTransitions();
-        ArrayList<Transition> transitions2 = state2.getTransitions();
-
-        // Add new state
-        automaton.addStateAt(
-            state1.getLabel() + "_" + state2.getLabel(),
-            state1.isMarked() && state2.isMarked(),
-            new ArrayList<Transition>(),
-            id1 == first.getInitialStateID() && id2 == second.getInitialStateID(),
-            newStateID
-          );
-
-        // Find every pair of transitions that have the same events
-        for (Transition t1 : transitions1)
-          for (Transition t2 : transitions2)
-            if (t1.getEvent().equals(t2.getEvent())) {
-
-              // Add this pair to the stack
-              stack1.add(t1.getTargetStateID());
-              stack2.add(t2.getTargetStateID());
-
-              // Add transition to the new automaton
-              long targetID = combineTwoIDs(t1.getTargetStateID(), first, t2.getTargetStateID(), second);
-              automaton.addTransition(newStateID, t1.getEvent().getID(), targetID);
-
-            }
-
+      // Error checking
+      if (id1 == 0 || id2 == 0) {
+        System.out.println("ERROR: Bad state ID.");
+        continue;
       }
 
-        /* Re-number states (by removing empty ones) */
+      // Create combined ID
+      long newStateID = combineTwoIDs(id1, first, id2, second);
 
-      automaton.renumberStates();
+      // This state has already been created, so it does not need to be created again
+      if (automaton.stateExists(newStateID))
+        continue;
 
-        /* Return produced automaton */
+      // Get states and transitions
+      State state1 = first.getState(id1);
+      State state2 = second.getState(id2);
+      ArrayList<Transition> transitions1 = state1.getTransitions();
+      ArrayList<Transition> transitions2 = state2.getTransitions();
 
-      return automaton;
-    }
+      // Add new state
+      automaton.addStateAt(
+          state1.getLabel() + "_" + state2.getLabel(),
+          state1.isMarked() && state2.isMarked(),
+          new ArrayList<Transition>(),
+          id1 == first.getInitialStateID() && id2 == second.getInitialStateID(),
+          newStateID
+        );
 
-  /**
-     * Generate the union of the two specified automata.
-     * @param first   The first automaton
-     * @param second  The second automaton
-     * @return the union
-     **/
-    public static Automaton union(Automaton first, Automaton second) {
-
-        /* Setup */
-
-      Automaton automaton = new Automaton(new File("union.hdr"), true);
-
-      // These two stacks should always have the same size
-      Stack<Long> stack1 = new Stack<Long>(); 
-      Stack<Long> stack2 = new Stack<Long>();
-
-      // Add the initial states to the stack
-      stack1.push(first.getInitialStateID());
-      stack2.push(second.getInitialStateID());
-
-        /* Build automata by parallel composition */
-
-      // Create two sets containing each automata's private events
-      Set<Event> privateEvents1 = new HashSet<Event>();
-      privateEvents1.addAll(first.getEvents());
-      for (Event e : second.getEvents())
-        privateEvents1.remove(e);
-      Set<Event> privateEvents2 = new HashSet<Event>();
-      privateEvents2.addAll(second.getEvents());
-      for (Event e : first.getEvents())
-        privateEvents2.remove(e);
-
-      // Create event set (union of both event sets)
-      automaton.addAllEvents(first.getEvents());
-      automaton.addAllEvents(second.getEvents());
-
-      // Add states and transition
-      while (stack1.size() > 0) {
-
-        // Get next IDs
-        long id1 = stack1.pop();
-        long id2 = stack2.pop();
-
-        // Error checking
-        if (id1 == 0 || id2 == 0) {
-          System.out.println("ERROR: Bad state ID.");
-          continue;
-        }
-
-        // Create combined ID
-        long newStateID = combineTwoIDs(id1, first, id2, second);
-
-        // This state has already been created, so it does not need to be created again
-        if (automaton.stateExists(newStateID))
-          continue;
-
-        // Get states and transitions
-        State state1 = first.getState(id1);
-        State state2 = second.getState(id2);
-        ArrayList<Transition> transitions1 = state1.getTransitions();
-        ArrayList<Transition> transitions2 = state2.getTransitions();
-
-        // Add new state
-        automaton.addStateAt(
-            state1.getLabel() + "_" + state2.getLabel(),
-            state1.isMarked() && state2.isMarked(),
-            new ArrayList<Transition>(),
-            id1 == first.getInitialStateID() && id2 == second.getInitialStateID(),
-            newStateID
-          );
-
-        // Find every pair of transitions that have the same events (this accounts for public events)
-        for (Transition t1 : transitions1)
-          for (Transition t2 : transitions2)
-            if (t1.getEvent().equals(t2.getEvent())) {
+      // Find every pair of transitions that have the same events
+      for (Transition t1 : transitions1)
+        for (Transition t2 : transitions2)
+          if (t1.getEvent().equals(t2.getEvent())) {
 
             // Add this pair to the stack
-              stack1.add(t1.getTargetStateID());
-              stack2.add(t2.getTargetStateID());
+            stack1.add(t1.getTargetStateID());
+            stack2.add(t2.getTargetStateID());
 
-              // Add transition to the new automaton
-              long targetID = combineTwoIDs(t1.getTargetStateID(), first, t2.getTargetStateID(), second);
-              automaton.addTransition(newStateID, t1.getEvent().getLabel(), targetID);
-
-            }
-
-        // Take care of the first automaton's private events
-        for (Transition t : transitions1)
-          if (privateEvents1.contains(t.getEvent())) {
-          
-          // Add the pair of states to the stack
-          stack1.add(t.getTargetStateID());
-          stack2.add(id2);
-
-          // Add transition to the new automaton
-          long targetID = combineTwoIDs(t.getTargetStateID(), first, id2, second);
-          automaton.addTransition(newStateID, t.getEvent().getLabel(), targetID);
+            // Add transition to the new automaton
+            long targetID = combineTwoIDs(t1.getTargetStateID(), first, t2.getTargetStateID(), second);
+            automaton.addTransition(newStateID, t1.getEvent().getID(), targetID);
 
           }
-
-        // Take care of the second automaton's private events
-        for (Transition t : transitions2)
-          if (privateEvents2.contains(t.getEvent())) {
-          
-          // Add the pair of states to the stack
-          stack1.add(id1);
-          stack2.add(t.getTargetStateID());
-
-          // Add transition to the new automaton
-          long targetID = combineTwoIDs(id1, first, t.getTargetStateID(), second);
-          automaton.addTransition(newStateID, t.getEvent().getLabel(), targetID);
-
-          }
-
-      }
-
-        /* Re-number states (by removing empty ones) */
-
-      automaton.renumberStates();
-
-        /* Return generated automaton */
-
-      return automaton;
 
     }
 
-    /**
-     * Apply the synchronized composition algorithm to an automaton to produce the U-Structure.
-     * @return the U-Structure
-     **/
-    public Automaton synchronizedComposition() {
+      /* Re-number states (by removing empty ones) */
 
-        /* Setup */
+    automaton.renumberStates();
 
-      Stack<Long> stack = new Stack<Long>();
-      HashSet<Long> valuesInStack = new HashSet<Long>();
-      Automaton automaton = new Automaton(new File("synchronizedComposition.hdr"), true);
+      /* Return produced automaton */
 
-        /* Add initial state to the stack */
+    return automaton;
+  }
 
-      {
-        List<Long> listOfInitialIDs = new ArrayList<Long>();
-        String combinedStateLabel = "";
-        State startingState = getState(initialState);
+  /**
+   * Generate the union of the two specified automata.
+   * @param first   The first automaton
+   * @param second  The second automaton
+   * @return the union
+   **/
+  public static Automaton union(Automaton first, Automaton second) {
 
-        // Error checking
-        if (startingState == null) {
-          System.out.println("ERROR: No starting state.");
-          return null;
-        }
+      /* Setup */
 
-        // Create list of initial IDs and build the label
-        for (int i = 0; i <= nControllers; i++) {
-          listOfInitialIDs.add(initialState);
-          combinedStateLabel += "_" + startingState.getLabel();
-        }
+    Automaton automaton = new Automaton(new File("union.hdr"), true);
 
-        long combinedID = combineIDs(listOfInitialIDs, nStates);
-        stack.push(combinedID);
-        valuesInStack.add(combinedID);
+    // These two stacks should always have the same size
+    Stack<Long> stack1 = new Stack<Long>(); 
+    Stack<Long> stack2 = new Stack<Long>();
 
-        automaton.addStateAt(combinedStateLabel.substring(1), false, new ArrayList<Transition>(), true, combinedID);
+    // Add the initial states to the stack
+    stack1.push(first.getInitialStateID());
+    stack2.push(second.getInitialStateID());
 
+      /* Build automata by parallel composition */
+
+    // Create two sets containing each automata's private events
+    Set<Event> privateEvents1 = new HashSet<Event>();
+    privateEvents1.addAll(first.getEvents());
+    for (Event e : second.getEvents())
+      privateEvents1.remove(e);
+    Set<Event> privateEvents2 = new HashSet<Event>();
+    privateEvents2.addAll(second.getEvents());
+    for (Event e : first.getEvents())
+      privateEvents2.remove(e);
+
+    // Create event set (union of both event sets)
+    automaton.addAllEvents(first.getEvents());
+    automaton.addAllEvents(second.getEvents());
+
+    // Add states and transition
+    while (stack1.size() > 0) {
+
+      // Get next IDs
+      long id1 = stack1.pop();
+      long id2 = stack2.pop();
+
+      // Error checking
+      if (id1 == 0 || id2 == 0) {
+        System.out.println("ERROR: Bad state ID.");
+        continue;
       }
 
-        /* Continue until the stack is empty */
+      // Create combined ID
+      long newStateID = combineTwoIDs(id1, first, id2, second);
 
-      while (stack.size() > 0) {
+      // This state has already been created, so it does not need to be created again
+      if (automaton.stateExists(newStateID))
+        continue;
 
-        long combinedID = stack.pop();
-        valuesInStack.remove(combinedID);
+      // Get states and transitions
+      State state1 = first.getState(id1);
+      State state2 = second.getState(id2);
+      ArrayList<Transition> transitions1 = state1.getTransitions();
+      ArrayList<Transition> transitions2 = state2.getTransitions();
 
-        // Get list of IDs and states
-        List<Long> listOfIDs = separateIDs(combinedID, nStates);
-        List<State> listOfStates = new ArrayList<State>();
-        for (long id : listOfIDs)
-          listOfStates.add(getState(id));
+      // Add new state
+      automaton.addStateAt(
+          state1.getLabel() + "_" + state2.getLabel(),
+          state1.isMarked() && state2.isMarked(),
+          new ArrayList<Transition>(),
+          id1 == first.getInitialStateID() && id2 == second.getInitialStateID(),
+          newStateID
+        );
 
-        // For each transition in the system automaton
-        outer: for (Transition t1 : listOfStates.get(0).getTransitions()) {
+      // Find every pair of transitions that have the same events (this accounts for public events)
+      for (Transition t1 : transitions1)
+        for (Transition t2 : transitions2)
+          if (t1.getEvent().equals(t2.getEvent())) {
 
-          Event e = t1.getEvent();
+          // Add this pair to the stack
+            stack1.add(t1.getTargetStateID());
+            stack2.add(t2.getTargetStateID());
 
-          List<Long> listOfTargetIDs = new ArrayList<Long>();
-          listOfTargetIDs.add(t1.getTargetStateID());
-
-          String combinedEventLabel = e.getLabel();
-          String combinedStateLabel = getStateExcludingTransitions(t1.getTargetStateID()).getLabel();
-
-          // If this is the system has a bad transition, then it is an unconditional violation by default until we've found a controller that prevents it
-          boolean isBadTransition = badTransitions.contains(new TransitionData(listOfStates.get(0).getID(), e.getID(), t1.getTargetStateID()));
-          boolean isUnconditionalViolation = isBadTransition;
-
-          // A conditional violation can only occur when an event is controllable by at least 2 controllers, and the system must have a good transition
-          int counter = 0;
-          for (int i = 0; i < nControllers; i++)
-            if (e.isControllable()[i])
-              counter++;
-          boolean isConditionalViolation = (counter >= 2 && !isBadTransition);
-
-          // For each controller
-          for (int i = 0; i < nControllers; i++) {
-
-            // Observable events by this controller
-            if (e.isObservable()[i]) {
-
-              // If the event is observable, but not possible at this current time, then we can skip this altogether
-              long targetID = 0;
-              String label = null;
-              for (Transition t2 : listOfStates.get(i + 1).getTransitions())
-                if (t2.getEvent().equals(e)) {
-                  targetID = t2.getTargetStateID();
-                  label = getStateExcludingTransitions(t2.getTargetStateID()).getLabel();
-                }
-              if (targetID == 0)
-                continue outer;
-
-              combinedEventLabel += "_" + e.getLabel();
-              combinedStateLabel += "_" + label;
-              listOfTargetIDs.add(targetID);
-
-              // Check to see if this controller can prevent an unconditional violation
-              if (isUnconditionalViolation && e.isControllable()[i])
-                if (badTransitions.contains(new TransitionData(listOfStates.get(i + 1).getID(), e.getID(), targetID)))
-                  isUnconditionalViolation = false;
-
-              // Check to see if this controller can prevent a conditional violation
-              if (isConditionalViolation && e.isControllable()[i])
-                if (!badTransitions.contains(new TransitionData(listOfStates.get(i + 1).getID(), e.getID(), targetID)))
-                  isConditionalViolation = false;
-
-            // Unobservable events by this controller
-            } else {
-              combinedEventLabel += "_*";
-              combinedStateLabel += "_" + listOfStates.get(i + 1).getLabel();
-              listOfTargetIDs.add(listOfIDs.get(i + 1));
-            }
+            // Add transition to the new automaton
+            long targetID = combineTwoIDs(t1.getTargetStateID(), first, t2.getTargetStateID(), second);
+            automaton.addTransition(newStateID, t1.getEvent().getLabel(), targetID);
 
           }
 
-          combinedEventLabel = "<" + combinedEventLabel + ">";
+      // Take care of the first automaton's private events
+      for (Transition t : transitions1)
+        if (privateEvents1.contains(t.getEvent())) {
+        
+        // Add the pair of states to the stack
+        stack1.add(t.getTargetStateID());
+        stack2.add(id2);
 
-          long combinedTargetID = combineIDs(listOfTargetIDs, nStates);
+        // Add transition to the new automaton
+        long targetID = combineTwoIDs(t.getTargetStateID(), first, id2, second);
+        automaton.addTransition(newStateID, t.getEvent().getLabel(), targetID);
 
-          // Add state if it doesn't already exist
-          if (!automaton.stateExists(combinedTargetID)) {
+        }
 
-            // Add event
-            automaton.addEvent(combinedEventLabel, new boolean[] {true}, new boolean[] {true} );
+      // Take care of the second automaton's private events
+      for (Transition t : transitions2)
+        if (privateEvents2.contains(t.getEvent())) {
+        
+        // Add the pair of states to the stack
+        stack1.add(id1);
+        stack2.add(t.getTargetStateID());
 
-            // Add state
-            if (!automaton.addStateAt(combinedStateLabel, false, new ArrayList<Transition>(), false, combinedTargetID)) {
-              System.out.println("ERROR: Failed to add state. Synchronized composition aborted.");
-              return null;
+        // Add transition to the new automaton
+        long targetID = combineTwoIDs(id1, first, t.getTargetStateID(), second);
+        automaton.addTransition(newStateID, t.getEvent().getLabel(), targetID);
+
+        }
+
+    }
+
+      /* Re-number states (by removing empty ones) */
+
+    automaton.renumberStates();
+
+      /* Return generated automaton */
+
+    return automaton;
+
+  }
+
+  /**
+   * Apply the synchronized composition algorithm to an automaton to produce the U-Structure.
+   * @return the U-Structure
+   **/
+  public Automaton synchronizedComposition() {
+
+      /* Setup */
+
+    Stack<Long> stack = new Stack<Long>();
+    HashSet<Long> valuesInStack = new HashSet<Long>();
+    Automaton automaton = new Automaton(new File("synchronizedComposition.hdr"), true);
+
+      /* Add initial state to the stack */
+
+    {
+      List<Long> listOfInitialIDs = new ArrayList<Long>();
+      String combinedStateLabel = "";
+      State startingState = getState(initialState);
+
+      // Error checking
+      if (startingState == null) {
+        System.out.println("ERROR: No starting state.");
+        return null;
+      }
+
+      // Create list of initial IDs and build the label
+      for (int i = 0; i <= nControllers; i++) {
+        listOfInitialIDs.add(initialState);
+        combinedStateLabel += "_" + startingState.getLabel();
+      }
+
+      long combinedID = combineIDs(listOfInitialIDs, nStates);
+      stack.push(combinedID);
+      valuesInStack.add(combinedID);
+
+      automaton.addStateAt(combinedStateLabel.substring(1), false, new ArrayList<Transition>(), true, combinedID);
+
+    }
+
+      /* Continue until the stack is empty */
+
+    while (stack.size() > 0) {
+
+      long combinedID = stack.pop();
+      valuesInStack.remove(combinedID);
+
+      // Get list of IDs and states
+      List<Long> listOfIDs = separateIDs(combinedID, nStates);
+      List<State> listOfStates = new ArrayList<State>();
+      for (long id : listOfIDs)
+        listOfStates.add(getState(id));
+
+      // For each transition in the system automaton
+      outer: for (Transition t1 : listOfStates.get(0).getTransitions()) {
+
+        Event e = t1.getEvent();
+
+        List<Long> listOfTargetIDs = new ArrayList<Long>();
+        listOfTargetIDs.add(t1.getTargetStateID());
+
+        String combinedEventLabel = e.getLabel();
+        String combinedStateLabel = getStateExcludingTransitions(t1.getTargetStateID()).getLabel();
+
+        // If this is the system has a bad transition, then it is an unconditional violation by default until we've found a controller that prevents it
+        boolean isBadTransition = badTransitions.contains(new TransitionData(listOfStates.get(0).getID(), e.getID(), t1.getTargetStateID()));
+        boolean isUnconditionalViolation = isBadTransition;
+
+        // A conditional violation can only occur when an event is controllable by at least 2 controllers, and the system must have a good transition
+        int counter = 0;
+        for (int i = 0; i < nControllers; i++)
+          if (e.isControllable()[i])
+            counter++;
+        boolean isConditionalViolation = (counter >= 2 && !isBadTransition);
+
+        // For each controller
+        for (int i = 0; i < nControllers; i++) {
+
+          // Observable events by this controller
+          if (e.isObservable()[i]) {
+
+            // If the event is observable, but not possible at this current time, then we can skip this altogether
+            long targetID = 0;
+            String label = null;
+            for (Transition t2 : listOfStates.get(i + 1).getTransitions())
+              if (t2.getEvent().equals(e)) {
+                targetID = t2.getTargetStateID();
+                label = getStateExcludingTransitions(t2.getTargetStateID()).getLabel();
+              }
+            if (targetID == 0)
+              continue outer;
+
+            combinedEventLabel += "_" + e.getLabel();
+            combinedStateLabel += "_" + label;
+            listOfTargetIDs.add(targetID);
+
+            // Check to see if this controller can prevent an unconditional violation
+            if (isUnconditionalViolation && e.isControllable()[i])
+              if (badTransitions.contains(new TransitionData(listOfStates.get(i + 1).getID(), e.getID(), targetID)))
+                isUnconditionalViolation = false;
+
+            // Check to see if this controller can prevent a conditional violation
+            if (isConditionalViolation && e.isControllable()[i])
+              if (!badTransitions.contains(new TransitionData(listOfStates.get(i + 1).getID(), e.getID(), targetID)))
+                isConditionalViolation = false;
+
+          // Unobservable events by this controller
+          } else {
+            combinedEventLabel += "_*";
+            combinedStateLabel += "_" + listOfStates.get(i + 1).getLabel();
+            listOfTargetIDs.add(listOfIDs.get(i + 1));
+          }
+
+        }
+
+        combinedEventLabel = "<" + combinedEventLabel + ">";
+
+        long combinedTargetID = combineIDs(listOfTargetIDs, nStates);
+
+        // Add state if it doesn't already exist
+        if (!automaton.stateExists(combinedTargetID)) {
+
+          // Add event
+          automaton.addEvent(combinedEventLabel, new boolean[] {true}, new boolean[] {true} );
+
+          // Add state
+          if (!automaton.addStateAt(combinedStateLabel, false, new ArrayList<Transition>(), false, combinedTargetID)) {
+            System.out.println("ERROR: Failed to add state. Synchronized composition aborted.");
+            return null;
+          }
+          
+          // Only add the ID if it's not already waiting to be processed
+          if (!valuesInStack.contains(combinedTargetID)) {
+              stack.push(combinedTargetID);
+              valuesInStack.add(combinedTargetID);
+          } else {
+            System.out.println("DEBUG: Prevented adding of state since it was already in the stack.");
+          }
+        }
+
+        // Add transition
+        int eventID = automaton.addTransition(combinedID, combinedEventLabel, combinedTargetID);
+        if (isUnconditionalViolation)
+          automaton.addUnconditionalViolation(combinedID, eventID, combinedTargetID);
+        if (isConditionalViolation)
+          automaton.addConditionalViolation(combinedID, eventID, combinedTargetID);
+
+      } // for
+
+      // For each unobservable transition in the each controller automata
+      outer: for (int i = 0; i < nControllers; i++) {
+
+        for (Transition t : listOfStates.get(i + 1).getTransitions()) {
+          if (!t.getEvent().isObservable()[i]) {
+
+            List<Long> listOfTargetIDs = new ArrayList<Long>();
+            String combinedEventLabel = "";
+            String combinedStateLabel = "";
+
+            for (int j = 0; j <= nControllers; j++) {
+
+              // The current controller
+              if (j == i + 1) {
+                listOfTargetIDs.add(t.getTargetStateID());
+                combinedEventLabel += "_" + t.getEvent().getLabel();
+                combinedStateLabel += "_" + getStateExcludingTransitions(t.getTargetStateID()).getLabel();
+              } else {
+                listOfTargetIDs.add(listOfIDs.get(j));
+                combinedEventLabel += "_*";
+                combinedStateLabel += "_" + listOfStates.get(j).getLabel(); 
+              }
+
+
             }
+
+            combinedEventLabel = "<" + combinedEventLabel.substring(1) + ">";
+            combinedStateLabel = combinedStateLabel.substring(1);
+            long combinedTargetID = combineIDs(listOfTargetIDs, nStates);
+
+            // Add state if it doesn't already exist
+            if (!automaton.stateExists(combinedTargetID)) {
+
+              // Add event
+              automaton.addEvent(combinedEventLabel, new boolean[] {true}, new boolean[] {true} );
+
+              // Add state
+              if (!automaton.addStateAt(combinedStateLabel, false, new ArrayList<Transition>(), false, combinedTargetID)) {
+                System.out.println("ERROR: Failed to add state. Synchronized composition aborted.");
+                return null;
+              }
             
             // Only add the ID if it's not already waiting to be processed
             if (!valuesInStack.contains(combinedTargetID)) {
@@ -824,96 +883,35 @@ public class Automaton {
             } else {
               System.out.println("DEBUG: Prevented adding of state since it was already in the stack.");
             }
-          }
-
-          // Add transition
-          int eventID = automaton.addTransition(combinedID, combinedEventLabel, combinedTargetID);
-          if (isUnconditionalViolation)
-            automaton.addUnconditionalViolation(combinedID, eventID, combinedTargetID);
-          if (isConditionalViolation)
-            automaton.addConditionalViolation(combinedID, eventID, combinedTargetID);
-
-        } // for
-
-        // For each unobservable transition in the each controller automata
-        outer: for (int i = 0; i < nControllers; i++) {
-
-          for (Transition t : listOfStates.get(i + 1).getTransitions()) {
-            if (!t.getEvent().isObservable()[i]) {
-
-              List<Long> listOfTargetIDs = new ArrayList<Long>();
-              String combinedEventLabel = "";
-              String combinedStateLabel = "";
-
-              for (int j = 0; j <= nControllers; j++) {
-
-                // The current controller
-                if (j == i + 1) {
-                  listOfTargetIDs.add(t.getTargetStateID());
-                  combinedEventLabel += "_" + t.getEvent().getLabel();
-                  combinedStateLabel += "_" + getStateExcludingTransitions(t.getTargetStateID()).getLabel();
-                } else {
-                  listOfTargetIDs.add(listOfIDs.get(j));
-                  combinedEventLabel += "_*";
-                  combinedStateLabel += "_" + listOfStates.get(j).getLabel(); 
-                }
-
-
-              }
-
-              combinedEventLabel = "<" + combinedEventLabel.substring(1) + ">";
-              combinedStateLabel = combinedStateLabel.substring(1);
-              long combinedTargetID = combineIDs(listOfTargetIDs, nStates);
-
-              // Add state if it doesn't already exist
-              if (!automaton.stateExists(combinedTargetID)) {
-
-                // Add event
-                automaton.addEvent(combinedEventLabel, new boolean[] {true}, new boolean[] {true} );
-
-                // Add state
-                if (!automaton.addStateAt(combinedStateLabel, false, new ArrayList<Transition>(), false, combinedTargetID)) {
-                  System.out.println("ERROR: Failed to add state. Synchronized composition aborted.");
-                  return null;
-                }
-              
-              // Only add the ID if it's not already waiting to be processed
-              if (!valuesInStack.contains(combinedTargetID)) {
-                  stack.push(combinedTargetID);
-                  valuesInStack.add(combinedTargetID);
-              } else {
-                System.out.println("DEBUG: Prevented adding of state since it was already in the stack.");
-              }
-              }
-
-              // Add transition
-              automaton.addTransition(combinedID, combinedEventLabel, combinedTargetID);
-
             }
+
+            // Add transition
+            automaton.addTransition(combinedID, combinedEventLabel, combinedTargetID);
+
           }
+        }
 
-        } // for
+      } // for
 
 
-      } // while
+    } // while
 
-        /* Re-number states (by removing empty ones) */
+      /* Re-number states (by removing empty ones) */
 
-      automaton.renumberStates();
+    automaton.renumberStates();
 
-        /* Return produced automaton */
+      /* Return produced automaton */
 
-      return automaton;
+    return automaton;
 
-    }
-
+  }
 
   /**
    * This method looks for blank spots in the .bdy file (which indicates that no state exists there),
    * and re-numbers all of the states accordingly. This must be done after operations such as intersection or union.
    * NOTE: To make this method more efficient we could make the buffer larger.
    **/
-    private void renumberStates() {
+  private void renumberStates() {
 
     try {
 
@@ -1044,241 +1042,240 @@ public class Automaton {
       newBodyFile.renameTo(new File(bodyFileName));
       bodyRAFile = newBodyRAFile;
 
-      } catch (IOException e) {
-          e.printStackTrace();
-      }
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+
+  }
+
+  /**
+   * Given two state IDs and their respective automatons, create a unique combined ID.
+   * NOTE: The reasoning behind this formula is analogous to the following: if you have a table with N rows and M columns,
+   * every cell is guaranteed to have a different combination of row and column indexes.
+   * @param id1   The state ID from the first automaton
+   * @param first   The first automaton
+   * @param id2   The state ID from the second automaton
+   * @param second  The second automaton
+   * @return the combined ID
+   **/ 
+  private static long combineTwoIDs(long id1, Automaton first, long id2, Automaton second) {
+
+    return ((id2 - 1) * first.getNumberOfStates() + id1);
+
+  }
+
+  /**
+   * Given a list of IDs and a maximum possible ID, create a unique combined ID.
+   * @param list  The list of IDs
+   * @param maxID The largest possible value to be used as an ID
+   * @return the combined ID
+   **/
+  public static long combineIDs(List<Long> list, long maxID) {
+
+    long combinedID = 0;
+
+    for (Long id : list) {
+      combinedID *= maxID + 1;
+      combinedID += id;
+    }
+
+    return combinedID;
+
+  }
+
+  /**
+   * Given a combined ID, obtain the list of original IDs by reversing the process.
+   * @param combinedID  The combined ID
+   * @param maxID     The largest possible value to be used as an ID
+   * @return the original list of IDs
+   **/
+  public static List<Long> separateIDs(long combinedID, long maxID) {
+
+    List<Long> list = new ArrayList<Long>();
+
+    while (combinedID > 0) {
+
+      list.add(0, combinedID % (maxID + 1));
+      combinedID /= (maxID + 1);
 
     }
 
-    /**
-     * Given two state IDs and their respective automatons, create a unique combined ID.
-     * NOTE: The reasoning behind this formula is analogous to the following: if you have a table with N rows and M columns,
-     * every cell is guaranteed to have a different combination of row and column indexes.
-     * @param id1   The state ID from the first automaton
-     * @param first   The first automaton
-     * @param id2   The state ID from the second automaton
-     * @param second  The second automaton
-     * @return the combined ID
-     **/ 
-    private static long combineTwoIDs(long id1, Automaton first, long id2, Automaton second) {
+    return list;
 
-      return ((id2 - 1) * first.getNumberOfStates() + id1);
+  }
 
+    /** IMAGE GENERATION **/
+
+  /**
+   * Output this automaton in a format that is readable by GraphViz, then export as requested.
+   * @param size        The requested width and height in pixels
+   * @param mode        The output type
+   * @param outputFileName  The location to put the generated output
+   * @return whether or not the output was successfully generated
+   **/
+  public boolean generateImage(int size, OutputMode mode, String outputFileName) {
+
+      /* Setup */
+
+    StringBuilder str = new StringBuilder();
+    str.append("digraph G {");
+    str.append("node [shape=circle, style=bold, constraint=false];");
+
+      /* Constrain the size of the image if it's a PNG (since we will be displaying it on the GUI) */
+
+    if (mode == OutputMode.PNG) {
+      double inches = ((double) size) / 96.0; // Assuming DPI is 96
+      str.append("size=\"" + inches + "," + inches + "\";");
+      str.append("ratio=fill;");
     }
 
+      /* Mark special transitions */
 
-    /**
-     * Given a list of IDs and a maximum possible ID, create a unique combined ID.
-     * @param list  The list of IDs
-     * @param maxID The largest possible value to be used as an ID
-     * @return the combined ID
-     **/
-    public static long combineIDs(List<Long> list, long maxID) {
-
-      long combinedID = 0;
-
-      for (Long id : list) {
-        combinedID *= maxID + 1;
-        combinedID += id;
-      }
-
-      return combinedID;
-
+    HashMap<String, String> additionalEdgeProperties = new HashMap<String, String>();
+    for (TransitionData t : unconditionalViolations) {
+      String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
+      if (additionalEdgeProperties.containsKey(edge))
+        additionalEdgeProperties.put(edge, additionalEdgeProperties.get(edge) + ",color=red");
+      else
+        additionalEdgeProperties.put(edge, ",color=red"); 
     }
-
-    /**
-     * Given a combined ID, obtain the list of original IDs by reversing the process.
-     * @param combinedID  The combined ID
-     * @param maxID     The largest possible value to be used as an ID
-     * @return the original list of IDs
-     **/
-    public static List<Long> separateIDs(long combinedID, long maxID) {
-
-      List<Long> list = new ArrayList<Long>();
-
-      while (combinedID > 0) {
-
-        list.add(0, combinedID % (maxID + 1));
-        combinedID /= (maxID + 1);
-
-      }
-
-      return list;
-
+    for (TransitionData t : conditionalViolations) {
+      String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
+      if (additionalEdgeProperties.containsKey(edge))
+        additionalEdgeProperties.put(edge, additionalEdgeProperties.get(edge) + ",color=green3");
+      else
+        additionalEdgeProperties.put(edge, ",color=green3"); 
     }
+    for (TransitionData t : badTransitions) {
+      String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
+      if (additionalEdgeProperties.containsKey(edge))
+        additionalEdgeProperties.put(edge, additionalEdgeProperties.get(edge) + ",style=dotted");
+      else
+        additionalEdgeProperties.put(edge, ",style=dotted"); 
+    }
+    
+      /* Draw all states and their transitions */
 
-      /** IMAGE GENERATION **/
+    for (long s = 1; s <= nStates; s++) {
 
-    /**
-     * Output this automaton in a format that is readable by GraphViz, then export as requested.
-     * @param size        The requested width and height in pixels
-     * @param mode        The output type
-     * @param outputFileName  The location to put the generated output
-     * @return whether or not the output was successfully generated
-     **/
-    public boolean generateImage(int size, OutputMode mode, String outputFileName) {
+      // Get state from file
+      State state = getState(s);
 
-        /* Setup */
+      // Draw state
+      if (state.isMarked())
+        str.append(String.format("\"_%s\" [peripheries=2,label=\"%s\"];", state.getLabel(), state.getLabel()));
+      else
+        str.append(String.format("\"_%s\" [peripheries=1,label=\"%s\"];", state.getLabel(), state.getLabel()));
 
-      StringBuilder str = new StringBuilder();
-      str.append("digraph G {");
-      str.append("node [shape=circle, style=bold, constraint=false];");
+      // Draw each of its transitions
+      ArrayList<Transition> transitionsToSkip = new ArrayList<Transition>();
+      for (Transition t1 : state.getTransitions()) {
 
-        /* Constrain the size of the image if it's a PNG (since we will be displaying it on the GUI) */
+        // Skip it if this was already taken care of (grouped into another transition going to the same target state)
+        if (transitionsToSkip.contains(t1))
+          continue;
 
-      if (mode == OutputMode.PNG) {
-        double inches = ((double) size) / 96.0; // Assuming DPI is 96
-        str.append("size=\"" + inches + "," + inches + "\";");
-        str.append("ratio=fill;");
-      }
+        String label = "";
 
-        /* Mark special transitions */
-
-      HashMap<String, String> additionalEdgeProperties = new HashMap<String, String>();
-      for (TransitionData t : unconditionalViolations) {
-        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-        if (additionalEdgeProperties.containsKey(edge))
-          additionalEdgeProperties.put(edge, additionalEdgeProperties.get(edge) + ",color=red");
-        else
-          additionalEdgeProperties.put(edge, ",color=red"); 
-      }
-      for (TransitionData t : conditionalViolations) {
-        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-        if (additionalEdgeProperties.containsKey(edge))
-          additionalEdgeProperties.put(edge, additionalEdgeProperties.get(edge) + ",color=green3");
-        else
-          additionalEdgeProperties.put(edge, ",color=green3"); 
-      }
-      for (TransitionData t : badTransitions) {
-        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-        if (additionalEdgeProperties.containsKey(edge))
-          additionalEdgeProperties.put(edge, additionalEdgeProperties.get(edge) + ",style=dotted");
-        else
-          additionalEdgeProperties.put(edge, ",style=dotted"); 
-      }
-      
-        /* Draw all states and their transitions */
-
-      for (long s = 1; s <= nStates; s++) {
-
-        // Get state from file
-        State state = getState(s);
-
-        // Draw state
-        if (state.isMarked())
-          str.append(String.format("\"_%s\" [peripheries=2,label=\"%s\"];", state.getLabel(), state.getLabel()));
-        else
-          str.append(String.format("\"_%s\" [peripheries=1,label=\"%s\"];", state.getLabel(), state.getLabel()));
-
-        // Draw each of its transitions
-        ArrayList<Transition> transitionsToSkip = new ArrayList<Transition>();
-        for (Transition t1 : state.getTransitions()) {
+        // Look for all transitions that can be group with this one (for simplicity of code, this will also include 't1')
+        for (Transition t2 : state.getTransitions()) {
 
           // Skip it if this was already taken care of (grouped into another transition going to the same target state)
-          if (transitionsToSkip.contains(t1))
+          if (transitionsToSkip.contains(t2))
             continue;
 
-          String label = "";
-
-          // Look for all transitions that can be group with this one (for simplicity of code, this will also include 't1')
-          for (Transition t2 : state.getTransitions()) {
-
-            // Skip it if this was already taken care of (grouped into another transition going to the same target state)
-            if (transitionsToSkip.contains(t2))
-              continue;
-
-            // Check to see if both transitions lead to the same event
-            if (t1.getTargetStateID() == t2.getTargetStateID()) {
-              label += "," + t2.getEvent().getLabel();
-              transitionsToSkip.add(t2);
-            }
-
+          // Check to see if both transitions lead to the same event
+          if (t1.getTargetStateID() == t2.getTargetStateID()) {
+            label += "," + t2.getEvent().getLabel();
+            transitionsToSkip.add(t2);
           }
 
-          // Add transition
-          String edge = "\"_" + state.getLabel() + "\" -> \"_" + getStateExcludingTransitions(t1.getTargetStateID()).getLabel() + "\"";
-          str.append(edge);
-          str.append(" [label=\"" + label.substring(1) + "\"");
-
-          // Add additional properties (if applicable)
-          String properties = additionalEdgeProperties.get(edge);
-          if (edge != null)
-            str.append(properties);
-          
-          // if (nControllers == 1) {
-          //  if (!t1.getEvent().isObservable()[0])
-          //    str.append(",style=dotted");
-
-          //  if (!t1.getEvent().isControllable()[0])
-          //    str.append(",color=red");
-          // }
-
-          str.append("];");
         }
 
+        // Add transition
+        String edge = "\"_" + state.getLabel() + "\" -> \"_" + getStateExcludingTransitions(t1.getTargetStateID()).getLabel() + "\"";
+        str.append(edge);
+        str.append(" [label=\"" + label.substring(1) + "\"");
+
+        // Add additional properties (if applicable)
+        String properties = additionalEdgeProperties.get(edge);
+        if (edge != null)
+          str.append(properties);
+        
+        // if (nControllers == 1) {
+        //  if (!t1.getEvent().isObservable()[0])
+        //    str.append(",style=dotted");
+
+        //  if (!t1.getEvent().isControllable()[0])
+        //    str.append(",color=red");
+        // }
+
+        str.append("];");
       }
 
-        /* Add arrow towards initial state */
+    }
 
-      if (initialState > 0) {
-        str.append("node [shape=plaintext];");
-        str.append("\" \"-> \"_" + getStateExcludingTransitions(initialState).getLabel() + "\" [color=blue];");
-      }
+      /* Add arrow towards initial state */
 
-      str.append("}");
+    if (initialState > 0) {
+      str.append("node [shape=plaintext];");
+      str.append("\" \"-> \"_" + getStateExcludingTransitions(initialState).getLabel() + "\" [color=blue];");
+    }
 
-        /* Generate image */
+    str.append("}");
 
-      try {
+      /* Generate image */
 
-        // Write DOT language to file
-        PrintStream out = new PrintStream(new FileOutputStream("out.tmp"));
+    try {
+
+      // Write DOT language to file
+      PrintStream out = new PrintStream(new FileOutputStream("out.tmp"));
       out.print(str.toString());
 
       // Produce PNG from DOT language
-        Process process = null;
+      Process process = null;
 
-        if (mode == OutputMode.SVG) 
-          process = new ProcessBuilder(
-            (nStates > 100) ? "neato": "dot",
-            "-Goverlap=scale",
-            "-Tsvg",
-            "out.tmp",
-            "-o",
-            outputFileName
-          ).start();
-        else if (mode == OutputMode.PNG)
-          process = new ProcessBuilder(
-            (nStates > 100) ? "neato": "dot",
-            "-Tpng",
-            "out.tmp",
-            "-o",
-            outputFileName
-          ).start();
+      if (mode == OutputMode.SVG) 
+        process = new ProcessBuilder(
+          (nStates > 100) ? "neato": "dot",
+          "-Goverlap=scale",
+          "-Tsvg",
+          "out.tmp",
+          "-o",
+          outputFileName
+        ).start();
+      else if (mode == OutputMode.PNG)
+        process = new ProcessBuilder(
+          (nStates > 100) ? "neato": "dot",
+          "-Tpng",
+          "out.tmp",
+          "-o",
+          outputFileName
+        ).start();
 
-        // Wait for it to finish
-        if (process.waitFor() != 0) {
-          System.out.println("ERROR: GraphViz failed to generate image of graph.");
-          return false;
-        }
+      // Wait for it to finish
+      if (process.waitFor() != 0) {
+        System.out.println("ERROR: GraphViz failed to generate image of graph.");
+        return false;
+      }
 
-      } catch (IOException | InterruptedException e) {
+    } catch (IOException | InterruptedException e) {
       e.printStackTrace();
       return false;
     }
-      
-      return true;
+    
+    return true;
 
-    }
+  }
 
-    /**
-     * Load the generated graph image from file.
-     * @param fileName  The name of the image to be loaded
-     * @return image, or null if it could not be loaded
-     **/
-    public BufferedImage loadImageFromFile(String fileName) {
+  /**
+   * Load the generated graph image from file.
+   * @param fileName  The name of the image to be loaded
+   * @return image, or null if it could not be loaded
+   **/
+  public BufferedImage loadImageFromFile(String fileName) {
 
-      try {
+    try {
       return ImageIO.read(new File(fileName));
     } catch (IOException e) {
       e.printStackTrace();
@@ -1445,22 +1442,22 @@ public class Automaton {
 
   }
 
-    /**
-     * This is needed on Windows operating system because there are problems trying to delete files if they are in use.
-     * NOTE: Do not attempt to use the automaton again unless the files are re-opened using openFiles().
-     **/
-    public void closeFiles() {
+  /**
+   * This is needed on Windows operating system because there are problems trying to delete files if they are in use.
+   * NOTE: Do not attempt to use the automaton again unless the files are re-opened using openFiles().
+   **/
+  public void closeFiles() {
 
-        try {
+      try {
 
-            headerRAFile.close();
-            bodyRAFile.close();
+          headerRAFile.close();
+          bodyRAFile.close();
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+      } catch (IOException e) {
+          e.printStackTrace();
+      }
 
-    }
+  }
 
   /**
    * Delete the current header and body files.
