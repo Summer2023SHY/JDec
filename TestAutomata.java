@@ -49,8 +49,8 @@ public class TestAutomata {
         counter.add(runEventCreationTestRoutine());
         counter.add(runStateCreationTestRoutine());
         counter.add(runAutomatonCapacityTestRoutine());
-        counter.add(runGUIInputTestRoutine());
-    	counter.add(runAutomataOperationsTestRoutine());
+        counter.add(runGUIInputTestRoutine()); // FINISHED ADDING NEW TESTCASE OUTPUT
+    	counter.add(runAutomataOperationsTestRoutine()); // FINISHED ADDING NEW TESTCASE OUTPUT
 
     		/* Print summary of all tests */
 
@@ -365,9 +365,9 @@ public class TestAutomata {
                 null // Use temporary files to store automaton
             );
         a.generateInputForGUI();
-        printTestCase("Ensuring the event input was saved and loaded correctly", a.getEventInput().equals("a,T,T\nb,T,F\nc,F,T\nd,F,F"), counter);
-        printTestCase("Ensuring the state input was saved and loaded correctly", a.getStateInput().equals("e,T\nf,F"), counter);
-        printTestCase("Ensuring the transition input was saved and loaded correctly", a.getTransitionInput().equals("e,a,f\nf,b,e"), counter);
+        printTestCase("Ensuring the event input was saved and loaded correctly", new TestResult(a.getEventInput(), "a,T,T\nb,T,F\nc,F,T\nd,F,F"), counter);
+        printTestCase("Ensuring the state input was saved and loaded correctly", new TestResult(a.getStateInput(), "e,T\nf,F"), counter);
+        printTestCase("Ensuring the transition input was saved and loaded correctly", new TestResult(a.getTransitionInput(), "e,a,f\nf,b,e"), counter);
         a.closeFiles();
 
         printTestOutput("Instantiating automaton from GUI input code with duplicate labels, omitted optional parameters, and an initial state...", 3);
@@ -380,9 +380,9 @@ public class TestAutomata {
                 null // Use temporary files to store automaton
             );
         a.generateInputForGUI();
-        printTestCase("Ensuring the event input was saved and loaded correctly", a.getEventInput().equals("a,T,T\nb,F,F"), counter);
-        printTestCase("Ensuring the state input was saved and loaded correctly", a.getStateInput().equals("@c,T"), counter);
-        printTestCase("Ensuring the transition input was saved and loaded correctly", a.getTransitionInput().equals(""), counter);
+        printTestCase("Ensuring the event input was saved and loaded correctly", new TestResult(a.getEventInput(), "a,T,T\nb,F,F"), counter);
+        printTestCase("Ensuring the state input was saved and loaded correctly", new TestResult(a.getStateInput(), "@c,T"), counter);
+        printTestCase("Ensuring the transition input was saved and loaded correctly", new TestResult(a.getTransitionInput(), ""), counter);
         a.closeFiles();
 
             /* Print summary of this test routine */
@@ -419,9 +419,9 @@ public class TestAutomata {
         Automaton result = fig2_12.coaccessible();
 
         result.generateInputForGUI();
-        printTestCase("Ensuring the events are correct", result.getEventInput().equals("a,T,T\nb,T,T\ng,T,T"), counter);
-        printTestCase("Ensuring the states are correct", result.getStateInput().equals("@zero,F\none,F\ntwo,T\nsix,F"), counter);
-        printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("zero,a,one\none,b,two\ntwo,g,zero\nsix,b,two"), counter);
+        printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T\ng,T,T"), counter);
+        printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@zero,F\none,F\ntwo,T\nsix,F"), counter);
+        printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "zero,a,one\none,b,two\ntwo,g,zero\nsix,b,two"), counter);
 
             /* Trim Operation Tests */
 
@@ -431,9 +431,9 @@ public class TestAutomata {
         result = fig2_12.trim();
 
         result.generateInputForGUI();
-        printTestCase("Ensuring the events are correct", result.getEventInput().equals("a,T,T\nb,T,T\ng,T,T"), counter);
-        printTestCase("Ensuring the states are correct", result.getStateInput().equals("@zero,F\none,F\ntwo,T"), counter);
-        printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("zero,a,one\none,b,two\ntwo,g,zero"), counter);
+        printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T\ng,T,T"), counter);
+        printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@zero,F\none,F\ntwo,T"), counter);
+        printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "zero,a,one\none,b,two\ntwo,g,zero"), counter);
 
             /* Intersection Operation Tests */
 
@@ -462,9 +462,9 @@ public class TestAutomata {
         result = Automaton.intersection(fig2_1, fig2_2);
 
         result.generateInputForGUI();
-        printTestCase("Ensuring the events are correct", result.getEventInput().equals("a,T,T\nb,T,T"), counter);
-        printTestCase("Ensuring the states are correct", result.getStateInput().equals("@x_zero,F\nx_one,T"), counter);
-        printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("x_zero,a,x_one\nx_one,a,x_one"), counter);
+        printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T"), counter);
+        printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@x_zero,F\nx_one,T"), counter);
+        printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "x_zero,a,x_one\nx_one,a,x_one"), counter);
 
         printTestOutput("Instantiating automaton from Figure 2.13(b)...", 3);
         Automaton fig2_13b = AutomataGUI.generateAutomaton(
@@ -480,9 +480,9 @@ public class TestAutomata {
         result = Automaton.intersection(fig2_2, fig2_13b);
 
         result.generateInputForGUI();
-        printTestCase("Ensuring the events are correct", result.getEventInput().equals("a,T,T\nb,T,T"), counter);
-        printTestCase("Ensuring the states are correct", result.getStateInput().equals("@zero_zero,F\none_one,F\nzero_two,F"), counter);
-        printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("zero_zero,a,one_one\none_one,b,zero_two"), counter);
+        printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T"), counter);
+        printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@zero_zero,F\none_one,F\nzero_two,F"), counter);
+        printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "zero_zero,a,one_one\none_one,b,zero_two"), counter);
 
         printTestOutput("Instantiating the first automaton from Figure 2.20...", 3);
         Automaton fig2_20a = AutomataGUI.generateAutomaton(
@@ -508,9 +508,9 @@ public class TestAutomata {
         result = Automaton.intersection(fig2_20a, fig2_20b);
 
         result.generateInputForGUI();
-        printTestCase("Ensuring the events are correct", result.getEventInput().equals("a1,T,T\na2,T,T\nb,T,T\nr,T,T"), counter);
-        printTestCase("Ensuring the states are correct", result.getStateInput().equals("@x1_y1,F\nx2_y2,F\nx2_y3,F\nx3_y4,F\nx3_y5,F"), counter);
-        printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("x1_y1,a1,x2_y2\nx1_y1,a2,x2_y3\nx2_y2,b,x3_y4\nx2_y3,b,x3_y5\nx3_y4,r,x1_y1\nx3_y5,r,x1_y1"), counter);
+        printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a1,T,T\na2,T,T\nb,T,T\nr,T,T"), counter);
+        printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@x1_y1,F\nx2_y2,F\nx2_y3,F\nx3_y4,F\nx3_y5,F"), counter);
+        printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "x1_y1,a1,x2_y2\nx1_y1,a2,x2_y3\nx2_y2,b,x3_y4\nx2_y3,b,x3_y5\nx3_y4,r,x1_y1\nx3_y5,r,x1_y1"), counter);
 
             /* Union Operation Tests */
 
@@ -520,9 +520,9 @@ public class TestAutomata {
         result = Automaton.union(fig2_1, fig2_2);
 
         result.generateInputForGUI();
-        printTestCase("Ensuring the events are correct", result.getEventInput().equals("a,T,T\nb,T,T\ng,T,T"), counter);
-        printTestCase("Ensuring the states are correct", result.getStateInput().equals("@x_zero,F\ny_zero,F\nz_zero,F\nx_one,T\ny_one,F\nz_one,T"), counter);
-        printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("x_zero,a,x_one\nx_zero,g,z_zero\ny_zero,b,y_zero\ny_zero,a,x_one\nz_zero,b,z_zero\nz_zero,a,y_one\nz_zero,g,y_zero\nx_one,a,x_one\nx_one,g,z_one\ny_one,b,y_zero\ny_one,a,x_one\nz_one,b,z_zero\nz_one,a,y_one\nz_one,g,y_one"), counter);
+        printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T\ng,T,T"), counter);
+        printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@x_zero,F\ny_zero,F\nz_zero,F\nx_one,T\ny_one,F\nz_one,T"), counter);
+        printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "x_zero,a,x_one\nx_zero,g,z_zero\ny_zero,b,y_zero\ny_zero,a,x_one\nz_zero,b,z_zero\nz_zero,a,y_one\nz_zero,g,y_zero\nx_one,a,x_one\nx_one,g,z_one\ny_one,b,y_zero\ny_one,a,x_one\nz_one,b,z_zero\nz_one,a,y_one\nz_one,g,y_one"), counter);
 
         printTestOutput("Instantiating the first automaton from Figure 2.17...", 3);
         Automaton fig2_17a = AutomataGUI.generateAutomaton(
@@ -558,9 +558,9 @@ public class TestAutomata {
         result = Automaton.union(Automaton.union(fig2_17a, fig2_17b), fig2_17c);
 
         result.generateInputForGUI();
-        printTestCase("Ensuring the events are correct", result.getEventInput().equals("a,T,T\nb,T,T\nc,T,T\nd,T,T"), counter);
-        printTestCase("Ensuring the states are correct", result.getStateInput().equals("@one_A_D,T"), counter);
-        printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("one_A_D,c,one_A_D"), counter);
+        printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T\nc,T,T\nd,T,T"), counter);
+        printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@one_A_D,T"), counter);
+        printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "one_A_D,c,one_A_D"), counter);
 
             /* Synchronized Composition Operation Tests */
 
@@ -580,9 +580,9 @@ public class TestAutomata {
         result = synchronizedCompositionExample.synchronizedComposition();
 
         result.generateInputForGUI();
-        printTestCase("Ensuring the events are correct", result.getEventInput().equals("<a_a_*>,T,T\n<b_*_b>,T,T\n<*_b_*>,T,T\n<*_*_a>,T,T\n<o_o_o>,T,T"), counter);
-        printTestCase("Ensuring the states are correct", result.getStateInput().equals("@1_1_1,F\n1_1_2,F\n1_3_1,F\n1_3_2,F\n2_2_1,F\n2_2_2,F\n2_4_1,F\n2_4_2,F\n2_5_1,F\n2_5_2,F\n3_1_3,F\n3_1_4,F\n3_1_5,F\n3_3_3,F\n3_3_4,F\n3_3_5,F\n4_2_3,F\n4_2_4,F\n4_2_5,F\n4_4_3,F\n4_4_4,F\n4_4_5,F\n4_5_3,F\n4_5_4,F\n4_5_5,F\n5_2_3,F\n5_2_4,F\n5_2_5,F\n5_4_3,F\n5_4_4,F\n5_4_5,F\n5_5_3,F\n5_5_4,F\n5_5_5,F\n6_6_6,F\n6_6_7,F\n6_7_6,F\n6_7_7,F\n7_6_6,F\n7_6_7,F\n7_7_6,F\n7_7_7,F"), counter);
-        printTestCase("Ensuring the transitions are correct", result.getTransitionInput().equals("1_1_1,<a_a_*>,2_2_1\n1_1_1,<b_*_b>,3_1_3\n1_1_1,<*_b_*>,1_3_1\n1_1_1,<*_*_a>,1_1_2\n1_1_2,<a_a_*>,2_2_2\n1_1_2,<b_*_b>,3_1_4\n1_1_2,<*_b_*>,1_3_2\n1_3_1,<a_a_*>,2_5_1\n1_3_1,<b_*_b>,3_3_3\n1_3_1,<*_*_a>,1_3_2\n1_3_2,<a_a_*>,2_5_2\n1_3_2,<b_*_b>,3_3_4\n2_2_1,<b_*_b>,4_2_3\n2_2_1,<*_b_*>,2_4_1\n2_2_1,<*_*_a>,2_2_2\n2_2_2,<b_*_b>,4_2_4\n2_2_2,<*_b_*>,2_4_2\n2_4_1,<b_*_b>,4_4_3\n2_4_1,<*_*_a>,2_4_2\n2_4_2,<b_*_b>,4_4_4\n2_5_1,<b_*_b>,4_5_3\n2_5_1,<*_*_a>,2_5_2\n2_5_2,<b_*_b>,4_5_4\n3_1_3,<a_a_*>,5_2_3\n3_1_3,<*_b_*>,3_3_3\n3_1_3,<*_*_a>,3_1_5\n3_1_4,<a_a_*>,5_2_4\n3_1_4,<*_b_*>,3_3_4\n3_1_5,<a_a_*>,5_2_5\n3_1_5,<*_b_*>,3_3_5\n3_3_3,<a_a_*>,5_5_3\n3_3_3,<*_*_a>,3_3_5\n3_3_4,<a_a_*>,5_5_4\n3_3_5,<a_a_*>,5_5_5\n4_2_3,<*_b_*>,4_4_3\n4_2_3,<*_*_a>,4_2_5\n4_2_4,<*_b_*>,4_4_4\n4_2_5,<*_b_*>,4_4_5\n4_4_3,<*_*_a>,4_4_5\n4_4_4,<o_o_o>,6_6_6\n4_4_5,<o_o_o>,6_6_7\n4_5_3,<*_*_a>,4_5_5\n4_5_4,<o_o_o>,6_7_6\n4_5_5,<o_o_o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*_b_*>,5_4_3\n5_2_3,<*_*_a>,5_2_5\n5_2_4,<*_b_*>,5_4_4\n5_2_5,<*_b_*>,5_4_5\n5_4_3,<*_*_a>,5_4_5\n5_4_4,<o_o_o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o_o_o>,7_6_7\n5_5_3,<*_*_a>,5_5_5\n5_5_4,<o_o_o>,7_7_6\n5_5_5,<o_o_o>,7_7_7"), counter);
+        printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "<a_a_*>,T,T\n<b_*_b>,T,T\n<*_b_*>,T,T\n<*_*_a>,T,T\n<o_o_o>,T,T"), counter);
+        printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@1_1_1,F\n1_1_2,F\n1_3_1,F\n1_3_2,F\n2_2_1,F\n2_2_2,F\n2_4_1,F\n2_4_2,F\n2_5_1,F\n2_5_2,F\n3_1_3,F\n3_1_4,F\n3_1_5,F\n3_3_3,F\n3_3_4,F\n3_3_5,F\n4_2_3,F\n4_2_4,F\n4_2_5,F\n4_4_3,F\n4_4_4,F\n4_4_5,F\n4_5_3,F\n4_5_4,F\n4_5_5,F\n5_2_3,F\n5_2_4,F\n5_2_5,F\n5_4_3,F\n5_4_4,F\n5_4_5,F\n5_5_3,F\n5_5_4,F\n5_5_5,F\n6_6_6,F\n6_6_7,F\n6_7_6,F\n6_7_7,F\n7_6_6,F\n7_6_7,F\n7_7_6,F\n7_7_7,F"), counter);
+        printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "1_1_1,<a_a_*>,2_2_1\n1_1_1,<b_*_b>,3_1_3\n1_1_1,<*_b_*>,1_3_1\n1_1_1,<*_*_a>,1_1_2\n1_1_2,<a_a_*>,2_2_2\n1_1_2,<b_*_b>,3_1_4\n1_1_2,<*_b_*>,1_3_2\n1_3_1,<a_a_*>,2_5_1\n1_3_1,<b_*_b>,3_3_3\n1_3_1,<*_*_a>,1_3_2\n1_3_2,<a_a_*>,2_5_2\n1_3_2,<b_*_b>,3_3_4\n2_2_1,<b_*_b>,4_2_3\n2_2_1,<*_b_*>,2_4_1\n2_2_1,<*_*_a>,2_2_2\n2_2_2,<b_*_b>,4_2_4\n2_2_2,<*_b_*>,2_4_2\n2_4_1,<b_*_b>,4_4_3\n2_4_1,<*_*_a>,2_4_2\n2_4_2,<b_*_b>,4_4_4\n2_5_1,<b_*_b>,4_5_3\n2_5_1,<*_*_a>,2_5_2\n2_5_2,<b_*_b>,4_5_4\n3_1_3,<a_a_*>,5_2_3\n3_1_3,<*_b_*>,3_3_3\n3_1_3,<*_*_a>,3_1_5\n3_1_4,<a_a_*>,5_2_4\n3_1_4,<*_b_*>,3_3_4\n3_1_5,<a_a_*>,5_2_5\n3_1_5,<*_b_*>,3_3_5\n3_3_3,<a_a_*>,5_5_3\n3_3_3,<*_*_a>,3_3_5\n3_3_4,<a_a_*>,5_5_4\n3_3_5,<a_a_*>,5_5_5\n4_2_3,<*_b_*>,4_4_3\n4_2_3,<*_*_a>,4_2_5\n4_2_4,<*_b_*>,4_4_4\n4_2_5,<*_b_*>,4_4_5\n4_4_3,<*_*_a>,4_4_5\n4_4_4,<o_o_o>,6_6_6\n4_4_5,<o_o_o>,6_6_7\n4_5_3,<*_*_a>,4_5_5\n4_5_4,<o_o_o>,6_7_6\n4_5_5,<o_o_o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*_b_*>,5_4_3\n5_2_3,<*_*_a>,5_2_5\n5_2_4,<*_b_*>,5_4_4\n5_2_5,<*_b_*>,5_4_5\n5_4_3,<*_*_a>,5_4_5\n5_4_4,<o_o_o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o_o_o>,7_6_7\n5_5_3,<*_*_a>,5_5_5\n5_5_4,<o_o_o>,7_7_6\n5_5_5,<o_o_o>,7_7_7"), counter);
 
             /* Print summary of this test routine */
 
@@ -590,6 +590,21 @@ public class TestAutomata {
 
         return counter;
 
+    }
+
+    private static boolean areEqual(String expected, String actual) {
+        if (expected.equals(actual))
+            return true;
+
+        for (int i = 0; i < MAX_VERBOSE; i++)
+            System.out.print("\t");
+        System.out.println("EXPECTED: " + expected);
+
+        for (int i = 0; i < MAX_VERBOSE; i++)
+            System.out.print("\t");
+        System.out.println("ACTUAL: " + actual);
+
+        return false;
     }
 
     private static void printTestOutput(String str, int requiredVerbose) {
@@ -632,6 +647,29 @@ public class TestAutomata {
 
     }
 
+    private static void printTestCase(String str, TestResult result, TestCounter counter) {
+
+            /* Update counters */
+
+        counter.increment(result.passed);
+
+            /* Print output */
+
+        // Do not print output if the verbose is not high enough (unless the test case failed)
+        if (verbose == MAX_VERBOSE || !result.passed) {
+            
+            // Indent the line
+            for (int i = 0; i < MAX_VERBOSE; i++)
+                System.out.print("\t");
+
+            // Print test case results
+            System.out.println(str + ": " + (result.passed ? GREEN + "PASSED" + RESET : RED + "*** FAILED ***" + RESET));
+            System.out.print(result.getSummary(MAX_VERBOSE + 1));
+
+        }
+
+    }
+
     /**
      * Helper method to print the results of a test routine.
      * @param testRoutineName - The test routine's name is used as part of the output.
@@ -643,6 +681,34 @@ public class TestAutomata {
     	String failed = (counter.getFailedTests() > 0) ? String.format("\n\t\t%s*** FAILED: %d/%d ***%s", RED, counter.getFailedTests(), counter.getTotalTests(), RESET) : "";
 
     	printTestOutput(testRoutineName + " TEST ROUTINE SUMMARY:" + passed + failed, 1);
+
+    }
+
+}
+
+class TestResult {
+
+    public boolean passed;
+    private String summary = "";
+
+    public TestResult(String expected, String actual) {
+        if (expected.equals(actual))
+            passed = true;
+        else {
+            passed = false;
+            summary += "\nEXPECTED:\n" + expected + "\n\nACTUAL:\n" + actual + "\n";
+        }
+    }
+
+
+
+    public String getSummary(int nTabs) {
+
+        String indentation = "";
+        for (int i = 0; i < nTabs; i++)
+            indentation += "\t";
+
+        return summary.replaceAll("(?m)^", indentation);
 
     }
 
