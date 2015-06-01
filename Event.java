@@ -7,15 +7,11 @@
  *
  * TABLE OF CONTENTS:
  *	-Class Constants
- *	-Instance Variables
- *	-Constructors
- *	-Automata Operations
- *	-Image Generation
- *	-GUI Input Code Generation
- *	-Working with Files
- *	-Miscellaneous
- *	-Mutator Methods
- *	-Accessor Methods
+ *	-Private Instance Variables
+ *	-Constructor
+ *	-Vector Parsing
+ *	-Standard Accessor and Mutator Methods
+ *	-Overridden Methods
  **/
 
 import java.util.*;
