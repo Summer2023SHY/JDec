@@ -1143,9 +1143,9 @@ public class Automaton {
       for (TransitionData t : conditionalViolations) {
         String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
         if (additionalEdgeProperties.containsKey(edge))
-          additionalEdgeProperties.put(edge, additionalEdgeProperties.get(edge) + ",color=green");
+          additionalEdgeProperties.put(edge, additionalEdgeProperties.get(edge) + ",color=green3");
         else
-          additionalEdgeProperties.put(edge, ",color=green"); 
+          additionalEdgeProperties.put(edge, ",color=green3"); 
       }
       for (TransitionData t : badTransitions) {
         String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
@@ -1220,7 +1220,7 @@ public class Automaton {
 
     	if (initialState > 0) {
     		str.append("node [shape=plaintext];");
-    		str.append("\" \"-> \"_" + getStateExcludingTransitions(initialState).getLabel() + "\" [color=green3];");
+    		str.append("\" \"-> \"_" + getStateExcludingTransitions(initialState).getLabel() + "\" [color=blue];");
     	}
 
     	str.append("}");
