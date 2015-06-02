@@ -945,8 +945,7 @@ public class Automaton {
       /* Return produced automaton */
 
     // TEMPORARY
-    automaton.generateLeastUpperBounds();
-    automaton.generatePotentialCommunications();
+    automaton.generatePotentialCommunications(automaton.generateLeastUpperBounds());
 
     return automaton;
 
@@ -955,76 +954,100 @@ public class Automaton {
   /**
    * TEMPORARY METHOD
    **/
-  public void generateLeastUpperBounds() {
+  public Set<LabelVector> generateLeastUpperBounds() {
 
-    Set<String> leastUpperBounds = new HashSet<String>();
+    Set<LabelVector> leastUpperBounds = new HashSet<LabelVector>();
+    for (Event e : events)
+      leastUpperBounds.add(new LabelVector(e.getLabel()));
 
-    for (Event e1 : events)
-      for (Event e2 : events) {
+    boolean foundNew = true;
 
-          /* Error checking */
+    while (foundNew) {
 
-        if (e1.getVectorSize() == -1 || e2.getVectorSize() == -1 || e1.getVectorSize() != e2.getVectorSize()) {
-          System.out.println("ERROR: Bad event vectors. Least upper bounds generation aborted.");
-          return;
-        }
+      List<LabelVector> temporaryList = new ArrayList<LabelVector>();
+      
+      for (LabelVector v1 : leastUpperBounds) {
+        for (LabelVector v2 : leastUpperBounds) {
 
-          /* Build least upper bound */
+            /* Error checking */
 
-        boolean valid = true;
-        String leastUpperBound = "";
-        for (int i = 0; i < e1.getVectorSize(); i++) {
-
-          String  label1 = e1.getLabelFromVector(i),
-                  label2 = e2.getLabelFromVector(i);
-
-          // Check for incompatibility
-          if (!label1.equals("*") && !label2.equals("*") && !label1.equals(label2)) {
-            valid = false;
-            break;
+          if (v1.getSize() == -1 || v2.getSize() == -1 || v1.getSize() != v2.getSize()) {
+            System.out.println("ERROR: Bad event vectors. Least upper bounds generation aborted.");
+            return null;
           }
 
-          // Append vector element
-          if (label1.equals("*"))
-            leastUpperBound += "_" + label2;
-          else
-            leastUpperBound += "_" + label1;
+            /* Build least upper bound */
 
-        }
+          boolean valid = true;
+          String leastUpperBound = "";
+          for (int i = 0; i < v1.getSize(); i++) {
 
-          /* Add to the set */
+            String  label1 = v1.getLabelAtIndex(i),
+                    label2 = v2.getLabelAtIndex(i);
 
-        if (valid)
-          leastUpperBounds.add("<" + leastUpperBound.substring(1) + ">");
+            // Check for incompatibility
+            if (!label1.equals("*") && !label2.equals("*") && !label1.equals(label2)) {
+              valid = false;
+              break;
+            }
 
-      }
+            // Append vector element
+            if (label1.equals("*"))
+              leastUpperBound += "_" + label2;
+            else
+              leastUpperBound += "_" + label1;
 
-      System.out.println(leastUpperBounds);
+          }
+
+            /* Add to the temporary list */
+
+          if (valid)
+            temporaryList.add(new LabelVector("<" + leastUpperBound.substring(1) + ">"));
+
+        } // for
+      } // for
+
+      // Add all of the vectors from the tmeporary list
+      foundNew = false;
+      for (LabelVector v : temporaryList)
+        if (leastUpperBounds.add(v))
+          foundNew = true;
+
+    }
+
+    System.out.println("Least Upper Bounds: " + leastUpperBounds);
+
+    return leastUpperBounds;
 
   }
 
   /**
    * TEMPORARY METHOD
    **/
-  public void generatePotentialCommunications() {
+  public void generatePotentialCommunications(Set<LabelVector> leastUpperBounds) {
 
-    List<Event> observableLabels = new ArrayList<Event>(),
-                unobservableLabels = new ArrayList<Event>();
-    for (Event e : events) {
-      if (e.getLabelFromVector(0).equals("*"))
-        unobservableLabels.add(e);
+      /* Separate observable and unobservable labels */
+
+    Set<LabelVector>  observableLabels = new HashSet<LabelVector>(),
+                      unobservableLabels = new HashSet<LabelVector>();
+
+    for (LabelVector v : leastUpperBounds) {
+      if (v.getLabelAtIndex(0).equals("*"))
+        unobservableLabels.add(v);
       else
-        observableLabels.add(e);
+        observableLabels.add(v);
     }
 
-    Set<String> potentialCommunications = new HashSet<String>();
+      /* Find potential communications */
 
-    for (Event e1 : observableLabels)
-      for (Event e2 : unobservableLabels) {
+    Set<LabelVector> potentialCommunications = new HashSet<LabelVector>();
+    
+    for (LabelVector v1 : observableLabels) {
+      for (LabelVector v2 : unobservableLabels) {
 
           /* Error checking */
 
-        if (e1.getVectorSize() == -1 || e2.getVectorSize() == -1 || e1.getVectorSize() != e2.getVectorSize()) {
+        if (v1.getSize() == -1 || v2.getSize() == -1 || v1.getSize() != v2.getSize()) {
           System.out.println("ERROR: Bad event vectors. Least upper bounds generation aborted.");
           return;
         }
@@ -1033,10 +1056,10 @@ public class Automaton {
 
         boolean valid = true;
         String potentialCommunication = "";
-        for (int i = 0; i < e1.getVectorSize(); i++) {
+        for (int i = 0; i < v1.getSize(); i++) {
 
-          String  label1 = e1.getLabelFromVector(i),
-                  label2 = e2.getLabelFromVector(i);
+          String  label1 = v1.getLabelAtIndex(i),
+                  label2 = v2.getLabelAtIndex(i);
 
           // Check for incompatibility
           if (!label1.equals("*") && !label2.equals("*") && !label1.equals(label2)) {
@@ -1055,11 +1078,46 @@ public class Automaton {
           /* Add to the set */
 
         if (valid)
-          potentialCommunications.add("<" + potentialCommunication.substring(1) + ">");
+          potentialCommunications.add(new LabelVector("<" + potentialCommunication.substring(1) + ">"));
 
-      }
+      } // for
 
-      System.out.println(potentialCommunications);
+    } // for
+
+    System.out.println("Observable Labels: " + observableLabels);
+    System.out.println("Unobservable Labels: " + unobservableLabels);
+    System.out.println("Potential Communications: " + potentialCommunications);
+
+    powerset(new ArrayList<LabelVector>(potentialCommunications), new HashSet<LabelVector>(), 0);
+
+  }
+
+  /**
+   * TEMPORARY METHOD
+   **/
+  private void powerset(ArrayList<LabelVector> masterList, Set<LabelVector> elementsChosen, int index) {
+
+      /* Base case */
+
+    if (index == masterList.size()) {
+      System.out.println(elementsChosen);
+      return;
+    }
+
+      /* Recursive case */
+
+    Set<LabelVector>  includingElement = new HashSet<LabelVector>(),
+                      notIncludingElement = new HashSet<LabelVector>();
+    for (LabelVector v : elementsChosen) {
+      includingElement.add(v);
+      notIncludingElement.add(v);
+    }
+
+    includingElement.add(masterList.get(index));
+
+    powerset(masterList, includingElement, index + 1);
+    powerset(masterList, notIncludingElement, index + 1);
+
 
   }
 

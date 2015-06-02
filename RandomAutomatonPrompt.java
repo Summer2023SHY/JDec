@@ -4,10 +4,11 @@ import java.awt.event.*;
 
 public class RandomAutomatonPrompt extends JFrame {
 
-    AutomataGUI gui;
-    JSpinner nControllers, nEvents, nStates, minTransitions, maxTransitions, nBadTransitions;
+    private AutomataGUI gui;
+    private JSpinner nControllers, nEvents, nStates, minTransitions, maxTransitions, nBadTransitions;
 
-    static int  nControllersDefault = 1,
+    // Default values
+    private static int  nControllersDefault = 1,
                 nEventsDefault = 4,
                 nStatesDefault = 10,
                 minTransitionsDefault = 0,
@@ -94,6 +95,8 @@ public class RandomAutomatonPrompt extends JFrame {
         c.gridy = 4;
         add(maxTransitions, c);
 
+            /* Bad transitions */
+
         JLabel nBadTransitionsLabel = new JLabel(" # Bad Transitions:");
         c.gridx = 0;
         c.gridy = 5;
@@ -104,6 +107,8 @@ public class RandomAutomatonPrompt extends JFrame {
         c.gridy = 5;
         add(nBadTransitions, c);
 
+            /* Cancel button */
+
         JButton cancelButton = new JButton("Cancel");
         cancelButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -113,6 +118,8 @@ public class RandomAutomatonPrompt extends JFrame {
         c.gridx = 0;
         c.gridy = 6;
         add(cancelButton, c);
+
+            /* Generate button */
 
         JButton generateButton = new JButton("Generate");
         generateButton.addActionListener(new ActionListener() {

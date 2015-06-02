@@ -31,8 +31,8 @@ public class Event implements Comparable<Event> {
   private boolean[] observable, controllable;
 
   // Events can sometimes be vectors (for example, automata created by synchonrized composition use them) 
-  // Ex: "<a_b_d>" actually represents an edge vector: {"a", "b", "d"}
-  private String[] labelVector = null;
+  // Ex: "<a_b_d>" actually represents an event vector: {"a", "b", "d"}
+  public LabelVector vector = null;
 
   	/** CONSTRUCTOR **/
 
@@ -48,21 +48,7 @@ public class Event implements Comparable<Event> {
 		this.id = id;
 		this.observable = observable;
 		this.controllable = controllable;
-
-		// Turn the label into a vector (if applicable)
-		createLabelVector();
-
-	}
-		/** VECTOR PARSING **/
-
-	/**
-	 * If the event label is formatted as a vector, break it up into its components.
-	 **/
-	private void createLabelVector() {
-
-		// Ensure that the label is a vector
-		if (label.charAt(0) == '<' && label.charAt(label.length() - 1) == '>')
-			labelVector = label.substring(1, label.length() - 1).split("_");
+		this.vector = new LabelVector(label);
 
 	}
 
@@ -98,33 +84,6 @@ public class Event implements Comparable<Event> {
 	 **/
 	public boolean[] isControllable() {
 		return controllable;
-	}
-
-	/**
-	 * Get a specific label from the vector.
-	 * @param index	The index in the vector
-	 * @return the label from the vector
-	 **/
-	public String getLabelFromVector(int index) {
-
-		if (labelVector == null)
-			return null;
-		else
-			return labelVector[index];
-		
-	}
-
-	/**
-	 * Get the size of the vector.
-	 * @return the label from the vector, or -1 if this event is not a vector
-	 **/
-	public int getVectorSize() {
-
-		if (labelVector == null)
-			return -1;
-
-		return labelVector.length;
-		
 	}
 
 		/** OVERRIDDEN METHODS **/
