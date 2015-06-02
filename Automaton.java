@@ -41,9 +41,9 @@ public class Automaton {
   public static final int MAX_NUMBER_OF_CONTROLLERS = 10;
 
   private static final String DEFAULT_HEADER_FILE_NAME = "temp.hdr",
-                DEFAULT_BODY_FILE_NAME = "temp.bdy";
+                              DEFAULT_BODY_FILE_NAME = "temp.bdy";
   private static final File   DEFAULT_HEADER_FILE = new File(DEFAULT_HEADER_FILE_NAME),
-                DEFAULT_BODY_FILE = new File(DEFAULT_BODY_FILE_NAME);
+                              DEFAULT_BODY_FILE = new File(DEFAULT_BODY_FILE_NAME);
 
     /** ENUM **/
 
@@ -107,14 +107,14 @@ public class Automaton {
    **/
   public Automaton(File headerFile, int nControllers) {
     this(
-        (headerFile == null) ? DEFAULT_HEADER_FILE : headerFile,
-        (headerFile == null) ? DEFAULT_BODY_FILE : new File(headerFile.getName().substring(0, headerFile.getName().length() - 4) + ".bdy"),
-        DEFAULT_STATE_CAPACITY,
-        DEFAULT_TRANSITION_CAPACITY,
-        DEFAULT_LABEL_LENGTH,
-        nControllers,
-        true
-      );
+      (headerFile == null) ? DEFAULT_HEADER_FILE : headerFile,
+      (headerFile == null) ? DEFAULT_BODY_FILE : new File(headerFile.getName().substring(0, headerFile.getName().length() - 4) + ".bdy"),
+      DEFAULT_STATE_CAPACITY,
+      DEFAULT_TRANSITION_CAPACITY,
+      DEFAULT_LABEL_LENGTH,
+      nControllers,
+      true
+    );
   }
 
   /**
@@ -124,14 +124,14 @@ public class Automaton {
    **/
   public Automaton(File headerFile, boolean clearFiles) {
     this(
-        (headerFile == null) ? DEFAULT_HEADER_FILE : headerFile,
-        (headerFile == null) ? DEFAULT_BODY_FILE : new File(headerFile.getName().substring(0, headerFile.getName().length() - 4) + ".bdy"),
-        DEFAULT_STATE_CAPACITY,
-        DEFAULT_TRANSITION_CAPACITY,
-        DEFAULT_LABEL_LENGTH,
-        DEFAULT_NUMBER_OF_CONTROLLERS,
-        clearFiles
-      );
+      (headerFile == null) ? DEFAULT_HEADER_FILE : headerFile,
+      (headerFile == null) ? DEFAULT_BODY_FILE : new File(headerFile.getName().substring(0, headerFile.getName().length() - 4) + ".bdy"),
+      DEFAULT_STATE_CAPACITY,
+      DEFAULT_TRANSITION_CAPACITY,
+      DEFAULT_LABEL_LENGTH,
+      DEFAULT_NUMBER_OF_CONTROLLERS,
+      clearFiles
+    );
   }
 
   /**
