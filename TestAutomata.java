@@ -73,25 +73,25 @@ public class TestAutomata {
 
         printTestOutput("GUI Parsing - isTrue(): ", 2);
 
-        printTestCase("Ensuring that 'T' is parsed correctly", AutomataGUI.isTrue("T"), counter);
-        printTestCase("Ensuring that 't' is parsed correctly", AutomataGUI.isTrue("t"), counter);
-        printTestCase("Ensuring that 'F' is parsed correctly", !AutomataGUI.isTrue("F"), counter);
-        printTestCase("Ensuring that 'f' is parsed correctly", !AutomataGUI.isTrue("f"), counter);
+        printTestCase("Ensuring that 'T' is parsed correctly", AutomatonGenerator.isTrue("T"), counter);
+        printTestCase("Ensuring that 't' is parsed correctly", AutomatonGenerator.isTrue("t"), counter);
+        printTestCase("Ensuring that 'F' is parsed correctly", !AutomatonGenerator.isTrue("F"), counter);
+        printTestCase("Ensuring that 'f' is parsed correctly", !AutomatonGenerator.isTrue("f"), counter);
 
             /* isTrueArray() Tests */
 
         printTestOutput("GUI Parsing - isTrueArray(): ", 2);
         
         boolean[] expected = new boolean[] { true };
-        boolean[] actual = AutomataGUI.isTrueArray("T");
+        boolean[] actual = AutomatonGenerator.isTrueArray("T");
         printTestCase("Ensuring that 'T' is parsed correctly", Arrays.equals(actual, expected), counter);
 
         expected = new boolean[] { false };
-        actual = AutomataGUI.isTrueArray("f");
+        actual = AutomatonGenerator.isTrueArray("f");
         printTestCase("Ensuring that 'f' is parsed correctly", Arrays.equals(actual, expected), counter);
 
         expected = new boolean[] { true, false, true };
-        actual = AutomataGUI.isTrueArray("TFT");
+        actual = AutomatonGenerator.isTrueArray("TFT");
         printTestCase("Ensuring that 'TFT' is parsed correctly", Arrays.equals(actual, expected), counter);
 
             /* createCombinedIDWithOrderedSet() Tests */
@@ -356,7 +356,7 @@ public class TestAutomata {
         printTestOutput("BASIC GUI INPUT: ", 2);
 
         printTestOutput("Instantiating automaton from simple GUI input code...", 3);
-        Automaton a = AutomataGUI.generateAutomaton(
+        Automaton a = AutomatonGenerator.generateFromGUICode(
                 "a,T,T\nb,T,F\nc,F,T\nd,F,F", // Events
                 "e,T\nf,F", // States   
                 "e,a,f\nf,b,e", // Transitions
@@ -371,7 +371,7 @@ public class TestAutomata {
         a.closeFiles();
 
         printTestOutput("Instantiating automaton from GUI input code with duplicate labels, omitted optional parameters, and an initial state...", 3);
-        a = AutomataGUI.generateAutomaton(
+        a = AutomatonGenerator.generateFromGUICode(
                 "a\nb,F,F\na,F,F\nb", // Events
                 "@c\nc,F", // States    
                 "", // Transitions
@@ -406,7 +406,7 @@ public class TestAutomata {
         printTestOutput("CO-ACCESSIBLE OPERATION: ", 2);
 
         printTestOutput("Instantiating automaton from Figure 2.1...", 3);
-        Automaton fig2_12 = AutomataGUI.generateAutomaton(
+        Automaton fig2_12 = AutomatonGenerator.generateFromGUICode(
                 "a,T,T\nb,T,T\ng,T,T", // Events
                 "@zero,F\none,F\ntwo,T\nthree,F\nfour,F\nfive,F\nsix,F", // States 
                 "zero,a,one\none,a,three\none,b,two\none,g,five\ntwo,g,zero\nthree,b,four\nfour,g,four\nfour,a,three\nsix,a,three\nsix,b,two", // Transitions
@@ -440,7 +440,7 @@ public class TestAutomata {
         printTestOutput("INTERSECTION OPERATION: ", 2);
 
         printTestOutput("Instantiating automaton from Figure 2.1...", 3);
-        Automaton fig2_1 = AutomataGUI.generateAutomaton(
+        Automaton fig2_1 = AutomatonGenerator.generateFromGUICode(
                 "a,T,T\nb,T,T\ng,T,T", // Events
                 "@x,T\ny,F\nz,T", // States 
                 "x,a,x\nx,g,z\ny,b,y\ny,a,x\nz,b,z\nz,a,y\nz,g,y", // Transitions
@@ -449,7 +449,7 @@ public class TestAutomata {
                 new File("fig2_1.hdr")
             );
         printTestOutput("Instantiating automaton from Figure 2.2...", 3);
-        Automaton fig2_2 = AutomataGUI.generateAutomaton(
+        Automaton fig2_2 = AutomatonGenerator.generateFromGUICode(
                 "a,T,T\nb,T,T", // Events
                 "@zero,F\none,T", // States 
                 "zero,b,zero\nzero,a,one\none,a,one\none,b,zero", // Transitions
@@ -467,7 +467,7 @@ public class TestAutomata {
         printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "x_zero,a,x_one\nx_one,a,x_one"), counter);
 
         printTestOutput("Instantiating automaton from Figure 2.13(b)...", 3);
-        Automaton fig2_13b = AutomataGUI.generateAutomaton(
+        Automaton fig2_13b = AutomatonGenerator.generateFromGUICode(
                 "a,T,T\nb,T,T\ng,T,T", // Events
                 "@zero,F\none,F\ntwo,T", // States 
                 "zero,a,one\none,b,two\ntwo,g,zero", // Transitions
@@ -485,7 +485,7 @@ public class TestAutomata {
         printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "zero_zero,a,one_one\none_one,b,zero_two"), counter);
 
         printTestOutput("Instantiating the first automaton from Figure 2.20...", 3);
-        Automaton fig2_20a = AutomataGUI.generateAutomaton(
+        Automaton fig2_20a = AutomatonGenerator.generateFromGUICode(
                 "a1\na2\nb\nr", // Events
                 "@x1,F\nx2,F\nx3,T", // States 
                 "x1,a1,x2\nx1,a2,x2\nx2,b,x3\nx3,r,x1", // Transitions
@@ -495,7 +495,7 @@ public class TestAutomata {
             );
 
         printTestOutput("Instantiating the second automaton from Figure 2.20...", 3);
-        Automaton fig2_20b = AutomataGUI.generateAutomaton(
+        Automaton fig2_20b = AutomatonGenerator.generateFromGUICode(
                 "a1\nb\nc1\nr\na2\nc2", // Events
                 "@y1,F\ny2,F\ny3,F\ny4,F\ny5,F\ny6,F", // States 
                 "y1,a1,y2\ny2,b,y4\ny4,r,y1\ny4,c1,y6\ny6,r,y1\ny1,a2,y3\ny3,b,y5\ny5,c2,y6\ny5,r,y1", // Transitions
@@ -525,7 +525,7 @@ public class TestAutomata {
         printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "x_zero,a,x_one\nx_zero,g,z_zero\ny_zero,b,y_zero\ny_zero,a,x_one\nz_zero,b,z_zero\nz_zero,a,y_one\nz_zero,g,y_zero\nx_one,a,x_one\nx_one,g,z_one\ny_one,b,y_zero\ny_one,a,x_one\nz_one,b,z_zero\nz_one,a,y_one\nz_one,g,y_one"), counter);
 
         printTestOutput("Instantiating the first automaton from Figure 2.17...", 3);
-        Automaton fig2_17a = AutomataGUI.generateAutomaton(
+        Automaton fig2_17a = AutomatonGenerator.generateFromGUICode(
                 "a,T,T\nb,T,T\nc,T,T", // Events
                 "@one,T\ntwo,F", // States 
                 "one,c,one\none,a,two\ntwo,b,two", // Transitions
@@ -535,7 +535,7 @@ public class TestAutomata {
             );
 
         printTestOutput("Instantiating the second automaton from Figure 2.17...", 3);
-        Automaton fig2_17b = AutomataGUI.generateAutomaton(
+        Automaton fig2_17b = AutomatonGenerator.generateFromGUICode(
                 "b,T,T\na,T,T\nd,T,T", // Events
                 "@A,T\nB,F", // States 
                 "A,b,A\nA,a,B\nB,d,B", // Transitions
@@ -545,7 +545,7 @@ public class TestAutomata {
             );
 
         printTestOutput("Instantiating the third automaton from Figure 2.17...", 3);
-        Automaton fig2_17c = AutomataGUI.generateAutomaton(
+        Automaton fig2_17c = AutomatonGenerator.generateFromGUICode(
                 "c,T,T\nb,T,T\na,T,T", // Events
                 "@D,T\nE,F", // States 
                 "D,c,D\nD,b,E\nE,a,E", // Transitions
@@ -567,7 +567,7 @@ public class TestAutomata {
         printTestOutput("SYNCHRONIZED COMPOSITION OPERATION: ", 2);
 
         printTestOutput("Instantiating an automaton...", 3);
-        Automaton synchronizedCompositionExample = AutomataGUI.generateAutomaton(
+        Automaton synchronizedCompositionExample = AutomatonGenerator.generateFromGUICode(
                 "a,TF,TF\nb,FT,FT\no,TT,TT", // Events
                 "@1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T", // States
                 "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD", // Transitions

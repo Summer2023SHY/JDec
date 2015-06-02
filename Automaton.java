@@ -902,7 +902,122 @@ public class Automaton {
 
       /* Return produced automaton */
 
+    // TEMPORARY
+    automaton.generateLeastUpperBounds();
+    automaton.generatePotentialCommunications();
+
     return automaton;
+
+  }
+
+  /**
+   * TEMPORARY METHOD
+   **/
+  public void generateLeastUpperBounds() {
+
+    Set<String> leastUpperBounds = new HashSet<String>();
+
+    for (Event e1 : events)
+      for (Event e2 : events) {
+
+          /* Error checking */
+
+        if (e1.getVectorSize() == -1 || e2.getVectorSize() == -1 || e1.getVectorSize() != e2.getVectorSize()) {
+          System.out.println("ERROR: Bad event vectors. Least upper bounds generation aborted.");
+          return;
+        }
+
+          /* Build least upper bound */
+
+        boolean valid = true;
+        String leastUpperBound = "";
+        for (int i = 0; i < e1.getVectorSize(); i++) {
+
+          String  label1 = e1.getLabelFromVector(i),
+                  label2 = e2.getLabelFromVector(i);
+
+          // Check for incompatibility
+          if (!label1.equals("*") && !label2.equals("*") && !label1.equals(label2)) {
+            valid = false;
+            break;
+          }
+
+          // Append vector element
+          if (label1.equals("*"))
+            leastUpperBound += "_" + label2;
+          else
+            leastUpperBound += "_" + label1;
+
+        }
+
+          /* Add to the set */
+
+        if (valid)
+          leastUpperBounds.add("<" + leastUpperBound.substring(1) + ">");
+
+      }
+
+      System.out.println(leastUpperBounds);
+
+  }
+
+  /**
+   * TEMPORARY METHOD
+   **/
+  public void generatePotentialCommunications() {
+
+    List<Event> observableLabels = new ArrayList<Event>(),
+                unobservableLabels = new ArrayList<Event>();
+    for (Event e : events) {
+      if (e.getLabelFromVector(0).equals("*"))
+        unobservableLabels.add(e);
+      else
+        observableLabels.add(e);
+    }
+
+    Set<String> potentialCommunications = new HashSet<String>();
+
+    for (Event e1 : observableLabels)
+      for (Event e2 : unobservableLabels) {
+
+          /* Error checking */
+
+        if (e1.getVectorSize() == -1 || e2.getVectorSize() == -1 || e1.getVectorSize() != e2.getVectorSize()) {
+          System.out.println("ERROR: Bad event vectors. Least upper bounds generation aborted.");
+          return;
+        }
+
+          /* Build least upper bound */
+
+        boolean valid = true;
+        String potentialCommunication = "";
+        for (int i = 0; i < e1.getVectorSize(); i++) {
+
+          String  label1 = e1.getLabelFromVector(i),
+                  label2 = e2.getLabelFromVector(i);
+
+          // Check for incompatibility
+          if (!label1.equals("*") && !label2.equals("*") && !label1.equals(label2)) {
+            valid = false;
+            break;
+          }
+
+          // Append vector element
+          if (label1.equals("*"))
+            potentialCommunication += "_" + label2;
+          else
+            potentialCommunication += "_" + label1;
+
+        }
+
+          /* Add to the set */
+
+        if (valid)
+          potentialCommunications.add("<" + potentialCommunication.substring(1) + ">");
+
+      }
+
+      System.out.println(potentialCommunications);
 
   }
 
@@ -1862,7 +1977,7 @@ public class Automaton {
 
       /* Create starting state from ID */
 
-    State startingState = getState(startingStateID);
+    State startingState  = getState(startingStateID);
 
     if (startingState == null) {
       System.out.println("ERROR: Could not add transition to file (starting state does not exist).");

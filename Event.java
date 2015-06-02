@@ -1,7 +1,7 @@
 /**
  * Event -  This simple class represents an event in an automaton. It supports both centralized and decentralized control, which
- *			means that it can have observability and controllability properties for each controller. It also has support for
- *			events that have labels formatted as vectors. 
+ *					means that it can have observability and controllability properties for each controller. It also has support for
+ *					events that have labels formatted as vectors. 
  *
  * @author Micah Stairs
  *
@@ -18,30 +18,30 @@ import java.util.*;
 
 public class Event implements Comparable<Event> {
     
-    	/** CLASS CONSTANTS **/
+  	/** CLASS CONSTANTS **/
 
-    // Current ID system allows for 255 unique events with 0 representing null (NOTE: We will make this flexible later to allow for more events)
-    public static final int MAX_NUMBER_OF_EVENTS = 255;
+  // Current ID system allows for 255 unique events with 0 representing null (NOTE: We will make this flexible later to allow for more events)
+  public static final int MAX_NUMBER_OF_EVENTS = 255;
 	public static final int N_BYTES_OF_ID = 1; 
 
-    	/** PRIVATE INSTANCE VARIABLES **/
+  	/** PRIVATE INSTANCE VARIABLES **/
 
-    private String label;
-    private int id;
-    private boolean[] observable, controllable;
+  private String label;
+  private int id;
+  private boolean[] observable, controllable;
 
-    // Events can sometimes be vectors (for example, automata created by synchonrized composition use them) 
-    // Ex: "<a_b_d>" actually represents an edge vector: {"a", "b", "d"}
-    private String[] labelVector = null;
+  // Events can sometimes be vectors (for example, automata created by synchonrized composition use them) 
+  // Ex: "<a_b_d>" actually represents an edge vector: {"a", "b", "d"}
+  private String[] labelVector = null;
 
-    	/** CONSTRUCTOR **/
+  	/** CONSTRUCTOR **/
 
-    /**
-     * Construct a new event with the specified properties.
-     * @param label			The name of the state
-     * @param observable	Whether or not the event can be observed
-     * @param controllable	Whether or not the event can be controlled
-     **/
+  /**
+   * Construct a new event with the specified properties.
+   * @param label			The name of the state
+   * @param observable	Whether or not the event can be observed
+   * @param controllable	Whether or not the event can be controlled
+   **/
 	public Event(String label, int id, boolean[] observable, boolean[] controllable) {
 
 		this.label = label;
@@ -100,12 +100,30 @@ public class Event implements Comparable<Event> {
 		return controllable;
 	}
 
-		public String getLabelFromVector(int index) {
+	/**
+	 * Get a specific label from the vector.
+	 * @param index	The index in the vector
+	 * @return the label from the vector
+	 **/
+	public String getLabelFromVector(int index) {
 
 		if (labelVector == null)
 			return null;
 		else
 			return labelVector[index];
+		
+	}
+
+	/**
+	 * Get the size of the vector.
+	 * @return the label from the vector, or -1 if this event is not a vector
+	 **/
+	public int getVectorSize() {
+
+		if (labelVector == null)
+			return -1;
+
+		return labelVector.length;
 		
 	}
 
