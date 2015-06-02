@@ -254,6 +254,10 @@ public class Automaton {
 
     }
 
+      /* Add special transitions if they still appear in the accessible part */
+
+    copyOverSpecialTransitions(automaton);
+
       /* Re-number states (by removing empty ones) */
 
     automaton.renumberStates();
@@ -332,7 +336,7 @@ public class Automaton {
 
         // Add transition if both states already exist in the co-accessible automaton
         if (automaton.stateExists(t.getTargetStateID()))
-        automaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), s);
+          automaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), s);
 
         // Otherwise add this to the stack since it is not yet in the co-accessible automaton
         else
@@ -345,11 +349,17 @@ public class Automaton {
 
         // Add transition if both states already exist in the co-accessible automaton
         if (automaton.stateExists(t.getTargetStateID()))
-          automaton.addTransition(s, t.getEvent().getID(), t.getTargetStateID());
+          // We don't want to add self-loops twice
+          if (s != t.getTargetStateID())
+            automaton.addTransition(s, t.getEvent().getID(), t.getTargetStateID());
 
       }
   
     }
+
+      /* Add special transitions if they still appear in the accessible part */
+
+    copyOverSpecialTransitions(automaton);
 
       /* Re-number states (by removing empty ones) */
 
@@ -358,6 +368,27 @@ public class Automaton {
       /* Return co-accessible automaton */
 
     return automaton;
+  }
+
+  /**
+   * Helper method to copy over all special transition data from this automaton to another.
+   * NOTE: The data is only copied over if both of the states involved in the transition actually exist
+   * @param automaton The automaton in which the special transitions are being added
+   **/
+  private void copyOverSpecialTransitions(Automaton automaton) {
+
+    for (TransitionData transitionData : badTransitions)
+      if (automaton.stateExists(transitionData.initialStateID) && automaton.stateExists(transitionData.targetStateID))
+        automaton.markTransitionAsBad(transitionData.initialStateID, transitionData.eventID, transitionData.targetStateID);
+
+    for (TransitionData transitionData : unconditionalViolations)
+      if (automaton.stateExists(transitionData.initialStateID) && automaton.stateExists(transitionData.targetStateID))
+        automaton.addUnconditionalViolation(transitionData.initialStateID, transitionData.eventID, transitionData.targetStateID);
+
+    for (TransitionData transitionData : conditionalViolations)
+      if (automaton.stateExists(transitionData.initialStateID) && automaton.stateExists(transitionData.targetStateID))
+        automaton.addConditionalViolation(transitionData.initialStateID, transitionData.eventID, transitionData.targetStateID);
+
   }
 
   /**
