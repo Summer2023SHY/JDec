@@ -300,14 +300,14 @@ public class Automaton {
 
       /* Build co-accessible automaton by seeing which states are accessible from the marked states in the inverted automaton */
 
-    Automaton automaton = new Automaton(new File("coaccessible.hdr"), true); 
+    Automaton automaton = new Automaton(new File("coaccessible.hdr"), true);
 
     // Add events
     automaton.addAllEvents(events);
 
     // Add all marked states to the stack (NOTE: This may have complications if there are more than Integer.MAX_VALUE marked states)
-  Stack<Long> stack = new Stack<Long>();
-  for (long s = 1; s <= nStates; s++) {
+    Stack<Long> stack = new Stack<Long>();
+    for (long s = 1; s <= nStates; s++) {
 
       State state = invertedAutomaton.getStateExcludingTransitions(s);
 
@@ -328,8 +328,8 @@ public class Automaton {
       State state = getState(s);
       State stateWithInvertedTransitions = invertedAutomaton.getState(s);
 
-      // Add this state (and it's transitions) to the co-accessible automaton
-      automaton.addStateAt(state.getLabel(), state.isMarked(), new ArrayList<Transition>(), s == this.getInitialStateID(), s);
+      // Add this state (and its transitions) to the co-accessible automaton
+      automaton.addStateAt(state.getLabel(), state.isMarked(), new ArrayList<Transition>(), s == initialState, s);
 
       // Add all directly reachable states from this one to the stack
       for (Transition t : stateWithInvertedTransitions.getTransitions()) {
@@ -340,7 +340,7 @@ public class Automaton {
 
         // Otherwise add this to the stack since it is not yet in the co-accessible automaton
         else
-        stack.push(t.getTargetStateID());
+          stack.push(t.getTargetStateID());
 
       }
 
@@ -395,9 +395,12 @@ public class Automaton {
    * Create a new copy of this automaton that is trim (both accessible and co-accessible).
    * NOTE: I am taking the accessible part of the automaton before the co-accessible part of the automaton
    * because the accessible() method has less overhead than the coaccessible() method.
-   * @return the trim automaton
+   * @return the trim automaton, or null if there was no initial state specified
    **/
   public Automaton trim() {
+
+    if (initialState == 0)
+      return null;
 
     return accessible().coaccessible();
 
@@ -1090,7 +1093,7 @@ public class Automaton {
           mappingRAFile.read(buffer);
           long newStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
 
-          // Update initial state ID (if necessary)
+          // Update initial state ID (if applicable)
           if (initialState == s)
             initialState = newStateID;
 

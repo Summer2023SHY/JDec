@@ -508,7 +508,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
             case "Trim":
 
-                createTab(new File("trim.hdr"), tab.automaton.trim());
+                automaton = tab.automaton.trim();
+                 if (automaton == null)
+                    JOptionPane.showMessageDialog(null, "Please specify a starting state.", "Trim Operation Failed", JOptionPane.ERROR_MESSAGE);
+                else
+                    createTab(new File("trim.hdr"), automaton);
                 break;
 
             case "Intersection":
