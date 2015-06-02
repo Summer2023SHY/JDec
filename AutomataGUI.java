@@ -509,7 +509,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
             case "Trim":
 
                 automaton = tab.automaton.trim();
-                 if (automaton == null)
+                if (automaton == null)
                     JOptionPane.showMessageDialog(null, "Please specify a starting state.", "Trim Operation Failed", JOptionPane.ERROR_MESSAGE);
                 else
                     createTab(new File("trim.hdr"), automaton);
@@ -521,7 +521,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 Automaton otherAutomaton = tabs.get(pickAutomaton("Which automaton would you like to take the intersection with?", index)).automaton;
 
                 // Create new tab with the intersection
-                createTab(new File("intersection.hdr"), Automaton.intersection(tab.automaton, otherAutomaton));
+                Automaton intersection = Automaton.intersection(tab.automaton, otherAutomaton);
+                if (intersection == null)
+                    JOptionPane.showMessageDialog(null, "Both automata must have the same number of controllers.", "Intersection Operation Failed", JOptionPane.ERROR_MESSAGE);
+                else
+                    createTab(new File("intersection.hdr"), intersection);
                 
                 break;
 
@@ -531,7 +535,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 otherAutomaton = tabs.get(pickAutomaton("Which automaton would you like to take the union with?", index)).automaton;
 
                 // Create new tab with the union
-                createTab(new File("union.hdr"), Automaton.union(tab.automaton, otherAutomaton));
+                Automaton union = Automaton.union(tab.automaton, otherAutomaton);
+                if (union == null)
+                    JOptionPane.showMessageDialog(null, "Both automata must have the same number of controllers.", "Union Operation Failed", JOptionPane.ERROR_MESSAGE);
+                else
+                    createTab(new File("union.hdr"), union);
 
                 break;
 

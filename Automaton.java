@@ -203,7 +203,7 @@ public class Automaton {
 
       /* Setup */
 
-    Automaton automaton = new Automaton(new File("accessible.hdr"), true);
+    Automaton automaton = new Automaton(new File("accessible.hdr"), nControllers);
 
     // Add events
     automaton.addAllEvents(events);
@@ -300,7 +300,7 @@ public class Automaton {
 
       /* Build co-accessible automaton by seeing which states are accessible from the marked states in the inverted automaton */
 
-    Automaton automaton = new Automaton(new File("coaccessible.hdr"), true);
+    Automaton automaton = new Automaton(new File("coaccessible.hdr"), nControllers);
 
     // Add events
     automaton.addAllEvents(events);
@@ -508,13 +508,18 @@ public class Automaton {
    * Generate the intersection of the two specified automata.
    * @param first   The first automaton
    * @param second  The second automaton
-   * @return the intersection
+   * @return the intersection, or null if the number of controllers do not match
    **/
   public static Automaton intersection(Automaton first, Automaton second) {
 
+      /* Error checking */
+
+    if (first.getNumberOfControllers() != second.getNumberOfControllers())
+      return null;
+
       /* Setup */
 
-    Automaton automaton = new Automaton(new File("intersection.hdr"), true);
+    Automaton automaton = new Automaton(new File("intersection.hdr"), first.getNumberOfControllers());
 
     // These two stacks should always have the same size
     Stack<Long> stack1 = new Stack<Long>(); 
@@ -596,9 +601,14 @@ public class Automaton {
    * Generate the union of the two specified automata.
    * @param first   The first automaton
    * @param second  The second automaton
-   * @return the union
+   * @return the union, or null if the number of controllers do not match
    **/
   public static Automaton union(Automaton first, Automaton second) {
+
+      /* Error checking */
+
+    if (first.getNumberOfControllers() != second.getNumberOfControllers())
+      return null;
 
       /* Setup */
 
