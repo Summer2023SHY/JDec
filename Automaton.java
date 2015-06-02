@@ -2355,6 +2355,45 @@ public class Automaton {
     /** ACCESSOR METHODS **/
 
   /**
+   * Check to see if a transition exists.
+   * @param initialStateID   The initial state
+   * @param eventID          The event triggering the transition
+   * @param targetStateID    The target state
+   * @return whether or not the transition exists
+   **/
+  public boolean transitionExists(long initialStateID, int eventID, long targetStateID) {
+    
+    Transition transition = new Transition(getEvent(eventID), targetStateID);
+    State s = getState(initialStateID);
+
+    for (Transition t : s.getTransitions())
+      if (t.equals(transition))
+        return true;
+
+    return false;
+
+  }
+
+  /**
+   * Check to see if a transition is bad.
+   * @param initialStateID   The initial state
+   * @param eventID          The event triggering the transition
+   * @param targetStateID    The target state
+   * @return whether or not the transition is bad
+   **/
+  public boolean isBadTransition(long initialStateID, int eventID, long targetStateID) {
+    
+    TransitionData transitionData = new TransitionData(initialStateID, eventID, targetStateID);
+
+    for (TransitionData t : badTransitions)
+      if (t.equals(transitionData))
+        return true;
+
+    return false;
+
+  }
+
+  /**
    * Check to see if a state exists.
    * NOTE: This is a light-weight method which can be used instead of calling "getState(id) != null").
    * It does not load all of the state information, but only checks the first byte to see if it exists or not.

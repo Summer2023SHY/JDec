@@ -1,9 +1,22 @@
 import java.awt.*;
 import javax.swing.*;
+import java.awt.event.*;
 
 public class RandomAutomatonPrompt extends JFrame {
 
-    public RandomAutomatonPrompt() {
+    AutomataGUI gui;
+    JSpinner nControllers, nEvents, nStates, minTransitions, maxTransitions, nBadTransitions;
+
+    static int  nControllersDefault = 1,
+                nEventsDefault = 4,
+                nStatesDefault = 10,
+                minTransitionsDefault = 0,
+                maxTransitionsDefault = 2,
+                nBadTransitionsDefault = 0;
+
+    public RandomAutomatonPrompt(AutomataGUI gui) {
+
+        this.gui = gui;
 
         addComponents();
 
@@ -30,7 +43,7 @@ public class RandomAutomatonPrompt extends JFrame {
         c.gridy = 0;
         add(nControllersLabel, c);
 
-        JSpinner nControllers = new JSpinner(new SpinnerNumberModel(1, 1, Automaton.MAX_NUMBER_OF_CONTROLLERS, 1));
+        nControllers = new JSpinner(new SpinnerNumberModel(nControllersDefault, 1, Automaton.MAX_NUMBER_OF_CONTROLLERS, 1));
         c.gridx = 1;
         c.gridy = 0;
         add(nControllers, c);
@@ -42,7 +55,7 @@ public class RandomAutomatonPrompt extends JFrame {
         c.gridy = 1;
         add(nEventsLabel, c);
 
-        JSpinner nEvents = new JSpinner(new SpinnerNumberModel(0, 0, Event.MAX_NUMBER_OF_EVENTS, 1));
+        nEvents = new JSpinner(new SpinnerNumberModel(nEventsDefault, 0, Event.MAX_NUMBER_OF_EVENTS, 1));
         c.gridx = 1;
         c.gridy = 1;
         add(nEvents, c);
@@ -54,41 +67,72 @@ public class RandomAutomatonPrompt extends JFrame {
         c.gridy = 2;
         add(nStatesLabel, c);
 
-        JSpinner nStates = new JSpinner(new SpinnerNumberModel(0, 0, Automaton.MAX_STATE_CAPACITY, 1));
+        nStates = new JSpinner(new SpinnerNumberModel(nStatesDefault, 0, Integer.MAX_VALUE, 1)); // The Automaton class can support more states, but SpinnerNumberModel cannot
         c.gridx = 1;
         c.gridy = 2;
         add(nStates, c);
 
             /* Number of transitions */
 
-        JLabel minTransitionsLabel = new JLabel(" Min. # transitions per state:");
+        JLabel minTransitionsLabel = new JLabel(" Min. # Transitions per State:");
         c.gridx = 0;
         c.gridy = 3;
         add(minTransitionsLabel, c);
 
-        JSpinner minTransitions = new JSpinner(new SpinnerNumberModel(0, 0, Automaton.MAX_TRANSITION_CAPACITY, 1));
+        minTransitions = new JSpinner(new SpinnerNumberModel(minTransitionsDefault, 0, Automaton.MAX_TRANSITION_CAPACITY, 1));
         c.gridx = 1;
         c.gridy = 3;
         add(minTransitions, c);
 
-        JLabel maxTransitionsLabel = new JLabel(" Max. # transitions per state:");
+        JLabel maxTransitionsLabel = new JLabel(" Max. # Transitions per State:");
         c.gridx = 0;
         c.gridy = 4;
         add(maxTransitionsLabel, c);
 
-        JSpinner maxTransitions = new JSpinner(new SpinnerNumberModel(0, 0, Automaton.MAX_TRANSITION_CAPACITY, 1));
+        maxTransitions = new JSpinner(new SpinnerNumberModel(maxTransitionsDefault, 0, Automaton.MAX_TRANSITION_CAPACITY, 1));
         c.gridx = 1;
         c.gridy = 4;
         add(maxTransitions, c);
 
-        JButton cancelButton = new JButton("Cancel");
+        JLabel nBadTransitionsLabel = new JLabel(" # Bad Transitions:");
         c.gridx = 0;
         c.gridy = 5;
+        add(nBadTransitionsLabel, c);
+
+        nBadTransitions = new JSpinner(new SpinnerNumberModel(nBadTransitionsDefault, 0, Integer.MAX_VALUE, 1));
+        c.gridx = 1;
+        c.gridy = 5;
+        add(nBadTransitions, c);
+
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                RandomAutomatonPrompt.this.dispose();
+            }
+        });
+        c.gridx = 0;
+        c.gridy = 6;
         add(cancelButton, c);
 
         JButton generateButton = new JButton("Generate");
+        generateButton.addActionListener(new ActionListener() {
+     
+            public void actionPerformed(ActionEvent e) {
+                gui.generateRandomAutomaton(
+                    "random",
+                    nEventsDefault = (Integer) nEvents.getValue(),
+                    nStatesDefault = (Integer) nStates.getValue(),
+                    minTransitionsDefault = (Integer) minTransitions.getValue(),
+                    maxTransitionsDefault = (Integer) maxTransitions.getValue(),
+                    nControllersDefault = (Integer) nControllers.getValue(),
+                    nBadTransitionsDefault = (Integer) nBadTransitions.getValue()
+                );
+                RandomAutomatonPrompt.this.dispose();
+            }
+
+        });
         c.gridx = 1;
-        c.gridy = 5;
+        c.gridy = 6;
         add(generateButton, c);
 
     }
@@ -102,7 +146,7 @@ public class RandomAutomatonPrompt extends JFrame {
 
         pack();
         
-            /* Ensure our application will be closed when the user presses the "X" */
+            /* Ensure our popup box will be closed when the user presses the "X" */
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
@@ -113,7 +157,7 @@ public class RandomAutomatonPrompt extends JFrame {
 
             /* Update title */
 
-        setTitle("Generate Random Automata");
+        setTitle("Generate Random Automaton");
 
             /* Show screen */
 

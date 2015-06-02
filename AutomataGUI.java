@@ -561,14 +561,18 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
             case "Random Automaton":
 
-                // new RandomAutomatonPrompt();
-
-                automaton = AutomatonGenerator.generateRandom("random", 4, 6, 0, 3, 2);
-                createTab(new File("random.hdr"), automaton);
+                new RandomAutomatonPrompt(this);
 
                 break;
             
         }
+
+    }
+
+    public void generateRandomAutomaton(String fileName, int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions) {
+
+        Automaton automaton = AutomatonGenerator.generateRandom(fileName, nEvents, nStates, minTransitionsPerState, maxTransitionsPerState, nControllers, nBadTransitions);
+        createTab(new File(fileName + "hdr"), automaton);
 
     }
 

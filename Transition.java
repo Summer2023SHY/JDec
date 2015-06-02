@@ -32,7 +32,7 @@ public class Transition {
 
 		Transition other = (Transition) obj;
 
-		return event.equals(other.getEvent()) && targetStateID == other.getTargetStateID();
+		return targetStateID == other.getTargetStateID() && event.equals(other.getEvent());
 
 	}
 

@@ -3,7 +3,7 @@ import java.io.*;
 
 public abstract class AutomatonGenerator {
 
-  public static Automaton generateRandom(String fileName, int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers) {
+  public static Automaton generateRandom(String fileName, int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions) {
 
       /* Create empty automaton with capacities that should prevent the need to re-create the body file */
 
@@ -36,20 +36,50 @@ public abstract class AutomatonGenerator {
     }
 
       /* Generate states */
-
-    long initialStateID = generateLong(1, nStates);
-    for (int i = 1; i <= nStates; i++) {
-      long id = automaton.addState(String.valueOf(i), generateBoolean(), i == initialStateID);
-      if (id == 0)
-        System.out.println("ERROR: State could not be added.");
+    {
+      long initialStateID = generateLong(1, nStates);
+      for (int i = 1; i <= nStates; i++) {
+        long id = automaton.addState(String.valueOf(i), generateBoolean(), i == initialStateID);
+        if (id == 0)
+          System.out.println("ERROR: State could not be added.");
+      }
     }
 
       /* Generate transitions */
-      
-    for (long i = 1; i <= nStates; i++) {
+
+    for (long s = 1; s <= nStates; s++) {
       int nTransitions = generateInt(minTransitionsPerState, maxTransitionsPerState);
-      for (int j = 0; j < nTransitions; j++)
-        automaton.addTransition(i, generateInt(1, nEvents), generateLong(1, nStates));
+      for (int i = 0; i < nTransitions; i++) {
+
+        int eventID;
+        long targetStateID;
+
+        // Ensure that we don't produce any duplicates
+        do {
+          eventID = generateInt(1, nEvents);
+          targetStateID = generateLong(1, nStates);
+        } while (automaton.transitionExists(s, eventID, targetStateID));
+
+        automaton.addTransition(s, eventID, targetStateID);
+      }
+    }
+
+      /* Add bad transitions */
+
+    for (int i = 0; i < nBadTransitions; i++) {
+
+      int eventID;
+      long initialStateID, targetStateID;
+
+      // Ensure that the transition exists (and that it is not already a bad transition)
+      do {
+        initialStateID = generateLong(1, nStates);
+        eventID = generateInt(1, nEvents);
+        targetStateID = generateLong(1, nStates);
+      } while (!automaton.transitionExists(initialStateID, eventID, targetStateID) || automaton.isBadTransition(initialStateID, eventID, targetStateID));
+
+      automaton.markTransitionAsBad(initialStateID, eventID, targetStateID);
+
     }
 
     return automaton;
