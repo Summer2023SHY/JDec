@@ -204,27 +204,25 @@ public class Automaton {
       /* Setup */
 
     Automaton automaton = new Automaton(new File("accessible.hdr"), true);
-    Stack<Long> stack = new Stack<Long>(); 
-
-    // Add the initial state to the stack
-    stack.push(getInitialStateID());
-
-      /* Build automaton from the accessible part of this automaton */
 
     // Add events
     automaton.addAllEvents(events);
+
+    // If there is no initial state, return null, so that the GUI knows to alert the user
+    if (initialState == 0)
+      return null;
+
+    // Add the initial state to the stack
+    Stack<Long> stack = new Stack<Long>(); 
+    stack.push(initialState);
+
+      /* Build automaton from the accessible part of this automaton */
 
     // Add states and transition
     while (stack.size() > 0) {
 
       // Get next ID
       long id = stack.pop();
-
-      // Error checking
-      if (id == 0) {
-        System.out.println("ERROR: Bad state ID.");
-        continue;
-      }
 
       // This state has already been created in the new automaton, so it does not need to be created again
       if (automaton.stateExists(id))
@@ -246,13 +244,13 @@ public class Automaton {
       // Traverse each transition
       for (Transition t : transitions) {
 
-      // Add the target state to the stack
-      stack.add(t.getTargetStateID());
+        // Add the target state to the stack
+        stack.add(t.getTargetStateID());
 
-      // Add transition to the new automaton
-      automaton.addTransition(id, t.getEvent().getID(), t.getTargetStateID());
+        // Add transition to the new automaton
+        automaton.addTransition(id, t.getEvent().getID(), t.getTargetStateID());
 
-    }
+      }
 
     }
 
