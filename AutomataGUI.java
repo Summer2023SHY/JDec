@@ -321,7 +321,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         JMenuItem menuItem;
         JMenu menu;
 
-          /* File Menu */
+          /* File menu */
 
         menu = new JMenu("File");
         menuBar.add(menu);
@@ -366,7 +366,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
           /* Operation Menu */
 
-        menu = new JMenu("Operation");
+        menu = new JMenu("Standard Operations");
         menuBar.add(menu);
 
         menuItem = new JMenuItem("Accessible");
@@ -390,14 +390,21 @@ public class AutomataGUI extends JFrame implements ActionListener {
         menuItem = new JMenuItem("Union");
         menuItem.addActionListener(this);
         menu.add(menuItem);
+        
+            /* U-Structure menu */
 
-        menu.addSeparator();
+        menu = new JMenu("U-Stucture");
+        menuBar.add(menu);
 
         menuItem = new JMenuItem("Synchronized Composition");
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
-            /* Generate Menu */
+        menuItem = new JMenuItem("Add Communications");
+        menuItem.addActionListener(this);
+        menu.add(menuItem);
+
+            /* Generate menu */
 
         menu = new JMenu("Generate");
         menuBar.add(menu);
@@ -551,6 +558,17 @@ public class AutomataGUI extends JFrame implements ActionListener {
                     JOptionPane.showMessageDialog(null, "Please ensure that you specified a starting state.", "Synchronized Composition Operation Failed", JOptionPane.ERROR_MESSAGE);
                 else
                     createTab(new File("synchronizedComposition.hdr"), automaton);
+
+                break;
+
+            case "Add Communications":
+
+                // Create a copy of the current automaton with all communications added and potential communications marked
+                automaton = tab.automaton.addCommunications();
+                if (automaton == null)
+                    JOptionPane.showMessageDialog(null, "Please ensure that the automaton only has one controller.", "Adding Communications Failed", JOptionPane.ERROR_MESSAGE);
+                else
+                    createTab(new File("addCommunications.hdr"), automaton);
 
                 break;
 

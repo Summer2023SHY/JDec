@@ -21,6 +21,7 @@
 
 import java.util.*;
 import java.io.*;
+import java.nio.file.*;
 import java.awt.image.*;
 import java.net.*;
 import javax.imageio.*;
@@ -944,28 +945,127 @@ public class Automaton {
 
       /* Return produced automaton */
 
-    // TEMPORARY
-    automaton.generatePotentialCommunications(automaton.generateLeastUpperBounds());
-
     return automaton;
 
   }
 
   /**
-   * TEMPORARY METHOD
+   * Generate a new automaton, with all communications added (potential communications are marked).
+   * @return the automaton with the added transitions
    **/
-  public Set<LabelVector> generateLeastUpperBounds() {
+  public Automaton addCommunications() {
+
+    // I'm not sure how we're supposed to handle automata with more than 1 controller (since our U-Structure has just one controller)
+    if (nControllers != 1)
+      return null;
+
+    // The new automaton will not be any smaller than this one, so it is benficial to set the default capacities
+    // Automaton automaton = new Automaton(
+    //   new File("potentialCommunications.hdr"),
+    //   new File("potentialCommunications.bdy"),
+    //   stateCapacity,
+    //   transitionCapacity,
+    //   labelLength,
+    //   nControllers,
+    //   true
+    // );
+    
+    Set<LabelVector> leastUpperBounds = generateLeastUpperBounds();
+    Set<LabelVector> potentialCommunications = findPotentialCommunications(leastUpperBounds);
+
+    Automaton automaton = duplicate("addCommunications");
+    System.out.println("nStates: " + automaton.getNumberOfStates());
+
+    return automaton;
+  }
+
+  /**
+   * 
+   **/
+  private Set<LabelVector> findPotentialCommunications(Set<LabelVector> leastUpperBounds) {
+
+      /* Separate observable and unobservable labels */
+
+    Set<LabelVector>  observableLabels = new HashSet<LabelVector>(),
+                      unobservableLabels = new HashSet<LabelVector>();
+
+    for (LabelVector v : leastUpperBounds) {
+      if (v.getLabelAtIndex(0).equals("*"))
+        unobservableLabels.add(v);
+      else
+        observableLabels.add(v);
+    }
+
+      /* Find potential communications */
+
+    Set<LabelVector> potentialCommunications = new HashSet<LabelVector>();
+    
+    for (LabelVector v1 : observableLabels) {
+      for (LabelVector v2 : unobservableLabels) {
+
+          /* Error checking */
+
+        if (v1.getSize() == -1 || v2.getSize() == -1 || v1.getSize() != v2.getSize()) {
+          System.out.println("ERROR: Bad event vectors. Least upper bounds generation aborted.");
+          return null;
+        }
+
+          /* Build least upper bound */
+
+        boolean valid = true;
+        String potentialCommunication = "";
+        for (int i = 0; i < v1.getSize(); i++) {
+
+          String  label1 = v1.getLabelAtIndex(i),
+                  label2 = v2.getLabelAtIndex(i);
+
+          // Check for incompatibility
+          if (!label1.equals("*") && !label2.equals("*") && !label1.equals(label2)) {
+            valid = false;
+            break;
+          }
+
+          // Append vector element
+          if (label1.equals("*"))
+            potentialCommunication += "_" + label2;
+          else
+            potentialCommunication += "_" + label1;
+
+        }
+
+          /* Add to the set */
+
+        if (valid)
+          potentialCommunications.add(new LabelVector("<" + potentialCommunication.substring(1) + ">"));
+
+      } // for
+    } // for
+
+    return potentialCommunications;
+    // powerSet(new ArrayList<LabelVector>(potentialCommunications), new HashSet<LabelVector>(), 0);
+
+  }
+
+  /**
+   * Generate all possible least upper bounds (L.U.Bs) of the event vectors (after synchronized composition).
+   * @return the set of all L.U.Bs in the form of event vectors
+   **/
+  private Set<LabelVector> generateLeastUpperBounds() {
+
+      /* Setup */
 
     Set<LabelVector> leastUpperBounds = new HashSet<LabelVector>();
     for (Event e : events)
       leastUpperBounds.add(new LabelVector(e.getLabel()));
 
-    boolean foundNew = true;
+      /* Continue to find L.U.Bs using pairs of event vectors until there are no new ones left to find */
 
+    boolean foundNew = true;
     while (foundNew) {
 
       List<LabelVector> temporaryList = new ArrayList<LabelVector>();
       
+      // Try all pairs
       for (LabelVector v1 : leastUpperBounds) {
         for (LabelVector v2 : leastUpperBounds) {
 
@@ -1007,15 +1107,13 @@ public class Automaton {
         } // for
       } // for
 
-      // Add all of the vectors from the tmeporary list
+      // Add all of the vectors from the temporary list
       foundNew = false;
       for (LabelVector v : temporaryList)
         if (leastUpperBounds.add(v))
           foundNew = true;
 
     }
-
-    System.out.println("Least Upper Bounds: " + leastUpperBounds);
 
     return leastUpperBounds;
 
@@ -1024,78 +1122,7 @@ public class Automaton {
   /**
    * TEMPORARY METHOD
    **/
-  public void generatePotentialCommunications(Set<LabelVector> leastUpperBounds) {
-
-      /* Separate observable and unobservable labels */
-
-    Set<LabelVector>  observableLabels = new HashSet<LabelVector>(),
-                      unobservableLabels = new HashSet<LabelVector>();
-
-    for (LabelVector v : leastUpperBounds) {
-      if (v.getLabelAtIndex(0).equals("*"))
-        unobservableLabels.add(v);
-      else
-        observableLabels.add(v);
-    }
-
-      /* Find potential communications */
-
-    Set<LabelVector> potentialCommunications = new HashSet<LabelVector>();
-    
-    for (LabelVector v1 : observableLabels) {
-      for (LabelVector v2 : unobservableLabels) {
-
-          /* Error checking */
-
-        if (v1.getSize() == -1 || v2.getSize() == -1 || v1.getSize() != v2.getSize()) {
-          System.out.println("ERROR: Bad event vectors. Least upper bounds generation aborted.");
-          return;
-        }
-
-          /* Build least upper bound */
-
-        boolean valid = true;
-        String potentialCommunication = "";
-        for (int i = 0; i < v1.getSize(); i++) {
-
-          String  label1 = v1.getLabelAtIndex(i),
-                  label2 = v2.getLabelAtIndex(i);
-
-          // Check for incompatibility
-          if (!label1.equals("*") && !label2.equals("*") && !label1.equals(label2)) {
-            valid = false;
-            break;
-          }
-
-          // Append vector element
-          if (label1.equals("*"))
-            potentialCommunication += "_" + label2;
-          else
-            potentialCommunication += "_" + label1;
-
-        }
-
-          /* Add to the set */
-
-        if (valid)
-          potentialCommunications.add(new LabelVector("<" + potentialCommunication.substring(1) + ">"));
-
-      } // for
-
-    } // for
-
-    System.out.println("Observable Labels: " + observableLabels);
-    System.out.println("Unobservable Labels: " + unobservableLabels);
-    System.out.println("Potential Communications: " + potentialCommunications);
-
-    powerset(new ArrayList<LabelVector>(potentialCommunications), new HashSet<LabelVector>(), 0);
-
-  }
-
-  /**
-   * TEMPORARY METHOD
-   **/
-  private void powerset(ArrayList<LabelVector> masterList, Set<LabelVector> elementsChosen, int index) {
+  private void powerSet(ArrayList<LabelVector> masterList, Set<LabelVector> elementsChosen, int index) {
 
       /* Base case */
 
@@ -1115,8 +1142,8 @@ public class Automaton {
 
     includingElement.add(masterList.get(index));
 
-    powerset(masterList, includingElement, index + 1);
-    powerset(masterList, notIncludingElement, index + 1);
+    powerSet(masterList, includingElement, index + 1);
+    powerSet(masterList, notIncludingElement, index + 1);
 
 
   }
@@ -1267,9 +1294,9 @@ public class Automaton {
    * Given two state IDs and their respective automatons, create a unique combined ID.
    * NOTE: The reasoning behind this formula is analogous to the following: if you have a table with N rows and M columns,
    * every cell is guaranteed to have a different combination of row and column indexes.
-   * @param id1   The state ID from the first automaton
+   * @param id1     The state ID from the first automaton
    * @param first   The first automaton
-   * @param id2   The state ID from the second automaton
+   * @param id2     The state ID from the second automaton
    * @param second  The second automaton
    * @return the combined ID
    **/ 
@@ -1301,7 +1328,7 @@ public class Automaton {
   /**
    * Given a combined ID, obtain the list of original IDs by reversing the process.
    * @param combinedID  The combined ID
-   * @param maxID     The largest possible value to be used as an ID
+   * @param maxID       The largest possible value to be used as an ID
    * @return the original list of IDs
    **/
   public static List<Long> separateIDs(long combinedID, long maxID) {
@@ -1323,8 +1350,8 @@ public class Automaton {
 
   /**
    * Output this automaton in a format that is readable by GraphViz, then export as requested.
-   * @param size        The requested width and height in pixels
-   * @param mode        The output type
+   * @param size            The requested width and height in pixels
+   * @param mode            The output type
    * @param outputFileName  The location to put the generated output
    * @return whether or not the output was successfully generated
    **/
@@ -1546,11 +1573,11 @@ public class Automaton {
       State state = getState(s);
 
       if (state == null) {
-        System.out.println("ERROR: State could not be loaded..");
+        System.out.println("ERROR: State could not be loaded.");
         continue;
       }
 
-      // Place '@' before label only if this is the initial state
+      // Place '@' before label if this is the initial state
       if (s == initialState)
         stateInputBuilder.append("@");
 
@@ -1638,6 +1665,29 @@ public class Automaton {
   }
 
     /** WORKING WITH FILES **/
+
+  /**
+   * Duplicate this automaton and store it in a different set of files.
+   * @param fileName  The name of the new files, excluding the extension (ex: "file" will store the automaton in "file.hdr" and "file.bdy")
+   * @return the duplicated automaton
+   **/
+  public Automaton duplicate(String fileName) {
+
+    try {
+      
+      System.out.println(headerFile.getName());
+      System.out.println(bodyFile.getName());
+      Files.copy(headerFile.toPath(), new File(fileName + ".hdr").toPath(), StandardCopyOption.REPLACE_EXISTING);
+      Files.copy(bodyFile.toPath(), new File(fileName + ".bdy").toPath(), StandardCopyOption.REPLACE_EXISTING);
+    
+    } catch (IOException e) {
+      e.printStackTrace();
+      return null;
+    }
+
+    return new Automaton(headerFile, false);
+
+  }
 
   /**
    * Open the header and body files, and read in the header file.
@@ -2337,7 +2387,7 @@ public class Automaton {
    **/
   public int addEvent(String label, boolean[] observable, boolean[] controllable) {
 
-    // Ensure that no other event already exists with this label (this is necessary because of the strange comparison criteria in Event.compareTo())
+    // Ensure that no other event already exists with this label (NOTE: This "might" not be necessary any longer..)
     for (Event e : events)
       if (e.getLabel().equals(label))
         return 0; 
