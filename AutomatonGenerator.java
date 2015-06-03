@@ -31,7 +31,7 @@ public abstract class AutomatonGenerator {
 
       int id = automaton.addEvent(String.valueOf(i), observability, controllability);
       if (id == 0)
-          System.out.println("ERROR: Event could not be added.");
+          System.err.println("ERROR: Event could not be added.");
 
     }
 
@@ -41,7 +41,7 @@ public abstract class AutomatonGenerator {
       for (int i = 1; i <= nStates; i++) {
         long id = automaton.addState(String.valueOf(i), generateBoolean(), i == initialStateID);
         if (id == 0)
-          System.out.println("ERROR: State could not be added.");
+          System.err.println("ERROR: State could not be added.");
       }
     }
 
@@ -117,12 +117,12 @@ public abstract class AutomatonGenerator {
     for (String line : stateInputText.split("\n")) {
 
       String[] splitLine = line.trim().split(",");
-      String label = trimStateLabel(splitLine[0], Automaton.MAX_LABEL_LENGTH);
+      String label = trimStateLabel(splitLine[0], Automaton.MAX_LABEL_LENGTH, verbose);
 
       // Check to see if this is a duplicate state label
       if (stateMapping.get(label) != null) {
         if (verbose)
-          System.out.println("ERROR: Could not store '" + line + "' as a state, since there is already a state with this label.");
+          System.err.println("ERROR: Could not store '" + line + "' as a state, since there is already a state with this label.");
         continue;
       }
 
@@ -134,7 +134,7 @@ public abstract class AutomatonGenerator {
         // Ensure the user didn't only have a '@' symbols the name of the label (since '@' gets removed, we are left with an empty string)
         if (isInitialState && label.length() == 1) {
           if (verbose)
-            System.out.println("ERROR: Could not parse '" + line + "' as a state (state name must be at least 1 character long).");
+            System.err.println("ERROR: Could not parse '" + line + "' as a state (state name must be at least 1 character long).");
           continue;
 
         }
@@ -145,7 +145,7 @@ public abstract class AutomatonGenerator {
 
         // Check for invalid label
         if (!isValidLabel(label)) {
-          System.out.println("ERROR: Invalid label ('" + label + "').");
+          System.err.println("ERROR: Invalid label ('" + label + "').");
           continue;
         }
 
@@ -154,7 +154,7 @@ public abstract class AutomatonGenerator {
         // Error checking
         if (id == 0) {
           if (verbose)
-            System.out.println("ERROR: Could not store '" + line + "' as a state.");
+            System.err.println("ERROR: Could not store '" + line + "' as a state.");
           continue;
         }
 
@@ -162,7 +162,7 @@ public abstract class AutomatonGenerator {
         stateMapping.put(label, id);
 
       } else if (line.length() > 0 && verbose)
-      System.out.println("ERROR: Could not parse '" + line + "' as a state.");
+      System.err.println("ERROR: Could not parse '" + line + "' as a state.");
     }
 
       /* The image will be blank if there are no states */
@@ -180,7 +180,7 @@ public abstract class AutomatonGenerator {
       // Check to see if this is a duplicate event label
       if (eventMapping.get(label) != null) {
         if (verbose)
-          System.out.println("ERROR: Could not store '" + line + "' as an event, since there is already an event with this label.");
+          System.err.println("ERROR: Could not store '" + line + "' as an event, since there is already an event with this label.");
         continue;
       }
 
@@ -215,14 +215,14 @@ public abstract class AutomatonGenerator {
 
         // Check for invalid label
         if (!isValidLabel(label)) {
-          System.out.println("ERROR: Invalid label ('" + label + "').");
+          System.err.println("ERROR: Invalid label ('" + label + "').");
           continue;
         }
 
         // Error checking
         if (id == 0) {
           if (verbose)
-            System.out.println("ERROR: Could not store '" + line + "' as an event.");
+            System.err.println("ERROR: Could not store '" + line + "' as an event.");
           continue;
         }
 
@@ -231,7 +231,7 @@ public abstract class AutomatonGenerator {
         eventMapping.put(label, id);
 
       } else if (line.length() > 0 && verbose)
-        System.out.println("ERROR: Could not parse '" + line + "' as an event.");
+        System.err.println("ERROR: Could not parse '" + line + "' as an event.");
 
     }
 
@@ -262,9 +262,9 @@ public abstract class AutomatonGenerator {
       String[] firstHalf = splitLine[0].split(",");
       if (firstHalf.length >= 3) {
 
-        String initialStateLabel = trimStateLabel(firstHalf[0].trim(), Automaton.MAX_LABEL_LENGTH);
+        String initialStateLabel = trimStateLabel(firstHalf[0].trim(), Automaton.MAX_LABEL_LENGTH, verbose);
         String eventLabel = firstHalf[1].trim();
-        String targetStateLabel = trimStateLabel(firstHalf[2].trim(), Automaton.MAX_LABEL_LENGTH);
+        String targetStateLabel = trimStateLabel(firstHalf[2].trim(), Automaton.MAX_LABEL_LENGTH, verbose);
 
         // Get ID's of initial state, event, and target state
         Long initialStateID = stateMapping.get(initialStateLabel);
@@ -274,7 +274,7 @@ public abstract class AutomatonGenerator {
         // Prevent crashing by checking to see if any of the values are null (indicates that they've entered a state or event that doesn't exist)
         if (initialStateID == null || eventID == null || targetStateID == null) {
           if (verbose)
-            System.out.println("ERROR: Could not store '" + line + "' as a transition.");
+            System.err.println("ERROR: Could not store '" + line + "' as a transition.");
         }
 
         // Add transition
@@ -291,11 +291,11 @@ public abstract class AutomatonGenerator {
               automaton.addConditionalViolation(initialStateID, eventID, targetStateID);
 
           } else
-            System.out.println("ERROR: Could not add '" + line + "' as a transition.");
+            System.err.println("ERROR: Could not add '" + line + "' as a transition.");
         }
         
       } else if (line.length() > 0 && verbose)
-        System.out.println("ERROR: Could not parse '" + line + "' as a transition.");
+        System.err.println("ERROR: Could not parse '" + line + "' as a transition.");
     }
 
     return automaton;
@@ -361,16 +361,18 @@ public abstract class AutomatonGenerator {
    * Trim down the string to the desired length by removing characters from the end.
    * @param str     The string that needs to be trimmed
    * @param length  The desired length
+   * @param verbose Whether or not a message should be printed if a label is trimmed
    * @return the trimmed string (or the original if it doesn't exceed the desired length)
    **/
-  private static String trimStateLabel(String str, int length) {
+  private static String trimStateLabel(String str, int length, boolean verbose) {
 
     if (str.length() <= length)
       return str;
 
     String trimmed = str.substring(0, length);
     
-    System.out.println(String.format("NOTE: State labels must be %d characters or less. '%s' was trimmed to '%s'.", Automaton.MAX_LABEL_LENGTH, str, trimmed));
+    if (verbose)
+      System.err.println(String.format("NOTE: State labels must be %d characters or less. '%s' was trimmed to '%s'.", Automaton.MAX_LABEL_LENGTH, str, trimmed));
 
     return trimmed;
 

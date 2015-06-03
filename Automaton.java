@@ -546,7 +546,7 @@ public class Automaton {
 
       // Error checking
       if (id1 == 0 || id2 == 0) {
-        System.out.println("ERROR: Bad state ID.");
+        System.err.println("ERROR: Bad state ID.");
         continue;
       }
 
@@ -648,7 +648,7 @@ public class Automaton {
 
       // Error checking
       if (id1 == 0 || id2 == 0) {
-        System.out.println("ERROR: Bad state ID.");
+        System.err.println("ERROR: Bad state ID.");
         continue;
       }
 
@@ -750,7 +750,7 @@ public class Automaton {
 
       // Error checking
       if (startingState == null) {
-        System.out.println("ERROR: No starting state.");
+        System.err.println("ERROR: No starting state.");
         return null;
       }
 
@@ -855,7 +855,7 @@ public class Automaton {
 
           // Add state
           if (!automaton.addStateAt(combinedStateLabel, false, new ArrayList<Transition>(), false, combinedTargetID)) {
-            System.out.println("ERROR: Failed to add state. Synchronized composition aborted.");
+            System.err.println("ERROR: Failed to add state. Synchronized composition aborted.");
             return null;
           }
           
@@ -915,7 +915,7 @@ public class Automaton {
 
               // Add state
               if (!automaton.addStateAt(combinedStateLabel, false, new ArrayList<Transition>(), false, combinedTargetID)) {
-                System.out.println("ERROR: Failed to add state. Synchronized composition aborted.");
+                System.err.println("ERROR: Failed to add state. Synchronized composition aborted.");
                 return null;
               }
             
@@ -974,7 +974,6 @@ public class Automaton {
     Set<LabelVector> potentialCommunications = findPotentialCommunications(leastUpperBounds);
 
     Automaton automaton = duplicate("addCommunications");
-    System.out.println("nStates: " + automaton.getNumberOfStates());
 
     return automaton;
   }
@@ -1006,7 +1005,7 @@ public class Automaton {
           /* Error checking */
 
         if (v1.getSize() == -1 || v2.getSize() == -1 || v1.getSize() != v2.getSize()) {
-          System.out.println("ERROR: Bad event vectors. Least upper bounds generation aborted.");
+          System.err.println("ERROR: Bad event vectors. Least upper bounds generation aborted.");
           return null;
         }
 
@@ -1072,7 +1071,7 @@ public class Automaton {
             /* Error checking */
 
           if (v1.getSize() == -1 || v2.getSize() == -1 || v1.getSize() != v2.getSize()) {
-            System.out.println("ERROR: Bad event vectors. Least upper bounds generation aborted.");
+            System.err.println("ERROR: Bad event vectors. Least upper bounds generation aborted.");
             return null;
           }
 
@@ -1209,7 +1208,7 @@ public class Automaton {
 
           // Write the updated state to the new file
           if (!state.writeToFile(newBodyRAFile, nBytesPerState, labelLength, nBytesPerStateID, transitionCapacity))
-            System.out.println("ERROR: Could not write state to file.");
+            System.err.println("ERROR: Could not write state to file.");
 
         }
 
@@ -1271,10 +1270,10 @@ public class Automaton {
         bodyRAFile.close();
 
         if (!bodyFile.delete())
-          System.out.println("ERROR: Could not delete old body file.");
+          System.err.println("ERROR: Could not delete old body file.");
               
         if (!mappingFile.delete())
-          System.out.println("ERROR: Could not delete mapping file.");
+          System.err.println("ERROR: Could not delete mapping file.");
 
       } catch (SecurityException e) {
         e.printStackTrace();
@@ -1501,7 +1500,7 @@ public class Automaton {
 
       // Wait for it to finish
       if (process.waitFor() != 0) {
-        System.out.println("ERROR: GraphViz failed to generate image of graph.");
+        System.err.println("ERROR: GraphViz failed to generate image of graph.");
         return false;
       }
 
@@ -1577,7 +1576,7 @@ public class Automaton {
       State state = getState(s);
 
       if (state == null) {
-        System.out.println("ERROR: State could not be loaded. id=" + s);
+        System.err.println("ERROR: State could not be loaded. id=" + s);
         continue;
       }
 
@@ -1678,9 +1677,7 @@ public class Automaton {
   public Automaton duplicate(String fileName) {
 
     try {
-      
-      System.out.println(headerFile.getName());
-      System.out.println(bodyFile.getName());
+    
       Files.copy(headerFile.toPath(), new File(fileName + ".hdr").toPath(), StandardCopyOption.REPLACE_EXISTING);
       Files.copy(bodyFile.toPath(), new File(fileName + ".bdy").toPath(), StandardCopyOption.REPLACE_EXISTING);
     
@@ -1736,10 +1733,10 @@ public class Automaton {
     try {
 
         if (!headerFile.delete() && headerFile.exists())
-                System.out.println("ERROR: Could not delete header file.");
+                System.err.println("ERROR: Could not delete header file.");
         
             if (!bodyFile.delete() && headerFile.exists())
-                System.out.println("ERROR: Could not delete body file.");
+                System.err.println("ERROR: Could not delete body file.");
 
       } catch (SecurityException e) {
         e.printStackTrace();
@@ -1995,7 +1992,7 @@ public class Automaton {
 
       // Try writing to file
       if (!state.writeToFile(newBodyRAFile, newNBytesPerState, newLabelLength, newNBytesPerStateID, newTransitionCapacity)) {
-        System.out.println("ERROR: Could not write copy over state to file. Aborting re-creation of .bdy file.");
+        System.err.println("ERROR: Could not write copy over state to file. Aborting re-creation of .bdy file.");
         return;
       }
     }
@@ -2134,7 +2131,7 @@ public class Automaton {
     State startingState  = getState(startingStateID);
 
     if (startingState == null) {
-      System.out.println("ERROR: Could not add transition to file (starting state does not exist).");
+      System.err.println("ERROR: Could not add transition to file (starting state does not exist).");
       return false;
     }
 
@@ -2144,7 +2141,7 @@ public class Automaton {
 
       // If we cannot increase the capacity, return false (NOTE: This will likely never happen)
       if (transitionCapacity == MAX_TRANSITION_CAPACITY) {
-        System.out.println("ERROR: Could not add transition to file (reached maximum transition capacity).");
+        System.err.println("ERROR: Could not add transition to file (reached maximum transition capacity).");
         return false;
       }
 
@@ -2166,7 +2163,7 @@ public class Automaton {
     Event event = getEvent(eventID);
     startingState.addTransition(new Transition(event, targetStateID));
     if (!startingState.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID, transitionCapacity)) {
-      System.out.println("ERROR: Could not add transition to file.");
+      System.err.println("ERROR: Could not add transition to file.");
       return false;
     }
     activeEvents.add(event);
@@ -2199,7 +2196,7 @@ public class Automaton {
       /* Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs) */
 
     if (nStates == MAX_STATE_CAPACITY) {
-      System.out.println("ERROR: Could not write state to file (reached maximum state capacity).");
+      System.err.println("ERROR: Could not write state to file (reached maximum state capacity).");
       return 0;
     }
 
@@ -2209,7 +2206,7 @@ public class Automaton {
 
       // If we cannot increase the capacity, indicate a failure
       if (label.length() > MAX_LABEL_LENGTH) {
-        System.out.println("ERROR: Could not write state to file (reached maximum label length).");
+        System.err.println("ERROR: Could not write state to file (reached maximum label length).");
         return 0;
       }
 
@@ -2229,7 +2226,7 @@ public class Automaton {
 
       // If we cannot increase the capacity, indicate a failure (NOTE: This will likely never happen)
       if (transitions.size() > MAX_TRANSITION_CAPACITY) {
-        System.out.println("ERROR: Could not write state to file (reached maximum transition capacity).");
+        System.err.println("ERROR: Could not write state to file (reached maximum transition capacity).");
         return 0;
       }
 
@@ -2263,7 +2260,7 @@ public class Automaton {
     
     State state = new State(label, id, marked, transitions);
     if (!state.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID, transitionCapacity)) {
-      System.out.println("ERROR: Could not write state to file.");
+      System.err.println("ERROR: Could not write state to file.");
       return 0;
     }
 
@@ -2292,12 +2289,10 @@ public class Automaton {
    **/
   public boolean addStateAt(String label, boolean marked, ArrayList<Transition> transitions, boolean isInitialState, long id) {
 
-    System.out.println("DEBUG: " + "adding state with id=" + id);
-
       /* Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs) */
     
     if (id > MAX_STATE_CAPACITY) {
-      System.out.println("ERROR: Could not write state to file.");
+      System.err.println("ERROR: Could not write state to file.");
       return false;
     }
 
@@ -2307,7 +2302,7 @@ public class Automaton {
 
       // If we cannot increase the capacity, indicate a failure
       if (label.length() > MAX_LABEL_LENGTH) {
-        System.out.println("ERROR: Could not write state to file.");
+        System.err.println("ERROR: Could not write state to file.");
         return false;
       }
 
@@ -2326,7 +2321,7 @@ public class Automaton {
 
       // If we cannot increase the capacity, indicate a failure (NOTE: This will likely never happen)
       if (transitions.size() > MAX_TRANSITION_CAPACITY) {
-        System.out.println("ERROR: Could not write state to file.");
+        System.err.println("ERROR: Could not write state to file.");
         return false;
       }
 
@@ -2366,7 +2361,7 @@ public class Automaton {
     State state = new State(label, id, marked, transitions);
     
     if (!state.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID, transitionCapacity)) {
-      System.out.println("ERROR: Could not write state to file.");
+      System.err.println("ERROR: Could not write state to file.");
       return false;
     }
 

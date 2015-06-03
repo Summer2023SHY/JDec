@@ -49,8 +49,8 @@ public class TestAutomata {
         counter.add(runEventCreationTestRoutine());
         counter.add(runStateCreationTestRoutine());
         counter.add(runAutomatonCapacityTestRoutine());
-        counter.add(runGUIInputTestRoutine()); // FINISHED ADDING NEW TESTCASE OUTPUT
-    	counter.add(runAutomataOperationsTestRoutine()); // FINISHED ADDING NEW TESTCASE OUTPUT
+        counter.add(runGUIInputTestRoutine());
+    	counter.add(runAutomataOperationsTestRoutine());
 
     		/* Print summary of all tests */
 
@@ -228,6 +228,14 @@ public class TestAutomata {
     	printTestCase("Ensuring that the added state has the proper label", new TestResult(a.getState(id).getLabel(), "secondState"), counter);
     	printTestCase("Ensuring that the added state is unmarked", new TestResult(a.getState(id).isMarked(), false), counter);
 
+        printTestOutput("Adding a state with a label of maximum length...", 3);
+        id = a.addState("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv", false, true);
+        printTestCase("Ensuring that the added state has the proper label", new TestResult(a.getState(id).getLabel(), "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv"), counter);
+
+        printTestOutput("Adding a state with a label exceeding maximum length...", 3);
+        id = a.addState("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvw", false, true);
+        printTestCase("Ensuring that the state was not added", new TestResult(id, 0), counter);
+
         a.closeFiles();
     	
     		/* State ID Assignment Tests */
@@ -244,6 +252,25 @@ public class TestAutomata {
     	printTestOutput("Adding a second state...", 3);
         id = a.addState("secondState", true, true);
         printTestCase("Ensuring that the state's ID is 2", new TestResult(id, 2), counter);
+
+        a.closeFiles();
+
+            /* State Label Trimming Tests */
+
+        printTestOutput("STATE LABEL TRIMMING TESTS: ", 2);
+
+        printTestOutput("Instantiating automaton...", 3);
+        a = AutomatonGenerator.generateFromGUICode(
+                "", // Events
+                "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv0\nabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv1", // States 
+                "", // Transitions
+                1, // Number of controllers
+                false, // We do not want it to be verbose
+                null // Use temporary files
+            );
+
+        a.generateInputForGUI();
+        printTestCase("Ensuring the states are correct", new TestResult(a.getStateInput(), "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv,T"), counter);
 
         a.closeFiles();
 
