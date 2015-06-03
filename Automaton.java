@@ -6,8 +6,9 @@
  * @author Micah Stairs
  *
  * TABLE OF CONTENTS:
- *  -Class Constants
- *  -Enum
+ *  -Public Class Constants
+ *  -Private Class Constants
+ *  -Output Mode Enum
  *  -Private Instance Variables
  *  -Constructors
  *  -Automata Operations
@@ -28,26 +29,44 @@ import javax.imageio.*;
 
 public class Automaton {
 
-    /** CLASS CONSTANTS **/
+    /** PUBLIC CLASS CONSTANTS **/
 
-  private static final int HEADER_SIZE = 48; // This is the fixed amount of space needed to hold the main variables in the .hdr file
-
+  /** The number of states that an automaton can hold by default. */
   public static final long DEFAULT_STATE_CAPACITY = 255;
+
+  /** The maximum number of states that an automaton can hold. */
   public static final long MAX_STATE_CAPACITY = Long.MAX_VALUE;
+
+  /** The number of transitions that each state in an automaton can hold by default. */
   public static final int DEFAULT_TRANSITION_CAPACITY = 1;
+
+  /** The maximum number of transitions that each state in an automaton can hold. */
   public static final int MAX_TRANSITION_CAPACITY = Integer.MAX_VALUE;
+
+  /** The number of characters that each state label in an automaton can hold by default. */
   public static final int DEFAULT_LABEL_LENGTH = 1;
+
+  /** The maximum number of characters that each state label in an automaton can hold. */
   public static final int MAX_LABEL_LENGTH = 100;
+
+  /** The default number of controllers in an automaton. */
   public static final int DEFAULT_NUMBER_OF_CONTROLLERS = 1;
+
+  /** The maximum number of controllers in an automaton. */
   public static final int MAX_NUMBER_OF_CONTROLLERS = 10;
+
+    /** PRIVATE CLASS CONSTANTS **/
+
+  private static final int HEADER_SIZE = 52; // This is the fixed amount of space needed to hold the main variables in the .hdr file
 
   private static final String DEFAULT_HEADER_FILE_NAME = "temp.hdr",
                               DEFAULT_BODY_FILE_NAME = "temp.bdy";
   private static final File   DEFAULT_HEADER_FILE = new File(DEFAULT_HEADER_FILE_NAME),
                               DEFAULT_BODY_FILE = new File(DEFAULT_BODY_FILE_NAME);
 
-    /** ENUM **/
+    /** OUTPUT MODE ENUM **/
 
+  /** Image of automaton can be formatted as either .png or .svg. */
   public static enum OutputMode {
     PNG,
     SVG
@@ -73,12 +92,12 @@ public class Automaton {
   private int nBytesPerStateID;
   private long nBytesPerState;
 
-  // Special transitions (used by synchronized composition)
+  // Special transitions (used by U-Structure)
   private List<TransitionData> badTransitions = new ArrayList<TransitionData>();
   private List<TransitionData> unconditionalViolations = new ArrayList<TransitionData>();
   private List<TransitionData> conditionalViolations = new ArrayList<TransitionData>();
+  private List<TransitionData> potentialCommunications = new ArrayList<TransitionData>();
 
-  
   // File variables
   private String  headerFileName = DEFAULT_HEADER_FILE_NAME,
           bodyFileName = DEFAULT_BODY_FILE_NAME;
@@ -389,6 +408,10 @@ public class Automaton {
     for (TransitionData transitionData : conditionalViolations)
       if (automaton.stateExists(transitionData.initialStateID) && automaton.stateExists(transitionData.targetStateID))
         automaton.addConditionalViolation(transitionData.initialStateID, transitionData.eventID, transitionData.targetStateID);
+
+      for (TransitionData transitionData : potentialCommunications)
+      if (automaton.stateExists(transitionData.initialStateID) && automaton.stateExists(transitionData.targetStateID))
+        automaton.addPotentialCommunication(transitionData.initialStateID, transitionData.eventID, transitionData.targetStateID);
 
   }
 
@@ -1216,52 +1239,10 @@ public class Automaton {
 
         /* Update the special transitions in the header file */
 
-      byte[] buffer = new byte[nBytesPerStateID];
-
-      // Bad transitions
-      for (TransitionData t : badTransitions) {
-
-        // Update initialStateID
-        mappingRAFile.seek(nBytesPerStateID * t.initialStateID);
-        mappingRAFile.read(buffer);
-        t.initialStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
-
-        // Update targetStateID
-        mappingRAFile.seek(nBytesPerStateID * t.targetStateID);
-        mappingRAFile.read(buffer);
-        t.targetStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
-
-      }
-
-      // Unconditional violations
-      for (TransitionData t : unconditionalViolations) {
-
-        // Update initialStateID
-        mappingRAFile.seek(nBytesPerStateID * t.initialStateID);
-        mappingRAFile.read(buffer);
-        t.initialStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
-
-        // Update targetStateID
-        mappingRAFile.seek(nBytesPerStateID * t.targetStateID);
-        mappingRAFile.read(buffer);
-        t.targetStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
-
-      }
-
-      // Conditional violations
-      for (TransitionData t : conditionalViolations) {
-
-        // Update initialStateID
-        mappingRAFile.seek(nBytesPerStateID * t.initialStateID);
-        mappingRAFile.read(buffer);
-        t.initialStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
-
-        // Update targetStateID
-        mappingRAFile.seek(nBytesPerStateID * t.targetStateID);
-        mappingRAFile.read(buffer);
-        t.targetStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
-
-      }
+      renumberSpecialTransitions(mappingRAFile, badTransitions);
+      renumberSpecialTransitions(mappingRAFile, unconditionalViolations);
+      renumberSpecialTransitions(mappingRAFile, conditionalViolations);
+      renumberSpecialTransitions(mappingRAFile, potentialCommunications);
 
         /* Remove old body file and mappings file */
 
@@ -1287,9 +1268,34 @@ public class Automaton {
       e.printStackTrace();
     }
 
-      /* Update header file */
+      /* Update header file (since we re-numbered the information in the special transitions) */
 
     writeHeaderFile();
+
+  }
+
+  /**
+   * Helper method to re-number states in the speicifed list of special transitions.
+   * @param mappingRAFile The binary file containing the state ID mappings
+   * @param list          The list of special transition data
+   **/
+  private void renumberSpecialTransitions(RandomAccessFile mappingRAFile, List<TransitionData> list) throws IOException {
+
+    byte[] buffer = new byte[nBytesPerStateID];
+
+    for (TransitionData t : list) {
+
+        // Update initialStateID
+        mappingRAFile.seek(nBytesPerStateID * t.initialStateID);
+        mappingRAFile.read(buffer);
+        t.initialStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
+
+        // Update targetStateID
+        mappingRAFile.seek(nBytesPerStateID * t.targetStateID);
+        mappingRAFile.read(buffer);
+        t.targetStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
+
+      }
 
   }
 
@@ -1397,6 +1403,13 @@ public class Automaton {
         additionalEdgeProperties.put(edge, additionalEdgeProperties.get(edge) + ",style=dotted");
       else
         additionalEdgeProperties.put(edge, ",style=dotted"); 
+    }
+    for (TransitionData t : potentialCommunications) {
+      String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
+      if (additionalEdgeProperties.containsKey(edge))
+        additionalEdgeProperties.put(edge, additionalEdgeProperties.get(edge) + ",color=blue");
+      else
+        additionalEdgeProperties.put(edge, ",color=blue"); 
     }
     
       /* Draw all states and their transitions */
@@ -1617,6 +1630,8 @@ public class Automaton {
           specialTransition += ",UNCONDITIONAL_VIOLATION";
         if (conditionalViolations.contains(transitionData))
           specialTransition += ",CONDITIONAL_VIOLATION";
+        if (potentialCommunications.contains(transitionData))
+          specialTransition += ",POTENTIAL_COMMUNICATION";
         if (!specialTransition.equals(""))
           transitionInputBuilder.append(":" + specialTransition.substring(1));
       
@@ -1779,6 +1794,7 @@ public class Automaton {
     ByteManipulator.writeLongAsBytes(buffer, 36, badTransitions.size(), 4);
     ByteManipulator.writeLongAsBytes(buffer, 40, unconditionalViolations.size(), 4);
     ByteManipulator.writeLongAsBytes(buffer, 44, conditionalViolations.size(), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 48, potentialCommunications.size(), 4);
 
     try {
 
@@ -1817,6 +1833,7 @@ public class Automaton {
       writeSpecialTransitionsToHeader(badTransitions);
       writeSpecialTransitionsToHeader(unconditionalViolations);
       writeSpecialTransitionsToHeader(conditionalViolations);
+      writeSpecialTransitionsToHeader(potentialCommunications);
 
     } catch (IOException e) {
             e.printStackTrace();
@@ -1875,6 +1892,7 @@ public class Automaton {
       int nBadTransitions = (int) ByteManipulator.readBytesAsLong(buffer, 36, 4);
       int nUnconditionalViolations = (int) ByteManipulator.readBytesAsLong(buffer, 40, 4);
       int nConditionalViolations = (int) ByteManipulator.readBytesAsLong(buffer, 44, 4);
+      int nPotentialCommunications = (int) ByteManipulator.readBytesAsLong(buffer, 48, 4);
 
        /* Read in the events */
 
@@ -1912,6 +1930,7 @@ public class Automaton {
       readSpecialTransitionsFromHeader(nBadTransitions, badTransitions);
       readSpecialTransitionsFromHeader(nUnconditionalViolations, unconditionalViolations);
       readSpecialTransitionsFromHeader(nConditionalViolations, conditionalViolations);
+      readSpecialTransitionsFromHeader(nPotentialCommunications, potentialCommunications);
 
     } catch (IOException e) {
       e.printStackTrace();
@@ -2455,6 +2474,21 @@ public class Automaton {
   public void addConditionalViolation(long initialStateID, int eventID, long targetStateID) {
 
     conditionalViolations.add(new TransitionData(initialStateID, eventID, targetStateID));
+
+    // Update header file
+    writeHeaderFile();
+
+  }
+
+  /**
+   * Add a potential communication.
+   * @param initialStateID   The initial state
+   * @param eventID          The event triggering the transition
+   * @param targetStateID    The target state
+   **/
+  public void addPotentialCommunication(long initialStateID, int eventID, long targetStateID) {
+
+    potentialCommunications.add(new TransitionData(initialStateID, eventID, targetStateID));
 
     // Update header file
     writeHeaderFile();

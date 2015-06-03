@@ -241,8 +241,9 @@ public abstract class AutomatonGenerator {
 
       String[] splitLine = line.trim().split(":");
       boolean isUnconditionalViolation = false,
-      isConditionalViolation = false,
-      isBadTransition = false;
+              isConditionalViolation = false,
+              isBadTransition = false,
+              isPotentialCommunication = false;
 
       // Take care of the second half (which identifies special transitions)
       if (splitLine.length > 1) {
@@ -254,7 +255,9 @@ public abstract class AutomatonGenerator {
           else if (str.equals("UNCONDITIONAL_VIOLATION"))
             isUnconditionalViolation = true;
           else if (str.equals("CONDITIONAL_VIOLATION"))
-            isConditionalViolation = true;   
+            isConditionalViolation = true;
+          else if (str.equals("POTENTIAL_COMMUNICATION"))
+            isPotentialCommunication = true;   
         }
       }
 
@@ -289,6 +292,8 @@ public abstract class AutomatonGenerator {
               automaton.addUnconditionalViolation(initialStateID, eventID, targetStateID);
             if (isConditionalViolation)
               automaton.addConditionalViolation(initialStateID, eventID, targetStateID);
+            if (isPotentialCommunication)
+              automaton.addPotentialCommunication(initialStateID, eventID, targetStateID);
 
           } else
             System.err.println("ERROR: Could not add '" + line + "' as a transition.");
