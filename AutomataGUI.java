@@ -129,13 +129,10 @@ public class AutomataGUI extends JFrame implements ActionListener {
         // Set tab values
         AutomatonTab tab = tabs.get(newIndex);
         tab.file = automatonFile;
-        tab.updateTabTitle();
         tab.automaton = automaton;
         tab.automaton.generateInputForGUI();
-        tab.controllerInput.setValue(tab.automaton.getNumberOfControllers());
-        tab.eventInput.setText(tab.automaton.getEventInput());
-        tab.stateInput.setText(tab.automaton.getStateInput());
-        tab.transitionInput.setText(tab.automaton.getTransitionInput());
+        tab.updateInputFields();
+        tab.setSaved(true);
 
         generateImage();
 
@@ -390,7 +387,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         menuItem = new JMenuItem("Union");
         menuItem.addActionListener(this);
         menu.add(menuItem);
-        
+
             /* U-Structure menu */
 
         menu = new JMenu("U-Stucture");
@@ -601,10 +598,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         tab.automaton = new Automaton(tab.file, false);
         tab.automaton.generateInputForGUI();
-        tab.controllerInput.setValue(tab.automaton.getNumberOfControllers());
-        tab.eventInput.setText(tab.automaton.getEventInput());
-        tab.stateInput.setText(tab.automaton.getStateInput());
-        tab.transitionInput.setText(tab.automaton.getTransitionInput());
+        tab.updateInputFields();
 
         generateImage();
 
@@ -616,7 +610,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
      * Opens up a JFileChooser for the user to choose a file from their file system.
      * @param title The title to put in the file chooser dialog box
      * @param index The index of the tab we're selecting a file for
-     * @return a file that the user selected on their computer, or null if they didn't choose anything
+     * @return the file, or null if the user did not choose anything
      **/
     private File selectFile (String title, int index) {
 
@@ -652,8 +646,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
     }
 
     /**
-     *  Prompts the user to name and specify the filename they wish to save the data.
-     *  @return - A File object to which data can be saved
+     * Prompts the user to name and specify the filename they wish to save the data.
+     * @return the file
      **/
     private File saveFile(String title) {
 
@@ -1071,6 +1065,13 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         public boolean isSaved() {
             return saved;
+        }
+
+        public void updateInputFields() {
+            controllerInput.setValue(automaton.getNumberOfControllers());
+            eventInput.setText(automaton.getEventInput());
+            stateInput.setText(automaton.getStateInput());
+            transitionInput.setText(automaton.getTransitionInput());
         }
 
     } // AutomatonTab
