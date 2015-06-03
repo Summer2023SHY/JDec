@@ -117,7 +117,7 @@ public abstract class AutomatonGenerator {
     for (String line : stateInputText.split("\n")) {
 
       String[] splitLine = line.trim().split(",");
-      String label = splitLine[0];
+      String label = trimStateLabel(splitLine[0], Automaton.MAX_LABEL_LENGTH);
 
       // Check to see if this is a duplicate state label
       if (stateMapping.get(label) != null) {
@@ -262,9 +262,9 @@ public abstract class AutomatonGenerator {
       String[] firstHalf = splitLine[0].split(",");
       if (firstHalf.length >= 3) {
 
-        String initialStateLabel = firstHalf[0].trim();
+        String initialStateLabel = trimStateLabel(firstHalf[0].trim(), Automaton.MAX_LABEL_LENGTH);
         String eventLabel = firstHalf[1].trim();
-        String targetStateLabel = firstHalf[2].trim();
+        String targetStateLabel = trimStateLabel(firstHalf[2].trim(), Automaton.MAX_LABEL_LENGTH);
 
         // Get ID's of initial state, event, and target state
         Long initialStateID = stateMapping.get(initialStateLabel);
@@ -354,6 +354,25 @@ public abstract class AutomatonGenerator {
         return false;
 
     return true;
+
+  }
+
+  /**
+   * Trim down the string to the desired length by removing characters from the end.
+   * @param str     The string that needs to be trimmed
+   * @param length  The desired length
+   * @return the trimmed string (or the original if it doesn't exceed the desired length)
+   **/
+  private static String trimStateLabel(String str, int length) {
+
+    if (str.length() <= length)
+      return str;
+
+    String trimmed = str.substring(0, length);
+    
+    System.out.println(String.format("NOTE: State labels must be %d characters or less. '%s' was trimmed to '%s'.", Automaton.MAX_LABEL_LENGTH, str, trimmed));
+
+    return trimmed;
 
   }
 

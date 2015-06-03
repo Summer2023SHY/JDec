@@ -2199,7 +2199,7 @@ public class Automaton {
       /* Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs) */
 
     if (nStates == MAX_STATE_CAPACITY) {
-      System.out.println("ERROR: Could not write state to file.");
+      System.out.println("ERROR: Could not write state to file (reached maximum state capacity).");
       return 0;
     }
 
@@ -2209,7 +2209,7 @@ public class Automaton {
 
       // If we cannot increase the capacity, indicate a failure
       if (label.length() > MAX_LABEL_LENGTH) {
-        System.out.println("ERROR: Could not write state to file.");
+        System.out.println("ERROR: Could not write state to file (reached maximum label length).");
         return 0;
       }
 
@@ -2229,7 +2229,7 @@ public class Automaton {
 
       // If we cannot increase the capacity, indicate a failure (NOTE: This will likely never happen)
       if (transitions.size() > MAX_TRANSITION_CAPACITY) {
-        System.out.println("ERROR: Could not write state to file.");
+        System.out.println("ERROR: Could not write state to file (reached maximum transition capacity).");
         return 0;
       }
 
