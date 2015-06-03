@@ -1270,23 +1270,27 @@ public class Automaton {
 
         bodyRAFile.close();
 
-          if (!bodyFile.delete())
-                    System.out.println("ERROR: Could not delete old body file.");
-                
-                if (!mappingFile.delete())
-                    System.out.println("ERROR: Could not delete mapping file.");
+        if (!bodyFile.delete())
+          System.out.println("ERROR: Could not delete old body file.");
+              
+        if (!mappingFile.delete())
+          System.out.println("ERROR: Could not delete mapping file.");
 
-        } catch (SecurityException e) {
-          e.printStackTrace();
-        }
+      } catch (SecurityException e) {
+        e.printStackTrace();
+      }
           /* Rename new body file */
 
       newBodyFile.renameTo(new File(bodyFileName));
       bodyRAFile = newBodyRAFile;
 
     } catch (IOException e) {
-        e.printStackTrace();
+      e.printStackTrace();
     }
+
+      /* Update header file */
+
+    writeHeaderFile();
 
   }
 
@@ -1573,7 +1577,7 @@ public class Automaton {
       State state = getState(s);
 
       if (state == null) {
-        System.out.println("ERROR: State could not be loaded.");
+        System.out.println("ERROR: State could not be loaded. id=" + s);
         continue;
       }
 
@@ -2287,6 +2291,8 @@ public class Automaton {
    * @return whether or not the addition was successful (returns false if a state already existed there)
    **/
   public boolean addStateAt(String label, boolean marked, ArrayList<Transition> transitions, boolean isInitialState, long id) {
+
+    System.out.println("DEBUG: " + "adding state with id=" + id);
 
       /* Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs) */
     

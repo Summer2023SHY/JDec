@@ -133,20 +133,19 @@ public class State {
 		try {
 
 			file.seek(id * automaton.getSizeOfState());
-			
 			return (file.readByte() & EXISTS_MASK) > 0;
 
 		} catch (EOFException e) {
 
 			// State does not exist yet because the file does not go this far
 			return false;
-			
-	    } catch (IOException e) {
+		
+    } catch (IOException e) {
 
-            e.printStackTrace();
-            return false;
+      e.printStackTrace();
+      return false;
 
-	    }
+    }
 
 	}
 
@@ -216,26 +215,26 @@ public class State {
 
 			file.seek(id * automaton.getSizeOfState());
 			file.read(bytesRead);
-			
-	    } catch (IOException e) {
+		
+    } catch (IOException e) {
 
-            e.printStackTrace();
-            return null;
+      e.printStackTrace();
+      return null;
 
-	    }
+    }
 
-	    	/* Exists and marked status */
+    	/* Exists and marked status */
 
-	    boolean marked = (bytesRead[0] & MARKED_MASK) > 0;
-	    boolean exists = (bytesRead[0] & EXISTS_MASK) > 0;
+    boolean marked = (bytesRead[0] & MARKED_MASK) > 0;
+    boolean exists = (bytesRead[0] & EXISTS_MASK) > 0;
 
-	    // Return null if this state doesn't actually exist
-	    if (!exists)
-	    	return null;
+    // Return null if this state doesn't actually exist
+    if (!exists)
+    	return null;
 
-	    	/* State's label */
+    	/* State's label */
 
-	    char[] arr = new char[automaton.getLabelLength()];
+	  char[] arr = new char[automaton.getLabelLength()];
 		for (int i = 0; i < arr.length; i++) {
 
 			// Indicates end of label
@@ -257,21 +256,21 @@ public class State {
 		int index = 1 + automaton.getLabelLength();
 		for (int t = 0; t < automaton.getTransitionCapacity(); t++) {
 
-        	int eventID = (int) ByteManipulator.readBytesAsLong(bytesRead, index, Event.N_BYTES_OF_ID);
-        	index += Event.N_BYTES_OF_ID;
+    	int eventID = (int) ByteManipulator.readBytesAsLong(bytesRead, index, Event.N_BYTES_OF_ID);
+    	index += Event.N_BYTES_OF_ID;
 
-        	long targetStateID = ByteManipulator.readBytesAsLong(bytesRead, index, automaton.getSizeOfStateID());
-        	index += automaton.getSizeOfStateID();
+    	long targetStateID = ByteManipulator.readBytesAsLong(bytesRead, index, automaton.getSizeOfStateID());
+    	index += automaton.getSizeOfStateID();
 
-        	// Indicates that we've hit padding, so let's stop
-        	if (eventID == 0)
-        		break;
+    	// Indicates that we've hit padding, so let's stop
+    	if (eventID == 0)
+    		break;
 
-        	// Add transition to the list
-        	state.addTransition(new Transition(automaton.getEvent(eventID), targetStateID));
-        }
+    	// Add transition to the list
+    	state.addTransition(new Transition(automaton.getEvent(eventID), targetStateID));
+    }
 
-	    return state;
+	  return state;
 
 	}
 
