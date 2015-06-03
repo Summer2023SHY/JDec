@@ -11,8 +11,8 @@ public class RandomAutomatonPrompt extends JFrame {
     private static int  nControllersDefault = 1,
                 nEventsDefault = 4,
                 nStatesDefault = 10,
-                minTransitionsDefault = 0,
-                maxTransitionsDefault = 2,
+                minTransitionsDefault = 1,
+                maxTransitionsDefault = 3,
                 nBadTransitionsDefault = 0;
 
     public RandomAutomatonPrompt(AutomataGUI gui) {

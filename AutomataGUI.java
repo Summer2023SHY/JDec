@@ -631,7 +631,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
             /* Prompt user to select a file */
 
-        fileChooser.showOpenDialog(null);
+        if (fileChooser.showOpenDialog(null) != JFileChooser.APPROVE_OPTION)
+            return null;
 
             /* Update last file opened and update current directory */
 
@@ -668,11 +669,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
             /* Prompt user to select a filename */
 
-        fileChooser.showSaveDialog(null);
+        int result = fileChooser.showSaveDialog(null);
 
-            /* User pressed cancel, so there was no file */
+            /* No file was selected */
 
-        if (fileChooser.getSelectedFile() == null)
+        if (result != JFileChooser.APPROVE_OPTION || fileChooser.getSelectedFile() == null)
             return null;
 
             /* Add .hdr extension if the user didn't put it there */

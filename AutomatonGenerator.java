@@ -29,7 +29,7 @@ public abstract class AutomatonGenerator {
         controllability[j] = generateBoolean();
       }
 
-      int id = automaton.addEvent(String.valueOf(i), observability, controllability);
+      int id = automaton.addEvent(generateEventLabel(i, nEvents), observability, controllability);
       if (id == 0)
           System.err.println("ERROR: Event could not be added.");
 
@@ -83,6 +83,24 @@ public abstract class AutomatonGenerator {
     }
 
     return automaton;
+
+  }
+
+  private static String generateEventLabel(int id, int maxID) {
+
+    String label = "";
+
+    // It's easier if they are 0-based, not 1-based
+    id--;
+    maxID--;
+
+    while (maxID > 0) {
+      label = (char) ((id % 26) + 97) + label;
+      id /= 26;
+      maxID /= 26;
+    }
+
+    return label;
 
   }
 
