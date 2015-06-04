@@ -800,8 +800,6 @@ public class Automaton {
     
   }
 
-
-
   /**
    * NOT COMMENTED YET!
    **/
