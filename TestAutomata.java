@@ -162,7 +162,7 @@ public class TestAutomata {
     	id = a.addEvent("fourthEvent", new boolean[] { false }, new boolean[] { false });
     	printTestCase("Ensuring that 'events' set was not expanded", new TestResult(a.getEvents().size(), 4), counter);
     	printTestCase("Ensuring that 'activeEvents' set was not expanded", new TestResult(a.getActiveEvents().size(), 0), counter);
-    	printTestCase("Ensuring that the event was not successfully added", new TestResult(id, 0), counter);
+    	printTestCase("Ensuring that the method returned proper negative value", new TestResult(id, -4), counter);
 
         a.closeFiles();
     	
@@ -183,7 +183,7 @@ public class TestAutomata {
 
     	printTestOutput("Adding a pre-existing event...", 3);
     	id = a.addEvent("firstEvent", new boolean[] { true }, new boolean[] { true });
-    	printTestCase("Ensuring that the method returned 0", new TestResult(id, 0), counter);
+    	printTestCase("Ensuring that the method returned proper negative value", new TestResult(id, -1), counter);
 
         a.closeFiles();
 

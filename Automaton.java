@@ -753,6 +753,185 @@ public class Automaton {
   }
 
   /**
+   * Generate a new automaton, with all communications added (potential communications are marked).
+   * @return the automaton with the added transitions
+   **/
+  public Automaton addCommunications() {
+
+    // I'm not sure how we're supposed to handle automata with more than 1 controller (since our U-Structure has just one controller)
+    if (nControllers != 1)
+      return null;
+    
+      /* Setup */
+
+    Set<LabelVector> leastUpperBounds = generateLeastUpperBounds();
+    Set<LabelVector> potentialCommunications = findPotentialCommunications(leastUpperBounds);
+    Automaton automaton = duplicate("addCommunications");
+
+      /* Add communications (marking the potential communications) */
+
+    for (long s = 1; s < automaton.getNumberOfStates(); s++) {
+
+      State startingState = automaton.getState(s);
+
+      // Try each least upper bound
+      for (LabelVector v : leastUpperBounds) {
+        
+        boolean[] vectorElementsFound = new boolean[v.getSize()];
+        State destinationState = findWhereCommunicationLeads(automaton, v, vectorElementsFound, startingState);
+        
+        if (destinationState != null) {
+
+          // Add event (won't be added if the event already exists, and it will return a a negative version of the ID of the original event)
+          int id = Math.abs(automaton.addEvent(v.toString(), new boolean[] {true}, new boolean[] {true}));
+         
+          automaton.addTransition(startingState.getID(), id, destinationState.getID());
+
+          if (potentialCommunications.contains(v))
+            automaton.addPotentialCommunication(startingState.getID(), id, destinationState.getID());
+         
+        }
+
+      }
+
+    }
+
+    return automaton;
+    
+  }
+
+
+
+  /**
+   * NOT COMMENTED YET!
+   **/
+  private static State findWhereCommunicationLeads(Automaton automaton, LabelVector communication, boolean[] vectorElementsFound, State currentState) {
+
+      /* Base case */
+
+    // We have found the destination if all vector elements have been found
+    boolean finished = true;
+    for (int i = 0; i < communication.getSize(); i++) {
+      if (!communication.getLabelAtIndex(i).equals("*") && !vectorElementsFound[i]) {
+        finished = false;
+        break;
+      }
+    }
+
+    if (finished)
+      return currentState;
+
+      /* Recursive case */
+
+    // Try all transitions leading from this state
+    outer: for (Transition t : currentState.getTransitions()) {
+
+      boolean[] copy = (boolean[]) vectorElementsFound.clone();
+
+      // Check to see if the event vector of this transition is compatible with what we've found so far
+      for (int i = 0; i < t.getEvent().vector.getSize(); i++) {
+
+        String element = t.getEvent().vector.getLabelAtIndex(i);
+
+        if (!element.equals("*")) {
+
+          // Conflict since we have already found an element for this index (so they aren't compatible)
+          if (copy[i])
+            continue outer;
+
+          // Is compatible
+          else if (element.equals(communication.getLabelAtIndex(i)))
+            copy[i] = true;
+
+          // Conflict since the elements do not match (meaning they aren't compatible)
+          else
+            continue outer;
+        }
+
+      }
+
+      // Recursive call to the state where this transition leads
+      State destinationState = findWhereCommunicationLeads(automaton, communication, copy, automaton.getState(t.getTargetStateID()));
+      
+      // Return destination if it is found (there will only ever be one destination for a given communication from a given state, so we can stop as soon as we find it the first time)
+      if (destinationState != null)
+        return destinationState;
+
+    }
+
+    return null;
+
+  }
+
+  /**
+   * NOT COMMENTED YET!
+   **/
+  private Set<LabelVector> findPotentialCommunications(Set<LabelVector> leastUpperBounds) {
+
+      /* Separate observable and unobservable labels */
+
+    Set<LabelVector>  observableLabels = new HashSet<LabelVector>(),
+                      unobservableLabels = new HashSet<LabelVector>();
+
+    for (LabelVector v : leastUpperBounds) {
+      if (v.getLabelAtIndex(0).equals("*"))
+        unobservableLabels.add(v);
+      else
+        observableLabels.add(v);
+    }
+
+      /* Find potential communications */
+
+    Set<LabelVector> potentialCommunications = new HashSet<LabelVector>();
+    
+    for (LabelVector v1 : observableLabels) {
+      for (LabelVector v2 : unobservableLabels) {
+
+          /* Error checking */
+
+        if (v1.getSize() == -1 || v2.getSize() == -1 || v1.getSize() != v2.getSize()) {
+          System.err.println("ERROR: Bad event vectors. Least upper bounds generation aborted.");
+          return null;
+        }
+
+          /* Build least upper bound */
+
+        boolean valid = true;
+        String potentialCommunication = "";
+        for (int i = 0; i < v1.getSize(); i++) {
+
+          String  label1 = v1.getLabelAtIndex(i),
+                  label2 = v2.getLabelAtIndex(i);
+
+          // Check for incompatibility
+          if (!label1.equals("*") && !label2.equals("*") && !label1.equals(label2)) {
+            valid = false;
+            break;
+          }
+
+          // Append vector element
+          if (label1.equals("*"))
+            potentialCommunication += "_" + label2;
+          else
+            potentialCommunication += "_" + label1;
+
+        }
+
+          /* Add to the set */
+
+        if (valid)
+          potentialCommunications.add(new LabelVector("<" + potentialCommunication.substring(1) + ">"));
+
+      } // for
+    } // for
+
+    return potentialCommunications;
+    // powerSet(new ArrayList<LabelVector>(potentialCommunications), new HashSet<LabelVector>(), 0);
+
+  }
+
+
+  /**
    * Apply the synchronized composition algorithm to an automaton to produce the U-Structure.
    * @return the U-Structure
    **/
@@ -970,181 +1149,6 @@ public class Automaton {
       /* Return produced automaton */
 
     return automaton;
-
-  }
-
-  /**
-   * Generate a new automaton, with all communications added (potential communications are marked).
-   * @return the automaton with the added transitions
-   **/
-  public Automaton addCommunications() {
-
-    // I'm not sure how we're supposed to handle automata with more than 1 controller (since our U-Structure has just one controller)
-    if (nControllers != 1)
-      return null;
-    
-      /* Setup */
-
-    Set<LabelVector> leastUpperBounds = generateLeastUpperBounds();
-    Set<LabelVector> potentialCommunications = findPotentialCommunications(leastUpperBounds);
-    Automaton automaton = duplicate("addCommunications");
-
-      /* Add communications (marking the potential communications) */
-      
-    for (long s = 1; s < automaton.getNumberOfStates(); s++) {
-
-      State startingState = automaton.getState(s);
-
-      // Try each least upper bound
-      for (LabelVector v : leastUpperBounds) {
-        
-        State destinationState = findWhereCommunicationLeads(automaton, v, new boolean[v.getSize()], startingState);
-        
-        if (destinationState != null) {
-
-          automaton.addEvent(v.toString(), new boolean[] {true}, new boolean[] {true});
-          
-          Event e = automaton.getEvent(v.toString());
-
-          automaton.addTransition(startingState.getID(), e.getID(), destinationState.getID());
-
-          if (potentialCommunications.contains(v))
-            automaton.addPotentialCommunication(startingState.getID(), e.getID(), destinationState.getID());
-        }
-
-      }
-
-    }
-
-    return automaton;
-    
-  }
-
-  /**
-   * 
-   **/
-  private static State findWhereCommunicationLeads(Automaton automaton, LabelVector communication, boolean[] vectorElementsFound, State currentState) {
-
-      /* Base case */
-
-    // We have found the destination if all vector elements have been found
-    boolean finished = true;
-    for (int i = 0; i < communication.getSize(); i++) {
-      if (!communication.getLabelAtIndex(i).equals("*") && !vectorElementsFound[i]) {
-        finished = false;
-        break;
-      }
-    }
-
-    if (finished)
-      return currentState;
-
-      /* Recursive case */
-
-    // Try all transitions leading from this state
-    outer: for (Transition t : currentState.getTransitions()) {
-
-      boolean[] copy = (boolean[]) vectorElementsFound.clone();
-
-      // Check to see if the event vector of this transition is compatible with what we've found so far
-      for (int i = 0; i < t.getEvent().vector.getSize(); i++) {
-
-        String element = t.getEvent().vector.getLabelAtIndex(i);
-
-        if (!element.equals("*")) {
-
-          // Conflict since we have already found an element for this index (so they aren't compatible)
-          if (copy[i])
-            continue outer;
-
-          // Is compatible
-          else if (element.equals(communication.getLabelAtIndex(i)))
-            copy[i] = true;
-
-          // Conflict since the elements do not match (meaning they aren't compatible)
-          else
-            continue outer;
-        }
-
-      }
-
-      // Recursive call to the state where this transition leads
-      State destinationState = findWhereCommunicationLeads(automaton, communication, copy, automaton.getState(t.getTargetStateID()));
-      
-      // Return destination if it is found (there will only ever be one destination for a given communication from a given state, so we can stop as soon as we find it the first time)
-      if (destinationState != null)
-        return destinationState;
-
-    }
-
-    return null;
-
-  }
-
-  /**
-   * 
-   **/
-  private Set<LabelVector> findPotentialCommunications(Set<LabelVector> leastUpperBounds) {
-
-      /* Separate observable and unobservable labels */
-
-    Set<LabelVector>  observableLabels = new HashSet<LabelVector>(),
-                      unobservableLabels = new HashSet<LabelVector>();
-
-    for (LabelVector v : leastUpperBounds) {
-      if (v.getLabelAtIndex(0).equals("*"))
-        unobservableLabels.add(v);
-      else
-        observableLabels.add(v);
-    }
-
-      /* Find potential communications */
-
-    Set<LabelVector> potentialCommunications = new HashSet<LabelVector>();
-    
-    for (LabelVector v1 : observableLabels) {
-      for (LabelVector v2 : unobservableLabels) {
-
-          /* Error checking */
-
-        if (v1.getSize() == -1 || v2.getSize() == -1 || v1.getSize() != v2.getSize()) {
-          System.err.println("ERROR: Bad event vectors. Least upper bounds generation aborted.");
-          return null;
-        }
-
-          /* Build least upper bound */
-
-        boolean valid = true;
-        String potentialCommunication = "";
-        for (int i = 0; i < v1.getSize(); i++) {
-
-          String  label1 = v1.getLabelAtIndex(i),
-                  label2 = v2.getLabelAtIndex(i);
-
-          // Check for incompatibility
-          if (!label1.equals("*") && !label2.equals("*") && !label1.equals(label2)) {
-            valid = false;
-            break;
-          }
-
-          // Append vector element
-          if (label1.equals("*"))
-            potentialCommunication += "_" + label2;
-          else
-            potentialCommunication += "_" + label1;
-
-        }
-
-          /* Add to the set */
-
-        if (valid)
-          potentialCommunications.add(new LabelVector("<" + potentialCommunication.substring(1) + ">"));
-
-      } // for
-    } // for
-
-    return potentialCommunications;
-    // powerSet(new ArrayList<LabelVector>(potentialCommunications), new HashSet<LabelVector>(), 0);
 
   }
 
@@ -1487,9 +1491,9 @@ public class Automaton {
     for (TransitionData t : potentialCommunications) {
       String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
       if (additionalEdgeProperties.containsKey(edge))
-        additionalEdgeProperties.put(edge, additionalEdgeProperties.get(edge) + ",color=blue");
+        additionalEdgeProperties.put(edge, additionalEdgeProperties.get(edge) + ",color=blue,fontcolor=blue");
       else
-        additionalEdgeProperties.put(edge, ",color=blue"); 
+        additionalEdgeProperties.put(edge, ",color=blue,fontcolor=blue"); 
     }
     
       /* Draw all states and their transitions */
@@ -2488,14 +2492,14 @@ public class Automaton {
    * @param label     The "name" of the new event
    * @param observable  Whether or not the event is observable
    * @param controllable  Whether or not the event is controllable
-   * @return the ID of the added event (0 indicates the addition was unsuccessful, which implies that the set did not change in size)
+   * @return the ID of the added event (negative value indicates the addition was unsuccessful, and it is the negative version of the original event)
    **/
   public int addEvent(String label, boolean[] observable, boolean[] controllable) {
 
-    // Ensure that no other event already exists with this label (NOTE: This "might" not be necessary any longer..)
+    // Ensure that no other event already exists with this label (if so, return the negative version of the ID)
     for (Event e : events)
       if (e.getLabel().equals(label))
-        return 0; 
+        return -e.getID(); 
 
     // Create and add the event
     int id = events.size() + 1;
