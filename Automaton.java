@@ -942,13 +942,14 @@ public class Automaton {
                 return null;
               }
             
-            // Only add the ID if it's not already waiting to be processed
-            if (!valuesInStack.contains(combinedTargetID)) {
-                stack.push(combinedTargetID);
-                valuesInStack.add(combinedTargetID);
-            } else {
-              System.out.println("DEBUG: Prevented adding of state since it was already in the stack.");
-            }
+              // Only add the ID if it's not already waiting to be processed
+              if (!valuesInStack.contains(combinedTargetID)) {
+                  stack.push(combinedTargetID);
+                  valuesInStack.add(combinedTargetID);
+              } else {
+                System.out.println("DEBUG: Prevented adding of state since it was already in the stack.");
+              }
+
             }
 
             // Add transition
@@ -981,24 +982,103 @@ public class Automaton {
     // I'm not sure how we're supposed to handle automata with more than 1 controller (since our U-Structure has just one controller)
     if (nControllers != 1)
       return null;
-
-    // The new automaton will not be any smaller than this one, so it is benficial to set the default capacities
-    // Automaton automaton = new Automaton(
-    //   new File("potentialCommunications.hdr"),
-    //   new File("potentialCommunications.bdy"),
-    //   stateCapacity,
-    //   transitionCapacity,
-    //   labelLength,
-    //   nControllers,
-    //   true
-    // );
     
+      /* Setup */
+
     Set<LabelVector> leastUpperBounds = generateLeastUpperBounds();
     Set<LabelVector> potentialCommunications = findPotentialCommunications(leastUpperBounds);
-
     Automaton automaton = duplicate("addCommunications");
 
+      /* Add communications (marking the potential communications) */
+      
+    for (long s = 1; s < automaton.getNumberOfStates(); s++) {
+
+      State startingState = automaton.getState(s);
+
+      // Try each least upper bound
+      for (LabelVector v : leastUpperBounds) {
+        
+        State destinationState = findWhereCommunicationLeads(automaton, v, new boolean[v.getSize()], startingState);
+        
+        if (destinationState != null) {
+
+          automaton.addEvent(v.toString(), new boolean[] {true}, new boolean[] {true});
+          
+          Event e = automaton.getEvent(v.toString());
+
+          automaton.addTransition(startingState.getID(), e.getID(), destinationState.getID());
+
+          if (potentialCommunications.contains(v))
+            automaton.addPotentialCommunication(startingState.getID(), e.getID(), destinationState.getID());
+        }
+
+      }
+
+    }
+
     return automaton;
+    
+  }
+
+  /**
+   * 
+   **/
+  private static State findWhereCommunicationLeads(Automaton automaton, LabelVector communication, boolean[] vectorElementsFound, State currentState) {
+
+      /* Base case */
+
+    // We have found the destination if all vector elements have been found
+    boolean finished = true;
+    for (int i = 0; i < communication.getSize(); i++) {
+      if (!communication.getLabelAtIndex(i).equals("*") && !vectorElementsFound[i]) {
+        finished = false;
+        break;
+      }
+    }
+
+    if (finished)
+      return currentState;
+
+      /* Recursive case */
+
+    // Try all transitions leading from this state
+    outer: for (Transition t : currentState.getTransitions()) {
+
+      boolean[] copy = (boolean[]) vectorElementsFound.clone();
+
+      // Check to see if the event vector of this transition is compatible with what we've found so far
+      for (int i = 0; i < t.getEvent().vector.getSize(); i++) {
+
+        String element = t.getEvent().vector.getLabelAtIndex(i);
+
+        if (!element.equals("*")) {
+
+          // Conflict since we have already found an element for this index (so they aren't compatible)
+          if (copy[i])
+            continue outer;
+
+          // Is compatible
+          else if (element.equals(communication.getLabelAtIndex(i)))
+            copy[i] = true;
+
+          // Conflict since the elements do not match (meaning they aren't compatible)
+          else
+            continue outer;
+        }
+
+      }
+
+      // Recursive call to the state where this transition leads
+      State destinationState = findWhereCommunicationLeads(automaton, communication, copy, automaton.getState(t.getTargetStateID()));
+      
+      // Return destination if it is found (there will only ever be one destination for a given communication from a given state, so we can stop as soon as we find it the first time)
+      if (destinationState != null)
+        return destinationState;
+
+    }
+
+    return null;
+
   }
 
   /**
@@ -1551,6 +1631,8 @@ public class Automaton {
    **/
   public void generateInputForGUI() {
 
+    System.out.println("DEBUG: Generating input for GUI from " + this);
+
     eventInputBuilder = new StringBuilder();
     stateInputBuilder = new StringBuilder();
     transitionInputBuilder = new StringBuilder();
@@ -1691,17 +1773,20 @@ public class Automaton {
    **/
   public Automaton duplicate(String fileName) {
 
+    File newHeaderFile = new File(fileName + ".hdr");
+    File newBodyFile = new File(fileName + ".bdy");
+
     try {
     
-      Files.copy(headerFile.toPath(), new File(fileName + ".hdr").toPath(), StandardCopyOption.REPLACE_EXISTING);
-      Files.copy(bodyFile.toPath(), new File(fileName + ".bdy").toPath(), StandardCopyOption.REPLACE_EXISTING);
+      Files.copy(headerFile.toPath(), newHeaderFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+      Files.copy(bodyFile.toPath(), newBodyFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
     
     } catch (IOException e) {
       e.printStackTrace();
       return null;
     }
 
-    return new Automaton(headerFile, false);
+    return new Automaton(newHeaderFile, false);
 
   }
 
@@ -2574,6 +2659,21 @@ public class Automaton {
 
     for (Event e : events)
       if (e.getID() == id)
+        return e;
+
+    return null;
+
+  }
+
+  /**
+   * Given the label of an event, get the event information.
+   * @param label  The unique label corresponding to the requested event
+   * @return the requested event (or null if it does not exist)
+   **/
+  public Event getEvent(String label) {
+
+    for (Event e : events)
+      if (e.getLabel().equals(label))
         return e;
 
     return null;

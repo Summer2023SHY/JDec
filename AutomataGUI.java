@@ -553,8 +553,10 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 automaton = tab.automaton.synchronizedComposition();
                 if (automaton == null)
                     JOptionPane.showMessageDialog(null, "Please ensure that you specified a starting state.", "Synchronized Composition Operation Failed", JOptionPane.ERROR_MESSAGE);
-                else
+                else {
+                    System.out.println("DEBUG: Synchronized composition automaton is " + automaton);
                     createTab(new File("synchronizedComposition.hdr"), automaton);
+                }
 
                 break;
 
@@ -596,7 +598,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         AutomatonTab tab = tabs.get(index);
 
+        System.out.println("DEBUG: Before refreshing " + tab.automaton);
+        if (tab.automaton != null)
+            tab.automaton.closeFiles();
         tab.automaton = new Automaton(tab.file, false);
+        System.out.println("DEBUG: After refreshing " + tab.automaton);
         tab.automaton.generateInputForGUI();
         tab.updateInputFields();
 
@@ -648,6 +654,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     /**
      * Prompts the user to name and specify the filename they wish to save the data.
+     * @param title The title to give the window
      * @return the file
      **/
     private File saveFile(String title) {
