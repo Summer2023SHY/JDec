@@ -92,8 +92,13 @@ public class State {
 
 			/* State's label */
 
-		for (int i = 0; i < label.length(); i++)
+		for (int i = 0; i < label.length(); i++) {
 			bytesToWrite[i + 1] = (byte) label.charAt(i);
+
+			// Double-check to make sure we can retrieve this character
+			if ((char) bytesToWrite[i + 1] != label.charAt(i))
+				System.out.println("DEBUG: Unsupported character '" + label.charAt(i) + "' was written to file in a state label.");
+		}
 
 			/* Transitions */
 		

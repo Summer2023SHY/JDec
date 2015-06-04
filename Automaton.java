@@ -1672,55 +1672,61 @@ public class Automaton {
 
     for (long s = 1; s <= nStates; s++) {
 
-      State state = getState(s);
+      try {
 
-      if (state == null) {
-        System.err.println("ERROR: State could not be loaded. id=" + s);
-        continue;
-      }
+        State state = getState(s);
 
-      // Place '@' before label if this is the initial state
-      if (s == initialState)
-        stateInputBuilder.append("@");
+        if (state == null) {
+          System.err.println("ERROR: State could not be loaded. id=" + s);
+          continue;
+        }
 
-      // Append label and properties
-      stateInputBuilder.append(state.getLabel());
-      stateInputBuilder.append((state.isMarked() ? ",T" : ",F"));
-      
-      // Add line separator after unless this is the last state
-      if (s < nStates)
-        stateInputBuilder.append("\n");
+        // Place '@' before label if this is the initial state
+        if (s == initialState)
+          stateInputBuilder.append("@");
 
-      // Append all transitions
-      for (Transition t : state.getTransitions()) {
+        // Append label and properties
+        stateInputBuilder.append(state.getLabel());
+        stateInputBuilder.append((state.isMarked() ? ",T" : ",F"));
+        
+        // Add line separator after unless this is the last state
+        if (s < nStates)
+          stateInputBuilder.append("\n");
 
-        // Add line separator before unless this is the very first transition
-        if (firstTransitionInStringBuilder)
-          firstTransitionInStringBuilder = false;
-        else
-          transitionInputBuilder.append("\n");
+        // Append all transitions
+        for (Transition t : state.getTransitions()) {
 
-        // Append transition
-        transitionInputBuilder.append(
-            state.getLabel()
-            + "," + t.getEvent().getLabel()
-            + "," + getStateExcludingTransitions(t.getTargetStateID()).getLabel()
-          );
+          // Add line separator before unless this is the very first transition
+          if (firstTransitionInStringBuilder)
+            firstTransitionInStringBuilder = false;
+          else
+            transitionInputBuilder.append("\n");
 
-        // Append special transition information
-        String specialTransition = "";
-        TransitionData transitionData = new TransitionData(s, t.getEvent().getID(), t.getTargetStateID());
-        if (badTransitions.contains(transitionData))
-          specialTransition += ",BAD";
-        if (unconditionalViolations.contains(transitionData))
-          specialTransition += ",UNCONDITIONAL_VIOLATION";
-        if (conditionalViolations.contains(transitionData))
-          specialTransition += ",CONDITIONAL_VIOLATION";
-        if (potentialCommunications.contains(transitionData))
-          specialTransition += ",POTENTIAL_COMMUNICATION";
-        if (!specialTransition.equals(""))
-          transitionInputBuilder.append(":" + specialTransition.substring(1));
-      
+          // Append transition
+          transitionInputBuilder.append(
+              state.getLabel()
+              + "," + t.getEvent().getLabel()
+              + "," + getStateExcludingTransitions(t.getTargetStateID()).getLabel()
+            );
+
+          // Append special transition information
+          String specialTransition = "";
+          TransitionData transitionData = new TransitionData(s, t.getEvent().getID(), t.getTargetStateID());
+          if (badTransitions.contains(transitionData))
+            specialTransition += ",BAD";
+          if (unconditionalViolations.contains(transitionData))
+            specialTransition += ",UNCONDITIONAL_VIOLATION";
+          if (conditionalViolations.contains(transitionData))
+            specialTransition += ",CONDITIONAL_VIOLATION";
+          if (potentialCommunications.contains(transitionData))
+            specialTransition += ",POTENTIAL_COMMUNICATION";
+          if (!specialTransition.equals(""))
+            transitionInputBuilder.append(":" + specialTransition.substring(1));
+        
+        }
+
+      } catch (NullPointerException e) {
+        System.out.println("NULL POINTER EXCEPTION at state " + s + ", so it was skipped..");
       }
     }
 
@@ -2070,9 +2076,9 @@ public class Automaton {
       newBodyRAFile = new RandomAccessFile(newBodyFile, "rw");
 
     } catch (FileNotFoundException e) {
-        e.printStackTrace();
-        return;
-      }
+      e.printStackTrace();
+      return;
+    }
 
       /* Copy over body file */
 
@@ -2090,8 +2096,8 @@ public class Automaton {
         try {
           newBodyRAFile.write(buffer);
         } catch (IOException e) {
-            e.printStackTrace();
-          }
+          e.printStackTrace();
+        }
 
         counter++;
         
@@ -2109,13 +2115,15 @@ public class Automaton {
 
     try {
       bodyRAFile.close();
-        bodyFile.delete();
-      } catch (SecurityException | IOException e) {
-        e.printStackTrace();
-      }
+      bodyFile.delete();
+    } catch (SecurityException | IOException e) {
+      e.printStackTrace();
+    }
 
-    newBodyFile.renameTo(new File(bodyFileName));
-
+    if (!newBodyFile.renameTo(new File(bodyFileName))) {
+      System.out.println("CRUCIAL ERROR: Could not rename .bdy file during re-creation. Aborting program...");
+      System.exit(-1);
+    }
       /* Update variables */
 
     stateCapacity = newStateCapacity;
