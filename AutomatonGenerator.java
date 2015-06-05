@@ -258,26 +258,6 @@ public abstract class AutomatonGenerator {
     for (String line : transitionInputText.split("\n")) {
 
       String[] splitLine = line.trim().split(":");
-      boolean isUnconditionalViolation = false,
-              isConditionalViolation = false,
-              isBadTransition = false,
-              isPotentialCommunication = false;
-
-      // Take care of the second half (which identifies special transitions)
-      if (splitLine.length > 1) {
-        String[] secondHalf = splitLine[1].split(",");
-        for (String str : secondHalf) {
-          str = str.trim();
-          if (str.equals("BAD"))
-            isBadTransition = true;
-          else if (str.equals("UNCONDITIONAL_VIOLATION"))
-            isUnconditionalViolation = true;
-          else if (str.equals("CONDITIONAL_VIOLATION"))
-            isConditionalViolation = true;
-          else if (str.equals("POTENTIAL_COMMUNICATION"))
-            isPotentialCommunication = true;   
-        }
-      }
 
       // Ensure that all 3 required parameters are present
       String[] firstHalf = splitLine[0].split(",");
@@ -304,14 +284,36 @@ public abstract class AutomatonGenerator {
           if (automaton.addTransition(initialStateID, eventID, targetStateID)) {
 
             // Special transitions
-            if (isBadTransition)
-              automaton.markTransitionAsBad(initialStateID, eventID, targetStateID);
-            if (isUnconditionalViolation)
-              automaton.addUnconditionalViolation(initialStateID, eventID, targetStateID);
-            if (isConditionalViolation)
-              automaton.addConditionalViolation(initialStateID, eventID, targetStateID);
-            if (isPotentialCommunication)
-              automaton.addPotentialCommunication(initialStateID, eventID, targetStateID);
+            if (splitLine.length > 1) {
+              String[] secondHalf = splitLine[1].split(",");
+              for (String str : secondHalf) {
+                str = str.trim();
+                if (str.equals("BAD"))
+                  automaton.markTransitionAsBad(initialStateID, eventID, targetStateID);
+                else if (str.equals("UNCONDITIONAL_VIOLATION"))
+                  automaton.addUnconditionalViolation(initialStateID, eventID, targetStateID);
+                else if (str.equals("CONDITIONAL_VIOLATION"))
+                  automaton.addConditionalViolation(initialStateID, eventID, targetStateID);
+                else {
+                  String[] parts = str.split("-");
+                  if (parts[0].equals("POTENTIAL_COMMUNICATION") && parts.length == 2) {
+                    CommunicationRole[] roles = new CommunicationRole[parts[1].length()];
+                    for (int i = 0; i < parts[1].length(); i++) {
+                      char ch = parts[1].charAt(i);
+                      if (ch == 'S' || ch == 's')
+                        roles[i] = CommunicationRole.SENDER;
+                      else if (ch == 'R' || ch == 'r')
+                        roles[i] = CommunicationRole.RECIEVER;
+                      else if (ch == '*')
+                        roles[i] = CommunicationRole.NONE;
+                      else
+                        System.out.println("ERROR: Unable to parse '" + ch + "'as a communication role.");
+                    }
+                    automaton.addPotentialCommunication(initialStateID, eventID, targetStateID, roles);
+                  }
+                }
+              }
+            }
 
           } else
             System.err.println("ERROR: Could not add '" + line + "' as a transition.");

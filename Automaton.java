@@ -59,10 +59,10 @@ public class Automaton {
 
   private static final int HEADER_SIZE = 52; // This is the fixed amount of space needed to hold the main variables in the .hdr file
 
-  private static final String DEFAULT_HEADER_FILE_NAME = "temp.hdr",
-                              DEFAULT_BODY_FILE_NAME = "temp.bdy";
-  private static final File   DEFAULT_HEADER_FILE = new File(DEFAULT_HEADER_FILE_NAME),
-                              DEFAULT_BODY_FILE = new File(DEFAULT_BODY_FILE_NAME);
+  private static final String DEFAULT_HEADER_FILE_NAME = "temp.hdr";
+  private static final String DEFAULT_BODY_FILE_NAME   = "temp.bdy";
+  private static final File DEFAULT_HEADER_FILE        = new File(DEFAULT_HEADER_FILE_NAME);
+  private static final File DEFAULT_BODY_FILE          = new File(DEFAULT_BODY_FILE_NAME);
 
     /** OUTPUT MODE ENUM **/
 
@@ -75,11 +75,11 @@ public class Automaton {
     /** PRIVATE INSTANCE VARIABLES **/
 
   // Events
-  private Set<Event>  events = new TreeSet<Event>(),
-            activeEvents = new HashSet<Event>();
+  private Set<Event> events = new TreeSet<Event>();
+  private Set<Event> activeEvents = new HashSet<Event>();
 
   // Basic properties of the automaton
-  private long nStates = 0;
+  private long nStates      = 0;
   private long initialState = 0;
   private int nControllers;
   
@@ -93,23 +93,23 @@ public class Automaton {
   private long nBytesPerState;
 
   // Special transitions (used by U-Structure)
-  private List<TransitionData> badTransitions = new ArrayList<TransitionData>();
-  private List<TransitionData> unconditionalViolations = new ArrayList<TransitionData>();
-  private List<TransitionData> conditionalViolations = new ArrayList<TransitionData>();
-  private List<TransitionData> potentialCommunications = new ArrayList<TransitionData>();
+  private List<TransitionData> badTransitions             = new ArrayList<TransitionData>();
+  private List<TransitionData> unconditionalViolations    = new ArrayList<TransitionData>();
+  private List<TransitionData> conditionalViolations      = new ArrayList<TransitionData>();
+  private List<CommunicationData> potentialCommunications = new ArrayList<CommunicationData>();
 
   // File variables
-  private String  headerFileName = DEFAULT_HEADER_FILE_NAME,
-          bodyFileName = DEFAULT_BODY_FILE_NAME;
-  private File  headerFile,
-          bodyFile;
-  private RandomAccessFile  headerRAFile, // Contains basic information about automaton, needed in order to read the bodyFile, as well as the events
-                bodyRAFile; // List each state in the automaton, with the transitions
+  private String headerFileName = DEFAULT_HEADER_FILE_NAME;
+  private String bodyFileName = DEFAULT_BODY_FILE_NAME;
+  private File headerFile;
+  private File bodyFile;
+  private RandomAccessFile headerRAFile; // Contains basic information about automaton, needed in order to read the bodyFile, as well as the events
+  private RandomAccessFile bodyRAFile; // List each state in the automaton, with the transitions
 
   // GUI input
-  private StringBuilder   eventInputBuilder,
-              stateInputBuilder,
-              transitionInputBuilder;
+  private StringBuilder eventInputBuilder;
+  private StringBuilder stateInputBuilder;
+  private StringBuilder transitionInputBuilder;
 
     /** CONSTRUCTORS **/
 
@@ -145,7 +145,7 @@ public class Automaton {
   public Automaton(File headerFile, boolean clearFiles) {
     this(
       (headerFile == null) ? DEFAULT_HEADER_FILE : headerFile,
-      (headerFile == null) ? DEFAULT_BODY_FILE : new File(headerFile.getName().substring(0, headerFile.getName().length() - 4) + ".bdy"),
+      (headerFile == null) ? DEFAULT_BODY_FILE   : new File(headerFile.getName().substring(0, headerFile.getName().length() - 4) + ".bdy"),
       DEFAULT_STATE_CAPACITY,
       DEFAULT_TRANSITION_CAPACITY,
       DEFAULT_LABEL_LENGTH,
@@ -181,17 +181,17 @@ public class Automaton {
    **/
   public Automaton(File headerFile, File bodyFile, long stateCapacity, int transitionCapacity, int labelLength, int nControllers, boolean clearFiles) {
 
-    this.headerFile = headerFile;
-    this.bodyFile = bodyFile;
+    this.headerFile     = headerFile;
+    this.bodyFile       = bodyFile;
     this.headerFileName = headerFile.getName();
-    this.bodyFileName = bodyFile.getName();
+    this.bodyFileName   = bodyFile.getName();
 
       /* These variables will be overridden if we are loading information from file */
 
-    this.stateCapacity = stateCapacity;
+    this.stateCapacity      = stateCapacity;
     this.transitionCapacity = transitionCapacity;
-    this.labelLength = labelLength;
-    this.nControllers = nControllers;
+    this.labelLength        = labelLength;
+    this.nControllers       = nControllers;
 
       /* Clear files */
 
@@ -202,12 +202,12 @@ public class Automaton {
 
     openFiles();
 
-        /* Finish setting up */
+      /* Finish setting up */
 
-      initializeVariables();
-      nBytesPerState = calculateNumberOfBytesPerState(nBytesPerStateID, this.transitionCapacity, this.labelLength);
+    initializeVariables();
+    nBytesPerState = calculateNumberOfBytesPerState(nBytesPerStateID, this.transitionCapacity, this.labelLength);
 
-        /* Update header file */
+      /* Update header file */
 
     writeHeaderFile();
 
@@ -293,30 +293,7 @@ public class Automaton {
    **/
   public Automaton coaccessible() {
 
-      /* Create a new automaton that has each of the transitions going the opposite direction */
-
-    Automaton invertedAutomaton = new Automaton(stateCapacity, transitionCapacity, labelLength, nControllers, true);
-
-    // Add events
-    invertedAutomaton.addAllEvents(events);
-
-    // Add states
-    for (long s = 1; s <= nStates; s++) {
-
-      State state = getStateExcludingTransitions(s);
-      invertedAutomaton.addState(state.getLabel(), state.isMarked(), s == initialState);
-
-    }
-
-    // Add transitions
-    for (long s = 1; s <= nStates; s++) {
-
-      State state = getState(s);
-
-      for (Transition t : state.getTransitions())
-        invertedAutomaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), s);
-
-    }
+      Automaton invertedAutomaton = invert(this);
 
       /* Build co-accessible automaton by seeing which states are accessible from the marked states in the inverted automaton */
 
@@ -391,27 +368,64 @@ public class Automaton {
   }
 
   /**
+   * Create a new version of the specified automaton which has all of the transitions going the opposite direction.
+   * NOTE: This is just a shallow copy of the automaton (no special transition data is retained), which makes it slightly more efficient.
+   * @param automaton The automaton to invert
+   * @return the inverted automaton
+   **/
+  private static Automaton invert(Automaton automaton) {
+
+      /* Create a new automaton that has each of the transitions going the opposite direction */
+
+    Automaton invertedAutomaton = new Automaton(automaton.getStateCapacity(), automaton.getTransitionCapacity(), automaton.getLabelLength(), automaton.getNumberOfControllers(), true);
+
+    // Add events
+    invertedAutomaton.addAllEvents(automaton.getEvents());
+
+    // Add states
+    for (long s = 1; s <= automaton.getNumberOfStates(); s++) {
+
+      State state = automaton.getStateExcludingTransitions(s);
+      invertedAutomaton.addState(state.getLabel(), state.isMarked(), s == automaton.getInitialStateID());
+
+    }
+
+    // Add transitions
+    for (long s = 1; s <= automaton.getNumberOfStates(); s++) {
+
+      State state = automaton.getState(s);
+
+      for (Transition t : state.getTransitions())
+        invertedAutomaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), s);
+
+    }
+
+    return invertedAutomaton;
+
+  }
+
+  /**
    * Helper method to copy over all special transition data from this automaton to another.
    * NOTE: The data is only copied over if both of the states involved in the transition actually exist
    * @param automaton The automaton in which the special transitions are being added
    **/
   private void copyOverSpecialTransitions(Automaton automaton) {
 
-    for (TransitionData transitionData : badTransitions)
-      if (automaton.stateExists(transitionData.initialStateID) && automaton.stateExists(transitionData.targetStateID))
-        automaton.markTransitionAsBad(transitionData.initialStateID, transitionData.eventID, transitionData.targetStateID);
+    for (TransitionData data : badTransitions)
+      if (automaton.stateExists(data.initialStateID) && automaton.stateExists(data.targetStateID))
+        automaton.markTransitionAsBad(data.initialStateID, data.eventID, data.targetStateID);
 
-    for (TransitionData transitionData : unconditionalViolations)
-      if (automaton.stateExists(transitionData.initialStateID) && automaton.stateExists(transitionData.targetStateID))
-        automaton.addUnconditionalViolation(transitionData.initialStateID, transitionData.eventID, transitionData.targetStateID);
+    for (TransitionData data : unconditionalViolations)
+      if (automaton.stateExists(data.initialStateID) && automaton.stateExists(data.targetStateID))
+        automaton.addUnconditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
 
-    for (TransitionData transitionData : conditionalViolations)
-      if (automaton.stateExists(transitionData.initialStateID) && automaton.stateExists(transitionData.targetStateID))
-        automaton.addConditionalViolation(transitionData.initialStateID, transitionData.eventID, transitionData.targetStateID);
+    for (TransitionData data : conditionalViolations)
+      if (automaton.stateExists(data.initialStateID) && automaton.stateExists(data.targetStateID))
+        automaton.addConditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
 
-      for (TransitionData transitionData : potentialCommunications)
-      if (automaton.stateExists(transitionData.initialStateID) && automaton.stateExists(transitionData.targetStateID))
-        automaton.addPotentialCommunication(transitionData.initialStateID, transitionData.eventID, transitionData.targetStateID);
+    for (CommunicationData data : potentialCommunications)
+      if (automaton.stateExists(data.initialStateID) && automaton.stateExists(data.targetStateID))
+        automaton.addPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID, (CommunicationRole[]) data.roles.clone());
 
   }
 
@@ -753,183 +767,6 @@ public class Automaton {
   }
 
   /**
-   * Generate a new automaton, with all communications added (potential communications are marked).
-   * @return the automaton with the added transitions
-   **/
-  public Automaton addCommunications() {
-
-    // I'm not sure how we're supposed to handle automata with more than 1 controller (since our U-Structure has just one controller)
-    if (nControllers != 1)
-      return null;
-    
-      /* Setup */
-
-    Set<LabelVector> leastUpperBounds = generateLeastUpperBounds();
-    Set<LabelVector> potentialCommunications = findPotentialCommunications(leastUpperBounds);
-    Automaton automaton = duplicate("addCommunications");
-
-      /* Add communications (marking the potential communications) */
-
-    for (long s = 1; s < automaton.getNumberOfStates(); s++) {
-
-      State startingState = automaton.getState(s);
-
-      // Try each least upper bound
-      for (LabelVector v : leastUpperBounds) {
-        
-        boolean[] vectorElementsFound = new boolean[v.getSize()];
-        State destinationState = findWhereCommunicationLeads(automaton, v, vectorElementsFound, startingState);
-        
-        if (destinationState != null) {
-
-          // Add event (won't be added if the event already exists, and it will return a a negative version of the ID of the original event)
-          int id = Math.abs(automaton.addEvent(v.toString(), new boolean[] {true}, new boolean[] {true}));
-         
-          automaton.addTransition(startingState.getID(), id, destinationState.getID());
-
-          if (potentialCommunications.contains(v))
-            automaton.addPotentialCommunication(startingState.getID(), id, destinationState.getID());
-         
-        }
-
-      }
-
-    }
-
-    return automaton;
-    
-  }
-
-  /**
-   * NOT COMMENTED YET!
-   **/
-  private static State findWhereCommunicationLeads(Automaton automaton, LabelVector communication, boolean[] vectorElementsFound, State currentState) {
-
-      /* Base case */
-
-    // We have found the destination if all vector elements have been found
-    boolean finished = true;
-    for (int i = 0; i < communication.getSize(); i++) {
-      if (!communication.getLabelAtIndex(i).equals("*") && !vectorElementsFound[i]) {
-        finished = false;
-        break;
-      }
-    }
-
-    if (finished)
-      return currentState;
-
-      /* Recursive case */
-
-    // Try all transitions leading from this state
-    outer: for (Transition t : currentState.getTransitions()) {
-
-      boolean[] copy = (boolean[]) vectorElementsFound.clone();
-
-      // Check to see if the event vector of this transition is compatible with what we've found so far
-      for (int i = 0; i < t.getEvent().vector.getSize(); i++) {
-
-        String element = t.getEvent().vector.getLabelAtIndex(i);
-
-        if (!element.equals("*")) {
-
-          // Conflict since we have already found an element for this index (so they aren't compatible)
-          if (copy[i])
-            continue outer;
-
-          // Is compatible
-          else if (element.equals(communication.getLabelAtIndex(i)))
-            copy[i] = true;
-
-          // Conflict since the elements do not match (meaning they aren't compatible)
-          else
-            continue outer;
-        }
-
-      }
-
-      // Recursive call to the state where this transition leads
-      State destinationState = findWhereCommunicationLeads(automaton, communication, copy, automaton.getState(t.getTargetStateID()));
-      
-      // Return destination if it is found (there will only ever be one destination for a given communication from a given state, so we can stop as soon as we find it the first time)
-      if (destinationState != null)
-        return destinationState;
-
-    }
-
-    return null;
-
-  }
-
-  /**
-   * NOT COMMENTED YET!
-   **/
-  private Set<LabelVector> findPotentialCommunications(Set<LabelVector> leastUpperBounds) {
-
-      /* Separate observable and unobservable labels */
-
-    Set<LabelVector>  observableLabels = new HashSet<LabelVector>(),
-                      unobservableLabels = new HashSet<LabelVector>();
-
-    for (LabelVector v : leastUpperBounds) {
-      if (v.getLabelAtIndex(0).equals("*"))
-        unobservableLabels.add(v);
-      else
-        observableLabels.add(v);
-    }
-
-      /* Find potential communications */
-
-    Set<LabelVector> potentialCommunications = new HashSet<LabelVector>();
-    
-    for (LabelVector v1 : observableLabels) {
-      for (LabelVector v2 : unobservableLabels) {
-
-          /* Error checking */
-
-        if (v1.getSize() == -1 || v2.getSize() == -1 || v1.getSize() != v2.getSize()) {
-          System.err.println("ERROR: Bad event vectors. Least upper bounds generation aborted.");
-          return null;
-        }
-
-          /* Build least upper bound */
-
-        boolean valid = true;
-        String potentialCommunication = "";
-        for (int i = 0; i < v1.getSize(); i++) {
-
-          String  label1 = v1.getLabelAtIndex(i),
-                  label2 = v2.getLabelAtIndex(i);
-
-          // Check for incompatibility
-          if (!label1.equals("*") && !label2.equals("*") && !label1.equals(label2)) {
-            valid = false;
-            break;
-          }
-
-          // Append vector element
-          if (label1.equals("*"))
-            potentialCommunication += "_" + label2;
-          else
-            potentialCommunication += "_" + label1;
-
-        }
-
-          /* Add to the set */
-
-        if (valid)
-          potentialCommunications.add(new LabelVector("<" + potentialCommunication.substring(1) + ">"));
-
-      } // for
-    } // for
-
-    return potentialCommunications;
-    // powerSet(new ArrayList<LabelVector>(potentialCommunications), new HashSet<LabelVector>(), 0);
-
-  }
-
-
-  /**
    * Apply the synchronized composition algorithm to an automaton to produce the U-Structure.
    * @return the U-Structure
    **/
@@ -1151,8 +988,228 @@ public class Automaton {
   }
 
   /**
-   * Generate all possible least upper bounds (L.U.Bs) of the event vectors (after synchronized composition).
-   * @return the set of all L.U.Bs in the form of event vectors
+   * Generate a new automaton, with all communications added (potential communications are marked).
+   * @return the automaton with the added transitions
+   **/
+  public Automaton addCommunications() {
+
+    // I'm not sure how we're supposed to handle automata with more than 1 controller (since our U-Structure has just one controller)
+    if (nControllers != 1)
+      return null;
+    
+      /* Setup */
+
+    List<LabelVector> leastUpperBounds = new ArrayList<LabelVector>(generateLeastUpperBounds());
+    List<CommunicationLabelVector> potentialCommunications = new ArrayList<CommunicationLabelVector>(findPotentialCommunicationLabels(leastUpperBounds));
+    Automaton automaton = duplicate("addCommunications");
+
+      /* Add communications (marking the potential communications) */
+
+    for (long s = 1; s < automaton.getNumberOfStates(); s++) {
+
+      State startingState = automaton.getState(s);
+
+      // Try each least upper bound
+      for (LabelVector v : leastUpperBounds) {
+        
+        boolean[] vectorElementsFound = new boolean[v.getSize()];
+        State destinationState = findWhereCommunicationLeads(automaton, v, vectorElementsFound, startingState);
+        
+        if (destinationState != null) {
+
+          // Add event (won't be added if the event already exists, and it will return a a negative version of the ID of the original event)
+          int id = Math.abs(automaton.addEvent(v.toString(), new boolean[] {true}, new boolean[] {true}));
+         
+          automaton.addTransition(startingState.getID(), id, destinationState.getID());
+
+          int index = potentialCommunications.indexOf(v);
+          if (index != -1)
+            automaton.addPotentialCommunication(startingState.getID(), id, destinationState.getID(), potentialCommunications.get(index).roles);
+         
+        }
+
+      }
+
+    }
+
+    // TEMPORARY
+    automaton.printFeasibleProtocols();
+
+    return automaton;
+    
+  }
+
+  /**
+   * Using recursion, starting at a given state, determine which state the specified communication leads to (if it exists).
+   * @param automaton           The automaton we are working with
+   * @param communication       The event vector representing the communication
+   * @param vectorElementsFound Indicates which elements of the vector have been found
+   * @param currentState        The state that we are currently on
+   * @return the destination state (or null if the communication does not lead to a state)
+   **/
+  private static State findWhereCommunicationLeads(Automaton automaton, LabelVector communication, boolean[] vectorElementsFound, State currentState) {
+
+      /* Base case */
+
+    // We have found the destination if all vector elements have been found
+    boolean finished = true;
+    for (int i = 0; i < communication.getSize(); i++) {
+      if (!communication.getLabelAtIndex(i).equals("*") && !vectorElementsFound[i]) {
+        finished = false;
+        break;
+      }
+    }
+
+    if (finished)
+      return currentState;
+
+      /* Recursive case */
+
+    // Try all transitions leading from this state
+    outer: for (Transition t : currentState.getTransitions()) {
+
+      boolean[] copy = (boolean[]) vectorElementsFound.clone();
+
+      // Check to see if the event vector of this transition is compatible with what we've found so far
+      for (int i = 0; i < t.getEvent().vector.getSize(); i++) {
+
+        String element = t.getEvent().vector.getLabelAtIndex(i);
+
+        if (!element.equals("*")) {
+
+          // Conflict since we have already found an element for this index (so they aren't compatible)
+          if (copy[i])
+            continue outer;
+
+          // Is compatible
+          else if (element.equals(communication.getLabelAtIndex(i)))
+            copy[i] = true;
+
+          // Conflict since the elements do not match (meaning they aren't compatible)
+          else
+            continue outer;
+        }
+
+      }
+
+      // Recursive call to the state where this transition leads
+      State destinationState = findWhereCommunicationLeads(automaton, communication, copy, automaton.getState(t.getTargetStateID()));
+      
+      // Return destination if it is found (there will only ever be one destination for a given communication from a given state, so we can stop as soon as we find it the first time)
+      if (destinationState != null)
+        return destinationState;
+
+    }
+
+    return null;
+
+  }
+
+  /**
+   * Given the complete set of least upper bounds (LUBs), return the subset of LUBs which are the event vectors for potential communications.
+   * @param leastUpperBounds  The set of LUBs
+   * @return the set of potential communications, including communication roles
+   **/
+  private Set<CommunicationLabelVector> findPotentialCommunicationLabels(List<LabelVector> leastUpperBounds) {
+
+      /* Separate observable and unobservable labels */
+
+    Set<LabelVector> observableLabels = new HashSet<LabelVector>();
+    Set<LabelVector> unobservableLabels = new HashSet<LabelVector>();
+
+    for (LabelVector v : leastUpperBounds) {
+      if (v.getLabelAtIndex(0).equals("*"))
+        unobservableLabels.add(v);
+      else
+        observableLabels.add(v);
+    }
+
+      /* Find potential communications */
+
+    Set<CommunicationLabelVector> potentialCommunications = new HashSet<CommunicationLabelVector>();
+    
+    for (LabelVector v1 : observableLabels) {
+      for (LabelVector v2 : unobservableLabels) {
+
+          /* Error checking */
+
+        if (v1.getSize() == -1 || v2.getSize() == -1 || v1.getSize() != v2.getSize()) {
+          System.err.println("ERROR: Bad event vectors. Least upper bounds generation aborted.");
+          return null;
+        }
+
+          /* Setup */
+
+        CommunicationRole[] roles = new CommunicationRole[v1.getSize() - 1];
+
+          /* Build least upper bound */
+
+        boolean valid = true;
+        String potentialCommunication = "";
+
+        for (int i = 0; i < v1.getSize(); i++) {
+
+          String label1 = v1.getLabelAtIndex(i);
+          String label2 = v2.getLabelAtIndex(i);
+
+          // Check to see if they are incompatible or if this potential communication has already been taken care of
+          if (!label1.equals("*") && !label2.equals("*")) {
+            valid = false;
+            break;
+          }
+
+          // Append vector element
+          if (!label1.equals("*")) {
+            potentialCommunication += "_" + label1;
+            if (i > 0)
+              roles[i - 1] = CommunicationRole.SENDER;
+          } else if (!label2.equals("*")) {
+            potentialCommunication += "_" + label2;
+            if (i > 0)
+              roles[i - 1] = CommunicationRole.RECIEVER;
+          } else {
+            potentialCommunication += "_*";
+            if (i > 0)
+              roles[i - 1] = CommunicationRole.NONE;
+          }
+
+        }
+
+          /* Add it to the set */
+
+        if (valid) {
+
+          // Add all potential communications (1 for each sender)
+          for (int i = 0; i < roles.length; i++) {
+
+            if (roles[i] == CommunicationRole.SENDER) {
+
+              CommunicationRole[] copy = (CommunicationRole[]) roles.clone();
+              
+              // Remove all other senders
+              for (int j = 0; j < copy.length; j++)
+                if (j != i && copy[j] == CommunicationRole.SENDER)
+                  copy[j] = CommunicationRole.NONE;
+              
+              // Add potential communication
+              potentialCommunications.add(new CommunicationLabelVector("<" + potentialCommunication.substring(1) + ">", copy));
+
+            }
+
+          }
+
+        }
+
+      } // for
+    } // for
+
+    return potentialCommunications;
+
+  }
+
+  /**
+   * Generate all possible least upper bounds (LUBs) of the event vectors (after synchronized composition).
+   * @return the set of all LUBs in the form of event vectors
    **/
   private Set<LabelVector> generateLeastUpperBounds() {
 
@@ -1162,7 +1219,7 @@ public class Automaton {
     for (Event e : events)
       leastUpperBounds.add(new LabelVector(e.getLabel()));
 
-      /* Continue to find L.U.Bs using pairs of event vectors until there are no new ones left to find */
+      /* Continue to find LUBs using pairs of event vectors until there are no new ones left to find */
 
     boolean foundNew = true;
     while (foundNew) {
@@ -1186,8 +1243,8 @@ public class Automaton {
           String leastUpperBound = "";
           for (int i = 0; i < v1.getSize(); i++) {
 
-            String  label1 = v1.getLabelAtIndex(i),
-                    label2 = v2.getLabelAtIndex(i);
+            String label1 = v1.getLabelAtIndex(i);
+            String label2 = v2.getLabelAtIndex(i);
 
             // Check for incompatibility
             if (!label1.equals("*") && !label2.equals("*") && !label1.equals(label2)) {
@@ -1224,31 +1281,137 @@ public class Automaton {
   }
 
   /**
-   * TEMPORARY METHOD
+   * Check feasibility for all possible communication protocols, printing out the results.
    **/
-  private void powerSet(ArrayList<LabelVector> masterList, Set<LabelVector> elementsChosen, int index) {
+  public void printFeasibleProtocols() {
+
+    // Generate powerset of potential communications (which gives us the complete list of communication protocols)
+    List<Set<CommunicationData>> protocols = new ArrayList<Set<CommunicationData>>();
+    powerSet(protocols, potentialCommunications, new HashSet<CommunicationData>(), 0);
+
+    // Create inverted automaton, so that we can explore the automaton by crossing transitions from either direction
+    Automaton invertedAutomaton = invert(this);
+
+    for (Set<CommunicationData> protocol : protocols) {
+
+      // Ignore the protocol with no communications (doesn't make sense in our context)
+      if (protocol.size() == 0)
+        continue;
+
+      // System.out.println("Starting... " + protocol.toString());
+
+      boolean feasible = true;
+
+      outer: for (CommunicationData data : protocol) {
+
+        // Find reachable states
+        Set<Long> reachableStates = new HashSet<Long>();
+        findReachableStates(this, invertedAutomaton, reachableStates, data.initialStateID, data.getIndexOfSender() + 1);
+        // System.out.println(reachableStates);
+        // for (Long id : reachableStates) {
+        //   System.out.println(getState(id).getLabel());
+        // }
+
+        // Check for an indistinguishable state outside the protocol
+        for (Long id : reachableStates)
+
+          // Check if this state is indistinguishable
+          for (Transition t : getState(id).getTransitions()) {
+            
+            if (t.getEvent().getID() == data.eventID) {
+
+              // Check if this communication is outside of the protocol
+              boolean found = false;
+              for (CommunicationData data2 : protocol)
+                if (data2.initialStateID == id && data2.eventID == t.getEvent().getID() && data2.targetStateID == t.getTargetStateID()) {
+                  found = true;
+                  break;
+                }
+
+              // If this is not in the protocol, then it is not feasible
+              if (!found) {
+                feasible = false;
+                break outer;
+              }
+
+            }
+          }
+      }
+      if (feasible) {
+        System.out.println("FEASIBLE PROTOCOL:");
+        for (CommunicationData data : protocol)
+          System.out.println(
+            getState(data.initialStateID).getLabel()
+            + "," + getEvent(data.eventID).getLabel()
+            + "," + getState(data.targetStateID).getLabel()
+          );
+      }
+
+    }
+
+  }
+
+  /**
+   * NOT YET COMMENTED!!
+   * NOTE: This method assumes there is only ever one sender
+   **/
+  private static void findReachableStates(Automaton automaton, Automaton invertedAutomaton, Set<Long> reachableStates, long currentStateID, int vectorIndexOfSender) {
+
+    reachableStates.add(currentStateID);
+
+    for (Transition t : automaton.getState(currentStateID).getTransitions()) {
+
+      LabelVector vector = t.getEvent().vector;
+      boolean unobservableToSenders = (vector.getLabelAtIndex(0).equals("*") || vector.getLabelAtIndex(vectorIndexOfSender).equals("*"));
+
+      if (unobservableToSenders && !reachableStates.contains(t.getTargetStateID()))
+        findReachableStates(automaton, invertedAutomaton, reachableStates, t.getTargetStateID(), vectorIndexOfSender);
+
+    }
+
+    for (Transition t : invertedAutomaton.getState(currentStateID).getTransitions()) {
+
+      LabelVector vector = t.getEvent().vector;
+      boolean unobservableToSenders = (vector.getLabelAtIndex(0).equals("*") || vector.getLabelAtIndex(vectorIndexOfSender).equals("*"));
+
+      if (unobservableToSenders && !reachableStates.contains(t.getTargetStateID()))
+        findReachableStates(automaton, invertedAutomaton, reachableStates, t.getTargetStateID(), vectorIndexOfSender);
+
+    }
+
+  }
+
+  /**
+   * A generic method to generate the powerset of the given list, which are stored in the list of sets that you give it.
+   * @param results         This is a list of sets where all of the sets in the powerset will be stored
+   * @param masterList      This is the original list of elements in the set
+   * @param elementsChosen  This maintains the elements chosen so far (when you call this method you should give an empty set)
+   * @param index           The current index in the master list (when you call this method, this parameter should be 0)
+   **/
+  private static <T> void powerSet(List<Set<T>> results, List<T> masterList, Set<T> elementsChosen, int index) {
 
       /* Base case */
 
     if (index == masterList.size()) {
-      System.out.println(elementsChosen);
+      results.add(elementsChosen);
       return;
     }
 
       /* Recursive case */
 
-    Set<LabelVector>  includingElement = new HashSet<LabelVector>(),
-                      notIncludingElement = new HashSet<LabelVector>();
-    for (LabelVector v : elementsChosen) {
-      includingElement.add(v);
-      notIncludingElement.add(v);
+    Set<T>  includingElement = new HashSet<T>(),
+            notIncludingElement = new HashSet<T>();
+    
+    for (T e : elementsChosen) {
+      includingElement.add(e);
+      notIncludingElement.add(e);
     }
 
     includingElement.add(masterList.get(index));
 
-    powerSet(masterList, includingElement, index + 1);
-    powerSet(masterList, notIncludingElement, index + 1);
-
+    // Recursive calls
+    powerSet(results, masterList, includingElement, index + 1);
+    powerSet(results, masterList, notIncludingElement, index + 1);
 
   }
 
@@ -1321,10 +1484,10 @@ public class Automaton {
 
         /* Update the special transitions in the header file */
 
-      renumberSpecialTransitions(mappingRAFile, badTransitions);
-      renumberSpecialTransitions(mappingRAFile, unconditionalViolations);
-      renumberSpecialTransitions(mappingRAFile, conditionalViolations);
-      renumberSpecialTransitions(mappingRAFile, potentialCommunications);
+      renumberTransitionData(mappingRAFile, badTransitions);
+      renumberTransitionData(mappingRAFile, unconditionalViolations);
+      renumberTransitionData(mappingRAFile, conditionalViolations);
+      renumberTransitionData(mappingRAFile, potentialCommunications);
 
         /* Remove old body file and mappings file */
 
@@ -1357,27 +1520,26 @@ public class Automaton {
   }
 
   /**
-   * Helper method to re-number states in the speicifed list of special transitions.
+   * Helper method to re-number states in the specified list of special transitions.
    * @param mappingRAFile The binary file containing the state ID mappings
    * @param list          The list of special transition data
    **/
-  private void renumberSpecialTransitions(RandomAccessFile mappingRAFile, List<TransitionData> list) throws IOException {
+  private void renumberTransitionData(RandomAccessFile mappingRAFile, List<? extends TransitionData> list) throws IOException {
 
     byte[] buffer = new byte[nBytesPerStateID];
 
-    for (TransitionData t : list) {
+    for (TransitionData data : list) {
 
-        // Update initialStateID
-        mappingRAFile.seek(nBytesPerStateID * t.initialStateID);
-        mappingRAFile.read(buffer);
-        t.initialStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
+      // Update initialStateID
+      mappingRAFile.seek(nBytesPerStateID * data.initialStateID);
+      mappingRAFile.read(buffer);
+      data.initialStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
+      // Update targetStateID
+      mappingRAFile.seek(nBytesPerStateID * data.targetStateID);
+      mappingRAFile.read(buffer);
+      data.targetStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
 
-        // Update targetStateID
-        mappingRAFile.seek(nBytesPerStateID * t.targetStateID);
-        mappingRAFile.read(buffer);
-        t.targetStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
-
-      }
+    }
 
   }
 
@@ -1716,8 +1878,18 @@ public class Automaton {
             specialTransition += ",UNCONDITIONAL_VIOLATION";
           if (conditionalViolations.contains(transitionData))
             specialTransition += ",CONDITIONAL_VIOLATION";
-          if (potentialCommunications.contains(transitionData))
-            specialTransition += ",POTENTIAL_COMMUNICATION";
+          int index = potentialCommunications.indexOf(transitionData);
+          if (index != -1) {
+            specialTransition += ",POTENTIAL_COMMUNICATION-";
+            for (CommunicationRole r : potentialCommunications.get(index).roles) {
+              if (r == CommunicationRole.SENDER)
+                specialTransition += "S";
+              else if (r == CommunicationRole.RECIEVER)
+                specialTransition += "R";
+              else
+                specialTransition += "*";
+            }
+          }
           if (!specialTransition.equals(""))
             transitionInputBuilder.append(":" + specialTransition.substring(1));
         
@@ -1811,8 +1983,8 @@ public class Automaton {
       readHeaderFile();
 
     } catch (IOException e) {
-            e.printStackTrace();
-      } 
+      e.printStackTrace();
+    } 
 
   }
 
@@ -1824,11 +1996,11 @@ public class Automaton {
 
       try {
 
-          headerRAFile.close();
-          bodyRAFile.close();
+        headerRAFile.close();
+        bodyRAFile.close();
 
       } catch (IOException e) {
-          e.printStackTrace();
+        e.printStackTrace();
       }
 
   }
@@ -1840,15 +2012,15 @@ public class Automaton {
 
     try {
 
-        if (!headerFile.delete() && headerFile.exists())
-                System.err.println("ERROR: Could not delete header file.");
-        
-            if (!bodyFile.delete() && headerFile.exists())
-                System.err.println("ERROR: Could not delete body file.");
+      if (!headerFile.delete() && headerFile.exists())
+        System.err.println("ERROR: Could not delete header file.");
+      
+      if (!bodyFile.delete() && headerFile.exists())
+        System.err.println("ERROR: Could not delete body file.");
 
-      } catch (SecurityException e) {
-        e.printStackTrace();
-      }
+    } catch (SecurityException e) {
+      e.printStackTrace();
+    }
 
   }
 
@@ -1923,14 +2095,14 @@ public class Automaton {
 
         /* Write special transitions to the .hdr file */
 
-      writeSpecialTransitionsToHeader(badTransitions);
-      writeSpecialTransitionsToHeader(unconditionalViolations);
-      writeSpecialTransitionsToHeader(conditionalViolations);
-      writeSpecialTransitionsToHeader(potentialCommunications);
+      writeTransitionDataToHeader(badTransitions);
+      writeTransitionDataToHeader(unconditionalViolations);
+      writeTransitionDataToHeader(conditionalViolations);
+      writeCommunicationDataToHeader(potentialCommunications);
 
     } catch (IOException e) {
-            e.printStackTrace();
-      } 
+      e.printStackTrace();
+    } 
 
   }
 
@@ -1938,19 +2110,43 @@ public class Automaton {
    * A helper method to write a list of special transitions to the header file.
    * @param list  The list of transition data
    **/
-  private void writeSpecialTransitionsToHeader(List<TransitionData> list) throws IOException {
+  private void writeTransitionDataToHeader(List<TransitionData> list) throws IOException {
 
     byte[] buffer = new byte[list.size() * 20];
     int index = 0;
 
-    for (TransitionData t : list) {
-      ByteManipulator.writeLongAsBytes(buffer, index, t.initialStateID, 8);
-      ByteManipulator.writeLongAsBytes(buffer, index + 8, t.eventID, 4);
-      ByteManipulator.writeLongAsBytes(buffer, index + 12, t.targetStateID, 8);
+    for (TransitionData data : list) {
+      ByteManipulator.writeLongAsBytes(buffer, index, data.initialStateID, 8);
+      ByteManipulator.writeLongAsBytes(buffer, index + 8, data.eventID, 4);
+      ByteManipulator.writeLongAsBytes(buffer, index + 12, data.targetStateID, 8);
       index += 20;
     }
 
     headerRAFile.write(buffer);
+
+  }
+
+  /**
+   * A helper method to write a list of special transitions to the header file.
+   * @param list  The list of transition data
+   **/
+  private void writeCommunicationDataToHeader(List<CommunicationData> list) throws IOException {
+
+    for (CommunicationData data : list) {
+
+      byte[] buffer = new byte[20 + data.roles.length];
+
+      ByteManipulator.writeLongAsBytes(buffer, 0, data.initialStateID, 8);
+      ByteManipulator.writeLongAsBytes(buffer, 8, data.eventID, 4);
+      ByteManipulator.writeLongAsBytes(buffer, 12, data.targetStateID, 8);
+
+      int index = 20;
+      for (CommunicationRole role : data.roles)
+        buffer[index++] = role.getValue();
+      
+      headerRAFile.write(buffer);
+
+    }
 
   }
 
@@ -1975,27 +2171,32 @@ public class Automaton {
 
        /* Calculate the values stored in these bytes */
 
-      nStates = ByteManipulator.readBytesAsLong(buffer, 0, 8);
-      stateCapacity = ByteManipulator.readBytesAsLong(buffer, 8, 8);
+      nStates            = ByteManipulator.readBytesAsLong(buffer, 0, 8);
+      stateCapacity      = ByteManipulator.readBytesAsLong(buffer, 8, 8);
       transitionCapacity = (int) ByteManipulator.readBytesAsLong(buffer, 12, 4);
-      labelLength = (int) ByteManipulator.readBytesAsLong(buffer, 16, 4);
-      initialState = ByteManipulator.readBytesAsLong(buffer, 20, 8);
-      nControllers = (int) ByteManipulator.readBytesAsLong(buffer, 28, 4);
-      int nEvents = (int) ByteManipulator.readBytesAsLong(buffer, 32, 4);
-      int nBadTransitions = (int) ByteManipulator.readBytesAsLong(buffer, 36, 4);
+      labelLength        = (int) ByteManipulator.readBytesAsLong(buffer, 16, 4);
+      initialState       = ByteManipulator.readBytesAsLong(buffer, 20, 8);
+      nControllers       = (int) ByteManipulator.readBytesAsLong(buffer, 28, 4);
+      int nEvents        = (int) ByteManipulator.readBytesAsLong(buffer, 32, 4);
+
+      // None of the folowing things can exist if there are no events
+      if (nEvents == 0)
+        return;
+
+      int nBadTransitions          = (int) ByteManipulator.readBytesAsLong(buffer, 36, 4);
       int nUnconditionalViolations = (int) ByteManipulator.readBytesAsLong(buffer, 40, 4);
-      int nConditionalViolations = (int) ByteManipulator.readBytesAsLong(buffer, 44, 4);
+      int nConditionalViolations   = (int) ByteManipulator.readBytesAsLong(buffer, 44, 4);
       int nPotentialCommunications = (int) ByteManipulator.readBytesAsLong(buffer, 48, 4);
 
-       /* Read in the events */
+        /* Read in the events */
 
       for (int e = 1; e <= nEvents; e++) {
 
         // Read properties
         buffer = new byte[nControllers * 2];
         headerRAFile.read(buffer);
-        boolean[]   observable = new boolean[nControllers],
-              controllable = new boolean[nControllers];
+        boolean[] observable = new boolean[nControllers];
+        boolean[] controllable = new boolean[nControllers];
         for (int i = 0; i < nControllers; i++) {
           observable[i] = (buffer[2 * i] == 1);
           controllable[i] = (buffer[(2 * i) + 1] == 1);
@@ -2018,12 +2219,21 @@ public class Automaton {
 
       }
 
-       /* Read in special transitions */
+        /* Read in special transitions */
 
-      readSpecialTransitionsFromHeader(nBadTransitions, badTransitions);
-      readSpecialTransitionsFromHeader(nUnconditionalViolations, unconditionalViolations);
-      readSpecialTransitionsFromHeader(nConditionalViolations, conditionalViolations);
-      readSpecialTransitionsFromHeader(nPotentialCommunications, potentialCommunications);
+      if (nBadTransitions > 0)
+        readTransitionDataFromHeader(nBadTransitions, badTransitions);
+      
+      if (nUnconditionalViolations > 0)
+        readTransitionDataFromHeader(nUnconditionalViolations, unconditionalViolations);
+      
+      if (nConditionalViolations > 0)
+        readTransitionDataFromHeader(nConditionalViolations, conditionalViolations);
+      
+      if (nPotentialCommunications > 0) {
+        int nControllersBeforeUStructure = events.iterator().next().vector.getSize() - 1; // Grab a random event and get the vecor size
+        readCommunicationDataFromHeader(nPotentialCommunications, potentialCommunications, nControllersBeforeUStructure);
+      }
 
     } catch (IOException e) {
       e.printStackTrace();
@@ -2036,13 +2246,13 @@ public class Automaton {
    * @param nTransitions  The number of transitions that need to be read
    * @param list          The list of transition data
    **/
-  private void readSpecialTransitionsFromHeader(int nTransitions, List<TransitionData> list) throws IOException {
+  private void readTransitionDataFromHeader(int nTransitions, List<TransitionData> list) throws IOException {
 
     byte[] buffer = new byte[nTransitions * 20];
     headerRAFile.read(buffer);
     int index = 0;
 
-    for (int t = 0; t < nTransitions; t++) {
+    for (int i = 0; i < nTransitions; i++) {
       long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
       int eventID = (int) ByteManipulator.readBytesAsLong(buffer, index + 8, 4);
       long targetStateID = ByteManipulator.readBytesAsLong(buffer, index + 12, 8);
@@ -2053,12 +2263,40 @@ public class Automaton {
   }
 
   /**
+   * A helper method to read a list of potential communication transitions from the header file.
+   * @param nCommunications The number of communications that need to be read
+   * @param list            The list of communication data
+   **/
+  private void readCommunicationDataFromHeader(int nCommunications, List<CommunicationData> list, int nControllersBeforeUStructure) throws IOException {
+
+    byte[] buffer = new byte[nCommunications * (20 + nControllersBeforeUStructure)];
+    headerRAFile.read(buffer);
+    int index = 0;
+
+    for (int i = 0; i < nCommunications; i++) {
+
+      long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
+      int eventID = (int) ByteManipulator.readBytesAsLong(buffer, index + 8, 4);
+      long targetStateID = ByteManipulator.readBytesAsLong(buffer, index + 12, 8);
+      index += 20;
+      
+      CommunicationRole[] roles = new CommunicationRole[nControllersBeforeUStructure];
+      for (int j = 0; j < roles.length; j++)
+        roles[j] = CommunicationRole.getRole(buffer[index++]);
+      
+      list.add(new CommunicationData(initialStateID, eventID, targetStateID, roles));
+    
+    }
+
+  }
+
+  /**
    * Re-create the body file to accommodate some increase in capacity.
    * NOTE: This operation can clearly be expensive for large automata, so we need to try to reduce the number of times this method is called.
-   * @param newStateCapacity    The number of states that the automaton will be able to hold
+   * @param newStateCapacity      The number of states that the automaton will be able to hold
    * @param newTransitionCapacity The number of transitions that each state will be able to hold
-   * @param newLabelLength    The maximum number of characters that each state label will be allowed
-   * @param newNBytesPerStateID The number of bytes that are now required to represent each state ID
+   * @param newLabelLength        The maximum number of characters that each state label will be allowed
+   * @param newNBytesPerStateID   The number of bytes that are now required to represent each state ID
    **/
   private void recreateBodyFile(long newStateCapacity, int newTransitionCapacity, int newLabelLength, int newNBytesPerStateID) {
 
@@ -2138,9 +2376,9 @@ public class Automaton {
 
   /**
    * Calculate the amount of space required to store a state, given the specified conditions.
-   * @param newNBytesPerStateID The number of bytes per state ID
+   * @param newNBytesPerStateID   The number of bytes per state ID
    * @param newTransitionCapacity The transition capacity
-   * @param newLabelLength    The maximum label length
+   * @param newLabelLength        The maximum label length
    * @return the number of bytes needed to store a state
    **/
   private long calculateNumberOfBytesPerState(long newNBytesPerStateID, int newTransitionCapacity, int newLabelLength) {
@@ -2212,7 +2450,7 @@ public class Automaton {
   /**
    * Adds a transition based th label of the event (instead the ID).
    * @param startingStateID The ID of the state where the transition originates from
-   * @param eventLabel    The label of the event that triggers the transition
+   * @param eventLabel      The label of the event that triggers the transition
    * @param targetStateID   The ID of the state where the transition leads to
    * @return the ID of the event label (returns 0 if the addition was unsuccessful)
    **/
@@ -2235,7 +2473,7 @@ public class Automaton {
    * NOTE: This method could be made more efficient since the entire state is written to file instead of only
    * writing the new transition to file.
    * @param startingStateID The ID of the state where the transition originates from
-   * @param eventID     The ID of the event that triggers the transition
+   * @param eventID         The ID of the event that triggers the transition
    * @param targetStateID   The ID of the state where the transition leads to
    **/
   public boolean addTransition(long startingStateID, int eventID, long targetStateID) {
@@ -2288,8 +2526,8 @@ public class Automaton {
 
   /**
    * Add the specified state to the automaton with an empty transition list.
-   * @param label       The "name" of the new state
-   * @param marked      Whether or not the states is marked
+   * @param label           The "name" of the new state
+   * @param marked          Whether or not the states is marked
    * @param isInitialState  Whether or not this is the initial state
    * @return the ID of the added state (0 indicates the addition was unsuccessful)
    **/
@@ -2299,9 +2537,9 @@ public class Automaton {
 
   /**
    * Add the specified state to the automaton.
-   * @param label       The "name" of the new state
-   * @param marked      Whether or not the states is marked
-   * @param transitions   The list of transitions
+   * @param label           The "name" of the new state
+   * @param marked          Whether or not the states is marked
+   * @param transitions     The list of transitions
    * @param isInitialState  Whether or not this is the initial state
    * @return the ID of the added state (0 indicates the addition was unsuccessful)
    **/
@@ -2495,8 +2733,8 @@ public class Automaton {
 
   /**
    * Add the specified event to the set.
-   * @param label     The "name" of the new event
-   * @param observable  Whether or not the event is observable
+   * @param label         The "name" of the new event
+   * @param observable    Whether or not the event is observable
    * @param controllable  Whether or not the event is controllable
    * @return the ID of the added event (negative value indicates the addition was unsuccessful, and it is the negative version of the original event)
    **/
@@ -2581,9 +2819,9 @@ public class Automaton {
    * @param eventID          The event triggering the transition
    * @param targetStateID    The target state
    **/
-  public void addPotentialCommunication(long initialStateID, int eventID, long targetStateID) {
+  public void addPotentialCommunication(long initialStateID, int eventID, long targetStateID, CommunicationRole[] communicationRoles) {
 
-    potentialCommunications.add(new TransitionData(initialStateID, eventID, targetStateID));
+    potentialCommunications.add(new CommunicationData(initialStateID, eventID, targetStateID, communicationRoles));
 
     // Update header file
     writeHeaderFile();
@@ -2769,36 +3007,5 @@ public class Automaton {
   public int getNumberOfControllers() {
     return nControllers;
   }
-
-  /**
-   * Private class to hold all 3 pieces of information needed to identify a transition.
-   **/
-  private class TransitionData {
-
-    public long initialStateID, targetStateID;
-    public int eventID;
-
-    public TransitionData(long initialStateID, int eventID, long targetStateID) {
-        this.initialStateID = initialStateID;
-        this.eventID = eventID;
-        this.targetStateID = targetStateID;
-    }
-
-    /**
-     * Check for equality by comparing properties.
-     * @param obj - The object to compare this one to
-     * @return whether or not the transitions are equal
-     **/
-    @Override public boolean equals(Object obj) {
-
-      TransitionData other = (TransitionData) obj;
-
-      return initialStateID == other.initialStateID
-        && eventID == other.eventID
-        && targetStateID == other.targetStateID;
-
-    }
-
-  } // TransitionData
 
 }
