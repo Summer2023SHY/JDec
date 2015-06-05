@@ -1298,8 +1298,6 @@ public class Automaton {
       if (protocol.size() == 0)
         continue;
 
-      // System.out.println("Starting... " + protocol.toString());
-
       boolean feasible = true;
 
       outer: for (CommunicationData data : protocol) {
@@ -1307,11 +1305,7 @@ public class Automaton {
         // Find reachable states
         Set<Long> reachableStates = new HashSet<Long>();
         findReachableStates(this, invertedAutomaton, reachableStates, data.initialStateID, data.getIndexOfSender() + 1);
-        // System.out.println(reachableStates);
-        // for (Long id : reachableStates) {
-        //   System.out.println(getState(id).getLabel());
-        // }
-
+        
         // Check for an indistinguishable state outside the protocol
         for (Long id : reachableStates)
 

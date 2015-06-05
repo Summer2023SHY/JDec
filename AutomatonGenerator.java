@@ -104,24 +104,50 @@ public abstract class AutomatonGenerator {
 
   }
 
+  /**
+   * Generate random long value in the given range (inclusive).
+   * @param min Minimum value
+   * @param max Maximum value
+   * @param random long value
+   **/
   private static long generateLong(long min, long max) {
 
     return min + (long) (Math.random() * ((double) (max - min + 1)));
 
   }
 
+  /**
+   * Generate random integer value in the given range (inclusive).
+   * @param min Minimum value
+   * @param max Maximum value
+   * @param random integer value
+   **/
   private static int generateInt(int min, int max) {
 
     return min + (int) (Math.random() * ((double) (max - min + 1)));
 
   }
 
+  /**
+   * Generate random boolean.
+   * @param random boolean value
+   **/
   private static boolean generateBoolean() {
 
     return generateInt(0, 1) == 1;
 
   }
 
+  /**
+   * Generate an automaton using the given GUI input code.
+   * @param eventInputText      The event input text
+   * @param stateInputText      The state input text
+   * @param transitionInputText The transitionsInputText
+   * @param nControllers        The number of controllers in the automaton
+   * @param verbose             Whether or not parsing errors should be printed to the console
+   * @param headerFile          The header file where the automaton will be written to
+   * @return the generated automaton
+   **/
   public static Automaton generateFromGUICode(String eventInputText, String stateInputText, String transitionInputText, int nControllers, boolean verbose, File headerFile) {
 
       /* Setup */
@@ -182,11 +208,6 @@ public abstract class AutomatonGenerator {
       } else if (line.length() > 0 && verbose)
       System.err.println("ERROR: Could not parse '" + line + "' as a state.");
     }
-
-      /* The image will be blank if there are no states */
-
-    if (stateMapping.isEmpty())
-      return null;
     
       /* Events */
 
@@ -205,9 +226,9 @@ public abstract class AutomatonGenerator {
       // Try to add the event
       if (splitLine.length >= 1 && label.length() > 0) {
 
-        // Setup
-        boolean[]   observable = new boolean[nControllers],
-        controllable = new boolean[nControllers];
+        // Setup (properties are true by default)
+        boolean[] observable = new boolean[nControllers];
+        boolean[] controllable = new boolean[nControllers];
         Arrays.fill(observable, true);
         Arrays.fill(controllable, true);
 
@@ -281,41 +302,9 @@ public abstract class AutomatonGenerator {
         // Add transition
         else {
          
-          if (automaton.addTransition(initialStateID, eventID, targetStateID)) {
-
-            // Special transitions
-            if (splitLine.length > 1) {
-              String[] secondHalf = splitLine[1].split(",");
-              for (String str : secondHalf) {
-                str = str.trim();
-                if (str.equals("BAD"))
-                  automaton.markTransitionAsBad(initialStateID, eventID, targetStateID);
-                else if (str.equals("UNCONDITIONAL_VIOLATION"))
-                  automaton.addUnconditionalViolation(initialStateID, eventID, targetStateID);
-                else if (str.equals("CONDITIONAL_VIOLATION"))
-                  automaton.addConditionalViolation(initialStateID, eventID, targetStateID);
-                else {
-                  String[] parts = str.split("-");
-                  if (parts[0].equals("POTENTIAL_COMMUNICATION") && parts.length == 2) {
-                    CommunicationRole[] roles = new CommunicationRole[parts[1].length()];
-                    for (int i = 0; i < parts[1].length(); i++) {
-                      char ch = parts[1].charAt(i);
-                      if (ch == 'S' || ch == 's')
-                        roles[i] = CommunicationRole.SENDER;
-                      else if (ch == 'R' || ch == 'r')
-                        roles[i] = CommunicationRole.RECIEVER;
-                      else if (ch == '*')
-                        roles[i] = CommunicationRole.NONE;
-                      else
-                        System.out.println("ERROR: Unable to parse '" + ch + "'as a communication role.");
-                    }
-                    automaton.addPotentialCommunication(initialStateID, eventID, targetStateID, roles);
-                  }
-                }
-              }
-            }
-
-          } else
+          if (automaton.addTransition(initialStateID, eventID, targetStateID && splitLine.length > 1))
+            parseAndAddSpecialTransitions(automaton, splitLine[1]);
+          else
             System.err.println("ERROR: Could not add '" + line + "' as a transition.");
         }
         
@@ -325,6 +314,70 @@ public abstract class AutomatonGenerator {
 
     return automaton;
   
+  }
+
+  /**
+   * Parse a string for special transitions, adding them to the automaton
+   * @param automaton The automaton to add the special transitions to
+   * @param line      The text to parse
+   **/
+  private void parseAndAddSpecialTransitions(Automaton automaton, String line) {
+
+    String[] split = line.split(",");
+
+    // Parse each 
+    for (String str : split) {
+
+      str = str.trim();
+      
+      if (str.equals("BAD"))
+        automaton.markTransitionAsBad(initialStateID, eventID, targetStateID);
+      
+      else if (str.equals("UNCONDITIONAL_VIOLATION"))
+        automaton.addUnconditionalViolation(initialStateID, eventID, targetStateID);
+      
+      else if (str.equals("CONDITIONAL_VIOLATION"))
+        automaton.addConditionalViolation(initialStateID, eventID, targetStateID);
+      
+      else {
+
+        String[] parts = str.split("-");
+        
+        if (parts[0].equals("POTENTIAL_COMMUNICATION") && parts.length == 2)
+          automaton.addPotentialCommunication(initialStateID, eventID, targetStateID, parseCommunicationRoles(parts[1]));
+        else
+          System.out.println("ERROR: Could not parse '" + line + "' as special transition information.");
+
+      }
+
+    }
+
+  }
+
+  /**
+   * Given a string, parse each character as a communication role, and return the generated array.
+   * @param str The string representing the sequence of communication roles
+   * @return the array of communication roles
+   **/
+  private CommunicationRole[] parseCommunicationRoles(String str) {
+
+    CommunicationRole[] roles = new CommunicationRole[str.length()];
+    
+    // Parse the roles one by one
+    for (int i = 0; i < str.length(); i++) {
+      char ch = str.charAt(i);
+      if (ch == 'S' || ch == 's')
+        roles[i] = CommunicationRole.SENDER;
+      else if (ch == 'R' || ch == 'r')
+        roles[i] = CommunicationRole.RECIEVER;
+      else if (ch == '*')
+        roles[i] = CommunicationRole.NONE;
+      else
+        System.out.println("ERROR: Unable to parse '" + ch + "'as a communication role.");
+    }
+
+    return roles;
+
   }
 
   /**
