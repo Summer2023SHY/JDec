@@ -86,6 +86,12 @@ public abstract class AutomatonGenerator {
 
   }
 
+  /**
+   * Give a unique name to the event, based on its ID and the largest possible ID (which is used to calculate how many letters are needed).
+   * @param id    ID of the event
+   * @param maxID Largest possible ID in this event set
+   * @return the generated event label
+   **/
   private static String generateEventLabel(int id, int maxID) {
 
     String label = "";

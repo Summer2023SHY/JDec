@@ -1053,12 +1053,11 @@ public class Automaton {
 
     // We have found the destination if all vector elements have been found
     boolean finished = true;
-    for (int i = 0; i < communication.getSize(); i++) {
+    for (int i = 0; i < communication.getSize(); i++)
       if (!communication.getLabelAtIndex(i).equals("*") && !vectorElementsFound[i]) {
         finished = false;
         break;
       }
-    }
 
     if (finished)
       return currentState;
@@ -1117,12 +1116,11 @@ public class Automaton {
     Set<LabelVector> observableLabels = new HashSet<LabelVector>();
     Set<LabelVector> unobservableLabels = new HashSet<LabelVector>();
 
-    for (LabelVector v : leastUpperBounds) {
+    for (LabelVector v : leastUpperBounds)
       if (v.getLabelAtIndex(0).equals("*"))
         unobservableLabels.add(v);
       else
         observableLabels.add(v);
-    }
 
       /* Find potential communications */
 
@@ -1305,7 +1303,7 @@ public class Automaton {
         // Find reachable states
         Set<Long> reachableStates = new HashSet<Long>();
         findReachableStates(this, invertedAutomaton, reachableStates, data.initialStateID, data.getIndexOfSender() + 1);
-        
+
         // Check for an indistinguishable state outside the protocol
         for (Long id : reachableStates)
 
@@ -1528,6 +1526,7 @@ public class Automaton {
       mappingRAFile.seek(nBytesPerStateID * data.initialStateID);
       mappingRAFile.read(buffer);
       data.initialStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
+      
       // Update targetStateID
       mappingRAFile.seek(nBytesPerStateID * data.targetStateID);
       mappingRAFile.read(buffer);

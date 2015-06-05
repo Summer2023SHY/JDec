@@ -1,13 +1,23 @@
+/**
+ * LabelVector -	This class is used to take a string and vectorize it into its components using some basic syntax.
+ **/
+
 class LabelVector {
+
+		/* Private instance variables */
 
 	private String label; 
 	private String[] vector = null;
 
+	/**
+	 * Construct a LabelVector object, which takes a string and splits it into its vector components.
+	 * @param label	The label to be vectorized (syntax: "<first_second_third>" turns into {"first", "second", "third"})
+	 **/
 	public LabelVector(String label) {
 
 		this.label = label;
 
-		// Ensure that the label is a vector
+		// Ensure that the label has proper vector syntax before vectorizing it
 		if (label.charAt(0) == '<' && label.charAt(label.length() - 1) == '>')
 			vector = label.substring(1, label.length() - 1).split("_");
 
@@ -50,15 +60,11 @@ class LabelVector {
 
 	/**
 	 * Check for equality by comparing labels.
-	 * @param obj - The label vector to compare this one to
+	 * @param obj	The label vector to compare this one to
 	 * @return whether or not the label vectors are equal
 	 **/
-	@Override public boolean equals(Object obj) {
-
-		LabelVector other = (LabelVector) obj;
-
-		return this.label.equals(other.label);
-
+	@Override public boolean equals(Object other) {
+		return label.equals(((LabelVector) other).label);
 	}
 
 	/**
@@ -66,8 +72,7 @@ class LabelVector {
 	 * @return string representation
 	 **/
 	@Override public String toString() {
-
 		return label;
-		
 	}
+
 }
