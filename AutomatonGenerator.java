@@ -308,9 +308,10 @@ public abstract class AutomatonGenerator {
         // Add transition
         else {
          
-          if (automaton.addTransition(initialStateID, eventID, targetStateID && splitLine.length > 1))
-            parseAndAddSpecialTransitions(automaton, splitLine[1]);
-          else
+          if (automaton.addTransition(initialStateID, eventID, targetStateID)) {
+            if (splitLine.length > 1)
+              parseAndAddSpecialTransitions(automaton, splitLine[1], new TransitionData(initialStateID, eventID, targetStateID));
+          } else
             System.err.println("ERROR: Could not add '" + line + "' as a transition.");
         }
         
@@ -326,8 +327,9 @@ public abstract class AutomatonGenerator {
    * Parse a string for special transitions, adding them to the automaton
    * @param automaton The automaton to add the special transitions to
    * @param line      The text to parse
+   * @param data      The transition data (IDs of the associated event and states)
    **/
-  private void parseAndAddSpecialTransitions(Automaton automaton, String line) {
+  private static void parseAndAddSpecialTransitions(Automaton automaton, String line, TransitionData data) {
 
     String[] split = line.split(",");
 
@@ -337,20 +339,20 @@ public abstract class AutomatonGenerator {
       str = str.trim();
       
       if (str.equals("BAD"))
-        automaton.markTransitionAsBad(initialStateID, eventID, targetStateID);
+        automaton.markTransitionAsBad(data.initialStateID, data.eventID, data.targetStateID);
       
       else if (str.equals("UNCONDITIONAL_VIOLATION"))
-        automaton.addUnconditionalViolation(initialStateID, eventID, targetStateID);
+        automaton.addUnconditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
       
       else if (str.equals("CONDITIONAL_VIOLATION"))
-        automaton.addConditionalViolation(initialStateID, eventID, targetStateID);
+        automaton.addConditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
       
       else {
 
         String[] parts = str.split("-");
         
         if (parts[0].equals("POTENTIAL_COMMUNICATION") && parts.length == 2)
-          automaton.addPotentialCommunication(initialStateID, eventID, targetStateID, parseCommunicationRoles(parts[1]));
+          automaton.addPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID, parseCommunicationRoles(parts[1]));
         else
           System.out.println("ERROR: Could not parse '" + line + "' as special transition information.");
 
@@ -365,7 +367,7 @@ public abstract class AutomatonGenerator {
    * @param str The string representing the sequence of communication roles
    * @return the array of communication roles
    **/
-  private CommunicationRole[] parseCommunicationRoles(String str) {
+  private static CommunicationRole[] parseCommunicationRoles(String str) {
 
     CommunicationRole[] roles = new CommunicationRole[str.length()];
     

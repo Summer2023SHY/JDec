@@ -1467,7 +1467,7 @@ public class Automaton {
           }
 
           // Write the updated state to the new file
-          if (!state.writeToFile(newBodyRAFile, nBytesPerState, labelLength, nBytesPerStateID, transitionCapacity))
+          if (!state.writeToFile(newBodyRAFile, nBytesPerState, labelLength, nBytesPerStateID))
             System.err.println("ERROR: Could not write state to file.");
 
         }
@@ -1526,7 +1526,7 @@ public class Automaton {
       mappingRAFile.seek(nBytesPerStateID * data.initialStateID);
       mappingRAFile.read(buffer);
       data.initialStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
-      
+
       // Update targetStateID
       mappingRAFile.seek(nBytesPerStateID * data.targetStateID);
       mappingRAFile.read(buffer);
@@ -2334,7 +2334,7 @@ public class Automaton {
       }
 
       // Try writing to file
-      if (!state.writeToFile(newBodyRAFile, newNBytesPerState, newLabelLength, newNBytesPerStateID, newTransitionCapacity)) {
+      if (!state.writeToFile(newBodyRAFile, newNBytesPerState, newLabelLength, newNBytesPerStateID)) {
         System.err.println("ERROR: Could not write copy over state to file. Aborting re-creation of .bdy file.");
         return;
       }
@@ -2507,7 +2507,7 @@ public class Automaton {
 
     Event event = getEvent(eventID);
     startingState.addTransition(new Transition(event, targetStateID));
-    if (!startingState.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID, transitionCapacity)) {
+    if (!startingState.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID)) {
       System.err.println("ERROR: Could not add transition to file.");
       return false;
     }
@@ -2604,7 +2604,7 @@ public class Automaton {
       /* Write new state to file */
     
     State state = new State(label, id, marked, transitions);
-    if (!state.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID, transitionCapacity)) {
+    if (!state.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID)) {
       System.err.println("ERROR: Could not write state to file.");
       return 0;
     }
@@ -2705,7 +2705,7 @@ public class Automaton {
     
     State state = new State(label, id, marked, transitions);
     
-    if (!state.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID, transitionCapacity)) {
+    if (!state.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID)) {
       System.err.println("ERROR: Could not write state to file.");
       return false;
     }

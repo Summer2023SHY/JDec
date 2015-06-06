@@ -9,8 +9,7 @@
  *	-Class Constants
  *	-Private Instance Variables
  *	-Constructor
- *	-Vector Parsing
- *	-Standard Accessor and Mutator Methods
+ *	-Accessor Methods
  *	-Overridden Methods
  **/
 
@@ -52,7 +51,7 @@ public class Event implements Comparable<Event> {
 
 	}
 
-		/** STANDARD ACCESSOR AND MUTATOR METHODS **/
+		/** ACCESSOR METHODS **/
 
 	/**
 	 * Get the label of the event

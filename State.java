@@ -1,27 +1,34 @@
+/**
+ * State - 
+ *
+ *
+ *	State ID (used to identify states): a binary string consisting of all 0's is reserved to represent "null", so:
+ * 		-1 byte allows us to represent up to 255 possible states (2^8 - 1)
+ *		-2 bytes gives 65535 possible states (2^16 - 1)
+ *		-3 bytes gives 16777215 possible states (2^24 - 1)
+ *		...
+ *		-8 bytes gives ~9.2*10^18 possible states (2^63 - 1)
+ **/
+
 import java.util.*;
 import java.io.*;
 
 public class State {
+
+		/** CLASS CONSTANTS **/
+
+	// These masks allow us to store and access multiple true/false values within the same byte
+	private static final int EXISTS_MASK = 0b00000010; // Whether or not a state actually exists here
+	private static final int MARKED_MASK = 0b00000001; // Whether or not the state is marked
     
-		/* Private instance variables */
+		/** PRIVATE INSTANCE VARIABLES **/
 	
 	private String label;
 	private long id;
 	private boolean marked;
 	private ArrayList<Transition> transitions;
 
-	// These masks allow us to store and access multiple true/false values in the same byte
-	private static int EXISTS_MASK = 0b00000010; // Whether or not a state actually exists here
-	private static int MARKED_MASK = 0b00000001; // Whether or not the state is marked
-
-	/**
-	 *	ID (used to identify states): a binary string consisting of all 0's is reserved to represent "null", so:
-	 * 	-1 byte allows us to represent up to 255 possible states (2^8 - 1)
-	 *	-2 bytes gives 65535 possible states (2^16 - 1)
-	 *	-3 bytes gives 16777215 possible states (2^24 - 1)
-	 *	...
-	 *	-8 bytes gives ~9.2*10^18 possible states (2^63 - 1)
-	 **/
+		/** CONSTRUCTORS **/
 
 	public State(String label, long id, boolean marked, ArrayList<Transition> transitions) {
 		this.label = label;
@@ -38,47 +45,17 @@ public class State {
 		transitions = new ArrayList<Transition>();
 	}
 
-	public boolean isMarked() {
-		return marked;
-	}
+		/** WORKING WITH FILES **/
 
 	/**
-	 *	Get the label of the event
- 	 *	@return label
+	 * Write this state to file.
+	 * @param file								The RandomAccessFile we are using to write to
+	 * @param nBytesPerState			The number of bytes used to store each state in the file
+	 * @param labelLength					The amount of characters reserved for the label in each state
+	 * @param nBytesPerStateID		The number of bytes used to store a state ID
+	 * @return whether or not the operation was successful
 	 **/
-	public String getLabel() {
-		return label;
-	}
-
-	/**
-	 *	Get the ID number of the state
- 	 *	@return id
-	 **/
-	public long getID() {
-		return id;
-	}
-
-	/**
-	 *	Change the ID number of the state
-	 **/
-	public void setID(long id) {
-		this.id = id;
-	}
-
-	public ArrayList<Transition> getTransitions() {
-		return transitions;
-	}
-
-	public int getNumberOfTransitions() {
-		return transitions.size();
-	}
-
-
-	public void addTransition(Transition transition) {
-		transitions.add(transition);
-	}
-
-	public boolean writeToFile(RandomAccessFile file, long nBytesPerState, int labelLength, int nBytesPerStateID, int transitionCapacity) {
+	public boolean writeToFile(RandomAccessFile file, long nBytesPerState, int labelLength, int nBytesPerStateID) {
 
 			/* Setup */
 
@@ -115,21 +92,22 @@ public class State {
 			
 		}
 
-			/* Write to file */
+			/* Try writing to file */
 
 		try {
 
 			file.seek(id * nBytesPerState);
 			file.write(bytesToWrite);
 
-            return true;
+      return true;
           
-	    } catch (IOException e) {
+	  } catch (IOException e) {
 
-            e.printStackTrace();
-            return false;
+      e.printStackTrace();
 
-	    }
+      return false;
+
+    }
 
 	}
 
@@ -278,6 +256,57 @@ public class State {
 	  return state;
 
 	}
+
+		/** MUTATOR METHODS **/
+
+	/**
+	 * Change the ID of this state.
+	 * @param id	The new ID
+	 **/
+	public void setID(long id) {
+		this.id = id;
+	}
+
+	public void addTransition(Transition transition) {
+		transitions.add(transition);
+	}
+
+		/** ACCESSOR METHODS **/
+
+	/**
+	 * Get the marked status of this state.
+	 * @return whether or not the state is marked
+	 **/
+	public boolean isMarked() {
+		return marked;
+	}
+
+	/**
+	 * Get the label of the event.
+ 	 * @return label
+	 **/
+	public String getLabel() {
+		return label;
+	}
+
+	/**
+	 * Get the ID of this state.
+ 	 * @return id
+	 **/
+	public long getID() {
+		return id;
+	}
+
+	public ArrayList<Transition> getTransitions() {
+		return transitions;
+	}
+
+	public int getNumberOfTransitions() {
+		return transitions.size();
+	}
+
+
+		/** OVERRIDDEN METHODS **/
 
 	@Override public String toString() {
 		return "("
