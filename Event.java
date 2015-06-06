@@ -1,7 +1,9 @@
 /**
  * Event - This simple class represents an event in an automaton. It supports both centralized and decentralized control, which
  *				 means that it can have observability and controllability properties for each controller. It also has support for
- *				 events that have labels formatted as vectors. 
+ *				 events that have labels formatted as vectors.
+ *
+ * NOTE: Current ID system allows for 255 unique events with 0 representing null, but we will make this flexible later to allow for more events.
  *
  * @author Micah Stairs
  *
@@ -19,8 +21,10 @@ public class Event implements Comparable<Event> {
     
   	/** CLASS CONSTANTS **/
 
-  // Current ID system allows for 255 unique events with 0 representing null (NOTE: We will make this flexible later to allow for more events)
+  /** The maximum number of events that can be created in one automaton. */
   public static final int MAX_NUMBER_OF_EVENTS = 255;
+
+  /** The amount of space required to store an event ID. */
 	public static final int N_BYTES_OF_ID = 1; 
 
   	/** PRIVATE INSTANCE VARIABLES **/
@@ -29,8 +33,10 @@ public class Event implements Comparable<Event> {
   private int id;
   private boolean[] observable, controllable;
 
-  // Events can sometimes be vectors (for example, automata created by synchonrized composition use them) 
-  // Ex: "<a_b_d>" actually represents an event vector: {"a", "b", "d"}
+  /**
+   * Events can sometimes be vectors (for example, automata created by synchonrized composition use them).
+   * Example of syntax: "&lt;a_b_d>" actually represents an event vector: {"a", "b", "d"}.
+   **/
   public LabelVector vector = null;
 
   	/** CONSTRUCTOR **/

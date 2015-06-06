@@ -21,7 +21,7 @@ class LabelVector {
 
 	/**
 	 * Construct a LabelVector object, which takes a string and splits it into its vector components.
-	 * @param label	The label to be vectorized (syntax: "<first_second_third>" vectorizes into {"first", "second", "third"})
+	 * @param label	The label to be vectorized (syntax: "&lt;first_second_third&gt;" vectorizes into {"first", "second", "third"})
 	 **/
 	public LabelVector(String label) {
 
