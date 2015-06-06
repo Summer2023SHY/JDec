@@ -294,71 +294,85 @@ public class TestAutomata {
 
     	printTestOutput("AUTOMATON CAPACITY INITIALIZATION: ", 2);
 
-    	printTestOutput("Instantiating empty automaton (State capacity: 0, Transition capacity: 0, Label length: 0, Number of controllers: 0)...", 3);
-    	Automaton a = new Automaton(0, 0, 0, 0, true);
+    	printTestOutput("Instantiating empty automaton (Event capacity: 0, State capacity: 0, Transition capacity: 0, Label length: 0, Number of controllers: 0)...", 3);
+    	Automaton a = new Automaton(0, 0, 0, 0, 0, true);
+        printTestCase("Ensuring that 'eventCapacity' was reset to '255'", new TestResult(a.getEventCapacity(), 255), counter);
     	printTestCase("Ensuring that 'stateCapacity' was reset to '255'", new TestResult(a.getStateCapacity(), 255), counter);
     	printTestCase("Ensuring that 'transitionCapacity' was reset to '1'", new TestResult(a.getTransitionCapacity(), 1), counter);
         printTestCase("Ensuring that 'labelLength' was reset to '1'", new TestResult(a.getLabelLength(), 1), counter);
     	printTestCase("Ensuring that 'nControllers' was reset to '1'", new TestResult(a.getNumberOfControllers(), 1), counter);
+        printTestCase("Ensuring that 'nBytesPerEventID' was initialized to '1'", new TestResult(a.getSizeOfEventID(), 1), counter);
     	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '1'", new TestResult(a.getSizeOfStateID(), 1), counter);
     	printTestCase("Ensuring that 'nBytesPerState' was initialized to '4'", new TestResult(a.getSizeOfState(), 4), counter);
         a.closeFiles();
 
-    	printTestOutput("Instantiating empty automaton (State capacity: -1, Transition capacity: -1, Label length: -1, Number of controllers: -1)...", 3);
-    	a = new Automaton(-1, -1, -1, -1, true);
+    	printTestOutput("Instantiating empty automaton (Event capacity: -1, State capacity: -1, Transition capacity: -1, Label length: -1, Number of controllers: -1)...", 3);
+    	a = new Automaton(-1, -1, -1, -1, -1, true);
+        printTestCase("Ensuring that 'eventCapacity' was reset to '255'", new TestResult(a.getEventCapacity(), 255), counter);
     	printTestCase("Ensuring that 'stateCapacity' was reset to '255'", new TestResult(a.getStateCapacity(), 255), counter);
     	printTestCase("Ensuring that 'transitionCapacity' was reset to '1'", new TestResult(a.getTransitionCapacity(), 1), counter);
     	printTestCase("Ensuring that 'labelLength' was reset to '1'", new TestResult(a.getLabelLength(), 1), counter);
         printTestCase("Ensuring that 'nControllers' was reset to '1'", new TestResult(a.getNumberOfControllers(), 1), counter);
+        printTestCase("Ensuring that 'nBytesPerEventID' was initialized to '1'", new TestResult(a.getSizeOfEventID(), 1), counter);
     	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '1'", new TestResult(a.getSizeOfStateID(), 1), counter);
     	printTestCase("Ensuring that 'nBytesPerState' was initialized to '4'", new TestResult(a.getSizeOfState(), 4), counter);
         a.closeFiles();
 
-    	printTestOutput("Instantiating empty automaton (State capacity: 255, Transition capacity: 2, Label length: 1, Number of controllers: 1)...", 3);
-    	a = new Automaton(255, 2, 1, 1, true);
+    	printTestOutput("Instantiating empty automaton (Event capacity: 255, State capacity: 255, Transition capacity: 2, Label length: 1, Number of controllers: 1)...", 3);
+    	a = new Automaton(255, 255, 2, 1, 1, true);
+        printTestCase("Ensuring that 'eventCapacity' was left at '255'", new TestResult(a.getEventCapacity(), 255), counter);
     	printTestCase("Ensuring that 'stateCapacity' was left at '255'", new TestResult(a.getStateCapacity(), 255), counter);
     	printTestCase("Ensuring that 'transitionCapacity' was left at '2'", new TestResult(a.getTransitionCapacity(), 2), counter);
     	printTestCase("Ensuring that 'labelLength' was left at '1'", new TestResult(a.getLabelLength(), 1), counter);
         printTestCase("Ensuring that 'nControllers' was left at '1'", new TestResult(a.getNumberOfControllers(), 1), counter);
+        printTestCase("Ensuring that 'nBytesPerEventID' was initialized to '1'", new TestResult(a.getSizeOfEventID(), 1), counter);
     	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '1'", new TestResult(a.getSizeOfStateID(), 1), counter);
     	printTestCase("Ensuring that 'nBytesPerState' was initialized to '6'", new TestResult(a.getSizeOfState(), 6), counter);
         a.closeFiles();
 
-    	printTestOutput("Instantiating empty automaton (State capacity: 256, Transition capacity: 1, Label length: Automaton.MAX_LABEL_LENGTH, Number of controllers: Automaton.MAX_NUMBER_OF_CONTROLLERS)...", 3);
-    	a = new Automaton(256, 1, Automaton.MAX_LABEL_LENGTH, Automaton.MAX_NUMBER_OF_CONTROLLERS, true);
+    	printTestOutput("Instantiating empty automaton (Event capacity: 256, State capacity: 256, Transition capacity: 1, Label length: Automaton.MAX_LABEL_LENGTH, Number of controllers: Automaton.MAX_NUMBER_OF_CONTROLLERS)...", 3);
+    	a = new Automaton(256, 256, 1, Automaton.MAX_LABEL_LENGTH, Automaton.MAX_NUMBER_OF_CONTROLLERS, true);
+        printTestCase("Ensuring that 'eventCapacity' was increased to '65535'", new TestResult(a.getEventCapacity(), 65535), counter);
     	printTestCase("Ensuring that 'stateCapacity' was increased to '65535'", new TestResult(a.getStateCapacity(), 65535), counter);
     	printTestCase("Ensuring that 'transitionCapacity' was left at '1'", new TestResult(a.getTransitionCapacity(), 1), counter);
     	printTestCase("Ensuring that 'labelLength' was left at 'Automaton.MAX_LABEL_LENGTH'", new TestResult(a.getLabelLength(), Automaton.MAX_LABEL_LENGTH), counter);
         printTestCase("Ensuring that 'nControllers' was left at 'Automaton.MAX_NUMBER_OF_CONTROLLERS'", new TestResult(a.getNumberOfControllers(), Automaton.MAX_NUMBER_OF_CONTROLLERS), counter);
+        printTestCase("Ensuring that 'nBytesPerEventID' was initialized to '2'", new TestResult(a.getSizeOfEventID(), 2), counter);
     	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '2'", new TestResult(a.getSizeOfStateID(), 2), counter);
-    	printTestCase("Ensuring that 'nBytesPerState' was initialized to '104'", new TestResult(a.getSizeOfState(), 104), counter);
+    	printTestCase("Ensuring that 'nBytesPerState' was initialized to '105'", new TestResult(a.getSizeOfState(), 105), counter);
         a.closeFiles();
 
-    	printTestOutput("Instantiating empty automaton (State capacity: Long.MAX_VALUE, Transition capacity: Integer.MAX_VALUE, Label length: Automaton.MAX_LABEL_LENGTH + 1)...", 3);
-    	a = new Automaton(Long.MAX_VALUE, Integer.MAX_VALUE, Automaton.MAX_LABEL_LENGTH + 1, Automaton.MAX_NUMBER_OF_CONTROLLERS + 1, true);
+    	printTestOutput("Instantiating empty automaton (Event capacity: Integer.MAX_VALUE, State capacity: Long.MAX_VALUE, Transition capacity: Integer.MAX_VALUE, Label length: Automaton.MAX_LABEL_LENGTH + 1)...", 3);
+    	a = new Automaton(Integer.MAX_VALUE, Long.MAX_VALUE, Integer.MAX_VALUE, Automaton.MAX_LABEL_LENGTH + 1, Automaton.MAX_NUMBER_OF_CONTROLLERS + 1, true);
+        printTestCase("Ensuring that 'eventCapacity' remained at 'Integer.MAX_VALUE'", new TestResult(a.getEventCapacity(), Integer.MAX_VALUE), counter);
     	printTestCase("Ensuring that 'stateCapacity' remained at 'Long.MAX_VALUE'", new TestResult(a.getStateCapacity(), Long.MAX_VALUE), counter);
     	printTestCase("Ensuring that 'transitionCapacity' remained at 'Integer.MAX_VALUE'", new TestResult(a.getTransitionCapacity(), Integer.MAX_VALUE), counter);
     	printTestCase("Ensuring that 'labelLength' was reduced to 'Automaton.MAX_LABEL_LENGTH'", new TestResult(a.getLabelLength(), Automaton.MAX_LABEL_LENGTH), counter);
         printTestCase("Ensuring that 'nControllers' was reduced to 'Automaton.MAX_NUMBER_OF_CONTROLLERS'", new TestResult(a.getNumberOfControllers(), Automaton.MAX_NUMBER_OF_CONTROLLERS), counter);
+        printTestCase("Ensuring that 'nBytesPerEventID' was initialized to '4'", new TestResult(a.getSizeOfEventID(), 4), counter);
     	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '8'", new TestResult(a.getSizeOfStateID(), 8), counter);
-    	printTestCase("Ensuring that 'nBytesPerState' was initialized to '101 + 9 * Integer.MAX_VALUE'", new TestResult(a.getSizeOfState(), 101 + 9 * (long) Integer.MAX_VALUE), counter);
+    	printTestCase("Ensuring that 'nBytesPerState' was initialized to '101 + 12 * Integer.MAX_VALUE'", new TestResult(a.getSizeOfState(), 101 + 12 * (long) Integer.MAX_VALUE), counter);
         a.closeFiles();
 
-    	printTestOutput("Instantiating empty automaton (State capacity: Long.MAX_VALUE - 1, Transition capacity: Integer.MAX_VALUE - 1, Label length: 1)...", 3);
-    	a = new Automaton(Long.MAX_VALUE - 1, Integer.MAX_VALUE - 1, 1, 1, true);
+    	printTestOutput("Instantiating empty automaton (Event capacity: Integer.MAX_VALUE - 1, State capacity: Long.MAX_VALUE - 1, Transition capacity: Integer.MAX_VALUE - 1, Label length: 1)...", 3);
+    	a = new Automaton(Integer.MAX_VALUE - 1, Long.MAX_VALUE - 1, Integer.MAX_VALUE - 1, 1, 1, true);
+        printTestCase("Ensuring that 'eventCapacity' was increased to 'Integer.MAX_VALUE'", new TestResult(a.getEventCapacity(), Integer.MAX_VALUE), counter);
     	printTestCase("Ensuring that 'stateCapacity' was increased to 'Long.MAX_VALUE'", new TestResult(a.getStateCapacity(), Long.MAX_VALUE), counter);
     	printTestCase("Ensuring that 'transitionCapacity' remained at 'Integer.MAX_VALUE - 1'", new TestResult(a.getTransitionCapacity(), Integer.MAX_VALUE - 1), counter);
+        printTestCase("Ensuring that 'nBytesPerEventID' was initialized to '4'", new TestResult(a.getSizeOfEventID(), 4), counter);
     	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '8'", new TestResult(a.getSizeOfStateID(), 8), counter);
-    	printTestCase("Ensuring that 'nBytesPerState' was initialized to '2 + 9 * (Integer.MAX_VALUE - 1)'", new TestResult(a.getSizeOfState(), 2 + 9 * (long) (Integer.MAX_VALUE - 1)), counter);
+    	printTestCase("Ensuring that 'nBytesPerState' was initialized to '2 + 12 * (Integer.MAX_VALUE - 1)'", new TestResult(a.getSizeOfState(), 2 + 12 * (long) (Integer.MAX_VALUE - 1)), counter);
         a.closeFiles();
 
-    	printTestOutput("Instantiating empty automaton (State capacity: (Long.MAX_VALUE >> 7) + 1, Transition capacity: 1, Label length: 1)...", 3);
-    	a = new Automaton((Long.MAX_VALUE >> 7) + 1, 1, 1, 1, true);
+    	printTestOutput("Instantiating empty automaton (Event capacity: (Integer.MAX_VALUE >> 7) + 1, State capacity: (Long.MAX_VALUE >> 7) + 1, Transition capacity: 1, Label length: 1)...", 3);
+    	a = new Automaton((Integer.MAX_VALUE >> 7) + 1, (Long.MAX_VALUE >> 7) + 1, 1, 1, 1, true);
+        printTestCase("Ensuring that 'eventCapacity' was increased to 'Integer.MAX_VALUE'", new TestResult(a.getEventCapacity(), Integer.MAX_VALUE), counter);
     	printTestCase("Ensuring that 'stateCapacity' was increased to 'Long.MAX_VALUE'", new TestResult(a.getStateCapacity(), Long.MAX_VALUE), counter);
         a.closeFiles();
 
-    	printTestOutput("Instantiating empty automaton (State capacity: Long.MAX_VALUE >> 7, Transition capacity: 1, Label length: 1)...", 3);
-    	a = new Automaton(Long.MAX_VALUE >> 7, 1, 1, 1, true);
+    	printTestOutput("Instantiating empty automaton (Event capacity: Integer.MAX_VALUE >> 7, State capacity: Long.MAX_VALUE >> 7, Transition capacity: 1, Label length: 1)...", 3);
+    	a = new Automaton(Integer.MAX_VALUE >> 7, Long.MAX_VALUE >> 7, 1, 1, 1, true);
+        printTestCase("Ensuring that 'eventCapacity' remained at 'Integer.MAX_VALUE >> 7'", new TestResult(a.getEventCapacity(), Integer.MAX_VALUE >> 7), counter);
     	printTestCase("Ensuring that 'stateCapacity' remained at 'Long.MAX_VALUE >> 7'", new TestResult(a.getStateCapacity(), Long.MAX_VALUE >> 7), counter);
     	a.closeFiles();
 

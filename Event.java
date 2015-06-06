@@ -8,7 +8,6 @@
  * @author Micah Stairs
  *
  * TABLE OF CONTENTS:
- *	-Class Constants
  *	-Private Instance Variables
  *	-Constructor
  *	-Accessor Methods
@@ -19,14 +18,6 @@ import java.util.*;
 
 public class Event implements Comparable<Event> {
     
-  	/** CLASS CONSTANTS **/
-
-  /** The maximum number of events that can be created in one automaton. */
-  public static final int MAX_NUMBER_OF_EVENTS = 255;
-
-  /** The amount of space required to store an event ID. */
-	public static final int N_BYTES_OF_ID = 1; 
-
   	/** PRIVATE INSTANCE VARIABLES **/
 
   private String label;

@@ -31,6 +31,12 @@ public class Automaton {
 
     /** PUBLIC CLASS CONSTANTS **/
 
+  /** The number of events that an automaton can hold by default. */
+  public static final int DEFAULT_EVENT_CAPACITY = 255;
+
+  /** The maximum number of events that an automaton can hold. */
+  public static final int MAX_EVENT_CAPACITY = Integer.MAX_VALUE;
+
   /** The number of states that an automaton can hold by default. */
   public static final long DEFAULT_STATE_CAPACITY = 255;
 
@@ -84,11 +90,13 @@ public class Automaton {
   private int nControllers;
   
   // Variables which determine how large the .bdy file will become
+  private int eventCapacity;
   private long stateCapacity;
   private int transitionCapacity = 2;
   private int labelLength;
 
   // Initialized based on the above capacities
+  private int nBytesPerEventID;
   private int nBytesPerStateID;
   private long nBytesPerState;
 
@@ -117,18 +125,27 @@ public class Automaton {
    * Default constructor: create empty automaton with default capacity, wiping any previous data existing in the files.
    **/
   public Automaton() {
-    this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, DEFAULT_STATE_CAPACITY, DEFAULT_TRANSITION_CAPACITY, DEFAULT_LABEL_LENGTH, DEFAULT_NUMBER_OF_CONTROLLERS, true);
+    this(DEFAULT_HEADER_FILE,
+      DEFAULT_BODY_FILE,
+      DEFAULT_EVENT_CAPACITY,
+      DEFAULT_STATE_CAPACITY,
+      DEFAULT_TRANSITION_CAPACITY,
+      DEFAULT_LABEL_LENGTH,
+      DEFAULT_NUMBER_OF_CONTROLLERS,
+      true
+    );
   }
 
   /**
    * Implicit constructor: create an automaton with a specified number of controllers.
-   * @param headerFile  The file where the header should be stored
+   * @param headerFile    The file where the header should be stored
    * @param nControllers  The number of controllers that this automaton has
    **/
   public Automaton(File headerFile, int nControllers) {
     this(
       (headerFile == null) ? DEFAULT_HEADER_FILE : headerFile,
       (headerFile == null) ? DEFAULT_BODY_FILE : new File(headerFile.getName().substring(0, headerFile.getName().length() - 4) + ".bdy"),
+      DEFAULT_EVENT_CAPACITY,
       DEFAULT_STATE_CAPACITY,
       DEFAULT_TRANSITION_CAPACITY,
       DEFAULT_LABEL_LENGTH,
@@ -146,6 +163,7 @@ public class Automaton {
     this(
       (headerFile == null) ? DEFAULT_HEADER_FILE : headerFile,
       (headerFile == null) ? DEFAULT_BODY_FILE   : new File(headerFile.getName().substring(0, headerFile.getName().length() - 4) + ".bdy"),
+      DEFAULT_EVENT_CAPACITY,
       DEFAULT_STATE_CAPACITY,
       DEFAULT_TRANSITION_CAPACITY,
       DEFAULT_LABEL_LENGTH,
@@ -158,28 +176,31 @@ public class Automaton {
    * Implicit constructor: create automaton with specified initial capacities.
    * NOTE: Choosing larger values increases the amount of space needed to store the binary file.
    * Choosing smaller values increases the frequency that you need to re-write the entire binary file in order to expand it
+   * @param eventCapacity        The initial event capacity (increases by a factor of 256 when it is exceeded)
+   *                             (NOTE: the initial event capacity may be higher than the value you give it, since it has to be in the form 256^x - 1)
    * @param stateCapacity        The initial state capacity (increases by a factor of 256 when it is exceeded)
-   *                             (NOTE: the initial state capacity may be higher than the value you give it, since it has to be in the form 256^x)
+   *                             (NOTE: the initial state capacity may be higher than the value you give it, since it has to be in the form 256^x - 1)
    * @param transitionCapacity   The initial maximum number of transitions per state (increases by 1 whenever it is exceeded)
    * @param labelLength          The initial maximum number characters per state label (increases by 1 whenever it is exceeded)
    * @param nControllers         The number of controllers that the automaton has (1 implies centralized control, >1 implies decentralized control)
    * @param clearFiles           Whether or not the header and body files should be cleared prior to use
    **/
-  public Automaton(long stateCapacity, int transitionCapacity, int labelLength, int nControllers, boolean clearFiles) {
-    this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, stateCapacity, transitionCapacity, labelLength, nControllers, clearFiles);
+  public Automaton(int eventCapacity, long stateCapacity, int transitionCapacity, int labelLength, int nControllers, boolean clearFiles) {
+    this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, eventCapacity, stateCapacity, transitionCapacity, labelLength, nControllers, clearFiles);
   }
 
   /**
    * Main constructor.
    * @param headerFile         The binary file to load the header information of the automaton from (information about events, etc.)
    * @param bodyFile           The binary file to load the body information of the automaton from (states and transitions)
+   * @param eventCapacity      The initial event capacity (increases by a factor of 256 when it is exceeded)
    * @param stateCapacity      The initial state capacity (increases by a factor of 256 when it is exceeded)
    * @param transitionCapacity The initial maximum number of transitions per state (increases by 1 whenever it is exceeded)
    * @param labelLength        The initial maximum number characters per state label (increases by 1 whenever it is exceeded)
    * @param nControllers       The number of controllers that the automaton has (1 implies centralized control, >1 implies decentralized control)
    * @param clearFiles         Whether or not the header and body files should be cleared prior to use
    **/
-  public Automaton(File headerFile, File bodyFile, long stateCapacity, int transitionCapacity, int labelLength, int nControllers, boolean clearFiles) {
+  public Automaton(File headerFile, File bodyFile, int eventCapacity, long stateCapacity, int transitionCapacity, int labelLength, int nControllers, boolean clearFiles) {
 
     this.headerFile     = headerFile;
     this.bodyFile       = bodyFile;
@@ -188,6 +209,7 @@ public class Automaton {
 
       /* These variables will be overridden if we are loading information from file */
 
+    this.eventCapacity      = eventCapacity;
     this.stateCapacity      = stateCapacity;
     this.transitionCapacity = transitionCapacity;
     this.labelLength        = labelLength;
@@ -205,7 +227,7 @@ public class Automaton {
       /* Finish setting up */
 
     initializeVariables();
-    nBytesPerState = calculateNumberOfBytesPerState(nBytesPerStateID, this.transitionCapacity, this.labelLength);
+    nBytesPerState = calculateNumberOfBytesPerState(nBytesPerEventID, nBytesPerStateID, this.transitionCapacity, this.labelLength);
 
       /* Update header file */
 
@@ -377,7 +399,7 @@ public class Automaton {
 
       /* Create a new automaton that has each of the transitions going the opposite direction */
 
-    Automaton invertedAutomaton = new Automaton(automaton.getStateCapacity(), automaton.getTransitionCapacity(), automaton.getLabelLength(), automaton.getNumberOfControllers(), true);
+    Automaton invertedAutomaton = new Automaton(automaton.getEventCapacity(), automaton.getStateCapacity(), automaton.getTransitionCapacity(), automaton.getLabelLength(), automaton.getNumberOfControllers(), true);
 
     // Add events
     invertedAutomaton.addAllEvents(automaton.getEvents());
@@ -1467,7 +1489,7 @@ public class Automaton {
           }
 
           // Write the updated state to the new file
-          if (!state.writeToFile(newBodyRAFile, nBytesPerState, labelLength, nBytesPerStateID))
+          if (!state.writeToFile(newBodyRAFile, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID))
             System.err.println("ERROR: Could not write state to file.");
 
         }
@@ -2286,14 +2308,16 @@ public class Automaton {
   /**
    * Re-create the body file to accommodate some increase in capacity.
    * NOTE: This operation can clearly be expensive for large automata, so we need to try to reduce the number of times this method is called.
+   * @param newEventCapacity      The number of events that the automaton will be able to hold
    * @param newStateCapacity      The number of states that the automaton will be able to hold
    * @param newTransitionCapacity The number of transitions that each state will be able to hold
    * @param newLabelLength        The maximum number of characters that each state label will be allowed
-   * @param newNBytesPerStateID   The number of bytes that are now required to represent each state ID
+   * @param newNBytesPerStateID   The number of bytes that are now required to represent each state's ID
+   * @param newNBytesPerEventID   The number of bytes that are now required to represent each event's ID
    **/
-  private void recreateBodyFile(long newStateCapacity, int newTransitionCapacity, int newLabelLength, int newNBytesPerStateID) {
+  private void recreateBodyFile(int newEventCapacity, long newStateCapacity, int newTransitionCapacity, int newLabelLength, int newNBytesPerEventID, int newNBytesPerStateID) {
 
-    long newNBytesPerState = calculateNumberOfBytesPerState(newNBytesPerStateID, newTransitionCapacity, newLabelLength);
+    long newNBytesPerState = calculateNumberOfBytesPerState(newNBytesPerEventID, newNBytesPerStateID, newTransitionCapacity, newLabelLength);
 
       /* Setup files */
 
@@ -2334,7 +2358,7 @@ public class Automaton {
       }
 
       // Try writing to file
-      if (!state.writeToFile(newBodyRAFile, newNBytesPerState, newLabelLength, newNBytesPerStateID)) {
+      if (!state.writeToFile(newBodyRAFile, newNBytesPerState, newLabelLength, newNBytesPerEventID, newNBytesPerStateID)) {
         System.err.println("ERROR: Could not write copy over state to file. Aborting re-creation of .bdy file.");
         return;
       }
@@ -2355,9 +2379,11 @@ public class Automaton {
     }
       /* Update variables */
 
+    eventCapacity = newEventCapacity;
     stateCapacity = newStateCapacity;
     transitionCapacity = newTransitionCapacity;
     labelLength = newLabelLength;
+    nBytesPerEventID = newNBytesPerEventID;
     nBytesPerStateID = newNBytesPerStateID;
     nBytesPerState = newNBytesPerState;
 
@@ -2369,20 +2395,21 @@ public class Automaton {
 
   /**
    * Calculate the amount of space required to store a state, given the specified conditions.
+   * @param newNBytesPerEventID   The number of bytes per event ID
    * @param newNBytesPerStateID   The number of bytes per state ID
    * @param newTransitionCapacity The transition capacity
    * @param newLabelLength        The maximum label length
    * @return the number of bytes needed to store a state
    **/
-  private long calculateNumberOfBytesPerState(long newNBytesPerStateID, int newTransitionCapacity, int newLabelLength) {
+  private long calculateNumberOfBytesPerState(int newNBytesPerEventID, long newNBytesPerStateID, int newTransitionCapacity, int newLabelLength) {
     return
       1 // To hold up to 8 boolean values (such as 'Marked' and 'Exists' status)
       + (long) newLabelLength // The state's labels
-      + (long) newTransitionCapacity * (long) (Event.N_BYTES_OF_ID + newNBytesPerStateID); // All of the state's transitions
+      + (long) newTransitionCapacity * (long) (newNBytesPerEventID + newNBytesPerStateID); // All of the state's transitions
   }
 
   /**
-   * Resets nBytesPerStateID and stateCapacity as appropriate.
+   * Initialize the variables, ensuring that they all lay within the proper ranges.
    **/
   private void initializeVariables() {
 
@@ -2417,7 +2444,7 @@ public class Automaton {
       temp >>= 8;
     }
 
-      /* Calculate the maximum number of states that we can have before we have to allocate more space for each state ID */
+      /* Calculate the maximum number of states that we can have before we have to allocate more space for each state's ID */
 
     stateCapacity = 1;
 
@@ -2435,6 +2462,37 @@ public class Automaton {
 
     if (stateCapacity > MAX_STATE_CAPACITY)
       stateCapacity = MAX_STATE_CAPACITY;
+
+      /* Calculate the amount of space needed to store each event ID */
+
+    // Special case if the event capacity is not positive
+    nBytesPerEventID = eventCapacity < 1 ? 1 : 0;
+
+    temp = eventCapacity;
+    
+    while (temp > 0) {
+      nBytesPerEventID++;
+      temp >>= 8;
+    }
+
+      /* Calculate the maximum number of events that we can have before we have to allocate more space for each event's ID */
+
+    eventCapacity = 1;
+
+    for (int i = 0; i < nBytesPerEventID; i++)
+      eventCapacity <<= 8;
+
+      /* Special case when the user gives a value between 2^24 - 1 and 2^32 (exclusive) */
+
+    if (eventCapacity == 0)
+      eventCapacity = MAX_EVENT_CAPACITY;
+    else
+      eventCapacity--;
+
+      /* Cap the event capacity */
+
+    if (eventCapacity > MAX_EVENT_CAPACITY)
+      eventCapacity = MAX_EVENT_CAPACITY;
 
   }
 
@@ -2492,9 +2550,11 @@ public class Automaton {
 
       // Update body file
       recreateBodyFile(
+          eventCapacity,
           stateCapacity,
           transitionCapacity + 1,
           labelLength,
+          nBytesPerEventID,
           nBytesPerStateID
         );
 
@@ -2507,7 +2567,7 @@ public class Automaton {
 
     Event event = getEvent(eventID);
     startingState.addTransition(new Transition(event, targetStateID));
-    if (!startingState.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID)) {
+    if (!startingState.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID)) {
       System.err.println("ERROR: Could not add transition to file.");
       return false;
     }
@@ -2557,9 +2617,11 @@ public class Automaton {
 
       // Re-create binary file
       recreateBodyFile(
+          eventCapacity,
           stateCapacity,
           transitionCapacity,
           label.length(),
+          nBytesPerEventID,
           nBytesPerStateID
         );
 
@@ -2577,9 +2639,11 @@ public class Automaton {
 
       // Re-create binary file
       recreateBodyFile(
+          eventCapacity,
           stateCapacity,
           transitions.size(),
           labelLength,
+          nBytesPerEventID,
           nBytesPerStateID
         );
 
@@ -2591,9 +2655,11 @@ public class Automaton {
 
       // Re-create binary file
       recreateBodyFile(
+          eventCapacity,
           ((stateCapacity + 1) << 8) - 1,
           transitionCapacity,
           labelLength,
+          nBytesPerEventID,
           nBytesPerStateID + 1
         );
 
@@ -2604,7 +2670,7 @@ public class Automaton {
       /* Write new state to file */
     
     State state = new State(label, id, marked, transitions);
-    if (!state.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID)) {
+    if (!state.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID)) {
       System.err.println("ERROR: Could not write state to file.");
       return 0;
     }
@@ -2652,9 +2718,11 @@ public class Automaton {
       }
 
       recreateBodyFile(
+          eventCapacity,
           stateCapacity,
           transitionCapacity,
           label.length(),
+          nBytesPerEventID,
           nBytesPerStateID
         );
 
@@ -2671,9 +2739,11 @@ public class Automaton {
       }
 
       recreateBodyFile(
+          eventCapacity,
           stateCapacity,
           transitions.size(),
           labelLength,
+          nBytesPerEventID,
           nBytesPerStateID
         );
 
@@ -2693,9 +2763,11 @@ public class Automaton {
 
       // Re-create binary file
       recreateBodyFile(
+          eventCapacity,
           newStateCapacity,
           transitionCapacity,
           labelLength,
+          nBytesPerEventID,
           newNBytesPerStateID
         );
 
@@ -2705,7 +2777,7 @@ public class Automaton {
     
     State state = new State(label, id, marked, transitions);
     
-    if (!state.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerStateID)) {
+    if (!state.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID)) {
       System.err.println("ERROR: Could not write state to file.");
       return false;
     }
@@ -2729,9 +2801,32 @@ public class Automaton {
    * @param label         The "name" of the new event
    * @param observable    Whether or not the event is observable
    * @param controllable  Whether or not the event is controllable
-   * @return the ID of the added event (negative value indicates the addition was unsuccessful, and it is the negative version of the original event)
+   * @return the ID of the added event (negative value indicates the event already existed, the negative version of the original event is returned), or 0 indicates failure
    **/
   public int addEvent(String label, boolean[] observable, boolean[] controllable) {
+
+      /* Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs) */
+
+    if (events.size() == MAX_EVENT_CAPACITY) {
+      System.err.println("ERROR: Could not add event (reached maximum event capacity).");
+      return 0;
+    }
+
+    /* Check to see if we need to re-write the entire binary file */
+    
+    if (events.size() == eventCapacity) {
+
+      // Re-create binary file
+      recreateBodyFile(
+          ((eventCapacity + 1) << 8) - 1,
+          stateCapacity,
+          transitionCapacity,
+          labelLength,
+          nBytesPerEventID + 1,
+          nBytesPerStateID
+        );
+
+    }
 
     // Ensure that no other event already exists with this label (if so, return the negative version of the ID)
     for (Event e : events)
@@ -2938,6 +3033,15 @@ public class Automaton {
   }
 
   /**
+   * Get the number of events that can be held in this automaton.
+   * @return current event capacity
+   **/
+  public int getEventCapacity() {
+    return eventCapacity;
+  }
+
+
+  /**
    * Get the number of states that are currently in this automaton.
    * @return number of states
    **/
@@ -2967,6 +3071,14 @@ public class Automaton {
    **/
   public int getLabelLength() {
     return labelLength;
+  }
+
+  /**
+   * Get the amount of space needed to store an event ID.
+   * @return number of bytes per event ID
+   **/
+  public int getSizeOfEventID() {
+    return nBytesPerEventID;
   }
 
   /**
