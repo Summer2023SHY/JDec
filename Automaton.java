@@ -1,7 +1,7 @@
 /**
- * Automaton -  This extensive class is able to fully represent an automaton. The usage of .hdr and .bdy files
- *              gives the potential to work with very large automata, since the entire automaton does not need
- *              to be stored in memory.
+ * Automaton - This extensive class is able to fully represent an automaton. The usage of .hdr and .bdy files
+ *             gives the potential to work with very large automata, since the entire automaton does not need
+ *             to be stored in memory.
  *
  * @author Micah Stairs
  *

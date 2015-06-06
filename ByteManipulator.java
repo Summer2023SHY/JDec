@@ -1,5 +1,7 @@
 /**
  * ByteManipulator - An abstract class used to perform conversions between a long and bytes.
+ *
+ * @author Micah Stairs
  **/
 
 public abstract class ByteManipulator {

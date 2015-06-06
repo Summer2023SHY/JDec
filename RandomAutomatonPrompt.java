@@ -1,175 +1,202 @@
+/**
+ * RandomAutomatonPrompt - Displays a popup box which allows the user to specify the properties of a random automaton
+ *                         that they would like generated. The appropriate actions are also triggered when the user
+ *                         presses the "Generate" button in the popup.
+ *
+ * @author Micah Stairs
+ *
+ * TABLE OF CONTENTS
+ *  -Class Constants
+ *  -Private Instance Variables
+ *  -Constructor
+ *  -Methods
+ **/
+
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 
 public class RandomAutomatonPrompt extends JFrame {
 
-    private AutomataGUI gui;
-    private JSpinner nControllers, nEvents, nStates, minTransitions, maxTransitions, nBadTransitions;
+    /** CLASS CONSTANTS **/
 
-    // Default values
-    private static int  nControllersDefault = 1,
-                nEventsDefault = 4,
-                nStatesDefault = 10,
-                minTransitionsDefault = 1,
-                maxTransitionsDefault = 3,
-                nBadTransitionsDefault = 0;
+  // Default values
+  private static int nControllersDefault    = 1;
+  private static int nEventsDefault         = 4;
+  private static int nStatesDefault         = 10;
+  private static int minTransitionsDefault  = 1;
+  private static int maxTransitionsDefault  = 3;
+  private static int nBadTransitionsDefault = 0;
 
-    public RandomAutomatonPrompt(AutomataGUI gui) {
+    /** PRIVATE INSTANCE VARIABLES **/
 
-        this.gui = gui;
+  // GUI elements
+  private AutomataGUI gui;
+  private JSpinner nControllers, nEvents, nStates, minTransitions, maxTransitions, nBadTransitions;
 
-        addComponents();
+    /** CONSTRUCTOR **/
 
-        setGUIproperties();
+  /**
+   * Construct a RandomAutomatonPrompt object.
+   * @param gui A reference to the GUI which will be recieving the generated automaton request.
+   **/
+  public RandomAutomatonPrompt(AutomataGUI gui) {
 
-    }
+    this.gui = gui;
 
-    /**
-     * Add all of the components to the window.
-     **/
-    private void addComponents() {
+    addComponents();
 
-        /* Setup */
+    setGUIproperties();
 
-        Container container = new Container();
-        setLayout(new GridBagLayout());
-        GridBagConstraints c = new GridBagConstraints();
-        c.fill = GridBagConstraints.HORIZONTAL;
+  }
 
-            /* Number of controllers */
+    /** METHODS **/
 
-        JLabel nControllersLabel = new JLabel(" # Controllers:");
-        c.gridx = 0;
-        c.gridy = 0;
-        add(nControllersLabel, c);
+  /**
+   * Add all of the components to the window.
+   **/
+  private void addComponents() {
 
-        nControllers = new JSpinner(new SpinnerNumberModel(nControllersDefault, 1, Automaton.MAX_NUMBER_OF_CONTROLLERS, 1));
-        c.gridx = 1;
-        c.gridy = 0;
-        add(nControllers, c);
+      /* Setup */
 
-            /* Number of events */
+    Container container = new Container();
+    setLayout(new GridBagLayout());
+    GridBagConstraints c = new GridBagConstraints();
+    c.fill = GridBagConstraints.HORIZONTAL;
 
-        JLabel nEventsLabel = new JLabel(" # Events:");
-        c.gridx = 0;
-        c.gridy = 1;
-        add(nEventsLabel, c);
+      /* Number of controllers */
 
-        nEvents = new JSpinner(new SpinnerNumberModel(nEventsDefault, 0, Event.MAX_NUMBER_OF_EVENTS, 1));
-        c.gridx = 1;
-        c.gridy = 1;
-        add(nEvents, c);
+    JLabel nControllersLabel = new JLabel(" # Controllers:");
+    c.gridx = 0;
+    c.gridy = 0;
+    add(nControllersLabel, c);
 
-            /* Number of states */
+    nControllers = new JSpinner(new SpinnerNumberModel(nControllersDefault, 1, Automaton.MAX_NUMBER_OF_CONTROLLERS, 1));
+    c.gridx = 1;
+    c.gridy = 0;
+    add(nControllers, c);
 
-        JLabel nStatesLabel = new JLabel(" # States:");
-        c.gridx = 0;
-        c.gridy = 2;
-        add(nStatesLabel, c);
+      /* Number of events */
 
-        nStates = new JSpinner(new SpinnerNumberModel(nStatesDefault, 0, Integer.MAX_VALUE, 1)); // The Automaton class can support more states, but SpinnerNumberModel cannot
-        c.gridx = 1;
-        c.gridy = 2;
-        add(nStates, c);
+    JLabel nEventsLabel = new JLabel(" # Events:");
+    c.gridx = 0;
+    c.gridy = 1;
+    add(nEventsLabel, c);
 
-            /* Number of transitions */
+    nEvents = new JSpinner(new SpinnerNumberModel(nEventsDefault, 0, Event.MAX_NUMBER_OF_EVENTS, 1));
+    c.gridx = 1;
+    c.gridy = 1;
+    add(nEvents, c);
 
-        JLabel minTransitionsLabel = new JLabel(" Min. # Transitions per State:");
-        c.gridx = 0;
-        c.gridy = 3;
-        add(minTransitionsLabel, c);
+      /* Number of states */
 
-        minTransitions = new JSpinner(new SpinnerNumberModel(minTransitionsDefault, 0, Automaton.MAX_TRANSITION_CAPACITY, 1));
-        c.gridx = 1;
-        c.gridy = 3;
-        add(minTransitions, c);
+    JLabel nStatesLabel = new JLabel(" # States:");
+    c.gridx = 0;
+    c.gridy = 2;
+    add(nStatesLabel, c);
 
-        JLabel maxTransitionsLabel = new JLabel(" Max. # Transitions per State:");
-        c.gridx = 0;
-        c.gridy = 4;
-        add(maxTransitionsLabel, c);
+    nStates = new JSpinner(new SpinnerNumberModel(nStatesDefault, 0, Integer.MAX_VALUE, 1)); // The Automaton class can support more states, but SpinnerNumberModel cannot
+    c.gridx = 1;
+    c.gridy = 2;
+    add(nStates, c);
 
-        maxTransitions = new JSpinner(new SpinnerNumberModel(maxTransitionsDefault, 0, Automaton.MAX_TRANSITION_CAPACITY, 1));
-        c.gridx = 1;
-        c.gridy = 4;
-        add(maxTransitions, c);
+      /* Number of transitions */
 
-            /* Bad transitions */
+    JLabel minTransitionsLabel = new JLabel(" Min. # Transitions per State:");
+    c.gridx = 0;
+    c.gridy = 3;
+    add(minTransitionsLabel, c);
 
-        JLabel nBadTransitionsLabel = new JLabel(" # Bad Transitions:");
-        c.gridx = 0;
-        c.gridy = 5;
-        add(nBadTransitionsLabel, c);
+    minTransitions = new JSpinner(new SpinnerNumberModel(minTransitionsDefault, 0, Automaton.MAX_TRANSITION_CAPACITY, 1));
+    c.gridx = 1;
+    c.gridy = 3;
+    add(minTransitions, c);
 
-        nBadTransitions = new JSpinner(new SpinnerNumberModel(nBadTransitionsDefault, 0, Integer.MAX_VALUE, 1));
-        c.gridx = 1;
-        c.gridy = 5;
-        add(nBadTransitions, c);
+    JLabel maxTransitionsLabel = new JLabel(" Max. # Transitions per State:");
+    c.gridx = 0;
+    c.gridy = 4;
+    add(maxTransitionsLabel, c);
 
-            /* Cancel button */
+    maxTransitions = new JSpinner(new SpinnerNumberModel(maxTransitionsDefault, 0, Automaton.MAX_TRANSITION_CAPACITY, 1));
+    c.gridx = 1;
+    c.gridy = 4;
+    add(maxTransitions, c);
 
-        JButton cancelButton = new JButton("Cancel");
-        cancelButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                RandomAutomatonPrompt.this.dispose();
-            }
-        });
-        c.gridx = 0;
-        c.gridy = 6;
-        add(cancelButton, c);
+      /* Bad transitions */
 
-            /* Generate button */
+    JLabel nBadTransitionsLabel = new JLabel(" # Bad Transitions:");
+    c.gridx = 0;
+    c.gridy = 5;
+    add(nBadTransitionsLabel, c);
 
-        JButton generateButton = new JButton("Generate");
-        generateButton.addActionListener(new ActionListener() {
-     
-            public void actionPerformed(ActionEvent e) {
-                gui.generateRandomAutomaton(
-                    "random",
-                    nEventsDefault = (Integer) nEvents.getValue(),
-                    nStatesDefault = (Integer) nStates.getValue(),
-                    minTransitionsDefault = (Integer) minTransitions.getValue(),
-                    maxTransitionsDefault = (Integer) maxTransitions.getValue(),
-                    nControllersDefault = (Integer) nControllers.getValue(),
-                    nBadTransitionsDefault = (Integer) nBadTransitions.getValue()
-                );
-                RandomAutomatonPrompt.this.dispose();
-            }
+    nBadTransitions = new JSpinner(new SpinnerNumberModel(nBadTransitionsDefault, 0, Integer.MAX_VALUE, 1));
+    c.gridx = 1;
+    c.gridy = 5;
+    add(nBadTransitions, c);
 
-        });
-        c.gridx = 1;
-        c.gridy = 6;
-        add(generateButton, c);
+      /* Cancel button */
 
-    }
+    JButton cancelButton = new JButton("Cancel");
+    cancelButton.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+            RandomAutomatonPrompt.this.dispose();
+        }
+    });
+    c.gridx = 0;
+    c.gridy = 6;
+    add(cancelButton, c);
 
-    /**
-     * Set some default GUI Properties.
-     **/
-    private void setGUIproperties() {
+      /* Generate button */
 
-            /* Pack things in nicely */
+    JButton generateButton = new JButton("Generate");
+    generateButton.addActionListener(new ActionListener() {
+ 
+        public void actionPerformed(ActionEvent e) {
+            gui.generateRandomAutomaton(
+                "random",
+                nEventsDefault = (Integer) nEvents.getValue(),
+                nStatesDefault = (Integer) nStates.getValue(),
+                minTransitionsDefault = (Integer) minTransitions.getValue(),
+                maxTransitionsDefault = (Integer) maxTransitions.getValue(),
+                nControllersDefault = (Integer) nControllers.getValue(),
+                nBadTransitionsDefault = (Integer) nBadTransitions.getValue()
+            );
+            RandomAutomatonPrompt.this.dispose();
+        }
 
-        pack();
-        
-            /* Ensure our popup box will be closed when the user presses the "X" */
+    });
+    c.gridx = 1;
+    c.gridy = 6;
+    add(generateButton, c);
 
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setResizable(false);
+  }
 
-            /* Sets screen location in the center of the screen (only works after calling pack) */
+  /**
+   * Set some default GUI Properties.
+   **/
+  private void setGUIproperties() {
 
-        setLocationRelativeTo(null);
+      /* Pack things in nicely */
 
-            /* Update title */
+    pack();
+    
+      /* Ensure our popup box will be closed when the user presses the "X" */
 
-        setTitle("Generate Random Automaton");
+    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    setResizable(false);
 
-            /* Show screen */
+      /* Sets screen location in the center of the screen (only works after calling pack) */
 
-        setVisible(true);
+    setLocationRelativeTo(null);
 
-    }
+      /* Update title */
+
+    setTitle("Generate Random Automaton");
+
+      /* Show screen */
+
+    setVisible(true);
+
+  }
     
 }

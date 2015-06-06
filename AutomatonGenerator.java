@@ -1,8 +1,32 @@
+/**
+ * AutomatonGenerator - Abstract class used to generated automata. Automata can be generated using GUI input code, or they
+ *                      can be randomly generated (with a number of specified properties).
+ *
+ * @author Micah Stairs
+ *
+ * TABLE OF CONTENTS:
+ *  -Random Automaton Generation (and associated helper methods)
+ *  -Automaton Generation from GUI Input Code (and associated helper methods)
+ **/
+
 import java.util.*;
 import java.io.*;
 
 public abstract class AutomatonGenerator {
 
+    /** RANDOM AUTOMATON GENERATION (AND ASSOCIATED HELPER METHODS) **/
+
+  /**
+   * Generate a random automaton with the specified properties.
+   * NOTE: Generated automaton is not guaranteed to be accessible, co-accessible, controllable, or even connected.
+   * @param fileName                The name of the file where the automaton will be stored (excluding the extension)
+   * @param nEvents                 The number of events to be generated in the automaton
+   * @param nStates                 The number of states to be generated in the automaton
+   * @param minTransitionsPerState  The minimum number of outgoing transitions per state
+   * @param maxTransitionsPerState  The maximum number of outgoing transitions per state
+   * @param nControllers            The number of controllers in the automaton
+   * @param nBadTransitions         The number of bad transition in the automaton
+   **/
   public static Automaton generateRandom(String fileName, int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions) {
 
       /* Create empty automaton with capacities that should prevent the need to re-create the body file */
@@ -143,6 +167,8 @@ public abstract class AutomatonGenerator {
     return generateInt(0, 1) == 1;
 
   }
+
+    /** AUTOMATON GENERATION FROM GUI INPUT CODE (AND ASSOCIATED HELPER METHODS) **/
 
   /**
    * Generate an automaton using the given GUI input code.
@@ -333,7 +359,7 @@ public abstract class AutomatonGenerator {
 
     String[] split = line.split(",");
 
-    // Parse each 
+    // Parse each special transition
     for (String str : split) {
 
       str = str.trim();

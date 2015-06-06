@@ -1,7 +1,7 @@
 /**
- * Event -  This simple class represents an event in an automaton. It supports both centralized and decentralized control, which
- *					means that it can have observability and controllability properties for each controller. It also has support for
- *					events that have labels formatted as vectors. 
+ * Event - This simple class represents an event in an automaton. It supports both centralized and decentralized control, which
+ *				 means that it can have observability and controllability properties for each controller. It also has support for
+ *				 events that have labels formatted as vectors. 
  *
  * @author Micah Stairs
  *

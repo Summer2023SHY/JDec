@@ -2,15 +2,26 @@
  * Transition - Represents a transition in an automaton.
  *							NOTE: An instance of this class should remain attached to a state in order to be
  *							able to fully represent a transition (since a transition has no reference to its
- * 							initial state ID). 
+ * 							initial state ID).
+ *
+ * @author Micah Stairs
+ *
+ * TABLE OF CONTENTS:
+ *	-Private Instance Variables
+ *	-Constructor
+ *	-Mutator Method
+ *	-Accessor Methods
+ *	-Overridden Methods
  **/
 
 public class Transition {
 
-		/* Private instance variables */
+		/* PRIVATE INSTANCE VARIABLES */
   
   private long targetStateID;
   private Event event;
+
+  	/** CONSTRUCTOR **/
 
   /**
    * Constructs a Transition object.
@@ -22,6 +33,8 @@ public class Transition {
 		this.targetStateID = targetStateID;
 	}
 
+		/** MUTATOR METHOD **/
+
 	/**
 	 * Set the state that this transition leads to.
 	 * @param id	The new ID of the target state
@@ -29,6 +42,8 @@ public class Transition {
 	public void setTargetStateID(long id) {
 		targetStateID = id;
 	}
+
+		/** ACCESSOR METHODS **/
 
 	/**
 	 * Returns the event which triggers this transition.
@@ -45,6 +60,8 @@ public class Transition {
 	public long getTargetStateID() {
 		return targetStateID;
 	}
+
+		/** OVERRIDDEN METHODS **/
 
 	/**
 	 * Check for equality by comparing events and target states.

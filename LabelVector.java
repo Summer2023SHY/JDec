@@ -1,13 +1,23 @@
 /**
- * LabelVector -	This class is used to take a string and vectorize it into its components using some basic syntax.
+ * LabelVector - This class is used to take a string and vectorize it into its components using some basic syntax.
+ *
+ * @author Micah Stairs
+ *
+ * TABLE OF CONTENTS:
+ *	-Private Instance Variables
+ *	-Constructor
+ *	-Accessor Methods
+ *	-Overridden Methods
  **/
 
 class LabelVector {
 
-		/* Private instance variables */
+		/* PRIVATE INSTANCE VARIABLES */
 
 	private String label; 
 	private String[] vector = null;
+
+		/** CONSTRUCTOR **/
 
 	/**
 	 * Construct a LabelVector object, which takes a string and splits it into its vector components.
@@ -22,6 +32,8 @@ class LabelVector {
 			vector = label.substring(1, label.length() - 1).split("_");
 
 	}
+
+		/** ACCESSOR METHODS **/
 
 	/**
 	 * Get a specific label from the vector.
@@ -49,6 +61,8 @@ class LabelVector {
 		return vector.length;
 		
 	}
+
+		/** OVERRIDDEN METHODS **/
 
 	/**
 	 * Returns a hash code for this event vector, based on the hash code of it's label (which is a string).
