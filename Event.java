@@ -109,7 +109,6 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Check for equality by comparing labels.
-	 * NOTE: This method is used to check to see if an event is unique and should be added to the event set.
 	 * @param obj - The event to compare this one to
 	 * @return whether or not the events are equal
 	 **/

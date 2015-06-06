@@ -11,7 +11,7 @@ class LabelVector {
 
 	/**
 	 * Construct a LabelVector object, which takes a string and splits it into its vector components.
-	 * @param label	The label to be vectorized (syntax: "<first_second_third>" turns into {"first", "second", "third"})
+	 * @param label	The label to be vectorized (syntax: "<first_second_third>" vectorizes into {"first", "second", "third"})
 	 **/
 	public LabelVector(String label) {
 
@@ -26,7 +26,7 @@ class LabelVector {
 	/**
 	 * Get a specific label from the vector.
 	 * @param index	The index in the vector
-	 * @return the label from the vector
+	 * @return the label from the vector, or null if this label is not a vector
 	 **/
 	public String getLabelAtIndex(int index) {
 
@@ -39,7 +39,7 @@ class LabelVector {
 
 	/**
 	 * Get the size of the vector.
-	 * @return the label from the vector, or -1 if this event is not a vector
+	 * @return the label from the vector, or -1 if this label is not a vector
 	 **/
 	public int getSize() {
 

@@ -1,39 +1,73 @@
+/**
+ * Transition - Represents a transition in an automaton.
+ *							NOTE: An instance of this class should remain attached to a state in order to be
+ *							able to fully represent a transition (since a transition has no reference to its
+ * 							initial state ID). 
+ **/
+
 public class Transition {
 
-	// Private instance variables
-    private long targetStateID;
-    private Event event;
+		/* Private instance variables */
+  
+  private long targetStateID;
+  private Event event;
 
+  /**
+   * Constructs a Transition object.
+   * @param event					The event triggering this transition
+   * @param targetStateID	The state that the transition leads to
+   **/
 	public Transition(Event event, long targetStateID) {
 		this.event = event;
 		this.targetStateID = targetStateID;
 	}
 
-	public Event getEvent() {
-		return event;
-	}
-
-	public long getTargetStateID() {
-		return targetStateID;
-	}
-
+	/**
+	 * Set the state that this transition leads to.
+	 * @param id	The new ID of the target state
+	 **/
 	public void setTargetStateID(long id) {
 		targetStateID = id;
 	}
 
-	@Override public String toString() {
-		return "("
-			+ event + ","
-			+ targetStateID
-			+ ")";
+	/**
+	 * Returns the event which triggers this transition.
+	 * @return event
+	 **/
+	public Event getEvent() {
+		return event;
 	}
 
+	/**
+	 * Returns the ID of the state that this transition leads to.
+	 * @return ID of the target state
+	 **/
+	public long getTargetStateID() {
+		return targetStateID;
+	}
+
+	/**
+	 * Check for equality by comparing events and target states.
+	 * @param obj - The transition to compare this one to
+	 * @return whether or not the transitions are equal
+	 **/
 	@Override public boolean equals(Object obj) {
 
 		Transition other = (Transition) obj;
 
 		return targetStateID == other.getTargetStateID() && event.equals(other.getEvent());
 
+	}
+
+	/**
+	 * Turn this event into a more meaningful representation as a string.
+	 * @return string representation
+	 **/
+	@Override public String toString() {
+		return "("
+			+ event + ","
+			+ targetStateID
+			+ ")";
 	}
 
 }
