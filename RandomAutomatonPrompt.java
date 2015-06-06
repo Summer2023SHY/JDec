@@ -83,7 +83,7 @@ public class RandomAutomatonPrompt extends JFrame {
     c.gridy = 1;
     add(nEventsLabel, c);
 
-    nEvents = new JSpinner(new SpinnerNumberModel(nEventsDefault, 0, Event.MAX_NUMBER_OF_EVENTS, 1));
+    nEvents = new JSpinner(new SpinnerNumberModel(nEventsDefault, 0, Automaton.MAX_EVENT_CAPACITY, 1));
     c.gridx = 1;
     c.gridy = 1;
     add(nEvents, c);

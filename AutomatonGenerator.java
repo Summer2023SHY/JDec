@@ -34,6 +34,7 @@ public abstract class AutomatonGenerator {
     Automaton automaton = new Automaton(
       new File(fileName + ".hdr"),
       new File(fileName + ".bdy"),
+      nEvents,
       nStates,
       maxTransitionsPerState,
       String.valueOf(nStates).length(),

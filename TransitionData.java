@@ -1,10 +1,10 @@
- /**
+/**
  * TransitionData - Holds all 3 pieces of information needed to identify a transition.
  *                  NOTE: This class is different from the Transition class, since this
  *                  class does not need to be attached to a specific state in order to
  *                  fully represent a transition (the Transition class does not have a
  *                  reference to the initial state ID, and it contains a reference to the
- *                  actually Event object instead of only holding onto its ID).
+ *                  actual Event object instead of only holding onto its ID).
  *
  * @author Micah Stairs
  *

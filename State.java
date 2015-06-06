@@ -52,10 +52,11 @@ public class State {
 	 * @param file								The RandomAccessFile we are using to write to
 	 * @param nBytesPerState			The number of bytes used to store each state in the file
 	 * @param labelLength					The amount of characters reserved for the label in each state
+	 * @param nBytesPerEventID		The number of bytes used to store an event ID
 	 * @param nBytesPerStateID		The number of bytes used to store a state ID
 	 * @return whether or not the operation was successful
 	 **/
-	public boolean writeToFile(RandomAccessFile file, long nBytesPerState, int labelLength, int nBytesPerStateID) {
+	public boolean writeToFile(RandomAccessFile file, long nBytesPerState, int labelLength, int nBytesPerEventID, int nBytesPerStateID) {
 
 			/* Setup */
 
@@ -83,8 +84,8 @@ public class State {
 		for (Transition t : transitions) {
 
 			// Event
-			ByteManipulator.writeLongAsBytes(bytesToWrite, index, (long) (t.getEvent().getID()), Event.N_BYTES_OF_ID);
-			index += Event.N_BYTES_OF_ID;
+			ByteManipulator.writeLongAsBytes(bytesToWrite, index, (long) (t.getEvent().getID()), nBytesPerEventID);
+			index += nBytesPerEventID;
 
 			// Target state
 			ByteManipulator.writeLongAsBytes(bytesToWrite, index, t.getTargetStateID(), nBytesPerStateID);
@@ -239,8 +240,8 @@ public class State {
 		int index = 1 + automaton.getLabelLength();
 		for (int t = 0; t < automaton.getTransitionCapacity(); t++) {
 
-    	int eventID = (int) ByteManipulator.readBytesAsLong(bytesRead, index, Event.N_BYTES_OF_ID);
-    	index += Event.N_BYTES_OF_ID;
+    	int eventID = (int) ByteManipulator.readBytesAsLong(bytesRead, index, automaton.getSizeOfEventID());
+    	index += automaton.getSizeOfEventID();
 
     	long targetStateID = ByteManipulator.readBytesAsLong(bytesRead, index, automaton.getSizeOfStateID());
     	index += automaton.getSizeOfStateID();
