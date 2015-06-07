@@ -74,8 +74,13 @@ public class Automaton {
 
   /** Image of automaton can be formatted as either .png or .svg. */
   public static enum OutputMode {
+
+    /** Output the image of the graph as .png. NOTE: The image size is limited since this image is intended for the GUI. */
     PNG,
+
+    /** Output the image of the graph as .svg, which is an XML-based format. The image is blown up so that no nodes overlap. */
     SVG
+
   }
 
     /** PRIVATE INSTANCE VARIABLES **/
