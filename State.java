@@ -1,13 +1,23 @@
 /**
- * State - 
+ * State - This object represents a state in an automaton, complete with a label and transitions.
  *
+ * @author Micah Stairs
  *
- *	State ID (used to identify states): a binary string consisting of all 0's is reserved to represent "null", so:
+ * State ID (used to identify states): a binary number where 0 is reserved to represent "null", so:
  * 		-1 byte allows us to represent up to 255 possible states (2^8 - 1)
  *		-2 bytes gives 65535 possible states (2^16 - 1)
  *		-3 bytes gives 16777215 possible states (2^24 - 1)
  *		...
  *		-8 bytes gives ~9.2*10^18 possible states (2^63 - 1)
+ *
+ * TABLE OF CONTENTS:
+ *	-Class Constants
+ *	-Private Instance Variables
+ *	-Constructors
+ *  -Working With Files
+ *  -Mutator Methods
+ *  -Accessor Methods
+ *  -Overridden Method
  **/
 
 import java.util.*;
@@ -26,23 +36,35 @@ public class State {
 	private String label;
 	private long id;
 	private boolean marked;
-	private ArrayList<Transition> transitions;
+	private List<Transition> transitions;
 
 		/** CONSTRUCTORS **/
 
-	public State(String label, long id, boolean marked, ArrayList<Transition> transitions) {
-		this.label = label;
-		this.id = id;
-		this.marked = marked;
+	/**
+	 * Construct a state (including transitions).
+	 * @param label				The state's label
+	 * @param id					The state ID
+	 * @param marked			Whether or not the state is marked
+	 * @param transitions	The list of transitions leading out from this state
+	 **/
+	public State(String label, long id, boolean marked, List<Transition> transitions) {
+		this.label       = label;
+		this.id          = id;
+		this.marked      = marked;
 		this.transitions = transitions;
 	}
 
-	// Create state with no transitions
+	/**
+	 * Construct a state (with 0 transitions).
+	 * @param label				The state's label
+	 * @param id					The state ID
+	 * @param marked			Whether or not the state is marked
+	 **/
 	public State(String label, long id, boolean marked) {
-		this.label = label;
-		this.id = id;
+		this.label  = label;
+		this.id     = id;
 		this.marked = marked;
-		transitions = new ArrayList<Transition>();
+		transitions = new List<Transition>();
 	}
 
 		/** WORKING WITH FILES **/
@@ -112,6 +134,13 @@ public class State {
 
 	}
 
+	/**
+	 * Check to see if the specified state actually exists in the file (or if it's just a blank spot filled with padding).
+	 * @param automaton	The automaton in consideration
+	 * @param file			The .bdy file containing the states associated with this automaton
+	 * @param id				The ID of the state we are checking to see if it exists
+	 * @return whether or not the state exists
+	 **/
 	public static boolean stateExists(Automaton automaton, RandomAccessFile file, long id) {
 
 		try {
@@ -136,6 +165,10 @@ public class State {
 	/**
 	 * Light-weight method used when the transitions are not needed (because loading them takes a bit of time)
 	 * NOTE: When using this method to load a state, it assumed that you will not be accessing or modifying the transitions.
+   * @param automaton The relevant automaton
+   * @param file      The .bdy file containing the state
+   * @param id        The ID of the requested state
+   * @return the state (with a reference to null as its list of transitions)
 	 **/
 	public static State readFromFileExcludingTransitions(Automaton automaton, RandomAccessFile file, long id) {
 
@@ -150,25 +183,25 @@ public class State {
 			file.seek((id * automaton.getSizeOfState()));
 			file.read(bytesRead);
 			
-	    } catch (IOException e) {
+    } catch (IOException e) {
 
-            e.printStackTrace();
-            return null;
+      e.printStackTrace();
+      return null;
 
-	    }
+    }
 
-	    	/* Exists and marked status */
+    	/* Exists and marked status */
 
-	    boolean marked = (bytesRead[0] & MARKED_MASK) > 0;
-	    boolean exists = (bytesRead[0] & EXISTS_MASK) > 0;
+    boolean marked = (bytesRead[0] & MARKED_MASK) > 0;
+    boolean exists = (bytesRead[0] & EXISTS_MASK) > 0;
 
-	    // Return null if this state doesn't actually exist
-	    if (!exists)
-	    	return null;
+    // Return null if this state doesn't actually exist
+    if (!exists)
+    	return null;
 
-	    	/* State's label */
+    	/* State's label */
 
-	    char[] arr = new char[automaton.getLabelLength()];
+    char[] arr = new char[automaton.getLabelLength()];
 		for (int i = 0; i < arr.length; i++) {
 
 			// Indicates end of label
@@ -183,10 +216,17 @@ public class State {
 
 		}
 
-		return new State(new String(arr), id, marked);
+		return new State(new String(arr), id, marked, null);
 
 	}
 
+  /**
+   * Read a state (and all of its transitions) from file.
+   * @param automaton The relevant automaton
+   * @param file      The .bdy file containing the state
+   * @param id        The ID of the requested state
+   * @return the state
+   **/
 	public static State readFromFile(Automaton automaton, RandomAccessFile file, long id) {
 
 			/* Setup */
@@ -233,6 +273,7 @@ public class State {
 
 		}
 
+    // Instantiate the state
 		State state = new State(new String(arr), id, marked);
 
 			/* Transitions */
@@ -268,6 +309,10 @@ public class State {
 		this.id = id;
 	}
 
+  /**
+   * Add a transition to the list.
+   * @param transition  The new transition
+   **/
 	public void addTransition(Transition transition) {
 		transitions.add(transition);
 	}
@@ -298,17 +343,28 @@ public class State {
 		return id;
 	}
 
-	public ArrayList<Transition> getTransitions() {
+  /**
+   * Get the list of transitions leading out from this state.
+   * @return list of transitions
+   **/
+	public List<Transition> getTransitions() {
 		return transitions;
 	}
 
+  /**
+   * Get the number of transitions leading out from this state.
+   * @return number of transitions
+   **/
 	public int getNumberOfTransitions() {
 		return transitions.size();
 	}
 
+		/** OVERRIDDEN METHOD **/
 
-		/** OVERRIDDEN METHODS **/
-
+  /**
+   * Turn this object into a more meaningful representation as a string.
+   * @return string representation
+   **/
 	@Override public String toString() {
 		return "("
 			+ "\"" + label + "\",ID:"
