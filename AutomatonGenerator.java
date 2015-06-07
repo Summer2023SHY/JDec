@@ -239,7 +239,7 @@ public abstract class AutomatonGenerator {
         stateMapping.put(label, id);
 
       } else if (line.length() > 0 && verbose)
-      System.err.println("ERROR: Could not parse '" + line + "' as a state.");
+        System.err.println("ERROR: Could not parse '" + line + "' as a state.");
     }
     
       /* Events */
@@ -282,14 +282,14 @@ public abstract class AutomatonGenerator {
           }
         }
 
-        // Try to add event to automaton
-        int id = automaton.addEvent(label, observable, controllable);
-
         // Check for invalid label
         if (!isValidLabel(label)) {
           System.err.println("ERROR: Invalid label ('" + label + "').");
           continue;
         }
+
+        // Try to add event to automaton
+        int id = automaton.addEvent(label, observable, controllable);
 
         // Error checking
         if (id == 0) {
@@ -381,7 +381,7 @@ public abstract class AutomatonGenerator {
         if (parts[0].equals("POTENTIAL_COMMUNICATION") && parts.length == 2)
           automaton.addPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID, parseCommunicationRoles(parts[1]));
         else
-          System.out.println("ERROR: Could not parse '" + line + "' as special transition information.");
+          System.err.println("ERROR: Could not parse '" + line + "' as special transition information.");
 
       }
 
@@ -408,7 +408,7 @@ public abstract class AutomatonGenerator {
       else if (ch == '*')
         roles[i] = CommunicationRole.NONE;
       else
-        System.out.println("ERROR: Unable to parse '" + ch + "'as a communication role.");
+        System.err.println("ERROR: Unable to parse '" + ch + "'as a communication role.");
     }
 
     return roles;

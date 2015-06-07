@@ -390,6 +390,80 @@ public class Automaton {
   }
 
   /**
+   * Create a new copy of this automaton that has the marking status of all states toggled, and that has an added
+   * 'dead' or 'dump' state where all undefined transitions lead.
+   * @return the complement automaton
+   **/
+  public Automaton complement() {
+
+      /* Setup */
+
+    Automaton automaton = new Automaton(
+      new File("complement.hdr"),
+      new File("complement.bdy"),
+      eventCapacity,
+      stateCapacity,
+      events.size(), // This is the new number of transitions that will be required for each state
+      labelLength,
+      nControllers,
+      true
+    );
+
+    // Add events
+    automaton.addAllEvents(events);
+
+    // If there is no initial state, return null, so that the GUI knows to alert the user
+    if (initialState == 0)
+      return null;
+
+      /* Build complement of this automaton */
+
+    long dumpStateID = -1;
+
+    // Add each state to the new automaton
+    for (long s = 1; s <= nStates; s++) {
+
+      State state = getState(s);
+
+      long id = automaton.addState(state.getLabel(), !state.isMarked(), s == initialState);
+
+      // Add transitions for each event (even if they were previously undefined, these transitions will lead to the dump state)
+      for (Event e : events) {
+
+        boolean foundMatch = false;
+
+        // Search through each transition for the event
+        for (Transition t : state.getTransitions())
+          if (t.getEvent().equals(e)) {
+            automaton.addTransition(id, e.getID(), t.getTargetStateID());
+            foundMatch = true;
+          }
+
+        // Add new transition leading to dump state if this event if undefined at this state
+        if (!foundMatch) {
+
+          // Create dump state if it has not already been made
+          if (dumpStateID == -1)
+            dumpStateID = automaton.addState("Dump State", false, false);
+
+          automaton.addTransition(id, e.getID(), dumpStateID);
+
+        }
+
+      }
+
+    }
+
+      /* Add special transitions */
+
+    copyOverSpecialTransitions(automaton);
+
+      /* Return complement automaton */
+
+    return automaton;
+  }
+
+  /**
    * Create a new version of the specified automaton which has all of the transitions going the opposite direction.
    * NOTE: This is just a shallow copy of the automaton (no special transition data is retained), which makes it slightly more efficient.
    * @param automaton The automaton to invert

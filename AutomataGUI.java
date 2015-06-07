@@ -378,6 +378,10 @@ public class AutomataGUI extends JFrame implements ActionListener {
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
+        menuItem = new JMenuItem("Complement");
+        menuItem.addActionListener(this);
+        menu.add(menuItem);
+
         menu.addSeparator();
 
         menuItem = new JMenuItem("Intersection");
@@ -517,6 +521,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
                     JOptionPane.showMessageDialog(null, "Please specify a starting state.", "Trim Operation Failed", JOptionPane.ERROR_MESSAGE);
                 else
                     createTab(new File("trim.hdr"), automaton);
+                break;
+
+            case "Complement":
+
+                createTab(new File("complement.hdr"), tab.automaton.complement());
                 break;
 
             case "Intersection":

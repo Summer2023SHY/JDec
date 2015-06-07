@@ -29,8 +29,21 @@ public class CommunicationData extends TransitionData {
    * @param roles           The array of communication roles (sender, reciever, or none)
    **/
   public CommunicationData(long initialStateID, int eventID, long targetStateID, CommunicationRole[] roles) {
+    
     super(initialStateID, eventID, targetStateID);
     this.roles = roles;
+
+      /* Print error message to the console if there is not exactly one sender */
+
+    int nSenders = 0;
+
+    for (CommunicationRole role : roles)
+      if (role == CommunicationRole.SENDER)
+        nSenders++;
+
+    if (nSenders != 1)
+      System.err.println("ERROR: A communication must contain exactly one sender. " + nSenders + " senders were found.");
+
   }
 
     /** ACCESSOR METHOD **/
