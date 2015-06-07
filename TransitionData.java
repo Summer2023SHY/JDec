@@ -11,7 +11,7 @@
  * TABLE OF CONTENTS:
  *  -Public Instance Variables
  *  -Constructor
- *  -Overridden Method
+ *  -Overridden Methods
  **/
 
 public class TransitionData {
@@ -41,7 +41,7 @@ public class TransitionData {
       this.targetStateID = targetStateID;
   }
 
-    /** OVERRIDDEN METHOD **/
+    /** OVERRIDDEN METHODS **/
 
   /**
    * Check for equality by comparing properties.
@@ -56,6 +56,14 @@ public class TransitionData {
       && eventID == other.eventID
       && targetStateID == other.targetStateID;
 
+  }
+
+  /**
+   * Turn this object into a more meaningful representation as a string.
+   * @return string representation
+   **/
+  @Override public String toString() {
+    return String.format("(%d,%d,%d)", initialStateID, eventID, targetStateID);
   }
 
 }

@@ -553,10 +553,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
                 automaton = tab.automaton.synchronizedComposition();
                 if (automaton == null)
                     JOptionPane.showMessageDialog(null, "Please ensure that you specified a starting state.", "Synchronized Composition Operation Failed", JOptionPane.ERROR_MESSAGE);
-                else {
-                    System.out.println("DEBUG: Synchronized composition automaton is " + automaton);
+                else
                     createTab(new File("synchronizedComposition.hdr"), automaton);
-                }
 
                 break;
 
@@ -598,11 +596,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         AutomatonTab tab = tabs.get(index);
 
-        System.out.println("DEBUG: Before refreshing " + tab.automaton);
-        if (tab.automaton != null)
-            tab.automaton.closeFiles();
         tab.automaton = new Automaton(tab.file, false);
-        System.out.println("DEBUG: After refreshing " + tab.automaton);
         tab.automaton.generateInputForGUI();
         tab.updateInputFields();
 
@@ -988,7 +982,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
                     + "the state <b>'FirstState'</b> to the state <b>'SecondState'</b> by the event called <b>'Event'</b>.<br>"
                     + "<b><u>NOTE</u></b>: <i>SPECIAL_PROPERTIES</i> can be added to a transition by appending ':NAME_OF_PROPERTY'. "
                     + "Additional properties are separated by commas.<br><b><u>Names of special properties:</u></b>: <i>'BAD'</i>, "
-                    + "<i>'UNCONDITIONAL_VIOLATION'</i>, AND <i>'CONDITIONAL_VIOLATION'</i>.</html>"
+                    + "<i>'UNCONDITIONAL_VIOLATION'</i>, <i>'CONDITIONAL_VIOLATION'</i>, and <i>'POTENTIAL_COMMUNICATION'</i>.</html>"
                 ),c);
 
             transitionInput = new JTextPane();

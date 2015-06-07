@@ -117,7 +117,7 @@ public class Event implements Comparable<Event> {
 	}
 
 	/**
-	 * Turn this event into a more meaningful representation as a string.
+	 * Turn this object into a more meaningful representation as a string.
 	 * @return string representation
 	 **/
 	@Override public String toString() {

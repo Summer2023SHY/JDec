@@ -63,7 +63,7 @@ public class Automaton {
 
     /** PRIVATE CLASS CONSTANTS **/
 
-  private static final int HEADER_SIZE = 52; // This is the fixed amount of space needed to hold the main variables in the .hdr file
+  private static final int HEADER_SIZE = 60; // This is the fixed amount of space needed to hold the main variables in the .hdr file
 
   private static final String DEFAULT_HEADER_FILE_NAME = "temp.hdr";
   private static final String DEFAULT_BODY_FILE_NAME   = "temp.bdy";
@@ -1810,8 +1810,6 @@ public class Automaton {
    **/
   public void generateInputForGUI() {
 
-    System.out.println("DEBUG: Generating input for GUI from " + this);
-
     eventInputBuilder = new StringBuilder();
     stateInputBuilder = new StringBuilder();
     transitionInputBuilder = new StringBuilder();
@@ -2065,16 +2063,17 @@ public class Automaton {
     byte[] buffer = new byte[HEADER_SIZE];
 
     ByteManipulator.writeLongAsBytes(buffer, 0, nStates, 8);
-    ByteManipulator.writeLongAsBytes(buffer, 8, stateCapacity, 8);
-    ByteManipulator.writeLongAsBytes(buffer, 12, transitionCapacity, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 16, labelLength, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 20, initialState, 8);
-    ByteManipulator.writeLongAsBytes(buffer, 28, nControllers, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 32, events.size(), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 36, badTransitions.size(), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 40, unconditionalViolations.size(), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 44, conditionalViolations.size(), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 48, potentialCommunications.size(), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 8, eventCapacity, 4);
+    ByteManipulator.writeLongAsBytes(buffer, 12, stateCapacity, 8);
+    ByteManipulator.writeLongAsBytes(buffer, 20, transitionCapacity, 4);
+    ByteManipulator.writeLongAsBytes(buffer, 24, labelLength, 4);
+    ByteManipulator.writeLongAsBytes(buffer, 28, initialState, 8);
+    ByteManipulator.writeLongAsBytes(buffer, 36, nControllers, 4);
+    ByteManipulator.writeLongAsBytes(buffer, 40, events.size(), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 44, badTransitions.size(), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 48, unconditionalViolations.size(), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 52, conditionalViolations.size(), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 56, potentialCommunications.size(), 4);
 
     try {
 
@@ -2131,10 +2130,16 @@ public class Automaton {
     int index = 0;
 
     for (TransitionData data : list) {
+
       ByteManipulator.writeLongAsBytes(buffer, index, data.initialStateID, 8);
-      ByteManipulator.writeLongAsBytes(buffer, index + 8, data.eventID, 4);
-      ByteManipulator.writeLongAsBytes(buffer, index + 12, data.targetStateID, 8);
-      index += 20;
+      index += 8;
+
+      ByteManipulator.writeLongAsBytes(buffer, index, data.eventID, 4);
+      index += 4;
+
+      ByteManipulator.writeLongAsBytes(buffer, index, data.targetStateID, 8);
+      index += 8;
+
     }
 
     headerRAFile.write(buffer);
@@ -2143,6 +2148,8 @@ public class Automaton {
 
   /**
    * A helper method to write a list of special transitions to the header file.
+   * NOTE: This could be made more efficient by using one buffer for all communication data. This
+   * is only possible because data.roles.length is supposed to be the same for all data in the list.
    * @param list  The list of transition data
    **/
   private void writeCommunicationDataToHeader(List<CommunicationData> list) throws IOException {
@@ -2150,12 +2157,17 @@ public class Automaton {
     for (CommunicationData data : list) {
 
       byte[] buffer = new byte[20 + data.roles.length];
+      int index = 0;
 
-      ByteManipulator.writeLongAsBytes(buffer, 0, data.initialStateID, 8);
-      ByteManipulator.writeLongAsBytes(buffer, 8, data.eventID, 4);
-      ByteManipulator.writeLongAsBytes(buffer, 12, data.targetStateID, 8);
+      ByteManipulator.writeLongAsBytes(buffer, index, data.initialStateID, 8);
+      index += 8;
 
-      int index = 20;
+      ByteManipulator.writeLongAsBytes(buffer, index, data.eventID, 4);
+      index += 4;
+
+      ByteManipulator.writeLongAsBytes(buffer, index, data.targetStateID, 8);
+      index += 8;
+
       for (CommunicationRole role : data.roles)
         buffer[index++] = role.getValue();
       
@@ -2187,21 +2199,22 @@ public class Automaton {
        /* Calculate the values stored in these bytes */
 
       nStates            = ByteManipulator.readBytesAsLong(buffer, 0, 8);
-      stateCapacity      = ByteManipulator.readBytesAsLong(buffer, 8, 8);
-      transitionCapacity = (int) ByteManipulator.readBytesAsLong(buffer, 12, 4);
-      labelLength        = (int) ByteManipulator.readBytesAsLong(buffer, 16, 4);
-      initialState       = ByteManipulator.readBytesAsLong(buffer, 20, 8);
-      nControllers       = (int) ByteManipulator.readBytesAsLong(buffer, 28, 4);
-      int nEvents        = (int) ByteManipulator.readBytesAsLong(buffer, 32, 4);
+      eventCapacity      = (int) ByteManipulator.readBytesAsLong(buffer, 8, 4);
+      stateCapacity      = ByteManipulator.readBytesAsLong(buffer, 12, 8);
+      transitionCapacity = (int) ByteManipulator.readBytesAsLong(buffer, 20, 4);
+      labelLength        = (int) ByteManipulator.readBytesAsLong(buffer, 24, 4);
+      initialState       = ByteManipulator.readBytesAsLong(buffer, 28, 8);
+      nControllers       = (int) ByteManipulator.readBytesAsLong(buffer, 36, 4);
+      int nEvents        = (int) ByteManipulator.readBytesAsLong(buffer, 40, 4);
 
       // None of the folowing things can exist if there are no events
       if (nEvents == 0)
         return;
 
-      int nBadTransitions          = (int) ByteManipulator.readBytesAsLong(buffer, 36, 4);
-      int nUnconditionalViolations = (int) ByteManipulator.readBytesAsLong(buffer, 40, 4);
-      int nConditionalViolations   = (int) ByteManipulator.readBytesAsLong(buffer, 44, 4);
-      int nPotentialCommunications = (int) ByteManipulator.readBytesAsLong(buffer, 48, 4);
+      int nBadTransitions          = (int) ByteManipulator.readBytesAsLong(buffer, 44, 4);
+      int nUnconditionalViolations = (int) ByteManipulator.readBytesAsLong(buffer, 48, 4);
+      int nConditionalViolations   = (int) ByteManipulator.readBytesAsLong(buffer, 52, 4);
+      int nPotentialCommunications = (int) ByteManipulator.readBytesAsLong(buffer, 56, 4);
 
         /* Read in the events */
 
@@ -2268,11 +2281,18 @@ public class Automaton {
     int index = 0;
 
     for (int i = 0; i < nTransitions; i++) {
+      
       long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-      int eventID = (int) ByteManipulator.readBytesAsLong(buffer, index + 8, 4);
-      long targetStateID = ByteManipulator.readBytesAsLong(buffer, index + 12, 8);
+      index += 8;
+      
+      int eventID = (int) ByteManipulator.readBytesAsLong(buffer, index, 4);
+      index += 4;
+      
+      long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
+      index += 8;
+
       list.add(new TransitionData(initialStateID, eventID, targetStateID));
-      index += 20;
+    
     }
 
   }
@@ -2291,9 +2311,13 @@ public class Automaton {
     for (int i = 0; i < nCommunications; i++) {
 
       long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-      int eventID = (int) ByteManipulator.readBytesAsLong(buffer, index + 8, 4);
-      long targetStateID = ByteManipulator.readBytesAsLong(buffer, index + 12, 8);
-      index += 20;
+      index += 8;
+      
+      int eventID = (int) ByteManipulator.readBytesAsLong(buffer, index, 4);
+      index += 4;
+      
+      long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
+      index += 8;
       
       CommunicationRole[] roles = new CommunicationRole[nControllersBeforeUStructure];
       for (int j = 0; j < roles.length; j++)
