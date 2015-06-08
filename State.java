@@ -64,7 +64,7 @@ public class State {
 		this.label  = label;
 		this.id     = id;
 		this.marked = marked;
-		transitions = new List<Transition>();
+		transitions = new ArrayList<Transition>();
 	}
 
 		/** WORKING WITH FILES **/

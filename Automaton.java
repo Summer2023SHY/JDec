@@ -277,7 +277,7 @@ public class Automaton {
 
       // Get state and transitions
       State state = getState(id);
-      ArrayList<Transition> transitions = state.getTransitions();
+      List<Transition> transitions = state.getTransitions();
 
       // Add new state
       automaton.addStateAt(
@@ -698,8 +698,8 @@ public class Automaton {
       // Get states and transitions
       State state1 = first.getState(id1);
       State state2 = second.getState(id2);
-      ArrayList<Transition> transitions1 = state1.getTransitions();
-      ArrayList<Transition> transitions2 = state2.getTransitions();
+      List<Transition> transitions1 = state1.getTransitions();
+      List<Transition> transitions2 = state2.getTransitions();
 
       // Add new state
       automaton.addStateAt(
@@ -800,8 +800,8 @@ public class Automaton {
       // Get states and transitions
       State state1 = first.getState(id1);
       State state2 = second.getState(id2);
-      ArrayList<Transition> transitions1 = state1.getTransitions();
-      ArrayList<Transition> transitions2 = state2.getTransitions();
+      List<Transition> transitions1 = state1.getTransitions();
+      List<Transition> transitions2 = state2.getTransitions();
 
       // Add new state
       automaton.addStateAt(
