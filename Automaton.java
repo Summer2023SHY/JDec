@@ -118,6 +118,7 @@ public class Automaton {
   private File bodyFile;
   private RandomAccessFile headerRAFile; // Contains basic information about automaton, needed in order to read the bodyFile, as well as the events
   private RandomAccessFile bodyRAFile; // List each state in the automaton, with the transitions
+  private boolean headerFileNeedsToBeWritten;
 
   // GUI input
   private StringBuilder eventInputBuilder;
@@ -236,7 +237,7 @@ public class Automaton {
 
       /* Update header file */
 
-    writeHeaderFile();
+    headerFileNeedsToBeWritten = true;
 
   }
 
@@ -308,6 +309,10 @@ public class Automaton {
       /* Re-number states (by removing empty ones) */
 
     automaton.renumberStates();
+
+      /* Ensure that the header file has been written to disk */
+      
+    automaton.writeHeaderFile();
 
       /* Return accessible automaton */
 
@@ -389,6 +394,10 @@ public class Automaton {
 
     automaton.renumberStates();
 
+      /* Ensure that the header file has been written to disk */
+      
+    automaton.writeHeaderFile();
+
       /* Return co-accessible automaton */
 
     return automaton;
@@ -462,6 +471,10 @@ public class Automaton {
       /* Add special transitions */
 
     copyOverSpecialTransitions(automaton);
+
+      /* Ensure that the header file has been written to disk */
+      
+    automaton.writeHeaderFile();
 
       /* Return complement automaton */
 
@@ -621,6 +634,10 @@ public class Automaton {
 
   //    automaton.renumberStates();
 
+     // Ensure that the header file has been written to disk 
+      
+    // automaton.writeHeaderFile();
+
   //      /* Return observer automaton */
 
   //    return automaton;
@@ -730,6 +747,10 @@ public class Automaton {
       /* Re-number states (by removing empty ones) */
 
     automaton.renumberStates();
+
+      /* Ensure that the header file has been written to disk */
+      
+    automaton.writeHeaderFile();
 
       /* Return produced automaton */
 
@@ -860,6 +881,10 @@ public class Automaton {
       /* Re-number states (by removing empty ones) */
 
     automaton.renumberStates();
+
+      /* Ensure that the header file has been written to disk */
+      
+    automaton.writeHeaderFile();
 
       /* Return generated automaton */
 
@@ -1082,6 +1107,10 @@ public class Automaton {
 
     automaton.renumberStates();
 
+      /* Ensure that the header file has been written to disk */
+
+    automaton.writeHeaderFile();
+
       /* Return produced automaton */
 
     return automaton;
@@ -1135,6 +1164,9 @@ public class Automaton {
 
     // TEMPORARY
     automaton.printFeasibleProtocols();
+
+    // Ensure that the header file has been written to disk
+    automaton.writeHeaderFile();
 
     return automaton;
     
@@ -1608,7 +1640,7 @@ public class Automaton {
 
       /* Update header file (since we re-numbered the information in the special transitions) */
 
-    writeHeaderFile();
+    headerFileNeedsToBeWritten = true;
 
   }
 
@@ -2081,12 +2113,15 @@ public class Automaton {
   }
 
   /**
-   * This is needed on Windows operating system because there are problems trying to delete files if they are in use.
+   * Files need to be closed on tge Windows operating system because there are problems trying to delete files if they are in use.
    * NOTE: Do not attempt to use the automaton again unless the files are re-opened using openFiles().
    **/
   public void closeFiles() {
 
       try {
+
+        if (headerFileNeedsToBeWritten)
+          writeHeaderFile();
 
         headerRAFile.close();
         bodyRAFile.close();
@@ -2132,10 +2167,14 @@ public class Automaton {
 
     }
 
-    /**
-     * Write all of the header information to file.
+  /**
+   * Write all of the header information to file.
    **/
-  private void writeHeaderFile() {
+  public void writeHeaderFile() {
+
+    // Do not write the header file unless we need to
+    if (!headerFileNeedsToBeWritten)
+      return;
 
       /* Write the header of the .hdr file */
     
@@ -2192,6 +2231,10 @@ public class Automaton {
       writeTransitionDataToHeader(unconditionalViolations);
       writeTransitionDataToHeader(conditionalViolations);
       writeCommunicationDataToHeader(potentialCommunications);
+
+        /* Indicate that the header file no longer need to be written */
+
+      headerFileNeedsToBeWritten = false;
 
     } catch (IOException e) {
       e.printStackTrace();
@@ -2602,7 +2645,7 @@ public class Automaton {
     /** MUTATOR METHODS **/
 
   /**
-   * Adds a transition based th label of the event (instead the ID).
+   * Adds a transition based the label of the event (instead the ID).
    * @param startingStateID The ID of the state where the transition originates from
    * @param eventLabel      The label of the event that triggers the transition
    * @param targetStateID   The ID of the state where the transition leads to
@@ -2662,7 +2705,7 @@ public class Automaton {
         );
 
       // Update header file
-      writeHeaderFile();
+      headerFileNeedsToBeWritten = true;
 
     }
 
@@ -2785,7 +2828,7 @@ public class Automaton {
 
       /* Update header file */
     
-    writeHeaderFile();
+    headerFileNeedsToBeWritten = true;
 
     return id;
   }
@@ -2894,13 +2937,13 @@ public class Automaton {
 
       /* Update header file */
     
-    writeHeaderFile();
+    headerFileNeedsToBeWritten = true;
 
     return true;
   }
 
   /**
-   * Add the specified event to the set.
+   * Add the specified event to the set, and specify whether or not the header file should be updated right away.
    * @param label         The "name" of the new event
    * @param observable    Whether or not the event is observable
    * @param controllable  Whether or not the event is controllable
@@ -2915,7 +2958,7 @@ public class Automaton {
       return 0;
     }
 
-    /* Check to see if we need to re-write the entire binary file */
+      /* Check to see if we need to re-write the entire binary file */
     
     if (events.size() == eventCapacity) {
 
@@ -2931,18 +2974,20 @@ public class Automaton {
 
     }
 
+    // Instantiate the event
+    int id = events.size() + 1;
+    Event event = new Event(label, id, observable, controllable);
+
     // Ensure that no other event already exists with this label (if so, return the negative version of the ID)
     for (Event e : events)
       if (e.getLabel().equals(label))
-        return -e.getID(); 
+        return -e.getID();
 
-    // Create and add the event
-    int id = events.size() + 1;
-    Event event = new Event(label, id, observable, controllable);
+    // Add the event
     events.add(event);
 
-    // Update header file
-    writeHeaderFile();
+    // Update the header file
+    headerFileNeedsToBeWritten = true;
 
     return id;
 
@@ -2970,7 +3015,7 @@ public class Automaton {
     badTransitions.add(new TransitionData(initialStateID, eventID, targetStateID));
 
     // Update header file
-    writeHeaderFile();
+    headerFileNeedsToBeWritten = true;
 
   }
 
@@ -2985,7 +3030,7 @@ public class Automaton {
     unconditionalViolations.add(new TransitionData(initialStateID, eventID, targetStateID));
 
     // Update header file
-    writeHeaderFile();
+    headerFileNeedsToBeWritten = true;
 
   }
 
@@ -3000,7 +3045,7 @@ public class Automaton {
     conditionalViolations.add(new TransitionData(initialStateID, eventID, targetStateID));
 
     // Update header file
-    writeHeaderFile();
+    headerFileNeedsToBeWritten = true;
 
   }
 
@@ -3015,7 +3060,7 @@ public class Automaton {
     potentialCommunications.add(new CommunicationData(initialStateID, eventID, targetStateID, communicationRoles));
 
     // Update header file
-    writeHeaderFile();
+    headerFileNeedsToBeWritten = true;
 
   }
 

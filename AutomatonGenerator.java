@@ -107,6 +107,10 @@ public abstract class AutomatonGenerator {
 
     }
 
+      /* Ensure that the header file has been written to disk */
+      
+    automaton.writeHeaderFile();
+
     return automaton;
 
   }
@@ -345,6 +349,10 @@ public abstract class AutomatonGenerator {
       } else if (line.length() > 0 && verbose)
         System.err.println("ERROR: Could not parse '" + line + "' as a transition.");
     }
+
+      /* Ensure that the header file has been written to disk */
+      
+    automaton.writeHeaderFile();
 
     return automaton;
   
