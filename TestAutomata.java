@@ -131,35 +131,35 @@ public class TestAutomata {
   	Automaton a = new Automaton();
 
   	printTestOutput("Adding an event that is controllable and observable...", 3);
-  	int id = a.addEvent("firstEvent", new boolean[] { true }, new boolean[] { true });
+  	int id = a.addEventIfNonExisting("firstEvent", new boolean[] { true }, new boolean[] { true });
   	printTestCase("Ensuring that 'events' set was expanded", new TestResult(a.getEvents().size(), 1), counter);
   	printTestCase("Ensuring that 'activeEvents' set was not expanded", new TestResult(a.getActiveEvents().size(), 0), counter);
     printTestCase("Ensuring that the added event is observable", new TestResult(a.getEvent(id).isObservable()[0], true), counter);
   	printTestCase("Ensuring that the added event is controllable", new TestResult(a.getEvent(id).isControllable()[0], true), counter);
 
   	printTestOutput("Adding an event that is observable, but not controllable...", 3);
-  	id = a.addEvent("secondEvent", new boolean[] { true }, new boolean[] { false });
+  	id = a.addEventIfNonExisting("secondEvent", new boolean[] { true }, new boolean[] { false });
   	printTestCase("Ensuring that 'events' set was expanded", new TestResult(a.getEvents().size(), 2), counter);
   	printTestCase("Ensuring that 'activeEvents' set was not expanded", new TestResult(a.getActiveEvents().size(), 0), counter);
   	printTestCase("Ensuring that the added event is observable", new TestResult(a.getEvent(id).isObservable()[0], true), counter);
     printTestCase("Ensuring that the added event is not controllable", new TestResult(a.getEvent(id).isControllable()[0], false), counter);
 
   	printTestOutput("Adding an event that is controllable, but not observable...", 3);
-  	id = a.addEvent("thirdEvent", new boolean[] { false }, new boolean[] { true });
+  	id = a.addEventIfNonExisting("thirdEvent", new boolean[] { false }, new boolean[] { true });
   	printTestCase("Ensuring that 'events' set was expanded", new TestResult(a.getEvents().size(), 3), counter);
   	printTestCase("Ensuring that 'activeEvents' set was not expanded", new TestResult(a.getActiveEvents().size(), 0), counter);
   	printTestCase("Ensuring that the added event is not observable", new TestResult(a.getEvent(id).isObservable()[0], false), counter);
     printTestCase("Ensuring that the added event is controllable", new TestResult(a.getEvent(id).isControllable()[0], true), counter);
 
   	printTestOutput("Adding an event that neither controllable, nor observable...", 3);
-  	id = a.addEvent("fourthEvent", new boolean[] { false }, new boolean[] { false });
+  	id = a.addEventIfNonExisting("fourthEvent", new boolean[] { false }, new boolean[] { false });
   	printTestCase("Ensuring that 'events' set was expanded", new TestResult(a.getEvents().size(), 4), counter);
   	printTestCase("Ensuring that 'activeEvents' set was not expanded", new TestResult(a.getActiveEvents().size(), 0), counter);
   	printTestCase("Ensuring that the added event is not observable", new TestResult(a.getEvent(id).isObservable()[0], false), counter);
     printTestCase("Ensuring that the added event is not controllable", new TestResult(a.getEvent(id).isControllable()[0], false), counter);
 
   	printTestOutput("Adding a pre-existing event...", 3);
-  	id = a.addEvent("fourthEvent", new boolean[] { false }, new boolean[] { false });
+  	id = a.addEventIfNonExisting("fourthEvent", new boolean[] { false }, new boolean[] { false });
   	printTestCase("Ensuring that 'events' set was not expanded", new TestResult(a.getEvents().size(), 4), counter);
   	printTestCase("Ensuring that 'activeEvents' set was not expanded", new TestResult(a.getActiveEvents().size(), 0), counter);
   	printTestCase("Ensuring that the method returned proper negative value", new TestResult(id, -4), counter);
@@ -174,15 +174,15 @@ public class TestAutomata {
   	a = new Automaton();
 
   	printTestOutput("Adding an event...", 3);
-  	id = a.addEvent("firstEvent", new boolean[] { true }, new boolean[] { true });
+  	id = a.addEventIfNonExisting("firstEvent", new boolean[] { true }, new boolean[] { true });
   	printTestCase("Ensuring that the event's ID is 1", new TestResult(id, 1), counter);
 
   	printTestOutput("Adding a second event...", 3);
-  	id = a.addEvent("secondEvent", new boolean[] { true }, new boolean[] { true });
+  	id = a.addEventIfNonExisting("secondEvent", new boolean[] { true }, new boolean[] { true });
   	printTestCase("Ensuring that the event's ID is 2", new TestResult(id, 2), counter);
 
   	printTestOutput("Adding a pre-existing event...", 3);
-  	id = a.addEvent("firstEvent", new boolean[] { true }, new boolean[] { true });
+  	id = a.addEventIfNonExisting("firstEvent", new boolean[] { true }, new boolean[] { true });
   	printTestCase("Ensuring that the method returned proper negative value", new TestResult(id, -1), counter);
 
     a.closeFiles();

@@ -99,7 +99,7 @@ public class Event implements Comparable<Event> {
 	 **/
 	@Override public int compareTo(Event other) {
 
-		return (new Integer(id)).compareTo(other.getID());
+		return (new Integer(id)).compareTo(other.id);
 
 	}
 

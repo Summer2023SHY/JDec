@@ -86,7 +86,7 @@ public class Automaton {
     /** PRIVATE INSTANCE VARIABLES **/
 
   // Events
-  private Set<Event> events = new TreeSet<Event>();
+  private Set<Event> events = new TreeSet<Event>(); // Due to Event's compareTo and equals implementations, a TreeSet cannot not guarantee that it is actually a set (considering changing this to an ArrayList)
   private Set<Event> activeEvents = new HashSet<Event>();
 
   // Basic properties of the automaton
@@ -796,7 +796,7 @@ public class Automaton {
 
     // Create event set (union of both event sets)
     automaton.addAllEvents(first.getEvents());
-    automaton.addAllEvents(second.getEvents());
+    automaton.addEventsIfNonExisting(second.getEvents());
 
     // Add states and transition
     while (stack1.size() > 0) {
@@ -1014,7 +1014,7 @@ public class Automaton {
         if (!automaton.stateExists(combinedTargetID)) {
 
           // Add event
-          automaton.addEvent(combinedEventLabel, new boolean[] {true}, new boolean[] {true} );
+          automaton.addEventIfNonExisting(combinedEventLabel, new boolean[] {true}, new boolean[] {true} );
 
           // Add state
           if (!automaton.addStateAt(combinedStateLabel, false, new ArrayList<Transition>(), false, combinedTargetID)) {
@@ -1074,7 +1074,7 @@ public class Automaton {
             if (!automaton.stateExists(combinedTargetID)) {
 
               // Add event
-              automaton.addEvent(combinedEventLabel, new boolean[] {true}, new boolean[] {true} );
+              automaton.addEventIfNonExisting(combinedEventLabel, new boolean[] {true}, new boolean[] {true} );
 
               // Add state
               if (!automaton.addStateAt(combinedStateLabel, false, new ArrayList<Transition>(), false, combinedTargetID)) {
@@ -1147,11 +1147,18 @@ public class Automaton {
         
         if (destinationState != null) {
 
-          // Add event (won't be added if the event already exists, and it will return a a negative version of the ID of the original event)
-          int id = Math.abs(automaton.addEvent(v.toString(), new boolean[] {true}, new boolean[] {true}));
-         
+          // Add event if it doesn't already exist
+          int id;
+          Event event = automaton.getEvent(v.toString());
+          if (event == null)
+            id = automaton.addEvent(v.toString(), new boolean[] {true}, new boolean[] {true});
+          else
+            id = event.getID();
+
+          // Add the transition
           automaton.addTransition(startingState.getID(), id, destinationState.getID());
 
+          // Mark as potential communication
           int index = potentialCommunications.indexOf(v);
           if (index != -1)
             automaton.addPotentialCommunication(startingState.getID(), id, destinationState.getID(), potentialCommunications.get(index).roles);
@@ -2943,11 +2950,12 @@ public class Automaton {
   }
 
   /**
-   * Add the specified event to the set, and specify whether or not the header file should be updated right away.
+   * Add the specified event to the set.
+   * NOTE: It is assumed that the new event is not already a member of the set (it is not checked for here for efficiency purposes).
    * @param label         The "name" of the new event
    * @param observable    Whether or not the event is observable
    * @param controllable  Whether or not the event is controllable
-   * @return the ID of the added event (negative value indicates the event already existed, the negative version of the original event is returned), or 0 indicates failure
+   * @return the ID of the added event (0 indicates failure)
    **/
   public int addEvent(String label, boolean[] observable, boolean[] controllable) {
 
@@ -2974,24 +2982,48 @@ public class Automaton {
 
     }
 
-    // Instantiate the event
+      /* Instantiate the event */
+
     int id = events.size() + 1;
     Event event = new Event(label, id, observable, controllable);
 
-    // Ensure that no other event already exists with this label (if so, return the negative version of the ID)
-    for (Event e : events)
-      if (e.getLabel().equals(label))
-        return -e.getID();
+      /* Ensure that no other event already exists with this label (if so, return the negative version of the ID) */
 
-    // Add the event
+    // NOTE: This linear search is horribly inefficient. We could use a HashSet to hold the events, but many operations depend on it being ordered by ID (using TreeSet).
+    // for (Event e : events)
+    //   if (e.getLabel().equals(label))
+    //     return -e.getID();
+
+      /* Add the event */
+
     events.add(event);
 
-    // Update the header file
+      /* Update the header file */
+
     headerFileNeedsToBeWritten = true;
 
     return id;
 
   }
+
+  /**
+   * Add the specified event to the set if it does not already exist.
+   * @param label         The "name" of the new event
+   * @param observable    Whether or not the event is observable
+   * @param controllable  Whether or not the event is controllable
+   * @return the ID of the added event, negative ID indicates that the event already existed, and 0 indicates failure (due to reaching the maximum number of events)
+   **/
+  public int addEventIfNonExisting(String label, boolean[] observable, boolean[] controllable) {
+    
+    Event event = getEvent(label);
+
+    if (event == null)
+      return addEvent(label, observable, controllable);
+    else
+      return -event.getID();
+
+  }
+
 
   /**
    * Add the entire set of events to the automaton.
@@ -3001,6 +3033,17 @@ public class Automaton {
 
     for (Event e : newEvents)
       addEvent(e.getLabel(), e.isObservable(), e.isControllable());
+
+  }
+
+  /**
+   * Add the entire set of events to the automaton (ensuring that no duplicates are added).
+   * @param label The set of events to add
+   **/
+  private void addEventsIfNonExisting(Set<Event> newEvents) {
+
+    for (Event e : newEvents)
+      addEventIfNonExisting(e.getLabel(), e.isObservable(), e.isControllable());
 
   }
 
