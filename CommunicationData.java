@@ -8,6 +8,7 @@
  *  -Public Instance Variable
  *  -Constructor
  *  -Accessor Method
+ *  -Overridden Method
  **/
 
 import java.util.*;
@@ -61,6 +62,23 @@ public class CommunicationData extends TransitionData {
         return i;
 
     return -1;
+
+  }
+
+    /** OVERRIDDEN METHOD **/
+
+  /**
+   * Given the source automaton, provide even more information when represented as a string.
+   * @param automaton The automaton where this communication data came from
+   * @return string representation
+   **/
+  @Override public String toString(Automaton automaton) {
+
+    String str = " (";
+    for (CommunicationRole role : roles)
+      str += role.getCharacter();
+
+    return super.toString(automaton) + str + ")";
 
   }
 

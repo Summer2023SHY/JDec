@@ -14,27 +14,30 @@ public enum CommunicationRole {
     /** ENUMERATION VALUES **/
 
   /** This role is associated with a controller who is neither the sender nor the reciever. */
-  NONE((byte) 0),
+  NONE((byte) 0, '*'),
 
   /** This role is associated with a controller who is the sender. */
-  SENDER((byte) 1),
+  SENDER((byte) 1, 'S'),
 
   /** This role is associated with a controller who is a reciever. */
-  RECIEVER((byte) 2);
+  RECIEVER((byte) 2, 'R');
 
     /** PRIVATE INSTANCE VARIABLE **/
 
-  private final byte value;
+  private final byte numericValue;
+  private final char character;
 
     /** CONSTRUCTOR **/
 
   /**
    * Each role is associated with a numeric value (stored as a byte). This is used when reading from
    * and writing to the binary file.
-   * @param value The value of the CommunicationRole
+   * @param numericValue  The value of the CommunicationRole
+   * @param character     The character associated with the CommunicationRole
    **/
-  CommunicationRole(byte value) {
-    this.value = value;
+  CommunicationRole(byte numericValue, char character) {
+    this.numericValue = numericValue;
+    this.character = character;
   }
 
     /** ACCESSOR METHODS **/
@@ -43,19 +46,43 @@ public enum CommunicationRole {
    * Get the numeric value associated with this enumeration value.
    * @return numeric value
    **/
-  public byte getValue() {
-    return value;
+  public byte getNumericValue() {
+    return numericValue;
+  }
+
+  /**
+   * Get the character associated with this enumeration value.
+   * @return character
+   **/
+  public char getCharacter() {
+    return character;
   }
 
   /**
    * Given a numeric value, get the associated communication role.
-   * @param value The numeric value
+   * @param val The numeric value
    * @return communication role (or null, if it could not be found)
    **/
-  public static CommunicationRole getRole(byte value) {
+  public static CommunicationRole getRole(byte val) {
 
     for (CommunicationRole role : CommunicationRole.values()) {
-      if (role.getValue() == value)
+      if (role.getNumericValue() == val)
+        return role;
+    }
+
+    return null;
+
+  }
+
+  /**
+   * Given a character, get the associated communication role.
+   * @param ch The character
+   * @return communication role (or null, if it could not be found)
+   **/
+  public static CommunicationRole getRole(char ch) {
+
+    for (CommunicationRole role : CommunicationRole.values()) {
+      if (role.getCharacter() == ch)
         return role;
     }
 

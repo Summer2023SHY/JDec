@@ -83,9 +83,8 @@ public class MakeProtocolFeasiblePrompt extends JFrame {
 
     pack();
     
-      /* Ensure our popup box will be closed when the user presses the "X" */
+      /* Don't allow the screen to resize */
 
-    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     setResizable(false);
 
       /* Sets screen location in the center of the screen (only works after calling pack) */

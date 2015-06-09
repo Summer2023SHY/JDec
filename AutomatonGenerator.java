@@ -409,13 +409,7 @@ public abstract class AutomatonGenerator {
     // Parse the roles one by one
     for (int i = 0; i < str.length(); i++) {
       char ch = str.charAt(i);
-      if (ch == 'S' || ch == 's')
-        roles[i] = CommunicationRole.SENDER;
-      else if (ch == 'R' || ch == 'r')
-        roles[i] = CommunicationRole.RECIEVER;
-      else if (ch == '*')
-        roles[i] = CommunicationRole.NONE;
-      else
+      if ((roles[i] = CommunicationRole.getRole(ch)) == null)
         System.err.println("ERROR: Unable to parse '" + ch + "'as a communication role.");
     }
 

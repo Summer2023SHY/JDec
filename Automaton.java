@@ -1417,12 +1417,13 @@ public class Automaton {
 
   /**
    * Check feasibility for all possible communication protocols, printing out the results.
+   * @param communications  The communications to be considered (which should be a subset of the potentialCommunications list)
    **/
-  public void printFeasibleProtocols() {
+  public void printFeasibleProtocols(List<CommunicationData> communications) {
 
-    // Generate powerset of potential communications (which gives us the complete list of communication protocols)
+    // Generate powerset of communication protocols
     List<Set<CommunicationData>> protocols = new ArrayList<Set<CommunicationData>>();
-    powerSet(protocols, potentialCommunications, new HashSet<CommunicationData>(), 0);
+    powerSet(protocols, communications, new HashSet<CommunicationData>(), 0);
 
     // Create inverted automaton, so that we can explore the automaton by crossing transitions from either direction
     Automaton invertedAutomaton = invert(this);
@@ -1436,13 +1437,8 @@ public class Automaton {
       if (isFeasibleProtocol(protocol, invertedAutomaton)) {
         
         System.out.println("FEASIBLE PROTOCOL:");
-        
         for (CommunicationData data : protocol)
-          System.out.println(
-            getState(data.initialStateID).getLabel()
-            + "," + getEvent(data.eventID).getLabel()
-            + "," + getState(data.targetStateID).getLabel()
-          );
+          System.out.println(data.toString(this));
 
       }
 
@@ -1452,10 +1448,9 @@ public class Automaton {
 
   /**
    * Make the specified protocol feasible (returning it as a new set).
-   * @param protol              The protocol that is being made feasible
+   * @param protocol            The protocol that is being made feasible
    * @param invertedAutomaton   An automaton identical to the previous (except all transitions are going the opposite direction)
    *                            NOTE: There is no need for extra information (such as special transitions) to be in the inverted automaton
-   * @param reachableStates     The set of reachable states that are being built during this recursive process
    * @return the feasible protocol
    **/
   public Set<CommunicationData> makeProtocolFeasible(Set<CommunicationData> protocol, Automaton invertedAutomaton) {
@@ -1501,13 +1496,8 @@ public class Automaton {
     }
 
     System.out.println("FEASIBLE PROTOCOL:");
-        
-    for (CommunicationData data : feasibleProtocol)
-      System.out.println(
-        getState(data.initialStateID).getLabel()
-        + "," + getEvent(data.eventID).getLabel()
-        + "," + getState(data.targetStateID).getLabel()
-      );
+    for (CommunicationData data : protocol)
+      System.out.println(data.toString(this));
 
     return feasibleProtocol;
 
@@ -1516,10 +1506,9 @@ public class Automaton {
 
   /**
    * Check to see if the specified protocol is feasible.
-   * @param protol              The protocol that is being checked for feasibility
+   * @param protocol            The protocol that is being checked for feasibility
    * @param invertedAutomaton   An automaton identical to the previous (except all transitions are going the opposite direction)
    *                            NOTE: There is no need for extra information (such as special transitions) to be in the inverted automaton
-   * @param reachableStates     The set of reachable states that are being built during this recursive process
    * @return whether or not the protocol is feasible
    **/
   private boolean isFeasibleProtocol(Set<CommunicationData> protocol, Automaton invertedAutomaton) {
@@ -2093,14 +2082,8 @@ public class Automaton {
           int index = potentialCommunications.indexOf(transitionData);
           if (index != -1) {
             specialTransition += ",POTENTIAL_COMMUNICATION-";
-            for (CommunicationRole r : potentialCommunications.get(index).roles) {
-              if (r == CommunicationRole.SENDER)
-                specialTransition += "S";
-              else if (r == CommunicationRole.RECIEVER)
-                specialTransition += "R";
-              else
-                specialTransition += "*";
-            }
+            for (CommunicationRole role : potentialCommunications.get(index).roles)
+              specialTransition += role.getCharacter();
           }
           if (!specialTransition.equals(""))
             transitionInputBuilder.append(":" + specialTransition.substring(1));
@@ -2379,7 +2362,7 @@ public class Automaton {
       index += 8;
 
       for (CommunicationRole role : data.roles)
-        buffer[index++] = role.getValue();
+        buffer[index++] = role.getNumericValue();
       
       headerRAFile.write(buffer);
 
@@ -2469,7 +2452,7 @@ public class Automaton {
         readTransitionDataFromHeader(nConditionalViolations, conditionalViolations);
       
       if (nPotentialCommunications > 0) {
-        int nControllersBeforeUStructure = events.iterator().next().vector.getSize() - 1; // Grab a random event and get the vecor size
+        int nControllersBeforeUStructure = calculateNumberOfControllersBeforeUStructure();
         readCommunicationDataFromHeader(nPotentialCommunications, potentialCommunications, nControllersBeforeUStructure);
       }
 
@@ -2727,6 +2710,20 @@ public class Automaton {
 
     if (eventCapacity > MAX_EVENT_CAPACITY)
       eventCapacity = MAX_EVENT_CAPACITY;
+
+  }
+
+  /**
+   * Calculate and return the number of controllers before synchronized composition (which is related to the vector size of an event).
+   * @return number of controllers prior to the creation of the U-Structure (or -1 if the events are not vectors)
+   **/
+  public int calculateNumberOfControllersBeforeUStructure() {
+
+    // Grab a random event and get the vector size
+    if (events.size() > 0)
+      return events.iterator().next().vector.getSize() - 1; 
+    
+    return -1;
 
   }
 
