@@ -332,7 +332,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     menuBar.add(createMenu("File", "New Tab", "Open", "Save As...", "Refresh Tab", null, "Clear", "Close Tab", null, "Export as SVG", null, "Quit"));
     menuBar.add(createMenu("Standard Operations", "Accessible", "Co-Accessible", "Trim", "Complement", null, "Intersection", "Union"));
-    menuBar.add(createMenu("U-Stucture Operations", "Synchronized Composition", "Add Communications"));
+    menuBar.add(createMenu("U-Stucture Operations", "Synchronized Composition", "Add Communications", "Feasible Protocols->Generate All,Make Protocol Feasible"));
     menuBar.add(createMenu("Generate", "Automaton From GUI Code", "Random Automaton"));
 
     this.setJMenuBar(menuBar);
@@ -355,8 +355,23 @@ public class AutomataGUI extends JFrame implements ActionListener {
       if (str == null)
         menu.addSeparator();
 
+      // Add submenu with its menu items
+      else if (str.contains("->")) {
+
+        String[] parts = str.split("->");
+        JMenu subMenu = new JMenu(parts[0]);
+
+        for (String str2 : parts[1].split(",")) {
+          JMenuItem menuItem = new JMenuItem(str2);
+          menuItem.addActionListener(this);
+          subMenu.add(menuItem);
+        }
+
+        subMenu.addActionListener(this);
+        menu.add(subMenu);
+
       // Add menu item
-      else {
+      } else {
         JMenuItem menuItem = new JMenuItem(str);
         menuItem.addActionListener(this);
         menu.add(menuItem);
@@ -522,6 +537,16 @@ public class AutomataGUI extends JFrame implements ActionListener {
         else
           createTab(new File("addCommunications.hdr"), automaton);
 
+        break;
+
+      case "Generate All":
+
+        tab.automaton.printFeasibleProtocols();
+        break;
+
+      case "Make Protocol Feasible":
+
+        new MakeProtocolFeasiblePrompt(tab.automaton);
         break;
 
       case "Automaton From GUI Code":

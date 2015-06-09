@@ -487,7 +487,7 @@ public class Automaton {
    * @param automaton The automaton to invert
    * @return the inverted automaton
    **/
-  private static Automaton invert(Automaton automaton) {
+  public static Automaton invert(Automaton automaton) {
 
       /* Create a new automaton that has each of the transitions going the opposite direction */
 
@@ -1169,9 +1169,6 @@ public class Automaton {
 
     }
 
-    // TEMPORARY
-    automaton.printFeasibleProtocols();
-
     // Ensure that the header file has been written to disk
     automaton.writeHeaderFile();
 
@@ -1436,47 +1433,17 @@ public class Automaton {
       if (protocol.size() == 0)
         continue;
 
-      boolean feasible = true;
-
-      outer: for (CommunicationData data : protocol) {
-
-        // Find reachable states
-        Set<Long> reachableStates = new HashSet<Long>();
-        findReachableStates(this, invertedAutomaton, reachableStates, data.initialStateID, data.getIndexOfSender() + 1);
-
-        // Check for an indistinguishable state outside the protocol
-        for (Long id : reachableStates)
-
-          // Check if this state is indistinguishable
-          for (Transition t : getState(id).getTransitions()) {
-            
-            if (t.getEvent().getID() == data.eventID) {
-
-              // Check if this communication is outside of the protocol
-              boolean found = false;
-              for (CommunicationData data2 : protocol)
-                if (data2.initialStateID == id && data2.eventID == t.getEvent().getID() && data2.targetStateID == t.getTargetStateID()) {
-                  found = true;
-                  break;
-                }
-
-              // If this is not in the protocol, then it is not feasible
-              if (!found) {
-                feasible = false;
-                break outer;
-              }
-
-            }
-          }
-      }
-      if (feasible) {
+      if (isFeasibleProtocol(protocol, invertedAutomaton)) {
+        
         System.out.println("FEASIBLE PROTOCOL:");
+        
         for (CommunicationData data : protocol)
           System.out.println(
             getState(data.initialStateID).getLabel()
             + "," + getEvent(data.eventID).getLabel()
             + "," + getState(data.targetStateID).getLabel()
           );
+
       }
 
     }
@@ -1484,8 +1451,122 @@ public class Automaton {
   }
 
   /**
-   * NOT YET COMMENTED!!
-   * NOTE: This method assumes there is only ever one sender
+   * Make the specified protocol feasible (returning it as a new set).
+   * @param protol              The protocol that is being made feasible
+   * @param invertedAutomaton   An automaton identical to the previous (except all transitions are going the opposite direction)
+   *                            NOTE: There is no need for extra information (such as special transitions) to be in the inverted automaton
+   * @param reachableStates     The set of reachable states that are being built during this recursive process
+   * @return the feasible protocol
+   **/
+  public Set<CommunicationData> makeProtocolFeasible(Set<CommunicationData> protocol, Automaton invertedAutomaton) {
+
+    Set<CommunicationData> feasibleProtocol = new HashSet<CommunicationData>();
+
+    // Start at each communication in the protocol
+    outer: for (CommunicationData data : protocol) {
+
+      feasibleProtocol.add(data);
+
+      // Find reachable states
+      Set<Long> reachableStates = new HashSet<Long>();
+      findReachableStates(this, invertedAutomaton, reachableStates, data.initialStateID, data.getIndexOfSender() + 1);
+
+      // Check for an indistinguishable state outside the protocol
+      for (Long id : reachableStates)
+
+        // Check if this state is indistinguishable
+        for (Transition t : getState(id).getTransitions()) {
+
+          if (t.getEvent().getID() == data.eventID) {
+
+            // Check if this communication is outside of the protocol
+            boolean found = false;
+            for (CommunicationData data2 : protocol)
+              if (data2.initialStateID == id && data2.eventID == t.getEvent().getID() && data2.targetStateID == t.getTargetStateID()) {
+                found = true;
+                break;
+              }
+
+            // If this is not in the protocol, then add it to the protocol to maintain feasibility
+            if (!found) {
+              for (CommunicationData data2 : potentialCommunications)
+                if (data2.initialStateID == id && data2.eventID == t.getEvent().getID() && data2.targetStateID == t.getTargetStateID()) {
+                  feasibleProtocol.add(data2);
+                  break;
+                }
+            }
+
+          }
+        }
+    }
+
+    System.out.println("FEASIBLE PROTOCOL:");
+        
+    for (CommunicationData data : feasibleProtocol)
+      System.out.println(
+        getState(data.initialStateID).getLabel()
+        + "," + getEvent(data.eventID).getLabel()
+        + "," + getState(data.targetStateID).getLabel()
+      );
+
+    return feasibleProtocol;
+
+  }
+
+
+  /**
+   * Check to see if the specified protocol is feasible.
+   * @param protol              The protocol that is being checked for feasibility
+   * @param invertedAutomaton   An automaton identical to the previous (except all transitions are going the opposite direction)
+   *                            NOTE: There is no need for extra information (such as special transitions) to be in the inverted automaton
+   * @param reachableStates     The set of reachable states that are being built during this recursive process
+   * @return whether or not the protocol is feasible
+   **/
+  private boolean isFeasibleProtocol(Set<CommunicationData> protocol, Automaton invertedAutomaton) {
+
+    // Start at each communication in the protocol
+    outer: for (CommunicationData data : protocol) {
+
+      // Find reachable states
+      Set<Long> reachableStates = new HashSet<Long>();
+      findReachableStates(this, invertedAutomaton, reachableStates, data.initialStateID, data.getIndexOfSender() + 1);
+
+      // Check for an indistinguishable state outside the protocol
+      for (Long id : reachableStates)
+
+        // Check if this state is indistinguishable
+        for (Transition t : getState(id).getTransitions()) {
+          
+          if (t.getEvent().getID() == data.eventID) {
+
+            // Check if this communication is outside of the protocol
+            boolean found = false;
+            for (CommunicationData data2 : protocol)
+              if (data2.initialStateID == id && data2.eventID == t.getEvent().getID() && data2.targetStateID == t.getTargetStateID()) {
+                found = true;
+                break;
+              }
+
+            // If this is not in the protocol, then it is not feasible
+            if (!found)
+              return false;
+
+          }
+        }
+    }
+    
+    return true;
+
+  }
+
+  /**
+   * Using recursion, determine which states are reachable through transitions which are unobservable to the sender.
+   * @param automaton           The relevant automaton
+   * @param invertedAutomaton   An automaton identical to the previous (except all transitions are going the opposite direction)
+   *                            NOTE: There is no need for extra information (such as special transitions) to be in the inverted automaton
+   * @param reachableStates     The set of reachable states that are being built during this recursive process
+   * @param currentStateID      The current state
+   * @param vectorIndexOfSender The index in the event vector which corresponds to the sending controller
    **/
   private static void findReachableStates(Automaton automaton, Automaton invertedAutomaton, Set<Long> reachableStates, long currentStateID, int vectorIndexOfSender) {
 
@@ -1494,9 +1575,9 @@ public class Automaton {
     for (Transition t : automaton.getState(currentStateID).getTransitions()) {
 
       LabelVector vector = t.getEvent().vector;
-      boolean unobservableToSenders = (vector.getLabelAtIndex(0).equals("*") || vector.getLabelAtIndex(vectorIndexOfSender).equals("*"));
+      boolean unobservableToSender = (vector.getLabelAtIndex(0).equals("*") || vector.getLabelAtIndex(vectorIndexOfSender).equals("*"));
 
-      if (unobservableToSenders && !reachableStates.contains(t.getTargetStateID()))
+      if (unobservableToSender && !reachableStates.contains(t.getTargetStateID()))
         findReachableStates(automaton, invertedAutomaton, reachableStates, t.getTargetStateID(), vectorIndexOfSender);
 
     }
@@ -1504,9 +1585,9 @@ public class Automaton {
     for (Transition t : invertedAutomaton.getState(currentStateID).getTransitions()) {
 
       LabelVector vector = t.getEvent().vector;
-      boolean unobservableToSenders = (vector.getLabelAtIndex(0).equals("*") || vector.getLabelAtIndex(vectorIndexOfSender).equals("*"));
+      boolean unobservableToSender = (vector.getLabelAtIndex(0).equals("*") || vector.getLabelAtIndex(vectorIndexOfSender).equals("*"));
 
-      if (unobservableToSenders && !reachableStates.contains(t.getTargetStateID()))
+      if (unobservableToSender && !reachableStates.contains(t.getTargetStateID()))
         findReachableStates(automaton, invertedAutomaton, reachableStates, t.getTargetStateID(), vectorIndexOfSender);
 
     }
@@ -3297,11 +3378,19 @@ public class Automaton {
   }
 
   /**
-   * Get the the number of controllers in the automaton (>1 indicates decentralized control).
+   * Get the number of controllers in the automaton (>1 indicates decentralized control).
    * @return number of controllers
    **/
   public int getNumberOfControllers() {
     return nControllers;
+  }
+
+  /**
+   * Get the list of potential communications.
+   * @return potential communications
+   **/
+  public List<CommunicationData> getPotentialCommunications() {
+    return potentialCommunications;
   }
 
 }

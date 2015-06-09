@@ -66,4 +66,18 @@ public class TransitionData {
     return String.format("(%d,%d,%d)", initialStateID, eventID, targetStateID);
   }
 
+  /**
+   * Given the source automaton, provide even more information when represented as a string.
+   * @param automaton The automaton where this transition data came from
+   * @return string representation
+   **/
+  public String toString(Automaton automaton) {
+    return String.format(
+      "%s,%s,%s",
+      automaton.getStateExcludingTransitions(initialStateID).getLabel(),
+      automaton.getEvent(eventID).getLabel(),
+      automaton.getStateExcludingTransitions(targetStateID).getLabel()
+    );
+  }
+
 }

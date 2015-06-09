@@ -59,7 +59,6 @@ public class RandomAutomatonPrompt extends JFrame {
 
       /* Setup */
 
-    Container container = new Container();
     setLayout(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
     c.fill = GridBagConstraints.HORIZONTAL;
