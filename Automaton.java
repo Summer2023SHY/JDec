@@ -1155,13 +1155,17 @@ public class Automaton {
           else
             id = event.getID();
 
-          // Add the transition
-          automaton.addTransition(startingState.getID(), id, destinationState.getID());
+          // Add the transition (if it doesn't already exist)
+          if (!automaton.transitionExists(startingState.getID(), id, destinationState.getID())) {
 
-          // Mark as potential communication
-          int index = potentialCommunications.indexOf(v);
-          if (index != -1)
-            automaton.addPotentialCommunication(startingState.getID(), id, destinationState.getID(), potentialCommunications.get(index).roles);
+            // Add transition
+            automaton.addTransition(startingState.getID(), id, destinationState.getID());
+
+            // Mark as potential communication
+            int index = potentialCommunications.indexOf(v);
+            if (index != -1)
+              automaton.addPotentialCommunication(startingState.getID(), id, destinationState.getID(), potentialCommunications.get(index).roles);
+          }
          
         }
 
