@@ -1,11 +1,13 @@
 import java.util.*;
 import javax.swing.*;
 import java.awt.event.*;
+import java.awt.geom.*;
+import java.awt.*;
 
 public class MakeProtocolFeasiblePrompt extends JFrame {
 
   Automaton automaton;
-  List<CommunicationData> potentialCommunications;
+  java.util.List<CommunicationData> potentialCommunications;
   JCheckBox[] checkBoxes;
 
 
@@ -40,14 +42,23 @@ public class MakeProtocolFeasiblePrompt extends JFrame {
 
     add(new JLabel(" Select the communications to would like to include in your protocol: "));
 
-      /* Add Checkboxes */
+      /* Add Checkboxes (in a scroll pane in case there are a lot of them) */
 
+    Container container = new Container();
+    container.setLayout(new BoxLayout(container, BoxLayout.PAGE_AXIS));
     checkBoxes = new JCheckBox[potentialCommunications.size()];
 
     for (int i = 0; i < potentialCommunications.size(); i++) {
       checkBoxes[i] = new JCheckBox(potentialCommunications.get(i).toString(automaton));
-      add(checkBoxes[i]);
+      container.add(checkBoxes[i]);
     }
+
+    JScrollPane scrollPane = new JScrollPane(container) {
+      @Override public Dimension getPreferredSize() {
+        return new Dimension(200, 200);  
+      }
+    };
+    add(scrollPane);
 
       /* Add Button */
 
@@ -82,10 +93,6 @@ public class MakeProtocolFeasiblePrompt extends JFrame {
       /* Pack things in nicely */
 
     pack();
-    
-      /* Don't allow the screen to resize */
-
-    setResizable(false);
 
       /* Sets screen location in the center of the screen (only works after calling pack) */
 
