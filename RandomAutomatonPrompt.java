@@ -137,8 +137,11 @@ public class RandomAutomatonPrompt extends JFrame {
 
     final JProgressBar progressBar = new JProgressBar(0, 100);
     progressBar.setValue(0);
+    progressBar.setString("0%");
+    progressBar.setStringPainted(true);
+    progressBar.setVisible(false);
     c.gridx = 0;
-    c.gridy = 7;
+    c.gridy = 6;
     c.gridwidth = 2;
     add(progressBar, c);
 
@@ -157,10 +160,15 @@ public class RandomAutomatonPrompt extends JFrame {
 
       /* Generate button */
 
-    JButton generateButton = new JButton("Generate");
+    final JButton generateButton = new JButton("Generate");
     generateButton.addActionListener(new ActionListener() {
  
       public void actionPerformed(ActionEvent e) {
+
+        progressBar.setVisible(true);
+        cancelButton.setVisible(false);
+        generateButton.setVisible(false);
+        RandomAutomatonPrompt.this.pack();
 
         // Create a new thread since this can be a long task
         new Thread() {

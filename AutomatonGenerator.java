@@ -150,6 +150,7 @@ public abstract class AutomatonGenerator {
       if (newValue != progressBar.getValue())
         EventQueue.invokeLater(new Runnable() {
           @Override public void run() {
+            progressBar.setString(newValue + "%");
             progressBar.setValue(newValue);
             progressBar.repaint();
           }
