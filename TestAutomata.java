@@ -13,10 +13,13 @@ public class TestAutomata {
   // Verbose levels
 	private static final int MAX_VERBOSE = 3;
 	private static int verbose = 1;
+
+  // Whether or not to compare lines by printing out the missing lines and added lines  (as opposed to actual vs expected)
+  public static boolean DIFF = false;
   
   public static void main(String[] args) {
 
-  		/* Turn verbose on if "-v" flag was used, turn on colored output if "-c" flag was used */
+  		/* Turn verbose on if '-v' flag was used, turn on colored output if '-c' flag was used, enable 'diff'-like output if '-d' flag is used */
 
     boolean coloredOutput = false;
 
@@ -26,6 +29,8 @@ public class TestAutomata {
           verbose = MAX_VERBOSE;
         else if (arg.substring(0, 2).equals("-c"))
           coloredOutput = true;
+        else if (arg.substring(0, 2).equals("-d"))
+          DIFF = true;
       }
 
     if (!coloredOutput)
@@ -476,6 +481,28 @@ public class TestAutomata {
     printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@zero,F\none,F\ntwo,T"), counter);
     printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "zero,a,one\none,b,two\ntwo,g,zero"), counter);
 
+      /* Complement Operation Tests */
+
+    printTestOutput("COMPLEMENT OPERATION: ", 2);
+
+    printTestOutput("Instantiating an automaton...", 3);
+    Automaton complementExample = AutomatonGenerator.generateFromGUICode(
+        "a1,TFF,FFF\na2,TFF,FFF\nb1,FTF,FFF\nb2,FTF,FFF\nc1,FFT,FFF\nc2,FFT,FFF\no,FFF,TTT", // Events
+        "@0,F\n1,F\n2,F\n3,F\n4,F\n5,F\n6,F\n7,F\n8,F\n9,F\n10,F\n11,F\n12,F\n13,F\n14,F\n15,F\n16,F\n17,F\n18,F\n19,F", // States 
+        "0,a1,4\n0,b2,3\n0,b1,2\n0,c1,1\n1,b2,6\n1,a2,5\n2,a1,7\n3,c2,8\n4,b1,9\n5,b1,10\n6,a1,11\n7,c2,12\n8,a2,13\n9,c1,14\n10,o,15\n11,o,16\n12,o,17\n13,o,18:BAD\n14,o,19:BAD", // Transitions
+        3, // Number of controllers
+        false, // We do not want it to be verbose
+        new File("complementExample.hdr")
+      );
+
+    printTestOutput("Taking the complement of the automaton...", 3);
+    result = complementExample.complement();
+
+    result.generateInputForGUI();
+    printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a1,TFF,FFF\na2,TFF,FFF\nb1,FTF,FFF\nb2,FTF,FFF\nc1,FFT,FFF\nc2,FFT,FFF\no,FFF,TTT"), counter);
+    printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@0,T\nDump State,F\n1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T\n8,T\n9,T\n10,T\n11,T\n12,T\n13,T\n14,T\n15,T\n16,T\n17,T\n18,T\n19,T"), counter);
+    printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "0,a1,4\n0,b2,3\n0,b1,2\n0,c1,1\n0,a2,Dump State\n0,c2,Dump State\n0,o,Dump State\n1,b2,6\n1,a2,5\n1,a1,Dump State\n1,b1,Dump State\n1,c1,Dump State\n1,c2,Dump State\n1,o,Dump State\n2,a1,7\n2,a2,Dump State\n2,b1,Dump State\n2,b2,Dump State\n2,c1,Dump State\n2,c2,Dump State\n2,o,Dump State\n3,c2,8\n3,a1,Dump State\n3,a2,Dump State\n3,b1,Dump State\n3,b2,Dump State\n3,c1,Dump State\n3,o,Dump State\n4,b1,9\n4,a2,Dump State\n4,a1,Dump State\n4,b2,Dump State\n4,c1,Dump State\n4,c2,Dump State\n4,o,Dump State\n5,b1,10\n5,a2,Dump State\n5,a1,Dump State\n5,b2,Dump State\n5,c1,Dump State\n5,c2,Dump State\n5,o,Dump State\n6,a1,11\n6,a2,Dump State\n6,b1,Dump State\n6,b2,Dump State\n6,c1,Dump State\n6,c2,Dump State\n6,o,Dump State\n7,c2,12\n7,a1,Dump State\n7,a2,Dump State\n7,b1,Dump State\n7,b2,Dump State\n7,c1,Dump State\n7,o,Dump State\n8,a2,13\n8,a1,Dump State\n8,c2,Dump State\n8,b1,Dump State\n8,b2,Dump State\n8,c1,Dump State\n8,o,Dump State\n9,c1,14\n9,a1,Dump State\n9,a2,Dump State\n9,b1,Dump State\n9,b2,Dump State\n9,c2,Dump State\n9,o,Dump State\n10,o,15\n10,a1,Dump State\n10,a2,Dump State\n10,b1,Dump State\n10,b2,Dump State\n10,c2,Dump State\n10,c1,Dump State\n11,o,16\n11,a1,Dump State\n11,a2,Dump State\n11,b1,Dump State\n11,b2,Dump State\n11,c2,Dump State\n11,c1,Dump State\n12,o,17\n12,a1,Dump State\n12,a2,Dump State\n12,b1,Dump State\n12,b2,Dump State\n12,c2,Dump State\n12,c1,Dump State\n13,o,18:BAD\n13,a1,Dump State\n13,a2,Dump State\n13,b1,Dump State\n13,b2,Dump State\n13,c2,Dump State\n13,c1,Dump State\n14,o,19:BAD\n14,a1,Dump State\n14,a2,Dump State\n14,b1,Dump State\n14,b2,Dump State\n14,c2,Dump State\n14,c1,Dump State\n15,o,Dump State\n15,a1,Dump State\n15,a2,Dump State\n15,b1,Dump State\n15,b2,Dump State\n15,c2,Dump State\n15,c1,Dump State\n16,o,Dump State\n16,a1,Dump State\n16,a2,Dump State\n16,b1,Dump State\n16,b2,Dump State\n16,c2,Dump State\n16,c1,Dump State\n17,o,Dump State\n17,a1,Dump State\n17,a2,Dump State\n17,b1,Dump State\n17,b2,Dump State\n17,c2,Dump State\n17,c1,Dump State\n18,o,Dump State\n18,a1,Dump State\n18,a2,Dump State\n18,b1,Dump State\n18,b2,Dump State\n18,c2,Dump State\n18,c1,Dump State\n19,o,Dump State\n19,a1,Dump State\n19,a2,Dump State\n19,b1,Dump State\n19,b2,Dump State\n19,c2,Dump State\n19,c1,Dump State\n"), counter);
+
       /* Intersection Operation Tests */
 
     printTestOutput("INTERSECTION OPERATION: ", 2);
@@ -762,8 +789,48 @@ class TestResult {
 
     passed = Arrays.deepEquals(linesActual, linesExpected);
     
-    if (!passed)
-      summary += "\nEXPECTED:\n" + expected + "\n\nACTUAL:\n" + actual + "\n";
+    if (!passed) {
+
+      if (TestAutomata.DIFF) {
+
+          /* Find lines that were added */
+
+        StringBuilder addedLines = new StringBuilder();
+        List<String> listOfExpectedLines = Arrays.asList((String[]) linesExpected.clone());
+
+        for (String str : linesActual) {
+          int index = listOfExpectedLines.indexOf(str);
+
+          // Not found
+          if (index == -1)
+            addedLines.append(str + "\n");
+          else
+            listOfExpectedLines.set(index, null);
+
+        }
+
+          /* Find lines that were missing */
+
+        StringBuilder missingLines = new StringBuilder();
+        List<String> listOfActualLines = Arrays.asList((String[]) linesActual.clone());
+
+        for (String str : linesExpected) {
+          int index = listOfActualLines.indexOf(str);
+
+          // Not found
+          if (index == -1)
+            missingLines.append(str + "\n");
+          else
+            listOfActualLines.set(index, null);
+
+        }
+
+        summary += "\nADDED LINES:\n" + addedLines.toString() + "\n\nMISSING LINES:\n" + missingLines.toString() + "\n";
+
+      } else
+        summary += "\nEXPECTED:\n" + expected + "\n\nACTUAL:\n" + actual + "\n";
+
+    }
 
   }
 

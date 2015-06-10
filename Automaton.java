@@ -433,7 +433,8 @@ public class Automaton {
 
       /* Build complement of this automaton */
 
-    long dumpStateID = -1;
+    long dumpStateID = nStates + 1;
+    boolean needToAddDumpState = false;
 
     // Add each state to the new automaton
     for (long s = 1; s <= nStates; s++) {
@@ -456,17 +457,23 @@ public class Automaton {
 
         // Add new transition leading to dump state if this event if undefined at this state
         if (!foundMatch) {
-
-          // Create dump state if it has not already been made
-          if (dumpStateID == -1)
-            dumpStateID = automaton.addState("Dump State", false, false);
-
           automaton.addTransition(id, e.getID(), dumpStateID);
-
+          needToAddDumpState = true;
         }
 
       }
 
+    }
+
+      /* Create dump state if it needs to be made */
+
+    if (needToAddDumpState) {
+    
+      long id = automaton.addState("Dump State", false, false);
+
+      if (id != dumpStateID)
+        System.err.println("ERROR: Dump state ID did not match expected ID.");
+    
     }
 
       /* Add special transitions */
@@ -1436,23 +1443,18 @@ public class Automaton {
 
   /**
    * Check feasibility for all possible communication protocols, printing out the results.
-   * @param communications  The communications to be considered (which should be a subset of the potentialCommunications list)
+   * @param communications  The communications to be considered (which should be a subset of the potentialCommunications list of this automaton)
    **/
   public void printFeasibleProtocols(List<CommunicationData> communications) {
 
     // Generate powerset of communication protocols
-    System.out.println("set size: " + communications.size());
     List<Set<CommunicationData>> protocols = new ArrayList<Set<CommunicationData>>();
     powerSet(protocols, communications, new HashSet<CommunicationData>(), 0);
-
-    System.out.println("powerset size:" + protocols.size());
 
     // Create inverted automaton, so that we can explore the automaton by crossing transitions from either direction
     Automaton invertedAutomaton = invert(this);
 
     for (Set<CommunicationData> protocol : protocols) {
-
-      System.out.println("here: " + protocol);
 
       // Ignore the protocol with no communications (doesn't make sense in our context)
       if (protocol.size() == 0)
