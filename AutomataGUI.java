@@ -136,8 +136,12 @@ public class AutomataGUI extends JFrame implements ActionListener {
     tab.updateInputFields();
     tab.setSaved(true);
 
-    // Generate image of graph
-    generateImage();
+    // Generate an image (unless it's quite large)
+    if (tab.automaton.getNumberOfStates() <= 100) {
+      generateImage();
+      tab.generateImageButton.setEnabled(false);
+    } else
+      tab.generateImageButton.setEnabled(true);
 
   }
 
@@ -289,8 +293,12 @@ public class AutomataGUI extends JFrame implements ActionListener {
     tab.automaton = automaton;
     tab.setSaved(true);
 
-    // Generate an image
-    generateImage();
+    // Generate an image (unless it's quite large)
+    if (tab.automaton.getNumberOfStates() <= 100) {
+      generateImage();
+      tab.generateImageButton.setEnabled(false);
+    } else
+      tab.generateImageButton.setEnabled(true);
 
   }
 
@@ -422,9 +430,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         // Prompt user to save Automaton to the specified file
         if (saveFile("Choose .hdr File") != null) {
-          tab.setSaved(true);
           tab.updateTabTitle();
-          generateAutomatonButtonPressed(); // This is what actually saves it to the new file
+          tab.automaton.duplicate(tab.file.getName().substring(0, tab.file.getName().length() - 4));
         }
           
         break;
@@ -585,7 +592,12 @@ public class AutomataGUI extends JFrame implements ActionListener {
     tab.automaton.generateInputForGUI();
     tab.updateInputFields();
 
-    generateImage();
+    // Generate an image (unless it's quite large)
+    if (tab.automaton.getNumberOfStates() <= 100) {
+      generateImage();
+      tab.generateImageButton.setEnabled(false);
+    } else
+      tab.generateImageButton.setEnabled(true);
 
     tab.setSaved(true);
 
@@ -837,6 +849,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     public int index = -1;
 
+    public JButton generateAutomatonButton = null;
+    public JButton generateImageButton = null;
+
       /* Constructor */
 
     public AutomatonTab(int index) {
@@ -990,9 +1005,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
       c.gridy = 4;
       container.add(transitionInputScrollPane, c);
 
-        /* Generate Automaton (NOTE: It is assumed that Automatons that are typed in by hand will not be extremely large) */
+        /* Generate automaton button */
 
-      JButton generateAutomatonButton = new JButton("Generate Automaton");
+      generateAutomatonButton = new JButton("Generate Automaton From GUI Code");
       generateAutomatonButton.setFocusable(false);
       generateAutomatonButton.addActionListener(new ActionListener() {
    
@@ -1007,6 +1022,25 @@ public class AutomataGUI extends JFrame implements ActionListener {
       c.gridx = 0;
       c.gridy = 5;
       container.add(generateAutomatonButton, c);
+
+      /* Generate automaton button */
+
+      generateImageButton = new JButton("Generate Image");
+      generateImageButton.setFocusable(false);
+      generateImageButton.addActionListener(new ActionListener() {
+   
+        public void actionPerformed(ActionEvent e) {
+          generateImage();
+          generateImageButton.setEnabled(false);
+        }
+
+      });
+      c.ipady = 0;
+      c.weightx = 0.5;
+      c.weighty = 1.0;
+      c.gridx = 0;
+      c.gridy = 6;
+      container.add(generateImageButton, c);
 
       return container;
 
@@ -1051,6 +1085,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
         saved = newSavedStatus;
         updateTabTitle();
       }
+
+      generateAutomatonButton.setEnabled(!saved);
 
     }
 
