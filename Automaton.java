@@ -26,6 +26,7 @@ import java.nio.file.*;
 import java.awt.image.*;
 import java.net.*;
 import javax.imageio.*;
+import javax.swing.*;
 
 public class Automaton {
 
@@ -1140,18 +1141,18 @@ public class Automaton {
       State startingState = automaton.getState(s);
 
       // Try each least upper bound
-      for (LabelVector v : leastUpperBounds) {
+      for (LabelVector vector : leastUpperBounds) {
         
-        boolean[] vectorElementsFound = new boolean[v.getSize()];
-        State destinationState = findWhereCommunicationLeads(automaton, v, vectorElementsFound, startingState);
+        boolean[] vectorElementsFound = new boolean[vector.getSize()];
+        State destinationState = findWhereCommunicationLeads(automaton, vector, vectorElementsFound, startingState);
         
         if (destinationState != null) {
 
           // Add event if it doesn't already exist
           int id;
-          Event event = automaton.getEvent(v.toString());
+          Event event = automaton.getEvent(vector.toString());
           if (event == null)
-            id = automaton.addEvent(v.toString(), new boolean[] {true}, new boolean[] {true});
+            id = automaton.addEvent(vector.toString(), new boolean[] {true}, new boolean[] {true});
           else
             id = event.getID();
 
@@ -1161,10 +1162,11 @@ public class Automaton {
             // Add transition
             automaton.addTransition(startingState.getID(), id, destinationState.getID());
 
-            // Mark as potential communication
-            int index = potentialCommunications.indexOf(v);
-            if (index != -1)
-              automaton.addPotentialCommunication(startingState.getID(), id, destinationState.getID(), potentialCommunications.get(index).roles);
+            // There could be more than one potential communication, so we need to mark them all
+            for (CommunicationLabelVector data : potentialCommunications)
+              if (vector.equals((LabelVector) data))
+                automaton.addPotentialCommunication(startingState.getID(), id, destinationState.getID(), data.roles);
+    
           }
          
         }
@@ -1285,6 +1287,7 @@ public class Automaton {
 
         boolean valid = true;
         String potentialCommunication = "";
+        String eventLabel = null;
 
         for (int i = 0; i < v1.getSize(); i++) {
 
@@ -1298,12 +1301,15 @@ public class Automaton {
           }
 
           // Append vector element
+          String newEventLabel = null;
           if (!label1.equals("*")) {
             potentialCommunication += "_" + label1;
+            newEventLabel = label1;
             if (i > 0)
               roles[i - 1] = CommunicationRole.SENDER;
           } else if (!label2.equals("*")) {
             potentialCommunication += "_" + label2;
+            newEventLabel = label2;
             if (i > 0)
               roles[i - 1] = CommunicationRole.RECIEVER;
           } else {
@@ -1311,6 +1317,15 @@ public class Automaton {
             if (i > 0)
               roles[i - 1] = CommunicationRole.NONE;
           }
+
+          // Make sure that the senders and recievers all are working with the same event
+          if (eventLabel != null && newEventLabel != null && !newEventLabel.equals(eventLabel)) {
+            valid = false;
+            break;
+          }
+
+          if (eventLabel == null)
+            eventLabel = newEventLabel;
 
         }
 
@@ -1426,13 +1441,18 @@ public class Automaton {
   public void printFeasibleProtocols(List<CommunicationData> communications) {
 
     // Generate powerset of communication protocols
+    System.out.println("set size: " + communications.size());
     List<Set<CommunicationData>> protocols = new ArrayList<Set<CommunicationData>>();
     powerSet(protocols, communications, new HashSet<CommunicationData>(), 0);
+
+    System.out.println("powerset size:" + protocols.size());
 
     // Create inverted automaton, so that we can explore the automaton by crossing transitions from either direction
     Automaton invertedAutomaton = invert(this);
 
     for (Set<CommunicationData> protocol : protocols) {
+
+      System.out.println("here: " + protocol);
 
       // Ignore the protocol with no communications (doesn't make sense in our context)
       if (protocol.size() == 0)
@@ -2074,21 +2094,29 @@ public class Automaton {
               + "," + getStateExcludingTransitions(t.getTargetStateID()).getLabel()
             );
 
-          // Append special transition information
+            /* Append special transition information */
+
           String specialTransition = "";
           TransitionData transitionData = new TransitionData(s, t.getEvent().getID(), t.getTargetStateID());
+          
           if (badTransitions.contains(transitionData))
             specialTransition += ",BAD";
+          
           if (unconditionalViolations.contains(transitionData))
             specialTransition += ",UNCONDITIONAL_VIOLATION";
+          
           if (conditionalViolations.contains(transitionData))
             specialTransition += ",CONDITIONAL_VIOLATION";
-          int index = potentialCommunications.indexOf(transitionData);
-          if (index != -1) {
-            specialTransition += ",POTENTIAL_COMMUNICATION-";
-            for (CommunicationRole role : potentialCommunications.get(index).roles)
-              specialTransition += role.getCharacter();
+          
+          // Search entire list since there may be more than one potential communication
+          for (CommunicationData data : potentialCommunications) {
+            if (data.equals(transitionData)) {
+              specialTransition += ",POTENTIAL_COMMUNICATION-";
+              for (CommunicationRole role : data.roles)
+                specialTransition += role.getCharacter();
+            }
           }
+          
           if (!specialTransition.equals(""))
             transitionInputBuilder.append(":" + specialTransition.substring(1));
         

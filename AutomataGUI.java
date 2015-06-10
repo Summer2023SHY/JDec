@@ -132,7 +132,6 @@ public class AutomataGUI extends JFrame implements ActionListener {
     AutomatonTab tab = tabs.get(newIndex);
     tab.file = automatonFile;
     tab.automaton = automaton;
-    tab.automaton.generateInputForGUI();
     tab.updateInputFields();
     tab.setSaved(true);
 
@@ -340,7 +339,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     menuBar.add(createMenu("File", "New Tab", "Open", "Save As...", "Refresh Tab", null, "Clear", "Close Tab", null, "Export as SVG", null, "Quit"));
     menuBar.add(createMenu("Standard Operations", "Accessible", "Co-Accessible", "Trim", "Complement", null, "Intersection", "Union"));
-    menuBar.add(createMenu("U-Stucture Operations", "Synchronized Composition", "Add Communications", "Feasible Protocols->Generate All Feasible Protocols,Generate Protocol Feasible"));
+    menuBar.add(createMenu("U-Stucture Operations", "Synchronized Composition", "Add Communications", "Feasible Protocols->Generate All Feasible Protocols,Make Protocol Feasible"));
     menuBar.add(createMenu("Generate", "Automaton From GUI Code", "Random Automaton"));
 
     this.setJMenuBar(menuBar);
@@ -556,7 +555,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         new GeneratedAllFeasibleProtocolsPrompt(tab.automaton);
         break;
 
-      case "Generate Protocol Feasible":
+      case "Make Protocol Feasible":
 
         new MakeProtocolFeasiblePrompt(tab.automaton);
         break;
@@ -576,9 +575,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
   }
 
-  public void generateRandomAutomaton(String fileName, int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions) {
+  public void generateRandomAutomaton(String fileName, int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions, JProgressBar progressBar) {
 
-    Automaton automaton = AutomatonGenerator.generateRandom(fileName, nEvents, nStates, minTransitionsPerState, maxTransitionsPerState, nControllers, nBadTransitions);
+    Automaton automaton = AutomatonGenerator.generateRandom(fileName, nEvents, nStates, minTransitionsPerState, maxTransitionsPerState, nControllers, nBadTransitions, progressBar);
     createTab(new File(fileName + ".hdr"), automaton);
 
   }
@@ -589,7 +588,6 @@ public class AutomataGUI extends JFrame implements ActionListener {
     AutomatonTab tab = tabs.get(index);
 
     tab.automaton = new Automaton(tab.file, false);
-    tab.automaton.generateInputForGUI();
     tab.updateInputFields();
 
     // Generate an image (unless it's quite large)
@@ -1095,10 +1093,14 @@ public class AutomataGUI extends JFrame implements ActionListener {
     }
 
     public void updateInputFields() {
+
+      automaton.generateInputForGUI();
+
       controllerInput.setValue(automaton.getNumberOfControllers());
       eventInput.setText(automaton.getEventInput());
       stateInput.setText(automaton.getStateInput());
       transitionInput.setText(automaton.getTransitionInput());
+
     }
 
   } // AutomatonTab

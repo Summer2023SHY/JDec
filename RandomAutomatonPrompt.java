@@ -60,7 +60,7 @@ public class RandomAutomatonPrompt extends JFrame {
       /* Setup */
 
     setLayout(new GridBagLayout());
-    GridBagConstraints c = new GridBagConstraints();
+    final GridBagConstraints c = new GridBagConstraints();
     c.fill = GridBagConstraints.HORIZONTAL;
 
       /* Number of controllers */
@@ -133,16 +133,26 @@ public class RandomAutomatonPrompt extends JFrame {
     c.gridy = 5;
     add(nBadTransitions, c);
 
+      /* Progress bar */
+
+    final JProgressBar progressBar = new JProgressBar(0, 100);
+    progressBar.setValue(0);
+    c.gridx = 0;
+    c.gridy = 7;
+    c.gridwidth = 2;
+    add(progressBar, c);
+
       /* Cancel button */
 
-    JButton cancelButton = new JButton("Cancel");
+    final JButton cancelButton = new JButton("Cancel");
     cancelButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-            RandomAutomatonPrompt.this.dispose();
-        }
+      public void actionPerformed(ActionEvent e) {
+        RandomAutomatonPrompt.this.dispose();
+      }
     });
     c.gridx = 0;
     c.gridy = 6;
+    c.gridwidth = 1;
     add(cancelButton, c);
 
       /* Generate button */
@@ -150,18 +160,26 @@ public class RandomAutomatonPrompt extends JFrame {
     JButton generateButton = new JButton("Generate");
     generateButton.addActionListener(new ActionListener() {
  
-        public void actionPerformed(ActionEvent e) {
-            gui.generateRandomAutomaton(
+      public void actionPerformed(ActionEvent e) {
+
+        // Create a new thread since this can be a long task
+        new Thread() {
+            public void run() {
+              gui.generateRandomAutomaton(
                 "random",
                 nEventsDefault = (Integer) nEvents.getValue(),
                 nStatesDefault = (Integer) nStates.getValue(),
                 minTransitionsDefault = (Integer) minTransitions.getValue(),
                 maxTransitionsDefault = (Integer) maxTransitions.getValue(),
                 nControllersDefault = (Integer) nControllers.getValue(),
-                nBadTransitionsDefault = (Integer) nBadTransitions.getValue()
-            );
-            RandomAutomatonPrompt.this.dispose();
-        }
+                nBadTransitionsDefault = (Integer) nBadTransitions.getValue(),
+                progressBar
+              );
+              RandomAutomatonPrompt.this.dispose();
+            }
+        }.start();
+
+      }
 
     });
     c.gridx = 1;
@@ -179,9 +197,8 @@ public class RandomAutomatonPrompt extends JFrame {
 
     pack();
     
-      /* Ensure our popup box will be closed when the user presses the "X" */
+      /* Make it so that the user can not resize the popup box */
 
-    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     setResizable(false);
 
       /* Sets screen location in the center of the screen (only works after calling pack) */

@@ -11,6 +11,8 @@
 
 import java.util.*;
 import java.io.*;
+import javax.swing.*;
+import java.awt.*;
 
 public abstract class AutomatonGenerator {
 
@@ -26,8 +28,12 @@ public abstract class AutomatonGenerator {
    * @param maxTransitionsPerState  The maximum number of outgoing transitions per state
    * @param nControllers            The number of controllers in the automaton
    * @param nBadTransitions         The number of bad transition in the automaton
+   * @param progressBar             The progress bar to be updated during the generation process
+   * @return the randomly generated automaton
    **/
-  public static Automaton generateRandom(String fileName, int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions) {
+  public static Automaton generateRandom(String fileName, int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions, JProgressBar progressBar) {
+
+    long nTotalTasks = (long) nEvents + (nStates * 2) + (long) nBadTransitions;
 
       /* Create empty automaton with capacities that should prevent the need to re-create the body file */
 
@@ -45,6 +51,9 @@ public abstract class AutomatonGenerator {
       /* Generate events */
 
     for (int i = 1; i <= nEvents; i++) {
+
+      // Update progress bar
+      updateProgressBar(i, nTotalTasks, progressBar);
 
       boolean[] observability = new boolean[nControllers],
                 controllability = new boolean[nControllers];
@@ -64,6 +73,10 @@ public abstract class AutomatonGenerator {
     {
       long initialStateID = generateLong(1, nStates);
       for (int i = 1; i <= nStates; i++) {
+
+        // Update progress bar
+      updateProgressBar(nEvents + i, nTotalTasks, progressBar);
+
         long id = automaton.addState(String.valueOf(i), generateBoolean(), i == initialStateID);
         if (id == 0)
           System.err.println("ERROR: State could not be added.");
@@ -73,6 +86,10 @@ public abstract class AutomatonGenerator {
       /* Generate transitions */
 
     for (long s = 1; s <= nStates; s++) {
+
+      // Update progress bar
+      updateProgressBar(nEvents + nStates + s, nTotalTasks, progressBar);
+
       int nTransitions = generateInt(minTransitionsPerState, maxTransitionsPerState);
       for (int i = 0; i < nTransitions; i++) {
 
@@ -93,6 +110,9 @@ public abstract class AutomatonGenerator {
 
     for (int i = 0; i < nBadTransitions; i++) {
 
+      // Update progress bar
+      updateProgressBar(nEvents + (nStates * 2) + i, nTotalTasks, progressBar);
+
       int eventID;
       long initialStateID, targetStateID;
 
@@ -112,6 +132,30 @@ public abstract class AutomatonGenerator {
     automaton.writeHeaderFile();
 
     return automaton;
+
+  }
+
+  /**
+   * Update the progress bar.
+   * @param nTasksComplete  The number of tasks that have already been completed
+   * @param nTotalTasks     The total number of tasks that need to be done
+   * @param progressBar     The progress bar that is being updated
+   **/
+  private static void updateProgressBar(long nTasksComplete, long nTotalTasks, final JProgressBar progressBar) {
+    
+    if (progressBar != null) {
+
+      final int newValue = (int) ((nTasksComplete * 100) / nTotalTasks);
+
+      if (newValue != progressBar.getValue())
+        EventQueue.invokeLater(new Runnable() {
+          @Override public void run() {
+            progressBar.setValue(newValue);
+            progressBar.repaint();
+          }
+        });
+      
+    }
 
   }
 

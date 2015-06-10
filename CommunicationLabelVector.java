@@ -8,7 +8,10 @@
  * TABLE OF CONTENTS:
  *  -Public Instance Variable
  *  -Constructor
+ *  -Overridden Method
  **/
+
+import java.util.*;
 
 class CommunicationLabelVector extends LabelVector {
 
@@ -29,6 +32,17 @@ class CommunicationLabelVector extends LabelVector {
 
     this.roles = roles;
 
+  }
+
+    /** OVERRIDDEN METHOD **/
+
+  /**
+   * Check for equality by comparing labels and roles.
+   * @param obj The communication label vector to compare this one to
+   * @return whether or not the communication label vectors are equal
+   **/
+  @Override public boolean equals(Object other) {
+    return super.equals(other) && Arrays.deepEquals(roles, ((CommunicationLabelVector) other).roles);
   }
 
 }
