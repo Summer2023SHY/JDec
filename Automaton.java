@@ -1526,6 +1526,59 @@ public class Automaton {
   }
 
   /**
+   * Generate a list of the smallest possible feasible protocols (in terms of the number of communications).
+   * @param communications  The communications to be considered (which should be a subset of the potentialCommunications list of this automaton)
+   * @return the feasible protocols
+   **/
+  public List<Set<CommunicationData>> generateSmallestFeasibleProtocols(List<CommunicationData> communications) {
+
+      /* Create inverted automaton, so that we can explore the automaton by crossing transitions from either direction */
+
+    Automaton invertedAutomaton = invert(this, new File("generateSmallestFeasibleProtocols.hdr"), new File("generateSmallestFeasibleProtocols.bdy"));
+
+      /* Generate list of feasible protocols */
+
+    List<Set<CommunicationData>> feasibleProtocols = new ArrayList<Set<CommunicationData>>();
+    int sizeOfSmallestProtocol = -1;
+
+    // Each communication only needs to appear once in order to generate the smallest feasible protocols
+    Set<CommunicationData> communicationsToSkip = new HashSet<CommunicationData>();
+    
+    for (CommunicationData data : communications) {
+
+      // Skip if this communication has already been seen before (prevents the generation of duplicate protocols)
+      if (communicationsToSkip.contains(data))
+        continue;
+
+      // Create a protocol uisng only this communication
+      Set<CommunicationData> protocol = new HashSet<CommunicationData>();
+      protocol.add(data);
+
+      // Make this protocol feasible
+      Set<CommunicationData> feasibleProtocol = makeProtocolFeasible(protocol, invertedAutomaton);
+
+      // Add each communication in the feasible protocol to list of communications to skip
+      communicationsToSkip.addAll(feasibleProtocol);
+
+      // Add it to the list if it is tied as the smallest feasible protocol so far
+      if (sizeOfSmallestProtocol == feasibleProtocol.size())
+        feasibleProtocols.add(feasibleProtocol);
+
+      // Clear the list if this is the new smallest feasible protocol
+      else if (sizeOfSmallestProtocol == -1 || feasibleProtocol.size() < sizeOfSmallestProtocol) {
+        feasibleProtocols.clear();
+        sizeOfSmallestProtocol = feasibleProtocol.size();
+        feasibleProtocols.add(feasibleProtocol);
+      }
+
+    }
+
+    return feasibleProtocols;
+
+  }
+
+
+  /**
    * Make the specified protocol feasible (returning it as a new set).
    * @param protocol            The protocol that is being made feasible
    * @param invertedAutomaton   An automaton identical to the previous (except all transitions are going the opposite direction)

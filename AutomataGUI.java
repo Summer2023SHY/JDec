@@ -341,7 +341,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     menuBar.add(createMenu("File", "New Tab", "Open", "Save As...", "Refresh Tab", null, "Clear", "Close Tab", null, "Export as SVG", null, "Quit"));
     menuBar.add(createMenu("Standard Operations", "Accessible", "Co-Accessible", "Trim", "Complement", null, "Intersection", "Union"));
-    menuBar.add(createMenu("U-Stucture Operations", "Synchronized Composition", "Add Communications", "Feasible Protocols->Generate All Feasible Protocols,Make Protocol Feasible"));
+    menuBar.add(createMenu("U-Stucture Operations", "Synchronized Composition", "Add Communications", "Feasible Protocols->Generate All,Make Protocol Feasible,Find Smallest"));
     menuBar.add(createMenu("Generate", "Automaton From GUI Code", "Random Automaton"));
 
     this.setJMenuBar(menuBar);
@@ -575,7 +575,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         break;
 
-      case "Generate All Feasible Protocols":
+      case "Generate All":
 
         new GeneratedAllFeasibleProtocolsPrompt(this, tab.automaton);
         break;
@@ -583,6 +583,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
       case "Make Protocol Feasible":
 
         new MakeProtocolFeasiblePrompt(this, tab.automaton);
+        break;
+
+      case "Find Smallest":
+
+        new FeasibleProtocolOutput(this, tab.automaton, tab.automaton.generateSmallestFeasibleProtocols(tab.automaton.getPotentialCommunications()), "Smallest Feasible Protocols", " Protocol(s) with the fewest number of communications: ");
         break;
 
       case "Automaton From GUI Code":
