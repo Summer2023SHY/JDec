@@ -21,7 +21,8 @@ public abstract class AutomatonGenerator {
   /**
    * Generate a random automaton with the specified properties.
    * NOTE: Generated automaton is not guaranteed to be accessible, co-accessible, controllable, or even connected.
-   * @param fileName                The name of the file where the automaton will be stored (excluding the extension)
+   * @param headerFile              The name of the header file where the automaton will be stored
+   * @param bodyFile                The name of the body file where the automaton will be stored
    * @param nEvents                 The number of events to be generated in the automaton
    * @param nStates                 The number of states to be generated in the automaton
    * @param minTransitionsPerState  The minimum number of outgoing transitions per state
@@ -31,15 +32,15 @@ public abstract class AutomatonGenerator {
    * @param progressBar             The progress bar to be updated during the generation process
    * @return the randomly generated automaton
    **/
-  public static Automaton generateRandom(String fileName, int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions, JProgressBar progressBar) {
+  public static Automaton generateRandom(File headerFile, File bodyFile, int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions, JProgressBar progressBar) {
 
     long nTotalTasks = (long) nEvents + (nStates * 2) + (long) nBadTransitions;
 
       /* Create empty automaton with capacities that should prevent the need to re-create the body file */
 
     Automaton automaton = new Automaton(
-      new File(fileName + ".hdr"),
-      new File(fileName + ".bdy"),
+      headerFile,
+      bodyFile,
       nEvents,
       nStates,
       maxTransitionsPerState,
@@ -228,13 +229,14 @@ public abstract class AutomatonGenerator {
    * @param nControllers        The number of controllers in the automaton
    * @param verbose             Whether or not parsing errors should be printed to the console
    * @param headerFile          The header file where the automaton will be written to
+   * @param bodyFile            The body file where the automaton will be written to
    * @return the generated automaton
    **/
-  public static Automaton generateFromGUICode(String eventInputText, String stateInputText, String transitionInputText, int nControllers, boolean verbose, File headerFile) {
+  public static Automaton generateFromGUICode(String eventInputText, String stateInputText, String transitionInputText, int nControllers, boolean verbose, File headerFile, File bodyFile) {
 
       /* Setup */
     
-    Automaton automaton = new Automaton(headerFile, nControllers);
+    Automaton automaton = new Automaton(headerFile, bodyFile, nControllers);
     HashMap<String, Integer> eventMapping = new HashMap<String, Integer>(); // Maps the events' labels to the events' ID
     HashMap<String, Long> stateMapping = new HashMap<String, Long>(); // Maps the states' labels to the state's ID
 

@@ -72,7 +72,7 @@ public class Transition {
 
 		Transition other = (Transition) obj;
 
-		return targetStateID == other.getTargetStateID() && event.equals(other.getEvent());
+		return targetStateID == other.targetStateID && event.equals(other.event);
 
 	}
 

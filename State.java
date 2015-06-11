@@ -317,6 +317,15 @@ public class State {
 		transitions.add(transition);
 	}
 
+  /**
+   * Remove a transition from the list.
+   * @param transition  The transition to be removed
+   * @return whether or not the removal was successful
+   **/
+  public boolean removeTransition(Transition transition) {
+    return transitions.remove(transition);
+  }
+
 		/** ACCESSOR METHODS **/
 
 	/**

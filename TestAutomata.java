@@ -138,35 +138,30 @@ public class TestAutomata {
   	printTestOutput("Adding an event that is controllable and observable...", 3);
   	int id = a.addEventIfNonExisting("firstEvent", new boolean[] { true }, new boolean[] { true });
   	printTestCase("Ensuring that 'events' set was expanded", new TestResult(a.getEvents().size(), 1), counter);
-  	printTestCase("Ensuring that 'activeEvents' set was not expanded", new TestResult(a.getActiveEvents().size(), 0), counter);
     printTestCase("Ensuring that the added event is observable", new TestResult(a.getEvent(id).isObservable()[0], true), counter);
   	printTestCase("Ensuring that the added event is controllable", new TestResult(a.getEvent(id).isControllable()[0], true), counter);
 
   	printTestOutput("Adding an event that is observable, but not controllable...", 3);
   	id = a.addEventIfNonExisting("secondEvent", new boolean[] { true }, new boolean[] { false });
   	printTestCase("Ensuring that 'events' set was expanded", new TestResult(a.getEvents().size(), 2), counter);
-  	printTestCase("Ensuring that 'activeEvents' set was not expanded", new TestResult(a.getActiveEvents().size(), 0), counter);
   	printTestCase("Ensuring that the added event is observable", new TestResult(a.getEvent(id).isObservable()[0], true), counter);
     printTestCase("Ensuring that the added event is not controllable", new TestResult(a.getEvent(id).isControllable()[0], false), counter);
 
   	printTestOutput("Adding an event that is controllable, but not observable...", 3);
   	id = a.addEventIfNonExisting("thirdEvent", new boolean[] { false }, new boolean[] { true });
   	printTestCase("Ensuring that 'events' set was expanded", new TestResult(a.getEvents().size(), 3), counter);
-  	printTestCase("Ensuring that 'activeEvents' set was not expanded", new TestResult(a.getActiveEvents().size(), 0), counter);
   	printTestCase("Ensuring that the added event is not observable", new TestResult(a.getEvent(id).isObservable()[0], false), counter);
     printTestCase("Ensuring that the added event is controllable", new TestResult(a.getEvent(id).isControllable()[0], true), counter);
 
   	printTestOutput("Adding an event that neither controllable, nor observable...", 3);
   	id = a.addEventIfNonExisting("fourthEvent", new boolean[] { false }, new boolean[] { false });
   	printTestCase("Ensuring that 'events' set was expanded", new TestResult(a.getEvents().size(), 4), counter);
-  	printTestCase("Ensuring that 'activeEvents' set was not expanded", new TestResult(a.getActiveEvents().size(), 0), counter);
   	printTestCase("Ensuring that the added event is not observable", new TestResult(a.getEvent(id).isObservable()[0], false), counter);
     printTestCase("Ensuring that the added event is not controllable", new TestResult(a.getEvent(id).isControllable()[0], false), counter);
 
   	printTestOutput("Adding a pre-existing event...", 3);
   	id = a.addEventIfNonExisting("fourthEvent", new boolean[] { false }, new boolean[] { false });
   	printTestCase("Ensuring that 'events' set was not expanded", new TestResult(a.getEvents().size(), 4), counter);
-  	printTestCase("Ensuring that 'activeEvents' set was not expanded", new TestResult(a.getActiveEvents().size(), 0), counter);
   	printTestCase("Ensuring that the method returned proper negative value", new TestResult(id, -4), counter);
 
     a.closeFiles();
@@ -271,6 +266,7 @@ public class TestAutomata {
         "", // Transitions
         1, // Number of controllers
         false, // We do not want it to be verbose
+        null, // Use temporary files
         null // Use temporary files
       );
 
@@ -403,13 +399,14 @@ public class TestAutomata {
 
     printTestOutput("Instantiating automaton from simple GUI input code...", 3);
     Automaton a = AutomatonGenerator.generateFromGUICode(
-        "a,T,T\nb,T,F\nc,F,T\nd,F,F", // Events
-        "e,T\nf,F", // States  
-        "e,a,f\nf,b,e", // Transitions
-        1, // Number of controllers
-        false, // We do not want it to be verbose
-        null // Use temporary files to store automaton
-      );
+      "a,T,T\nb,T,F\nc,F,T\nd,F,F", // Events
+      "e,T\nf,F", // States  
+      "e,a,f\nf,b,e", // Transitions
+      1, // Number of controllers
+      false, // We do not want it to be verbose
+      null, // Use temporary files
+      null // Use temporary files
+    );
     a.generateInputForGUI();
     printTestCase("Ensuring the event input was saved and loaded correctly", new TestResult(a.getEventInput(), "a,T,T\nb,T,F\nc,F,T\nd,F,F"), counter);
     printTestCase("Ensuring the state input was saved and loaded correctly", new TestResult(a.getStateInput(), "e,T\nf,F"), counter);
@@ -418,13 +415,14 @@ public class TestAutomata {
 
     printTestOutput("Instantiating automaton from GUI input code with duplicate labels, omitted optional parameters, and an initial state...", 3);
     a = AutomatonGenerator.generateFromGUICode(
-        "a\nb,F,F\na,F,F\nb", // Events
-        "@c\nc,F", // States  
-        "", // Transitions
-        1, // Number of controllers
-        false, // We do not want it to be verbose
-        null // Use temporary files to store automaton
-      );
+      "a\nb,F,F\na,F,F\nb", // Events
+      "@c\nc,F", // States  
+      "", // Transitions
+      1, // Number of controllers
+      false, // We do not want it to be verbose
+      null, // Use temporary files
+      null // Use temporary files
+    );
     a.generateInputForGUI();
     printTestCase("Ensuring the event input was saved and loaded correctly", new TestResult(a.getEventInput(), "a,T,T\nb,F,F"), counter);
     printTestCase("Ensuring the state input was saved and loaded correctly", new TestResult(a.getStateInput(), "@c,T"), counter);
@@ -453,16 +451,17 @@ public class TestAutomata {
 
     printTestOutput("Instantiating automaton from Figure 2.1...", 3);
     Automaton fig2_12 = AutomatonGenerator.generateFromGUICode(
-        "a,T,T\nb,T,T\ng,T,T", // Events
-        "@zero,F\none,F\ntwo,T\nthree,F\nfour,F\nfive,F\nsix,F", // States 
-        "zero,a,one\none,a,three\none,b,two\none,g,five\ntwo,g,zero\nthree,b,four\nfour,g,four\nfour,a,three\nsix,a,three\nsix,b,two", // Transitions
-        1, // Number of controllers
-        false, // We do not want it to be verbose
-        new File("fig2_12.hdr")
-      );
+      "a,T,T\nb,T,T\ng,T,T", // Events
+      "@zero,F\none,F\ntwo,T\nthree,F\nfour,F\nfive,F\nsix,F", // States 
+      "zero,a,one\none,a,three\none,b,two\none,g,five\ntwo,g,zero\nthree,b,four\nfour,g,four\nfour,a,three\nsix,a,three\nsix,b,two", // Transitions
+      1, // Number of controllers
+      false, // We do not want it to be verbose
+      new File("fig2_12.hdr"),
+      new File("fig2_12.bdy")
+    );
 
     printTestOutput("Taking the co-accessible part of Figure 2.12 (and comparing the result to the automaton in Figure 2.13a)...", 3);
-    Automaton result = fig2_12.coaccessible();
+    Automaton result = fig2_12.coaccessible(new File("coaccessible.hdr"), new File("coaccessible.bdy"));
 
     result.generateInputForGUI();
     printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T\ng,T,T"), counter);
@@ -474,7 +473,7 @@ public class TestAutomata {
     printTestOutput("TRIM OPERATION: ", 2);
 
     printTestOutput("Trimming the automaton in Figure 2.12 (and comparing the result to the automaton in Figure 2.13b)...", 3);
-    result = fig2_12.trim();
+    result = fig2_12.trim(new File("trim.hdr"), new File("trim.bdy"));
 
     result.generateInputForGUI();
     printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T\ng,T,T"), counter);
@@ -487,16 +486,17 @@ public class TestAutomata {
 
     printTestOutput("Instantiating an automaton...", 3);
     Automaton complementExample = AutomatonGenerator.generateFromGUICode(
-        "a1,TFF,FFF\na2,TFF,FFF\nb1,FTF,FFF\nb2,FTF,FFF\nc1,FFT,FFF\nc2,FFT,FFF\no,FFF,TTT", // Events
-        "@0,F\n1,F\n2,F\n3,F\n4,F\n5,F\n6,F\n7,F\n8,F\n9,F\n10,F\n11,F\n12,F\n13,F\n14,F\n15,F\n16,F\n17,F\n18,F\n19,F", // States 
-        "0,a1,4\n0,b2,3\n0,b1,2\n0,c1,1\n1,b2,6\n1,a2,5\n2,a1,7\n3,c2,8\n4,b1,9\n5,b1,10\n6,a1,11\n7,c2,12\n8,a2,13\n9,c1,14\n10,o,15\n11,o,16\n12,o,17\n13,o,18:BAD\n14,o,19:BAD", // Transitions
-        3, // Number of controllers
-        false, // We do not want it to be verbose
-        new File("complementExample.hdr")
-      );
+      "a1,TFF,FFF\na2,TFF,FFF\nb1,FTF,FFF\nb2,FTF,FFF\nc1,FFT,FFF\nc2,FFT,FFF\no,FFF,TTT", // Events
+      "@0,F\n1,F\n2,F\n3,F\n4,F\n5,F\n6,F\n7,F\n8,F\n9,F\n10,F\n11,F\n12,F\n13,F\n14,F\n15,F\n16,F\n17,F\n18,F\n19,F", // States 
+      "0,a1,4\n0,b2,3\n0,b1,2\n0,c1,1\n1,b2,6\n1,a2,5\n2,a1,7\n3,c2,8\n4,b1,9\n5,b1,10\n6,a1,11\n7,c2,12\n8,a2,13\n9,c1,14\n10,o,15\n11,o,16\n12,o,17\n13,o,18:BAD\n14,o,19:BAD", // Transitions
+      3, // Number of controllers
+      false, // We do not want it to be verbose
+      new File("complementExample.hdr"),
+      new File("complementExample.bdy")
+    );
 
     printTestOutput("Taking the complement of the automaton...", 3);
-    result = complementExample.complement();
+    result = complementExample.complement(new File("complement.hdr"), new File("complement.bdy"));
 
     result.generateInputForGUI();
     printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a1,TFF,FFF\na2,TFF,FFF\nb1,FTF,FFF\nb2,FTF,FFF\nc1,FFT,FFF\nc2,FFT,FFF\no,FFF,TTT"), counter);
@@ -509,25 +509,27 @@ public class TestAutomata {
 
     printTestOutput("Instantiating automaton from Figure 2.1...", 3);
     Automaton fig2_1 = AutomatonGenerator.generateFromGUICode(
-        "a,T,T\nb,T,T\ng,T,T", // Events
-        "@x,T\ny,F\nz,T", // States 
-        "x,a,x\nx,g,z\ny,b,y\ny,a,x\nz,b,z\nz,a,y\nz,g,y", // Transitions
-        1, // Number of controllers
-        false, // We do not want it to be verbose
-        new File("fig2_1.hdr")
-      );
+      "a,T,T\nb,T,T\ng,T,T", // Events
+      "@x,T\ny,F\nz,T", // States 
+      "x,a,x\nx,g,z\ny,b,y\ny,a,x\nz,b,z\nz,a,y\nz,g,y", // Transitions
+      1, // Number of controllers
+      false, // We do not want it to be verbose
+      new File("fig2_1.hdr"),
+      new File("fig2_1.bdy")
+    );
     printTestOutput("Instantiating automaton from Figure 2.2...", 3);
     Automaton fig2_2 = AutomatonGenerator.generateFromGUICode(
-        "a,T,T\nb,T,T", // Events
-        "@zero,F\none,T", // States 
-        "zero,b,zero\nzero,a,one\none,a,one\none,b,zero", // Transitions
-        1, // Number of controllers
-        false, // We do not want it to be verbose
-        new File("fig2_2.hdr")
-      );
+      "a,T,T\nb,T,T", // Events
+      "@zero,F\none,T", // States 
+      "zero,b,zero\nzero,a,one\none,a,one\none,b,zero", // Transitions
+      1, // Number of controllers
+      false, // We do not want it to be verbose
+      new File("fig2_2.hdr"),
+      new File("fig2_2.bdy")
+    );
 
     printTestOutput("Taking the intersection of Figure 2.1 and Figure 2.2 (and comparing the result to the first automaton in Figure 2.15)...", 3);
-    result = Automaton.intersection(fig2_1, fig2_2);
+    result = Automaton.intersection(fig2_1, fig2_2, new File("intersection.hdr"), new File("intersection.bdy"));
 
     result.generateInputForGUI();
     printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T"), counter);
@@ -536,16 +538,17 @@ public class TestAutomata {
 
     printTestOutput("Instantiating automaton from Figure 2.13(b)...", 3);
     Automaton fig2_13b = AutomatonGenerator.generateFromGUICode(
-        "a,T,T\nb,T,T\ng,T,T", // Events
-        "@zero,F\none,F\ntwo,T", // States 
-        "zero,a,one\none,b,two\ntwo,g,zero", // Transitions
-        1, // Number of controllers
-        false, // We do not want it to be verbose
-        new File("fig2_13b.hdr")
-      );
+      "a,T,T\nb,T,T\ng,T,T", // Events
+      "@zero,F\none,F\ntwo,T", // States 
+      "zero,a,one\none,b,two\ntwo,g,zero", // Transitions
+      1, // Number of controllers
+      false, // We do not want it to be verbose
+      new File("fig2_13b.hdr"),
+      new File("fig2_13b.bdy")
+    );
 
     printTestOutput("Taking the intersection of Figure 2.2 and Figure 2.13(b) (and comparing the result to the second automaton in Figure 2.15)...", 3);
-    result = Automaton.intersection(fig2_2, fig2_13b);
+    result = Automaton.intersection(fig2_2, fig2_13b, new File("intersection.hdr"), new File("intersection.bdy"));
 
     result.generateInputForGUI();
     printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T"), counter);
@@ -554,26 +557,28 @@ public class TestAutomata {
 
     printTestOutput("Instantiating the first automaton from Figure 2.20...", 3);
     Automaton fig2_20a = AutomatonGenerator.generateFromGUICode(
-        "a1\na2\nb\nr", // Events
-        "@x1,F\nx2,F\nx3,T", // States 
-        "x1,a1,x2\nx1,a2,x2\nx2,b,x3\nx3,r,x1", // Transitions
-        1, // Number of controllers
-        false, // We do not want it to be verbose
-        new File("fig2_20a.hdr")
-      );
+      "a1\na2\nb\nr", // Events
+      "@x1,F\nx2,F\nx3,T", // States 
+      "x1,a1,x2\nx1,a2,x2\nx2,b,x3\nx3,r,x1", // Transitions
+      1, // Number of controllers
+      false, // We do not want it to be verbose
+      new File("fig2_20a.hdr"),
+      new File("fig2_20a.bdy")
+    );
 
     printTestOutput("Instantiating the second automaton from Figure 2.20...", 3);
     Automaton fig2_20b = AutomatonGenerator.generateFromGUICode(
-        "a1\nb\nc1\nr\na2\nc2", // Events
-        "@y1,F\ny2,F\ny3,F\ny4,F\ny5,F\ny6,F", // States 
-        "y1,a1,y2\ny2,b,y4\ny4,r,y1\ny4,c1,y6\ny6,r,y1\ny1,a2,y3\ny3,b,y5\ny5,c2,y6\ny5,r,y1", // Transitions
-        1, // Number of controllers
-        false, // We do not want it to be verbose
-        new File("fig2_20b.hdr")
-      );
+      "a1\nb\nc1\nr\na2\nc2", // Events
+      "@y1,F\ny2,F\ny3,F\ny4,F\ny5,F\ny6,F", // States 
+      "y1,a1,y2\ny2,b,y4\ny4,r,y1\ny4,c1,y6\ny6,r,y1\ny1,a2,y3\ny3,b,y5\ny5,c2,y6\ny5,r,y1", // Transitions
+      1, // Number of controllers
+      false, // We do not want it to be verbose
+      new File("fig2_20b.hdr"),
+      new File("fig2_20b.bdy")
+    );
 
     printTestOutput("Taking the intersection of the first two automata in Figure 2.20 (and comparing the result to the third automaton in Figure 2.20)...", 3);
-    result = Automaton.intersection(fig2_20a, fig2_20b);
+    result = Automaton.intersection(fig2_20a, fig2_20b, new File("intersection.hdr"), new File("intersection.bdy"));
 
     result.generateInputForGUI();
     printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a1,T,T\na2,T,T\nb,T,T\nr,T,T"), counter);
@@ -585,7 +590,7 @@ public class TestAutomata {
     printTestOutput("UNION OPERATION: ", 2);
 
     printTestOutput("Taking the union of Figure 2.1 and Figure 2.2 (and comparing the result to the automaton in Figure 2.16)...", 3);
-    result = Automaton.union(fig2_1, fig2_2);
+    result = Automaton.union(fig2_1, fig2_2, new File("union.hdr"), new File("union.bdy"));
 
     result.generateInputForGUI();
     printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T\ng,T,T"), counter);
@@ -594,36 +599,44 @@ public class TestAutomata {
 
     printTestOutput("Instantiating the first automaton from Figure 2.17...", 3);
     Automaton fig2_17a = AutomatonGenerator.generateFromGUICode(
-        "a,T,T\nb,T,T\nc,T,T", // Events
-        "@one,T\ntwo,F", // States 
-        "one,c,one\none,a,two\ntwo,b,two", // Transitions
-        1, // Number of controllers
-        false, // We do not want it to be verbose
-        new File("fig2_17a.hdr")
-      );
+      "a,T,T\nb,T,T\nc,T,T", // Events
+      "@one,T\ntwo,F", // States 
+      "one,c,one\none,a,two\ntwo,b,two", // Transitions
+      1, // Number of controllers
+      false, // We do not want it to be verbose
+      new File("fig2_17a.hdr"),
+      new File("fig2_17a.bdy")
+    );
 
     printTestOutput("Instantiating the second automaton from Figure 2.17...", 3);
     Automaton fig2_17b = AutomatonGenerator.generateFromGUICode(
-        "b,T,T\na,T,T\nd,T,T", // Events
-        "@A,T\nB,F", // States 
-        "A,b,A\nA,a,B\nB,d,B", // Transitions
-        1, // Number of controllers
-        false, // We do not want it to be verbose
-        new File("fig2_17b.hdr")
-      );
+      "b,T,T\na,T,T\nd,T,T", // Events
+      "@A,T\nB,F", // States 
+      "A,b,A\nA,a,B\nB,d,B", // Transitions
+      1, // Number of controllers
+      false, // We do not want it to be verbose
+      new File("fig2_17b.hdr"),
+      new File("fig2_17b.bdy")
+    );
 
     printTestOutput("Instantiating the third automaton from Figure 2.17...", 3);
     Automaton fig2_17c = AutomatonGenerator.generateFromGUICode(
-        "c,T,T\nb,T,T\na,T,T", // Events
-        "@D,T\nE,F", // States 
-        "D,c,D\nD,b,E\nE,a,E", // Transitions
-        1, // Number of controllers
-        false, // We do not want it to be verbose
-        new File("fig2_17c.hdr")
-      );
+      "c,T,T\nb,T,T\na,T,T", // Events
+      "@D,T\nE,F", // States 
+      "D,c,D\nD,b,E\nE,a,E", // Transitions
+      1, // Number of controllers
+      false, // We do not want it to be verbose
+      new File("fig2_17c.hdr"),
+      new File("fig2_17c.bdy")
+    );
 
     printTestOutput("Taking the union of the three automata in Figure 2.17 (and comparing the result to the automaton described in Example 2.17)...", 3);
-    result = Automaton.union(Automaton.union(fig2_17a, fig2_17b), fig2_17c);
+    result = Automaton.union(
+      Automaton.union(fig2_17a, fig2_17b, new File("union1.hdr"), new File("union1.bdy")),
+      fig2_17c,
+      new File("union2.hdr"),
+      new File("union2.bdy")
+    );
 
     result.generateInputForGUI();
     printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T\nc,T,T\nd,T,T"), counter);
@@ -636,16 +649,17 @@ public class TestAutomata {
 
     printTestOutput("Instantiating an automaton...", 3);
     Automaton synchronizedCompositionExample = AutomatonGenerator.generateFromGUICode(
-        "a,TF,TF\nb,FT,FT\no,TT,TT", // Events
-        "@1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T", // States
-        "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD", // Transitions
-        2, // Number of controllers
-        false, // We do not want it to be verbose
-        new File("synchronizedCompositionExample.hdr")
-      );
+      "a,TF,TF\nb,FT,FT\no,TT,TT", // Events
+      "@1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T", // States
+      "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD", // Transitions
+      2, // Number of controllers
+      false, // We do not want it to be verbose
+      new File("synchronizedCompositionExample.hdr"),
+      new File("synchronizedCompositionExample.bdy")
+    );
 
     printTestOutput("Taking the synchronized composition of an automaton...", 3);
-    result = synchronizedCompositionExample.synchronizedComposition();
+    result = synchronizedCompositionExample.synchronizedComposition(new File("synchronizedComposition.hdr"), new File("synchronizedComposition.bdy"));
 
     result.generateInputForGUI();
     printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "<a_a_*>,T,T\n<b_*_b>,T,T\n<*_b_*>,T,T\n<*_*_a>,T,T\n<o_o_o>,T,T"), counter);
@@ -660,7 +674,7 @@ public class TestAutomata {
 
     try {
 
-      result = result.addCommunications();
+      result = result.addCommunications(new File("addCommunications.hdr"), new File("addCommunications.bdy"));
       result.generateInputForGUI();
       printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "<a_a_*>,T,T\n<b_*_b>,T,T\n<*_b_*>,T,T\n<*_*_a>,T,T\n<o_o_o>,T,T\n<*_b_a>,T,T\n<b_b_b>,T,T\n<a_a_a>,T,T"), counter);
       printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@1_1_1,F\n1_1_2,F\n1_3_1,F\n1_3_2,F\n2_2_1,F\n2_2_2,F\n2_4_1,F\n2_4_2,F\n2_5_1,F\n2_5_2,F\n3_1_3,F\n3_1_4,F\n3_1_5,F\n3_3_3,F\n3_3_4,F\n3_3_5,F\n4_2_3,F\n4_2_4,F\n4_2_5,F\n4_4_3,F\n4_4_4,F\n4_4_5,F\n4_5_3,F\n4_5_4,F\n4_5_5,F\n5_2_3,F\n5_2_4,F\n5_2_5,F\n5_4_3,F\n5_4_4,F\n5_4_5,F\n5_5_3,F\n5_5_4,F\n5_5_5,F\n6_6_6,F\n6_6_7,F\n6_7_6,F\n6_7_7,F\n7_6_6,F\n7_6_7,F\n7_7_6,F\n7_7_7,F"), counter);
@@ -679,14 +693,15 @@ public class TestAutomata {
     printTestOutput("Add communications to the same automaton as above (but this time generated by GUI input code)...", 3);
     printTestOutput("Instantiating an automaton...", 3);
     Automaton synchronizedComposition = AutomatonGenerator.generateFromGUICode(
-        "<a_a_*>,T,T\n<b_*_b>,T,T\n<*_b_*>,T,T\n<*_*_a>,T,T\n<o_o_o>,T,T", // Events
-        "@1_1_1,F\n1_1_2,F\n1_3_1,F\n1_3_2,F\n2_2_1,F\n2_2_2,F\n2_4_1,F\n2_4_2,F\n2_5_1,F\n2_5_2,F\n3_1_3,F\n3_1_4,F\n3_1_5,F\n3_3_3,F\n3_3_4,F\n3_3_5,F\n4_2_3,F\n4_2_4,F\n4_2_5,F\n4_4_3,F\n4_4_4,F\n4_4_5,F\n4_5_3,F\n4_5_4,F\n4_5_5,F\n5_2_3,F\n5_2_4,F\n5_2_5,F\n5_4_3,F\n5_4_4,F\n5_4_5,F\n5_5_3,F\n5_5_4,F\n5_5_5,F\n6_6_6,F\n6_6_7,F\n6_7_6,F\n6_7_7,F\n7_6_6,F\n7_6_7,F\n7_7_6,F\n7_7_7,F", // States
-        "1_1_1,<a_a_*>,2_2_1\n1_1_1,<b_*_b>,3_1_3\n1_1_1,<*_b_*>,1_3_1\n1_1_1,<*_*_a>,1_1_2\n1_1_2,<a_a_*>,2_2_2\n1_1_2,<b_*_b>,3_1_4\n1_1_2,<*_b_*>,1_3_2\n1_3_1,<a_a_*>,2_5_1\n1_3_1,<b_*_b>,3_3_3\n1_3_1,<*_*_a>,1_3_2\n1_3_2,<a_a_*>,2_5_2\n1_3_2,<b_*_b>,3_3_4\n2_2_1,<b_*_b>,4_2_3\n2_2_1,<*_b_*>,2_4_1\n2_2_1,<*_*_a>,2_2_2\n2_2_2,<b_*_b>,4_2_4\n2_2_2,<*_b_*>,2_4_2\n2_4_1,<b_*_b>,4_4_3\n2_4_1,<*_*_a>,2_4_2\n2_4_2,<b_*_b>,4_4_4\n2_5_1,<b_*_b>,4_5_3\n2_5_1,<*_*_a>,2_5_2\n2_5_2,<b_*_b>,4_5_4\n3_1_3,<a_a_*>,5_2_3\n3_1_3,<*_b_*>,3_3_3\n3_1_3,<*_*_a>,3_1_5\n3_1_4,<a_a_*>,5_2_4\n3_1_4,<*_b_*>,3_3_4\n3_1_5,<a_a_*>,5_2_5\n3_1_5,<*_b_*>,3_3_5\n3_3_3,<a_a_*>,5_5_3\n3_3_3,<*_*_a>,3_3_5\n3_3_4,<a_a_*>,5_5_4\n3_3_5,<a_a_*>,5_5_5\n4_2_3,<*_b_*>,4_4_3\n4_2_3,<*_*_a>,4_2_5\n4_2_4,<*_b_*>,4_4_4\n4_2_5,<*_b_*>,4_4_5\n4_4_3,<*_*_a>,4_4_5\n4_4_4,<o_o_o>,6_6_6\n4_4_5,<o_o_o>,6_6_7\n4_5_3,<*_*_a>,4_5_5\n4_5_4,<o_o_o>,6_7_6\n4_5_5,<o_o_o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*_b_*>,5_4_3\n5_2_3,<*_*_a>,5_2_5\n5_2_4,<*_b_*>,5_4_4\n5_2_5,<*_b_*>,5_4_5\n5_4_3,<*_*_a>,5_4_5\n5_4_4,<o_o_o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o_o_o>,7_6_7\n5_5_3,<*_*_a>,5_5_5\n5_5_4,<o_o_o>,7_7_6\n5_5_5,<o_o_o>,7_7_7", // Transitions
-        1, // Number of controllers
-        false, // We do not want it to be verbose
-        new File("synchronizedComposition.hdr")
-      );
-    result = synchronizedComposition.addCommunications();
+      "<a_a_*>,T,T\n<b_*_b>,T,T\n<*_b_*>,T,T\n<*_*_a>,T,T\n<o_o_o>,T,T", // Events
+      "@1_1_1,F\n1_1_2,F\n1_3_1,F\n1_3_2,F\n2_2_1,F\n2_2_2,F\n2_4_1,F\n2_4_2,F\n2_5_1,F\n2_5_2,F\n3_1_3,F\n3_1_4,F\n3_1_5,F\n3_3_3,F\n3_3_4,F\n3_3_5,F\n4_2_3,F\n4_2_4,F\n4_2_5,F\n4_4_3,F\n4_4_4,F\n4_4_5,F\n4_5_3,F\n4_5_4,F\n4_5_5,F\n5_2_3,F\n5_2_4,F\n5_2_5,F\n5_4_3,F\n5_4_4,F\n5_4_5,F\n5_5_3,F\n5_5_4,F\n5_5_5,F\n6_6_6,F\n6_6_7,F\n6_7_6,F\n6_7_7,F\n7_6_6,F\n7_6_7,F\n7_7_6,F\n7_7_7,F", // States
+      "1_1_1,<a_a_*>,2_2_1\n1_1_1,<b_*_b>,3_1_3\n1_1_1,<*_b_*>,1_3_1\n1_1_1,<*_*_a>,1_1_2\n1_1_2,<a_a_*>,2_2_2\n1_1_2,<b_*_b>,3_1_4\n1_1_2,<*_b_*>,1_3_2\n1_3_1,<a_a_*>,2_5_1\n1_3_1,<b_*_b>,3_3_3\n1_3_1,<*_*_a>,1_3_2\n1_3_2,<a_a_*>,2_5_2\n1_3_2,<b_*_b>,3_3_4\n2_2_1,<b_*_b>,4_2_3\n2_2_1,<*_b_*>,2_4_1\n2_2_1,<*_*_a>,2_2_2\n2_2_2,<b_*_b>,4_2_4\n2_2_2,<*_b_*>,2_4_2\n2_4_1,<b_*_b>,4_4_3\n2_4_1,<*_*_a>,2_4_2\n2_4_2,<b_*_b>,4_4_4\n2_5_1,<b_*_b>,4_5_3\n2_5_1,<*_*_a>,2_5_2\n2_5_2,<b_*_b>,4_5_4\n3_1_3,<a_a_*>,5_2_3\n3_1_3,<*_b_*>,3_3_3\n3_1_3,<*_*_a>,3_1_5\n3_1_4,<a_a_*>,5_2_4\n3_1_4,<*_b_*>,3_3_4\n3_1_5,<a_a_*>,5_2_5\n3_1_5,<*_b_*>,3_3_5\n3_3_3,<a_a_*>,5_5_3\n3_3_3,<*_*_a>,3_3_5\n3_3_4,<a_a_*>,5_5_4\n3_3_5,<a_a_*>,5_5_5\n4_2_3,<*_b_*>,4_4_3\n4_2_3,<*_*_a>,4_2_5\n4_2_4,<*_b_*>,4_4_4\n4_2_5,<*_b_*>,4_4_5\n4_4_3,<*_*_a>,4_4_5\n4_4_4,<o_o_o>,6_6_6\n4_4_5,<o_o_o>,6_6_7\n4_5_3,<*_*_a>,4_5_5\n4_5_4,<o_o_o>,6_7_6\n4_5_5,<o_o_o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*_b_*>,5_4_3\n5_2_3,<*_*_a>,5_2_5\n5_2_4,<*_b_*>,5_4_4\n5_2_5,<*_b_*>,5_4_5\n5_4_3,<*_*_a>,5_4_5\n5_4_4,<o_o_o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o_o_o>,7_6_7\n5_5_3,<*_*_a>,5_5_5\n5_5_4,<o_o_o>,7_7_6\n5_5_5,<o_o_o>,7_7_7", // Transitions
+      1, // Number of controllers
+      false, // We do not want it to be verbose
+      new File("synchronizedComposition.hdr"),
+      new File("synchronizedComposition.bdy")
+    );
+    result = synchronizedComposition.addCommunications(new File("addCommunications.hdr"), new File("addCommunications.bdy"));
 
     result.generateInputForGUI();
     printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "<a_a_*>,T,T\n<b_*_b>,T,T\n<*_b_*>,T,T\n<*_*_a>,T,T\n<o_o_o>,T,T\n<*_b_a>,T,T\n<b_b_b>,T,T\n<a_a_a>,T,T"), counter);

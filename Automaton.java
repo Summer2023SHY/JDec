@@ -88,7 +88,6 @@ public class Automaton {
 
   // Events
   private Set<Event> events = new TreeSet<Event>(); // Due to Event's compareTo and equals implementations, a TreeSet cannot not guarantee that it is actually a set (considering changing this to an ArrayList)
-  private Set<Event> activeEvents = new HashSet<Event>();
 
   // Basic properties of the automaton
   private long nStates      = 0;
@@ -115,7 +114,7 @@ public class Automaton {
 
   // File variables
   private String headerFileName = DEFAULT_HEADER_FILE_NAME;
-  private String bodyFileName = DEFAULT_BODY_FILE_NAME;
+  private String bodyFileName   = DEFAULT_BODY_FILE_NAME;
   private File headerFile;
   private File bodyFile;
   private RandomAccessFile headerRAFile; // Contains basic information about automaton, needed in order to read the bodyFile, as well as the events
@@ -147,12 +146,13 @@ public class Automaton {
   /**
    * Implicit constructor: create an automaton with a specified number of controllers.
    * @param headerFile    The file where the header should be stored
+   * @param bodyFile      The file where the body should be stored
    * @param nControllers  The number of controllers that this automaton has
    **/
-  public Automaton(File headerFile, int nControllers) {
+  public Automaton(File headerFile, File bodyFile, int nControllers) {
     this(
-      (headerFile == null) ? DEFAULT_HEADER_FILE : headerFile,
-      (headerFile == null) ? DEFAULT_BODY_FILE : new File(headerFile.getName().substring(0, headerFile.getName().length() - 4) + ".bdy"),
+      (headerFile == null || bodyFile == null) ? DEFAULT_HEADER_FILE : headerFile,
+      (headerFile == null || bodyFile == null) ? DEFAULT_BODY_FILE : bodyFile,
       DEFAULT_EVENT_CAPACITY,
       DEFAULT_STATE_CAPACITY,
       DEFAULT_TRANSITION_CAPACITY,
@@ -165,12 +165,13 @@ public class Automaton {
   /**
    * Implicit constructor: load automaton from file.
    * @param headerFile  The file where the header should be stored
+   * @param bodyFile    The file where the body should be stored
    * @param clearFiles  Whether or not the header and body files should be wiped before use
    **/
-  public Automaton(File headerFile, boolean clearFiles) {
+  public Automaton(File headerFile, File bodyFile, boolean clearFiles) {
     this(
-      (headerFile == null) ? DEFAULT_HEADER_FILE : headerFile,
-      (headerFile == null) ? DEFAULT_BODY_FILE   : new File(headerFile.getName().substring(0, headerFile.getName().length() - 4) + ".bdy"),
+      (headerFile == null || bodyFile == null) ? DEFAULT_HEADER_FILE : headerFile,
+      (headerFile == null || bodyFile == null) ? DEFAULT_BODY_FILE : bodyFile,
       DEFAULT_EVENT_CAPACITY,
       DEFAULT_STATE_CAPACITY,
       DEFAULT_TRANSITION_CAPACITY,
@@ -215,6 +216,14 @@ public class Automaton {
     this.headerFileName = headerFile.getName();
     this.bodyFileName   = bodyFile.getName();
 
+      /* Error checking */
+
+    if (headerFileName.contains(".bdy") || !headerFileName.contains(".hdr"))
+      System.err.println("ERROR: Header file name is " + headerFileName + ".");
+
+    if (bodyFileName.contains(".hdr") || !bodyFileName.contains(".bdy"))
+      System.err.println("ERROR: Body file name is " + bodyFileName + ".");
+
       /* These variables will be overridden if we are loading information from file */
 
     this.eventCapacity      = eventCapacity;
@@ -247,13 +256,15 @@ public class Automaton {
 
   /**
    * Create a new copy of this automaton that has all unreachable states and transitions removed.
+   * @param newHeaderFile  The header file where the accesible automaton should be stored
+   * @param newBodyFile    The body file where the accesible automaton should be stored
    * @return the accessible automaton
    **/
-  public Automaton accessible() {
+  public Automaton accessible(File newHeaderFile, File newBodyFile) {
 
       /* Setup */
 
-    Automaton automaton = new Automaton(new File("accessible.hdr"), nControllers);
+    Automaton automaton = new Automaton(newHeaderFile, newBodyFile, nControllers);
 
     // Add events
     automaton.addAllEvents(events);
@@ -323,15 +334,17 @@ public class Automaton {
 
   /**
    * Create a new copy of this automaton that has all states removed which are unable to reach a marked state.
+   * @param newHeaderFile  The header file where the new automaton should be stored
+   * @param newBodyFile    The body file where the new automaton should be stored
    * @return the co-accessible automaton
    **/
-  public Automaton coaccessible() {
+  public Automaton coaccessible(File newHeaderFile, File newBodyFile) {
 
-      Automaton invertedAutomaton = invert(this);
+    Automaton invertedAutomaton = invert(this, new File("coaccessibleTMP.hdr"), new File("coaccessibleTMP.bdy"));
 
       /* Build co-accessible automaton by seeing which states are accessible from the marked states in the inverted automaton */
 
-    Automaton automaton = new Automaton(new File("coaccessible.hdr"), nControllers);
+    Automaton automaton = new Automaton(newHeaderFile, newBodyFile, nControllers);
 
     // Add events
     automaton.addAllEvents(events);
@@ -408,15 +421,17 @@ public class Automaton {
   /**
    * Create a new copy of this automaton that has the marking status of all states toggled, and that has an added
    * 'dead' or 'dump' state where all undefined transitions lead.
+   * @param newHeaderFile  The header file where the new automaton should be stored
+   * @param newBodyFile    The body file where the new automaton should be stored
    * @return the complement automaton
    **/
-  public Automaton complement() {
+  public Automaton complement(File newHeaderFile, File newBodyFile) {
 
       /* Setup */
 
     Automaton automaton = new Automaton(
-      new File("complement.hdr"),
-      new File("complement.bdy"),
+      newHeaderFile,
+      newBodyFile,
       eventCapacity,
       stateCapacity,
       events.size(), // This is the new number of transitions that will be required for each state
@@ -494,13 +509,15 @@ public class Automaton {
    * Create a new version of the specified automaton which has all of the transitions going the opposite direction.
    * NOTE: This is just a shallow copy of the automaton (no special transition data is retained), which makes it slightly more efficient.
    * @param automaton The automaton to invert
+   * @param newHeaderFile  The header file where the new automaton should be stored
+   * @param newBodyFile    The body file where the new automaton should be stored
    * @return the inverted automaton
    **/
-  public static Automaton invert(Automaton automaton) {
+  public static Automaton invert(Automaton automaton, File newHeaderFile, File newBodyFile) {
 
       /* Create a new automaton that has each of the transitions going the opposite direction */
 
-    Automaton invertedAutomaton = new Automaton(automaton.getEventCapacity(), automaton.getStateCapacity(), automaton.getTransitionCapacity(), automaton.getLabelLength(), automaton.getNumberOfControllers(), true);
+    Automaton invertedAutomaton = new Automaton(newHeaderFile, newBodyFile, automaton.getEventCapacity(), automaton.getStateCapacity(), automaton.getTransitionCapacity(), automaton.getLabelLength(), automaton.getNumberOfControllers(), true);
 
     // Add events
     invertedAutomaton.addAllEvents(automaton.getEvents());
@@ -560,14 +577,16 @@ public class Automaton {
    * Create a new copy of this automaton that is trim (both accessible and co-accessible).
    * NOTE: I am taking the accessible part of the automaton before the co-accessible part of the automaton
    * because the accessible() method has less overhead than the coaccessible() method.
+   * @param newHeaderFile  The header file where the new automaton should be stored
+   * @param newBodyFile    The body file where the new automaton should be stored
    * @return the trim automaton, or null if there was no initial state specified
    **/
-  public Automaton trim() {
+  public Automaton trim(File newHeaderFile, File newBodyFile) {
 
     if (initialState == 0)
       return null;
 
-    return accessible().coaccessible();
+    return accessible(new File("accessibleTMP.hdr"), new File("accessibleTMP.bdy")).coaccessible(newHeaderFile, newBodyFile);
 
   }
 
@@ -677,9 +696,11 @@ public class Automaton {
    * Generate the intersection of the two specified automata.
    * @param first   The first automaton
    * @param second  The second automaton
+   * @param newHeaderFile  The header file where the new automaton should be stored
+   * @param newBodyFile    The body file where the new automaton should be stored
    * @return the intersection, or null if the number of controllers do not match
    **/
-  public static Automaton intersection(Automaton first, Automaton second) {
+  public static Automaton intersection(Automaton first, Automaton second, File newHeaderFile, File newBodyFile) {
 
       /* Error checking */
 
@@ -688,7 +709,7 @@ public class Automaton {
 
       /* Setup */
 
-    Automaton automaton = new Automaton(new File("intersection.hdr"), first.getNumberOfControllers());
+    Automaton automaton = new Automaton(newHeaderFile, newBodyFile, first.getNumberOfControllers());
 
     // These two stacks should always have the same size
     Stack<Long> stack1 = new Stack<Long>(); 
@@ -774,9 +795,11 @@ public class Automaton {
    * Generate the union of the two specified automata.
    * @param first   The first automaton
    * @param second  The second automaton
+   * @param newHeaderFile  The header file where the new automaton should be stored
+   * @param newBodyFile    The body file where the new automaton should be stored
    * @return the union, or null if the number of controllers do not match
    **/
-  public static Automaton union(Automaton first, Automaton second) {
+  public static Automaton union(Automaton first, Automaton second, File newHeaderFile, File newBodyFile) {
 
       /* Error checking */
 
@@ -785,7 +808,7 @@ public class Automaton {
 
       /* Setup */
 
-    Automaton automaton = new Automaton(new File("union.hdr"), true);
+    Automaton automaton = new Automaton(newHeaderFile, newBodyFile, true);
 
     // These two stacks should always have the same size
     Stack<Long> stack1 = new Stack<Long>(); 
@@ -907,15 +930,17 @@ public class Automaton {
 
   /**
    * Apply the synchronized composition algorithm to an automaton to produce the U-Structure.
+   * @param newHeaderFile  The header file where the new automaton should be stored
+   * @param newBodyFile    The body file where the new automaton should be stored
    * @return the U-Structure
    **/
-  public Automaton synchronizedComposition() {
+  public Automaton synchronizedComposition(File newHeaderFile, File newBodyFile) {
 
       /* Setup */
 
     Stack<Long> stack = new Stack<Long>();
     HashSet<Long> valuesInStack = new HashSet<Long>();
-    Automaton automaton = new Automaton(new File("synchronizedComposition.hdr"), true);
+    Automaton automaton = new Automaton(newHeaderFile, newBodyFile, true);
 
       /* Add initial state to the stack */
 
@@ -1132,9 +1157,11 @@ public class Automaton {
 
   /**
    * Generate a new automaton, with all communications added (potential communications are marked).
+   * @param newHeaderFile  The header file where the new automaton should be stored
+   * @param newBodyFile    The body file where the new automaton should be stored
    * @return the automaton with the added transitions
    **/
-  public Automaton addCommunications() {
+  public Automaton addCommunications(File newHeaderFile, File newBodyFile) {
 
     // I'm not sure how we're supposed to handle automata with more than 1 controller (since our U-Structure has just one controller)
     if (nControllers != 1)
@@ -1142,9 +1169,16 @@ public class Automaton {
     
       /* Setup */
 
-    List<LabelVector> leastUpperBounds = new ArrayList<LabelVector>(generateLeastUpperBounds());
-    List<CommunicationLabelVector> potentialCommunications = new ArrayList<CommunicationLabelVector>(findPotentialCommunicationLabels(leastUpperBounds));
-    Automaton automaton = duplicate("addCommunications");
+    // Generate all potential
+    Set<LabelVector> leastUpperBounds = new HashSet<LabelVector>();
+    for (Event e : events)
+      leastUpperBounds.add(new LabelVector(e.getLabel()));
+    Set<CommunicationLabelVector> potentialCommunications = findPotentialCommunicationLabels(leastUpperBounds);
+    
+    // Generate all least upper bounds
+    generateLeastUpperBounds(leastUpperBounds);
+    
+    Automaton automaton = duplicate(newHeaderFile, newBodyFile);
 
       /* Add communications (marking the potential communications) */
 
@@ -1173,7 +1207,6 @@ public class Automaton {
 
             // Add transition
             automaton.addTransition(startingState.getID(), id, destinationState.getID());
-
 
             // There could be more than one potential communication, so we need to mark them all
             boolean found = false;
@@ -1272,7 +1305,7 @@ public class Automaton {
    * @param leastUpperBounds  The set of LUBs
    * @return the set of potential communications, including communication roles
    **/
-  private Set<CommunicationLabelVector> findPotentialCommunicationLabels(List<LabelVector> leastUpperBounds) {
+  private Set<CommunicationLabelVector> findPotentialCommunicationLabels(Set<LabelVector> leastUpperBounds) {
 
       /* Separate observable and unobservable labels */
 
@@ -1284,6 +1317,9 @@ public class Automaton {
         unobservableLabels.add(v);
       else
         observableLabels.add(v);
+
+    // Find all LUB's of the unobservable labels (which will add communications where there is more than one reciever)
+    generateLeastUpperBounds(unobservableLabels);
 
       /* Find potential communications */
 
@@ -1382,16 +1418,10 @@ public class Automaton {
   }
 
   /**
-   * Generate all possible least upper bounds (LUBs) of the event vectors (after synchronized composition).
-   * @return the set of all LUBs in the form of event vectors
+   * Expand the specified set of event vectors to include all possible least upper bounds (LUBs).
+   * @param leastUpperBounds  The set of all LUBs in the form of event vectors 
    **/
-  private Set<LabelVector> generateLeastUpperBounds() {
-
-      /* Setup */
-
-    Set<LabelVector> leastUpperBounds = new HashSet<LabelVector>();
-    for (Event e : events)
-      leastUpperBounds.add(new LabelVector(e.getLabel()));
+  private void generateLeastUpperBounds(Set<LabelVector> leastUpperBounds) {
 
       /* Continue to find LUBs using pairs of event vectors until there are no new ones left to find */
 
@@ -1407,8 +1437,8 @@ public class Automaton {
             /* Error checking */
 
           if (v1.getSize() == -1 || v2.getSize() == -1 || v1.getSize() != v2.getSize()) {
-            System.err.println("ERROR: Bad event vectors. Least upper bounds generation aborted.");
-            return null;
+            System.err.println("ERROR: Bad event vectors. Pair of label vectors skipped.");
+            continue;
           }
 
             /* Build least upper bound */
@@ -1450,8 +1480,6 @@ public class Automaton {
 
     }
 
-    return leastUpperBounds;
-
   }
 
   /**
@@ -1468,7 +1496,7 @@ public class Automaton {
 
       /* Create inverted automaton, so that we can explore the automaton by crossing transitions from either direction */
 
-    Automaton invertedAutomaton = invert(this);
+    Automaton invertedAutomaton = invert(this, new File("generateAllFeasibleProtocolsTMP.hdr"), new File("generateAllFeasibleProtocolsTMP.bdy"));
 
       /* Generate list of feasible protocols */
 
@@ -1669,26 +1697,22 @@ public class Automaton {
    * @param protocol  The chosen protocol
    * @return the pruned automaton that had the specified protocol applied
    **/
-  public Automaton generateUsingProtocol(Set<CommunicationData> protocol) {
+  public Automaton applyProtocol(Set<CommunicationData> protocol) {
 
-    // Automaton automaton = duplicate("protocol");
+    Automaton automaton = duplicate(new File("protocolTMP.hdr"), new File("protocolTMP.bdy"));
 
-    //   /* Remove all communications that are not part of the protocol */
+      /* Remove all communications that are not part of the protocol */
 
-    // for (TransitionData data : nonPotentialCommunications) {
+    for (TransitionData data : nonPotentialCommunications)
+      automaton.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
 
-    //   automaton.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
+      /* Prune (which removes more transitions) */
 
-    // } 
+    // NOT YET IMPLEMENTED...
 
-    //   /* Prune (which removes more transitions) */
+      /* Return the accessible automaton */
 
-
-    //   /* Return the accessible automaton */
-
-    // return automaton.accessible();
-
-    return null;
+    return automaton.accessible(new File("protocol.hdr"), new File("protocol.bdy"));
 
   }
 
@@ -2114,7 +2138,7 @@ public class Automaton {
         State state = getState(s);
 
         if (state == null) {
-          System.err.println("ERROR: State could not be loaded. id=" + s);
+          System.err.println("ERROR: State could not be loaded.");
           continue;
         }
 
@@ -2230,13 +2254,11 @@ public class Automaton {
 
   /**
    * Duplicate this automaton and store it in a different set of files.
-   * @param fileName  The name of the new files, excluding the extension (ex: "file" will store the automaton in "file.hdr" and "file.bdy")
+   * @param newHeaderFile The new header file where the automaton is being copied to
+   * @param newBodyFile   The new body file where the automaton is being copied to
    * @return the duplicated automaton
    **/
-  public Automaton duplicate(String fileName) {
-
-    File newHeaderFile = new File(fileName + ".hdr");
-    File newBodyFile = new File(fileName + ".bdy");
+  public Automaton duplicate(File newHeaderFile, File newBodyFile) {
 
     try {
     
@@ -2248,7 +2270,7 @@ public class Automaton {
       return null;
     }
 
-    return new Automaton(newHeaderFile, false);
+    return new Automaton(newHeaderFile, newBodyFile, false);
 
   }
 
@@ -2850,10 +2872,11 @@ public class Automaton {
    * @param startingStateID The ID of the state where the transition originates from
    * @param eventID         The ID of the event that triggers the transition
    * @param targetStateID   The ID of the state where the transition leads to
+   * @return whether or not the addition was successful
    **/
   public boolean addTransition(long startingStateID, int eventID, long targetStateID) {
 
-      /* Create starting state from ID */
+      /* Get starting state from ID */
 
     State startingState  = getState(startingStateID);
 
@@ -2895,7 +2918,37 @@ public class Automaton {
       System.err.println("ERROR: Could not add transition to file.");
       return false;
     }
-    activeEvents.add(event);
+
+    return true;
+
+  }
+
+  /**
+   * Removes the specified transition.
+   * @param startingStateID The ID of the state where the transition originates from
+   * @param eventID         The ID of the event that triggers the transition
+   * @param targetStateID   The ID of the state where the transition leads to
+   * @return whether or not the removal was successful
+   **/
+  public boolean removeTransition(long startingStateID, int eventID, long targetStateID) {
+
+      /* Get starting state from ID */
+
+    State startingState  = getState(startingStateID);
+
+    if (startingState == null) {
+      System.err.println("ERROR: Could not remove transition from file (starting state does not exist).");
+      return false;
+    }
+
+      /* Remove transition and update the file */
+
+    Event event = getEvent(eventID);
+    startingState.removeTransition(new Transition(event, targetStateID));
+    if (!startingState.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID)) {
+      System.err.println("ERROR: Could not remove transition from file.");
+      return false;
+    }
 
     return true;
 
@@ -3403,14 +3456,6 @@ public class Automaton {
   }
 
   /**
-   * Return the set of all active events.
-   * @return the set of all active events
-   **/
-  public Set<Event> getActiveEvents() {
-    return activeEvents;
-  }
-
-  /**
    * Get the number of events that can be held in this automaton.
    * @return current event capacity
    **/
@@ -3497,6 +3542,22 @@ public class Automaton {
    **/
   public List<CommunicationData> getPotentialCommunications() {
     return potentialCommunications;
+  }
+
+  /**
+   * Get the header file where this automaton is being stored.
+   * @return header file
+   **/
+  public File getHeaderFile() {
+    return headerFile;
+  }
+
+  /**
+   * Get the body file where this automaton is being stored.
+   * @return body file
+   **/
+  public File getBodyFile() {
+    return bodyFile;
   }
 
 }

@@ -105,7 +105,7 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Check for equality by comparing labels.
-	 * @param obj - The event to compare this one to
+	 * @param obj  The event to compare this one to
 	 * @return whether or not the events are equal
 	 **/
 	@Override public boolean equals(Object obj) {

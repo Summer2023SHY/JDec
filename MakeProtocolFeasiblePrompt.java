@@ -3,6 +3,7 @@ import javax.swing.*;
 import java.awt.event.*;
 import java.awt.geom.*;
 import java.awt.*;
+import java.io.*;
 
 public class MakeProtocolFeasiblePrompt extends JFrame {
 
@@ -75,7 +76,9 @@ public class MakeProtocolFeasiblePrompt extends JFrame {
                 protocol.add(potentialCommunications.get(i));
       
             // Make the protocol feasible
-            Set<CommunicationData> feasibleProtocol = automaton.makeProtocolFeasible(protocol, Automaton.invert(automaton));
+            File headerFile = new File("invert.hdr");
+            File bodyFile = new File("invert.bdy");
+            Set<CommunicationData> feasibleProtocol = automaton.makeProtocolFeasible(protocol, Automaton.invert(automaton, headerFile, bodyFile));
             
             // Display results in another window
             java.util.List<Set<CommunicationData>> list = new ArrayList<Set<CommunicationData>>();

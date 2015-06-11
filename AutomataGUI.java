@@ -119,10 +119,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
   /**
    * Create a tab, and load in an automaton.
-   * @param automatonFile The header file of the stored automaton
-   * @param automaton     The automaton object
+   * @param automaton   The automaton object
    **/
-  private void createTab(File automatonFile, Automaton automaton) {
+  private void createTab(Automaton automaton) {
 
     // Create new tab
     createTab();
@@ -130,8 +129,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     // Set tab values
     AutomatonTab tab = tabs.get(newIndex);
-    tab.file = automatonFile;
-    tab.automaton = automaton;
+    tab.headerFile   = automaton.getHeaderFile();
+    tab.bodyFile     = automaton.getBodyFile();
+    tab.automaton    = automaton;
     tab.updateInputFields();
     tab.setSaved(true);
 
@@ -248,7 +248,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
         tab.transitionInput.getText(),
         (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue(),
         true,
-        tab.file
+        tab.headerFile,
+        tab.bodyFile
       );
     tab.automaton = automaton;
 
@@ -259,7 +260,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
     // Try to create graph image
     else {
 
-      String fileName = tab.file.getName();
+      String fileName = tab.headerFile.getName();
       String destinationFileName = currentDirectory + "/" + fileName.substring(0, fileName.length() - 4) + ".svg";
 
       if (automaton.generateImage(imageSize, Automaton.OutputMode.SVG, destinationFileName))
@@ -287,7 +288,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
         tab.transitionInput.getText(),
         (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue(),
         true,
-        tab.file
+        tab.headerFile,
+        tab.bodyFile
       );
     tab.automaton = automaton;
     tab.setSaved(true);
@@ -311,8 +313,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     // Create destination file name
     String destinationFileName = "untitled.png";
-    if (tab.file != null) {
-      String fileName = tab.file.getName();
+    if (tab.headerFile != null) {
+      String fileName = tab.headerFile.getName();
       destinationFileName = currentDirectory + "/" + fileName.substring(0, fileName.length() - 4) + ".png";
     }
 
@@ -430,7 +432,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         // Prompt user to save Automaton to the specified file
         if (saveFile("Choose .hdr File") != null) {
           tab.updateTabTitle();
-          tab.automaton.duplicate(tab.file.getName().substring(0, tab.file.getName().length() - 4));
+          tab.automaton.duplicate(tab.headerFile, tab.bodyFile);
         }
           
         break;
@@ -469,35 +471,46 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       case "Accessible":
 
-        Automaton automaton = tab.automaton.accessible();
+        File headerFile = new File("accessible.hdr");
+        File bodyFile = new File("accessible.bdy");
+        Automaton automaton = tab.automaton.accessible(headerFile, bodyFile);
 
         // Create new tab for the accessible automaton
         if (automaton == null)
           JOptionPane.showMessageDialog(null, "Please specify a starting state.", "Accessible Operation Failed", JOptionPane.ERROR_MESSAGE);
         else
-          createTab(new File("accessible.hdr"), automaton);
+          createTab(automaton);
         break;
 
       case "Co-Accessible":
 
+        headerFile = new File("coaccessible.hdr");
+        bodyFile = new File("coaccessible.bdy");
+
         // Create new tab for the co-accessible automaton
-        createTab(new File("coaccessible.hdr"), tab.automaton.coaccessible());
+        createTab(tab.automaton.coaccessible(headerFile, bodyFile));
         break;
 
       case "Trim":
 
-        automaton = tab.automaton.trim();
+        headerFile = new File("trim.hdr");
+        bodyFile = new File("trim.bdy");
+        automaton = tab.automaton.trim(headerFile, bodyFile);
 
         // Create new tab for the trim automaton
         if (automaton == null)
           JOptionPane.showMessageDialog(null, "Please specify a starting state.", "Trim Operation Failed", JOptionPane.ERROR_MESSAGE);
         else
-          createTab(new File("trim.hdr"), automaton);
+          createTab(automaton);
         break;
 
       case "Complement":
 
-        createTab(new File("complement.hdr"), tab.automaton.complement());
+        headerFile = new File("complement.hdr");
+        bodyFile = new File("complement.bdy");
+
+        // Create new tab for complement automaton
+        createTab(tab.automaton.complement(headerFile, bodyFile));
         break;
 
       case "Intersection":
@@ -505,12 +518,15 @@ public class AutomataGUI extends JFrame implements ActionListener {
         // Allow user to pick other automaton
         Automaton otherAutomaton = tabs.get(pickAutomaton("Which automaton would you like to take the intersection with?", index)).automaton;
 
+        headerFile = new File("intersection.hdr");
+        bodyFile = new File("intersection.bdy");
+
         // Create new tab with the intersection
-        Automaton intersection = Automaton.intersection(tab.automaton, otherAutomaton);
+        Automaton intersection = Automaton.intersection(tab.automaton, otherAutomaton, headerFile, bodyFile);
         if (intersection == null)
           JOptionPane.showMessageDialog(null, "Both automata must have the same number of controllers.", "Intersection Operation Failed", JOptionPane.ERROR_MESSAGE);
         else
-          createTab(new File("intersection.hdr"), intersection);
+          createTab(intersection);
         
         break;
 
@@ -519,34 +535,43 @@ public class AutomataGUI extends JFrame implements ActionListener {
         // Allow user to pick other automaton
         otherAutomaton = tabs.get(pickAutomaton("Which automaton would you like to take the union with?", index)).automaton;
 
+        headerFile = new File("union.hdr");
+        bodyFile = new File("union.bdy");
+
         // Create new tab with the union
-        Automaton union = Automaton.union(tab.automaton, otherAutomaton);
+        Automaton union = Automaton.union(tab.automaton, otherAutomaton, headerFile, bodyFile);
         if (union == null)
           JOptionPane.showMessageDialog(null, "Both automata must have the same number of controllers.", "Union Operation Failed", JOptionPane.ERROR_MESSAGE);
         else
-          createTab(new File("union.hdr"), union);
+          createTab(union);
 
         break;
 
       case "Synchronized Composition":
 
+        headerFile = new File("synchronizedComposition.hdr");
+        bodyFile = new File("synchronizedComposition.bdy");
+
         // Create new tab with the U-structure generated by synchronized composition
-        automaton = tab.automaton.synchronizedComposition();
+        automaton = tab.automaton.synchronizedComposition(headerFile, bodyFile);
         if (automaton == null)
           JOptionPane.showMessageDialog(null, "Please ensure that you specified a starting state.", "Synchronized Composition Operation Failed", JOptionPane.ERROR_MESSAGE);
         else
-          createTab(new File("synchronizedComposition.hdr"), automaton);
+          createTab(automaton);
 
         break;
 
       case "Add Communications":
 
+        headerFile = new File("addCommunications.hdr");
+        bodyFile = new File("addCommunications.bdy");
+
         // Create a copy of the current automaton with all communications added and potential communications marked
-        automaton = tab.automaton.addCommunications();
+        automaton = tab.automaton.addCommunications(headerFile, bodyFile);
         if (automaton == null)
           JOptionPane.showMessageDialog(null, "Please ensure that this automaton is a U-Structure generated by synchronized composition.", "Adding Communications Failed", JOptionPane.ERROR_MESSAGE);
         else
-          createTab(new File("addCommunications.hdr"), automaton);
+          createTab(automaton);
 
         break;
 
@@ -577,8 +602,18 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
   public void generateRandomAutomaton(String fileName, int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions, JProgressBar progressBar) {
 
-    Automaton automaton = AutomatonGenerator.generateRandom(fileName, nEvents, nStates, minTransitionsPerState, maxTransitionsPerState, nControllers, nBadTransitions, progressBar);
-    createTab(new File(fileName + ".hdr"), automaton);
+    Automaton automaton = AutomatonGenerator.generateRandom(
+      new File(fileName + ".hdr"),
+      new File(fileName + ".bdy"),
+      nEvents,
+      nStates,
+      minTransitionsPerState,
+      maxTransitionsPerState,
+      nControllers,
+      nBadTransitions,
+      progressBar
+    );
+    createTab(automaton);
 
   }
 
@@ -587,7 +622,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     AutomatonTab tab = tabs.get(index);
 
-    tab.automaton = new Automaton(tab.file, false);
+    tab.automaton = new Automaton(tab.headerFile, tab.bodyFile, false);
     tab.updateInputFields();
 
     // Generate an image (unless it's quite large)
@@ -629,12 +664,21 @@ public class AutomataGUI extends JFrame implements ActionListener {
     if (fileChooser.showOpenDialog(null) != JFileChooser.APPROVE_OPTION)
       return null;
 
-      /* Update last file opened and update current directory */
+      /* Update files in the tab and update current directory */
 
     if (fileChooser.getSelectedFile() != null) {
-      tabs.get(index).file = fileChooser.getSelectedFile();
+
+      // Update files
+      AutomatonTab tab = tabs.get(index);
+      File headerFile = fileChooser.getSelectedFile();
+      File bodyFile = new File(headerFile.getParentFile() + "/" + headerFile.getName().substring(0, headerFile.getName().length() - 4) + ".bdy");
+      tab.headerFile = headerFile;
+      tab.bodyFile = bodyFile;
+
+      // Update current directory
       currentDirectory = fileChooser.getSelectedFile().getParentFile();
       saveCurrentDirectory();
+
     }
 
     return fileChooser.getSelectedFile();
@@ -680,15 +724,19 @@ public class AutomataGUI extends JFrame implements ActionListener {
     if (name.indexOf(".") != -1)
       name = name.substring(0, name.indexOf("."));
 
-    File file = new File(fileChooser.getSelectedFile().getParentFile() + "/" + name + ".hdr");
+    File headerFile = new File(fileChooser.getSelectedFile().getParentFile() + "/" + name + ".hdr");
+    File bodyFile = new File(fileChooser.getSelectedFile().getParentFile() + "/" + name + ".bdy");
 
       /* Update last file opened and update current directory */
 
-    tabs.get(tabbedPane.getSelectedIndex()).file = file;
-    currentDirectory = file.getParentFile();
+    AutomatonTab tab = tabs.get(tabbedPane.getSelectedIndex());
+    tab.headerFile = headerFile;
+    tab.bodyFile = bodyFile;
+
+    currentDirectory = headerFile.getParentFile();
     saveCurrentDirectory();
 
-    return file;
+    return headerFile;
     
   }
 
@@ -703,11 +751,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
       AutomatonTab tab = tabs.get(i);
         
       // Skip automaton
-      if (i == indexToSkip || tab.file == null)
+      if (i == indexToSkip || tab.headerFile == null)
         continue;
 
       // Add automaton to list of options
-      optionsList.add(tab.file.getName());
+      optionsList.add(tab.headerFile.getName());
 
     }
 
@@ -728,7 +776,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
       /* Return index of chosen automaton */
 
     for (int i = 0; i < tabbedPane.getTabCount(); i++)
-      if (tabs.get(i).file != null && tabs.get(i).file.getName().equals(choice))
+      if (tabs.get(i).headerFile != null && tabs.get(i).headerFile.getName().equals(choice))
         return i;
 
     return -1;
@@ -803,15 +851,15 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       /* Public instance variables */
 
-    public JTextPane eventInput = null;
-    public JTextPane stateInput = null;
+    public JTextPane eventInput      = null;
+    public JTextPane stateInput      = null;
     public JTextPane transitionInput = null;
-
-    public JSpinner controllerInput = null;
+    public JSpinner controllerInput  = null;
 
     public Canvas canvas = null;
 
-    public File file = null;
+    public File headerFile = null;
+    public File bodyFile   = null;
 
     public Automaton automaton;
 
@@ -820,7 +868,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
     public int index = -1;
 
     public JButton generateAutomatonButton = null;
-    public JButton generateImageButton = null;
+    public JButton generateImageButton     = null;
 
       /* Constructor */
 
@@ -853,29 +901,29 @@ public class AutomataGUI extends JFrame implements ActionListener {
         /* Controller Input */
 
       JLabel controllerInputLabel = new JLabel("# Controllers:");
-      c.ipady = 0;
+      c.ipady   = 0;
       c.weightx = 0.5;
       c.weighty = 0.0;
-      c.gridx = 0;
-      c.gridy = 0;
+      c.gridx   = 0;
+      c.gridy   = 0;
       container.add(controllerInputLabel, c);
 
       controllerInput = new JSpinner(new SpinnerNumberModel(1, 1, Automaton.MAX_NUMBER_OF_CONTROLLERS, 1));
-      c.ipady = 0;
+      c.ipady   = 0;
       c.weightx = 0.5;
       c.weighty = 0.0;
-      c.gridx = 1;
-      c.gridy = 0;
+      c.gridx   = 1;
+      c.gridy   = 0;
       container.add(controllerInput, c);
 
         /* Event Input */
 
       JLabel eventInputInstructions = new JLabel("Enter events:");
-      c.ipady = 0;
+      c.ipady   = 0;
       c.weightx = 0.5;
       c.weighty = 0.0;
-      c.gridx = 0;
-      c.gridy = 1;
+      c.gridx   = 0;
+      c.gridy   = 1;
       container.add(new TooltipComponent(
           eventInputInstructions,
           "<html>1 event per line, formatted as <i>LABEL[,OBSERVABLE,CONTROLLABLE]</i>.<br>"
@@ -898,21 +946,21 @@ public class AutomataGUI extends JFrame implements ActionListener {
         }
       };
       watchForChanges(eventInput);
-      c.ipady = 100;
+      c.ipady   = 100;
       c.weightx = 0.5;
       c.weighty = 1.0;
-      c.gridx = 0;
-      c.gridy = 2;
+      c.gridx   = 0;
+      c.gridy   = 2;
       container.add(eventInputScrollPane, c);
 
         /* State Input */
 
       JLabel stateInputInstructions = new JLabel("Enter states:");
-      c.ipady = 0;
+      c.ipady   = 0;
       c.weightx = 0.5;
       c.weighty = 0.0;
-      c.gridx = 1;
-      c.gridy = 1;
+      c.gridx   = 1;
+      c.gridy   = 1;
       container.add(new TooltipComponent(
           stateInputInstructions,
           "<html>1 state per line, formatted as <i>[@]LABEL[,MARKED]</i> (where the '@' symbol denotes that this is the initial state).<br>"
@@ -931,11 +979,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
         }
       };
       watchForChanges(stateInput);
-      c.ipady = 100;
+      c.ipady   = 100;
       c.weightx = 0.5;
       c.weighty = 1.0;
-      c.gridx = 1;
-      c.gridy = 2;
+      c.gridx   = 1;
+      c.gridy   = 2;
       container.add(stateInputScrollPane, c);
 
         /* Transition Input */
@@ -943,11 +991,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
       c.gridwidth = 2;
 
       JLabel transitionInputInstructions = new JLabel("Enter transitions:");
-      c.ipady = 0;
+      c.ipady   = 0;
       c.weightx = 1.0;
       c.weighty = 0.0;
-      c.gridx = 0;
-      c.gridy = 3;
+      c.gridx   = 0;
+      c.gridy   = 3;
       container.add(new TooltipComponent(
           transitionInputInstructions,
           "<html>1 transition per line, formatted as <i>INITIAL_STATE,EVENT,TARGET_STATE[:SPECIAL_PROPERTIES]</i>"
@@ -968,11 +1016,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
         }
       };
       watchForChanges(transitionInput);
-      c.ipady = 200;
+      c.ipady   = 200;
       c.weightx = 0.5;
       c.weighty = 1.0;
-      c.gridx = 0;
-      c.gridy = 4;
+      c.gridx   = 0;
+      c.gridy   = 4;
       container.add(transitionInputScrollPane, c);
 
         /* Generate automaton button */
@@ -986,11 +1034,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
         }
 
       });
-      c.ipady = 0;
+      c.ipady   = 0;
       c.weightx = 0.5;
       c.weighty = 1.0;
-      c.gridx = 0;
-      c.gridy = 5;
+      c.gridx   = 0;
+      c.gridy   = 5;
       container.add(generateAutomatonButton, c);
 
       /* Generate automaton button */
@@ -1005,11 +1053,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
         }
 
       });
-      c.ipady = 0;
+      c.ipady   = 0;
       c.weightx = 0.5;
       c.weighty = 1.0;
-      c.gridx = 0;
-      c.gridy = 6;
+      c.gridx   = 0;
+      c.gridy   = 6;
       container.add(generateImageButton, c);
 
       return container;
@@ -1020,8 +1068,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       String title = "untitled";
 
-      if (file != null)
-        title = file.getName();
+      if (headerFile != null)
+        title = headerFile.getName();
 
       if (!saved)
         title += "*";

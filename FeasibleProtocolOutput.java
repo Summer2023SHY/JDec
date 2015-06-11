@@ -73,7 +73,7 @@ public class FeasibleProtocolOutput extends JFrame {
       button.addActionListener(new ActionListener() {
    
         public void actionPerformed(ActionEvent e) {
-          Automaton generatedAutomaton = automaton.generateUsingProtocol(protocol);
+          Automaton generatedAutomaton = automaton.applyProtocol(protocol);
         }
 
       });
