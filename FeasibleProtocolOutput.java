@@ -96,10 +96,11 @@ public class FeasibleProtocolOutput extends JFrame {
       innerContainer.setLayout(new BoxLayout(innerContainer, BoxLayout.PAGE_AXIS));
       innerContainer.add(detailedProtocolText[i]);
       JScrollPane innerScrollPane = new JScrollPane(innerContainer) {
-      @Override public Dimension getPreferredSize() {
+        @Override public Dimension getPreferredSize() {
           return new Dimension(200, 100);  
         }
       };
+      innerScrollPane.removeMouseWheelListener(innerScrollPane.getMouseWheelListeners()[0]);
       outerContainer.add(innerScrollPane);
 
     }

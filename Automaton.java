@@ -1706,6 +1706,12 @@ public class Automaton {
     for (TransitionData data : nonPotentialCommunications)
       automaton.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
 
+    Set<CommunicationData> potentialCommunicationsToRemove = new HashSet<CommunicationData>(potentialCommunications);
+    potentialCommunicationsToRemove.removeAll(protocol);
+    
+    for (CommunicationData data : potentialCommunicationsToRemove)
+      automaton.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
+
       /* Prune (which removes more transitions) */
 
     // NOT YET IMPLEMENTED...
@@ -2950,6 +2956,18 @@ public class Automaton {
       return false;
     }
 
+      /* Remove transition from list of special transitions (if it appears anywhere in them) */
+
+    TransitionData data = new TransitionData(startingStateID, eventID, targetStateID);
+
+    badTransitions.remove(data);
+    unconditionalViolations.remove(data);
+    conditionalViolations.remove(data);
+    while (potentialCommunications.remove(data)); // Multiple potential communications could exist for the same transition (more than one potential sender)
+    nonPotentialCommunications.remove(data);
+
+    headerFileNeedsToBeWritten = true;
+
     return true;
 
   }
@@ -3210,13 +3228,6 @@ public class Automaton {
 
     int id = events.size() + 1;
     Event event = new Event(label, id, observable, controllable);
-
-      /* Ensure that no other event already exists with this label (if so, return the negative version of the ID) */
-
-    // NOTE: This linear search is horribly inefficient. We could use a HashSet to hold the events, but many operations depend on it being ordered by ID (using TreeSet).
-    // for (Event e : events)
-    //   if (e.getLabel().equals(label))
-    //     return -e.getID();
 
       /* Add the event */
 
