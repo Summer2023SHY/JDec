@@ -64,7 +64,7 @@ public class Automaton {
 
     /** PRIVATE CLASS CONSTANTS **/
 
-  private static final int HEADER_SIZE = 60; // This is the fixed amount of space needed to hold the main variables in the .hdr file
+  private static final int HEADER_SIZE = 64; // This is the fixed amount of space needed to hold the main variables in the .hdr file
 
   private static final String DEFAULT_HEADER_FILE_NAME = "temp.hdr";
   private static final String DEFAULT_BODY_FILE_NAME   = "temp.bdy";
@@ -111,6 +111,7 @@ public class Automaton {
   private List<TransitionData> unconditionalViolations    = new ArrayList<TransitionData>();
   private List<TransitionData> conditionalViolations      = new ArrayList<TransitionData>();
   private List<CommunicationData> potentialCommunications = new ArrayList<CommunicationData>();
+  private List<TransitionData> nonPotentialCommunications = new ArrayList<TransitionData>();
 
   // File variables
   private String headerFileName = DEFAULT_HEADER_FILE_NAME;
@@ -548,6 +549,10 @@ public class Automaton {
     for (CommunicationData data : potentialCommunications)
       if (automaton.stateExists(data.initialStateID) && automaton.stateExists(data.targetStateID))
         automaton.addPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID, (CommunicationRole[]) data.roles.clone());
+
+    for (TransitionData data : nonPotentialCommunications)
+      if (automaton.stateExists(data.initialStateID) && automaton.stateExists(data.targetStateID))
+        automaton.addNonPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID);
 
   }
 
@@ -1169,10 +1174,18 @@ public class Automaton {
             // Add transition
             automaton.addTransition(startingState.getID(), id, destinationState.getID());
 
+
             // There could be more than one potential communication, so we need to mark them all
+            boolean found = false;
             for (CommunicationLabelVector data : potentialCommunications)
-              if (vector.equals((LabelVector) data))
+              if (vector.equals((LabelVector) data)) {
                 automaton.addPotentialCommunication(startingState.getID(), id, destinationState.getID(), data.roles);
+                found = true;
+              }
+
+            // If there were no potential communications, then it must be a non-potential communication
+            if (!found)
+              automaton.addNonPotentialCommunication(startingState.getID(), id, destinationState.getID());
     
           }
          
@@ -1442,33 +1455,45 @@ public class Automaton {
   }
 
   /**
-   * Check feasibility for all possible communication protocols, printing out the results.
+   * Checking the feasibility for all possible communication protocols, generate a list of the feasible protocols.
    * @param communications  The communications to be considered (which should be a subset of the potentialCommunications list of this automaton)
+   * @return the feasible protocols, which are sorted by the number of communications that each protocol has (smallest to largest)
    **/
-  public void printFeasibleProtocols(List<CommunicationData> communications) {
+  public List<Set<CommunicationData>> generateAllFeasibleProtocols(List<CommunicationData> communications) {
 
-    // Generate powerset of communication protocols
+      /* Generate powerset of communication protocols */
+
     List<Set<CommunicationData>> protocols = new ArrayList<Set<CommunicationData>>();
     powerSet(protocols, communications, new HashSet<CommunicationData>(), 0);
 
-    // Create inverted automaton, so that we can explore the automaton by crossing transitions from either direction
+      /* Create inverted automaton, so that we can explore the automaton by crossing transitions from either direction */
+
     Automaton invertedAutomaton = invert(this);
 
+      /* Generate list of feasible protocols */
+
+    List<Set<CommunicationData>> feasibleProtocols = new ArrayList<Set<CommunicationData>>();
     for (Set<CommunicationData> protocol : protocols) {
 
       // Ignore the protocol with no communications (doesn't make sense in our context)
       if (protocol.size() == 0)
         continue;
 
-      if (isFeasibleProtocol(protocol, invertedAutomaton)) {
-        
-        System.out.println("FEASIBLE PROTOCOL:");
-        for (CommunicationData data : protocol)
-          System.out.println(data.toString(this));
-
-      }
+      if (isFeasibleProtocol(protocol, invertedAutomaton))
+        feasibleProtocols.add(protocol);
 
     }
+
+      /* Sort sets by size (so that protocols with fewer communications appear first) */
+
+    Collections.sort(feasibleProtocols, new Comparator<Set<?>>() {
+        @Override public int compare(Set<?> set1, Set<?> set2) {
+          return Integer.valueOf(set1.size()).compareTo(set2.size());
+        }
+      }
+    );
+
+    return feasibleProtocols;
 
   }
 
@@ -1520,10 +1545,6 @@ public class Automaton {
           }
         }
     }
-
-    System.out.println("FEASIBLE PROTOCOL:");
-    for (CommunicationData data : protocol)
-      System.out.println(data.toString(this));
 
     return feasibleProtocol;
 
@@ -1644,6 +1665,34 @@ public class Automaton {
   }
 
   /**
+   * Refine this automaton by applying the specified communication protocol, and doing the necessary pruning.
+   * @param protocol  The chosen protocol
+   * @return the pruned automaton that had the specified protocol applied
+   **/
+  public Automaton generateUsingProtocol(Set<CommunicationData> protocol) {
+
+    // Automaton automaton = duplicate("protocol");
+
+    //   /* Remove all communications that are not part of the protocol */
+
+    // for (TransitionData data : nonPotentialCommunications) {
+
+    //   automaton.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
+
+    // } 
+
+    //   /* Prune (which removes more transitions) */
+
+
+    //   /* Return the accessible automaton */
+
+    // return automaton.accessible();
+
+    return null;
+
+  }
+
+  /**
    * This method looks for blank spots in the .bdy file (which indicates that no state exists there),
    * and re-numbers all of the states accordingly. This must be done after operations such as intersection or union.
    * NOTE: To make this method more efficient we could make the buffer larger.
@@ -1716,6 +1765,7 @@ public class Automaton {
       renumberTransitionData(mappingRAFile, unconditionalViolations);
       renumberTransitionData(mappingRAFile, conditionalViolations);
       renumberTransitionData(mappingRAFile, potentialCommunications);
+      renumberTransitionData(mappingRAFile, nonPotentialCommunications);
 
         /* Remove old body file and mappings file */
 
@@ -2118,6 +2168,9 @@ public class Automaton {
                 specialTransition += role.getCharacter();
             }
           }
+
+          if (nonPotentialCommunications.contains(transitionData))
+            specialTransition += ",COMMUNICATION";
           
           if (!specialTransition.equals(""))
             transitionInputBuilder.append(":" + specialTransition.substring(1));
@@ -2297,6 +2350,7 @@ public class Automaton {
     ByteManipulator.writeLongAsBytes(buffer, 48, unconditionalViolations.size(), 4);
     ByteManipulator.writeLongAsBytes(buffer, 52, conditionalViolations.size(), 4);
     ByteManipulator.writeLongAsBytes(buffer, 56, potentialCommunications.size(), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 60, nonPotentialCommunications.size(), 4);
 
     try {
 
@@ -2336,6 +2390,7 @@ public class Automaton {
       writeTransitionDataToHeader(unconditionalViolations);
       writeTransitionDataToHeader(conditionalViolations);
       writeCommunicationDataToHeader(potentialCommunications);
+      writeTransitionDataToHeader(nonPotentialCommunications);
 
         /* Indicate that the header file no longer need to be written */
 
@@ -2438,10 +2493,11 @@ public class Automaton {
       if (nEvents == 0)
         return;
 
-      int nBadTransitions          = (int) ByteManipulator.readBytesAsLong(buffer, 44, 4);
-      int nUnconditionalViolations = (int) ByteManipulator.readBytesAsLong(buffer, 48, 4);
-      int nConditionalViolations   = (int) ByteManipulator.readBytesAsLong(buffer, 52, 4);
-      int nPotentialCommunications = (int) ByteManipulator.readBytesAsLong(buffer, 56, 4);
+      int nBadTransitions             = (int) ByteManipulator.readBytesAsLong(buffer, 44, 4);
+      int nUnconditionalViolations    = (int) ByteManipulator.readBytesAsLong(buffer, 48, 4);
+      int nConditionalViolations      = (int) ByteManipulator.readBytesAsLong(buffer, 52, 4);
+      int nPotentialCommunications    = (int) ByteManipulator.readBytesAsLong(buffer, 56, 4);
+      int nNonPotentialCommunications = (int) ByteManipulator.readBytesAsLong(buffer, 60, 4);
 
         /* Read in the events */
 
@@ -2489,6 +2545,9 @@ public class Automaton {
         int nControllersBeforeUStructure = calculateNumberOfControllersBeforeUStructure();
         readCommunicationDataFromHeader(nPotentialCommunications, potentialCommunications, nControllersBeforeUStructure);
       }
+
+      if (nNonPotentialCommunications > 0)
+        readTransitionDataFromHeader(nNonPotentialCommunications, nonPotentialCommunications);
 
     } catch (IOException e) {
       e.printStackTrace();
@@ -3206,13 +3265,29 @@ public class Automaton {
 
   /**
    * Add a potential communication.
-   * @param initialStateID   The initial state
-   * @param eventID          The event triggering the transition
-   * @param targetStateID    The target state
+   * @param initialStateID      The initial state
+   * @param eventID             The event triggering the transition
+   * @param targetStateID       The target state
+   * @param communicationRoles  The roles associated with each controller
    **/
   public void addPotentialCommunication(long initialStateID, int eventID, long targetStateID, CommunicationRole[] communicationRoles) {
 
     potentialCommunications.add(new CommunicationData(initialStateID, eventID, targetStateID, communicationRoles));
+
+    // Update header file
+    headerFileNeedsToBeWritten = true;
+
+  }
+
+  /**
+   * Add a non-potential communication (which are the communications that were added for mathmatical completeness but are not actually potential communications).
+   * @param initialStateID   The initial state
+   * @param eventID          The event triggering the transition
+   * @param targetStateID    The target state
+   **/
+  public void addNonPotentialCommunication(long initialStateID, int eventID, long targetStateID) {
+
+    nonPotentialCommunications.add(new TransitionData(initialStateID, eventID, targetStateID));
 
     // Update header file
     headerFileNeedsToBeWritten = true;

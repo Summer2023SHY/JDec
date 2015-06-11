@@ -15,6 +15,7 @@ public class MakeProtocolFeasiblePrompt extends JFrame {
 
   /**
    * Construct a MakeProtocolFeasiblePrompt object.
+   * @param automaton The automaton that is being worked with
    **/
   public MakeProtocolFeasiblePrompt(Automaton automaton) {
 
@@ -74,7 +75,12 @@ public class MakeProtocolFeasiblePrompt extends JFrame {
                 protocol.add(potentialCommunications.get(i));
       
             // Make the protocol feasible
-            automaton.makeProtocolFeasible(protocol, Automaton.invert(automaton));
+            Set<CommunicationData> feasibleProtocol = automaton.makeProtocolFeasible(protocol, Automaton.invert(automaton));
+            
+            // Display results in another window
+            java.util.List<Set<CommunicationData>> list = new ArrayList<Set<CommunicationData>>();
+            list.add(feasibleProtocol);
+            new FeasibleProtocolOutput(automaton, list, "Feasible Protocol", " Here is the feasible protocol: ");
 
             // Dispose of this window
             MakeProtocolFeasiblePrompt.this.dispose();

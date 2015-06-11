@@ -67,7 +67,10 @@ public class GeneratedAllFeasibleProtocolsPrompt extends JFrame {
             }
 
             // Print feasible protocols
-            automaton.printFeasibleProtocols(chosenCommunications);
+            java.util.List<Set<CommunicationData>> feasibleProtocols = automaton.generateAllFeasibleProtocols(chosenCommunications);
+
+            // Display results in another window
+            new FeasibleProtocolOutput(automaton, feasibleProtocols, "Feasible Protocols", " Here is the list of all feasible protocols: ");
 
             // Dispose of this window
             GeneratedAllFeasibleProtocolsPrompt.this.dispose();

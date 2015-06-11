@@ -426,6 +426,9 @@ public abstract class AutomatonGenerator {
       
       else if (str.equals("CONDITIONAL_VIOLATION"))
         automaton.addConditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
+
+      else if (str.equals("COMMUNICATION"))
+        automaton.addNonPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID);
       
       else {
 
