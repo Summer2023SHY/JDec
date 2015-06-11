@@ -7,19 +7,22 @@ import java.io.*;
 
 public class MakeProtocolFeasiblePrompt extends JFrame {
 
-  Automaton automaton;
-  java.util.List<CommunicationData> potentialCommunications;
-  JCheckBox[] checkBoxes;
+  private AutomataGUI gui;
+  private Automaton automaton;
+  private java.util.List<CommunicationData> potentialCommunications;
+  private JCheckBox[] checkBoxes;
 
 
     /** CONSTRUCTOR **/
 
   /**
    * Construct a MakeProtocolFeasiblePrompt object.
+   * @param gui       A reference to the GUI which is being worked with
    * @param automaton The automaton that is being worked with
    **/
-  public MakeProtocolFeasiblePrompt(Automaton automaton) {
+  public MakeProtocolFeasiblePrompt(AutomataGUI gui, Automaton automaton) {
 
+    this.gui = gui;
     this.automaton = automaton;
     potentialCommunications = automaton.getPotentialCommunications();
 
@@ -83,7 +86,7 @@ public class MakeProtocolFeasiblePrompt extends JFrame {
             // Display results in another window
             java.util.List<Set<CommunicationData>> list = new ArrayList<Set<CommunicationData>>();
             list.add(feasibleProtocol);
-            new FeasibleProtocolOutput(automaton, list, "Feasible Protocol", " Here is the feasible protocol: ");
+            new FeasibleProtocolOutput(gui, automaton, list, "Feasible Protocol", " Here is the feasible protocol: ");
 
             // Dispose of this window
             MakeProtocolFeasiblePrompt.this.dispose();

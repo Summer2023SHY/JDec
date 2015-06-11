@@ -121,7 +121,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
    * Create a tab, and load in an automaton.
    * @param automaton   The automaton object
    **/
-  private void createTab(Automaton automaton) {
+  public void createTab(Automaton automaton) {
 
     // Create new tab
     createTab();
@@ -577,12 +577,12 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       case "Generate All Feasible Protocols":
 
-        new GeneratedAllFeasibleProtocolsPrompt(tab.automaton);
+        new GeneratedAllFeasibleProtocolsPrompt(this, tab.automaton);
         break;
 
       case "Make Protocol Feasible":
 
-        new MakeProtocolFeasiblePrompt(tab.automaton);
+        new MakeProtocolFeasiblePrompt(this, tab.automaton);
         break;
 
       case "Automaton From GUI Code":

@@ -5,21 +5,24 @@ import java.awt.event.*;
 
 public class FeasibleProtocolOutput extends JFrame {
 
-  Automaton automaton;
-  java.util.List<Set<CommunicationData>> feasibleProtocols;
-  JTextPane[] detailedProtocolText;
+  private AutomataGUI gui;
+  private Automaton automaton;
+  private java.util.List<Set<CommunicationData>> feasibleProtocols;
+  private JTextPane[] detailedProtocolText;
 
     /** CONSTRUCTOR **/
 
   /**
    * Construct a FeasibleProtocolOutput object.
+   * @param gui               A reference to the GUI which will be recieving requests for new tabs
    * @param automaton         The automaton that is being worked with
    * @param feasibleProtocols The list of protocols that are feasible
    * @param title             The title of the popup box
    * @param message           The text for the label to be displayed at the top of the screen
    **/
-  public FeasibleProtocolOutput(Automaton automaton, java.util.List<Set<CommunicationData>> feasibleProtocols, String title, String message) {
+  public FeasibleProtocolOutput(AutomataGUI gui, Automaton automaton, java.util.List<Set<CommunicationData>> feasibleProtocols, String title, String message) {
 
+    this.gui = gui;
     this.automaton = automaton;
     this.feasibleProtocols = feasibleProtocols;
 
@@ -74,6 +77,7 @@ public class FeasibleProtocolOutput extends JFrame {
    
         public void actionPerformed(ActionEvent e) {
           Automaton generatedAutomaton = automaton.applyProtocol(protocol);
+          gui.createTab(generatedAutomaton);
         }
 
       });

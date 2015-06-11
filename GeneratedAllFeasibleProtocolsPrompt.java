@@ -5,17 +5,21 @@ import java.awt.*;
 
 public class GeneratedAllFeasibleProtocolsPrompt extends JFrame {
 
-  Automaton automaton;
-  JCheckBox[][] checkBoxes;
+  private AutomataGUI gui;
+  private Automaton automaton;
+  private JCheckBox[][] checkBoxes;
 
 
     /** CONSTRUCTOR **/
 
   /**
    * Construct a GeneratedAllFeasibleProtocolsPrompt object.
+   * @param gui       A reference to the GUI which is being worked with
+   * @param automaton The automaton that is being worked with
    **/
-  public GeneratedAllFeasibleProtocolsPrompt(Automaton automaton) {
+  public GeneratedAllFeasibleProtocolsPrompt(AutomataGUI gui, Automaton automaton) {
 
+    this.gui = gui;
     this.automaton = automaton;
 
     addComponents();
@@ -70,7 +74,7 @@ public class GeneratedAllFeasibleProtocolsPrompt extends JFrame {
             java.util.List<Set<CommunicationData>> feasibleProtocols = automaton.generateAllFeasibleProtocols(chosenCommunications);
 
             // Display results in another window
-            new FeasibleProtocolOutput(automaton, feasibleProtocols, "Feasible Protocols", " Here is the list of all feasible protocols: ");
+            new FeasibleProtocolOutput(gui, automaton, feasibleProtocols, "Feasible Protocols", " Here is the list of all feasible protocols: ");
 
             // Dispose of this window
             GeneratedAllFeasibleProtocolsPrompt.this.dispose();
