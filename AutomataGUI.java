@@ -145,13 +145,37 @@ public class AutomataGUI extends JFrame implements ActionListener {
   }
 
   /**
-   * Close the current tab.
+   * Close the current tab, displaying a warning message if the current tab is unsaved.
    **/
   private void closeCurrentTab() {
 
       /* Get index of the currently selected tab */
 
     int index = tabbedPane.getSelectedIndex();
+
+      /* Check for unsaved information */
+
+    if (!tabs.get(index).isSaved()) {
+
+      // Prompt user to save
+      String buttons[] = { "Yes", "No" };
+      
+      int promptResult = JOptionPane.showOptionDialog(
+        null,
+        "Are you sure you want to close this tab? Any un-generated GUI input code will be lost.",
+        "Unsaved Information",
+        JOptionPane.DEFAULT_OPTION,
+        JOptionPane.WARNING_MESSAGE,
+        null,
+        buttons,
+        buttons[1]
+      );
+
+      // Abort closing the tab if the user did not click 'Yes'
+      if (promptResult != JOptionPane.YES_OPTION)
+        return;
+
+    }
 
       /* Remove tab */
 
@@ -342,7 +366,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
     menuBar.add(createMenu("File", "New Tab", "Open", "Save As...", "Refresh Tab", null, "Clear", "Close Tab", null, "Export as SVG", null, "Quit"));
     menuBar.add(createMenu("Standard Operations", "Accessible", "Co-Accessible", "Trim", "Complement", null, "Intersection", "Union"));
     menuBar.add(createMenu("U-Stucture Operations", "Synchronized Composition", "Add Communications", "Feasible Protocols->Generate All,Make Protocol Feasible,Find Smallest"));
-    menuBar.add(createMenu("Generate", "Automaton From GUI Code", "Random Automaton"));
+    menuBar.add(createMenu("Generate", "Random Automaton"));
 
     this.setJMenuBar(menuBar);
 
@@ -588,11 +612,6 @@ public class AutomataGUI extends JFrame implements ActionListener {
       case "Find Smallest":
 
         new FeasibleProtocolOutput(this, tab.automaton, tab.automaton.generateSmallestFeasibleProtocols(tab.automaton.getPotentialCommunications()), "Smallest Feasible Protocols", " Protocol(s) with the fewest number of communications: ");
-        break;
-
-      case "Automaton From GUI Code":
-
-        generateAutomatonButtonPressed();
         break;
 
       case "Random Automaton":
