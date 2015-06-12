@@ -261,7 +261,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
     else {
 
       String fileName = tab.headerFile.getName();
-      String destinationFileName = currentDirectory + "/" + fileName.substring(0, fileName.length() - 4) + ".svg";
+      String destinationFileName = currentDirectory + "/" + removeExtension(fileName) + ".svg";
 
       if (automaton.generateImage(imageSize, Automaton.OutputMode.SVG, destinationFileName))
         JOptionPane.showMessageDialog(null, "The image of the graph has been exported to '" + destinationFileName + "'.", "Export Complete", JOptionPane.INFORMATION_MESSAGE);
@@ -315,7 +315,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
     String destinationFileName = "untitled.png";
     if (tab.headerFile != null) {
       String fileName = tab.headerFile.getName();
-      destinationFileName = currentDirectory + "/" + fileName.substring(0, fileName.length() - 4) + ".png";
+      destinationFileName = currentDirectory + "/" + removeExtension(fileName) + ".png";
     }
 
     // Set the image blank if there were no states entered
@@ -676,7 +676,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
       // Update files
       AutomatonTab tab = tabs.get(index);
       File headerFile = fileChooser.getSelectedFile();
-      File bodyFile = new File(headerFile.getParentFile() + "/" + headerFile.getName().substring(0, headerFile.getName().length() - 4) + ".bdy");
+      File bodyFile = new File(headerFile.getParentFile() + "/" + removeExtension(headerFile.getName()) + ".bdy");
       tab.headerFile = headerFile;
       tab.bodyFile = bodyFile;
 
@@ -786,6 +786,17 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     return -1;
 
+  }
+
+  /**
+   * Removes the last 4 characters of the string, which is used to trim either '.hdr' or '.bdy' off the end.
+   * @param str The string to be trimmed
+   * @return the trimmed string
+   **/
+  private String removeExtension(String str) {
+
+    return str.substring(0, str.length() - 4);
+  
   }
 
   /**
