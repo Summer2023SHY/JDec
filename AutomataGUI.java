@@ -23,6 +23,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
   private File currentDirectory = null;
 
+  private java.util.List<JMenuItem> menuOptionsWhichRequireTab = new ArrayList<JMenuItem>();
+
     /** MAIN METHOD **/
   
   public static void main(String[] args) {
@@ -107,6 +109,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
    **/
   private void createTab() {
 
+      /* Add tab */
+
     int index = tabbedPane.getTabCount();
 
     AutomatonTab tab = new AutomatonTab(index);
@@ -114,6 +118,12 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     tabbedPane.addTab("untitled", null, tab, "");
     tabbedPane.setSelectedIndex(index);
+
+      /* Re-activate menu items if this is the first tab */
+
+    if (tabs.size() == 1)
+      for (JMenuItem item : menuOptionsWhichRequireTab)
+        item.setEnabled(true);
 
   }
 
@@ -123,11 +133,13 @@ public class AutomataGUI extends JFrame implements ActionListener {
    **/
   public void createTab(Automaton automaton) {
 
-    // Create new tab
+      /* Create new tab */
+
     createTab();
     int newIndex = tabbedPane.getTabCount() - 1;
 
-    // Set tab values
+      /* Set tab values */
+
     AutomatonTab tab = tabs.get(newIndex);
     tab.headerFile   = automaton.getHeaderFile();
     tab.bodyFile     = automaton.getBodyFile();
@@ -135,7 +147,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
     tab.updateInputFields();
     tab.setSaved(true);
 
-    // Generate an image (unless it's quite large)
+      /* Generate an image (unless it's quite large) */
+      
     if (tab.automaton.getNumberOfStates() <= 100) {
       generateImage();
       tab.generateImageButton.setEnabled(false);
@@ -186,6 +199,12 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     for (int i = 0; i < tabs.size(); i++)
       tabs.get(i).index = i;
+
+      /* De-activate menu items if there are no tabs left */
+
+    if (tabs.size() == 0)
+      for (JMenuItem item : menuOptionsWhichRequireTab)
+        item.setEnabled(false);
     
   }
 
@@ -363,7 +382,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     JMenuBar menuBar = new JMenuBar();
 
-    menuBar.add(createMenu("File", "New Tab", "Open", "Save As...", "Refresh Tab", null, "Clear", "Close Tab", null, "Export as SVG", null, "Quit"));
+    menuBar.add(createMenu("File", "New Tab", "Open", "Save As...[TAB]", "Refresh Tab[TAB]", null, "Clear[TAB]", "Close Tab[TAB]", null, "Export as SVG[TAB]", null, "Quit"));
     menuBar.add(createMenu("Standard Operations", "Accessible", "Co-Accessible", "Trim", "Complement", null, "Intersection", "Union"));
     menuBar.add(createMenu("U-Stucture Operations", "Synchronized Composition", "Add Communications", "Feasible Protocols->Generate All,Make Protocol Feasible,Find Smallest"));
     menuBar.add(createMenu("Generate", "Random Automaton"));
@@ -394,25 +413,42 @@ public class AutomataGUI extends JFrame implements ActionListener {
         String[] parts = str.split("->");
         JMenu subMenu = new JMenu(parts[0]);
 
-        for (String str2 : parts[1].split(",")) {
-          JMenuItem menuItem = new JMenuItem(str2);
-          menuItem.addActionListener(this);
-          subMenu.add(menuItem);
-        }
+        for (String str2 : parts[1].split(","))
+          addMenuItem(subMenu, str2);
 
         subMenu.addActionListener(this);
         menu.add(subMenu);
 
       // Add menu item
-      } else {
-        JMenuItem menuItem = new JMenuItem(str);
-        menuItem.addActionListener(this);
-        menu.add(menuItem);
-      }
+      } else
+        addMenuItem(menu, str);
 
     }
 
     return menu;
+
+  }
+
+  /**
+   * Simple helper method to add a menu item to a menu, and to store the item in the proper lists (if applicable).
+   * @param menu  The menu in which the menu item is being added
+   * @param str   The title of the menu item (special identifiers such as '[TAB]' indicate which lists the item gets stored in)
+   **/
+  private void addMenuItem(JMenu menu, String str) {
+
+    boolean menuItemRequiresTab = false;
+
+    if (str.contains("[TAB]")) {
+      str = str.replace("[TAB]", "");
+      menuItemRequiresTab = true;
+    }
+
+    JMenuItem menuItem = new JMenuItem(str);
+    menuItem.addActionListener(this);
+    menu.add(menuItem);
+
+    if (menuItemRequiresTab)
+      menuOptionsWhichRequireTab.add(menuItem);
 
   }
 
