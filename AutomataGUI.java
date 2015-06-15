@@ -23,7 +23,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
   private File currentDirectory = null;
 
-  private java.util.List<JMenuItem> menuOptionsWhichRequireTab = new ArrayList<JMenuItem>();
+  private java.util.List<Component> componentsWhichRequireTab       = new ArrayList<Component>();
+  private java.util.List<Component> componentsWhichRequireAutomaton = new ArrayList<Component>();
 
     /** MAIN METHOD **/
   
@@ -46,12 +47,18 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     tabbedPane = new JTabbedPane();
     tabbedPane.setFocusable(false);
+    tabbedPane.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent e) {
+        updateComponentsWhichRequireAutomaton();    
+      }
+    });
     createTab();
     add(tabbedPane);
 
       /* Add menu */
 
     addMenu();
+    updateComponentsWhichRequireAutomaton();
 
       /* Finish setting up */
 
@@ -119,11 +126,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
     tabbedPane.addTab("untitled", null, tab, "");
     tabbedPane.setSelectedIndex(index);
 
-      /* Re-activate menu items if this is the first tab */
+      /* Re-activate appropriate components if this is the first tab */
 
     if (tabs.size() == 1)
-      for (JMenuItem item : menuOptionsWhichRequireTab)
-        item.setEnabled(true);
+      for (Component component : componentsWhichRequireTab)
+        component.setEnabled(true);
 
   }
 
@@ -148,7 +155,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
     tab.setSaved(true);
 
       /* Generate an image (unless it's quite large) */
-      
+
     if (tab.automaton.getNumberOfStates() <= 100) {
       generateImage();
       tab.generateImageButton.setEnabled(false);
@@ -200,11 +207,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
     for (int i = 0; i < tabs.size(); i++)
       tabs.get(i).index = i;
 
-      /* De-activate menu items if there are no tabs left */
+      /* De-activate appropriate components if there are no tabs left */
 
     if (tabs.size() == 0)
-      for (JMenuItem item : menuOptionsWhichRequireTab)
-        item.setEnabled(false);
+      for (Component component : componentsWhichRequireTab)
+        component.setEnabled(false);
     
   }
 
@@ -382,9 +389,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     JMenuBar menuBar = new JMenuBar();
 
-    menuBar.add(createMenu("File", "New Tab", "Open", "Save As...[TAB]", "Refresh Tab[TAB]", null, "Clear[TAB]", "Close Tab[TAB]", null, "Export as SVG[TAB]", null, "Quit"));
-    menuBar.add(createMenu("Standard Operations", "Accessible", "Co-Accessible", "Trim", "Complement", null, "Intersection", "Union"));
-    menuBar.add(createMenu("U-Stucture Operations", "Synchronized Composition", "Add Communications", "Feasible Protocols->Generate All,Make Protocol Feasible,Find Smallest"));
+    menuBar.add(createMenu("File", "New Tab", "Open", "Save As...[TAB]", "Refresh Tab[TAB]", null, "Clear[TAB]", "Close Tab[TAB]", null, "Export as SVG[AUTOMATON]", null, "Quit"));
+    menuBar.add(createMenu("Standard Operations[AUTOMATON]", "Accessible", "Co-Accessible", "Trim", "Complement", null, "Intersection", "Union"));
+    menuBar.add(createMenu("U-Stucture Operations[AUTOMATON]", "Synchronized Composition", "Add Communications", "Feasible Protocols->Generate All,Make Protocol Feasible,Find Smallest"));
     menuBar.add(createMenu("Generate", "Random Automaton"));
 
     this.setJMenuBar(menuBar);
@@ -399,7 +406,17 @@ public class AutomataGUI extends JFrame implements ActionListener {
    **/
   private JMenu createMenu(String menuTitle, String... strings) {
 
+    boolean requiresAutomaton = false;
+
+   if (menuTitle.contains("[AUTOMATON]")) {
+      menuTitle = menuTitle.replace("[AUTOMATON]", "");
+      requiresAutomaton = true;
+    }
+
     JMenu menu = new JMenu(menuTitle);
+
+    if (requiresAutomaton)
+      componentsWhichRequireAutomaton.add(menu);
 
     for (String str : strings) {
 
@@ -436,19 +453,30 @@ public class AutomataGUI extends JFrame implements ActionListener {
    **/
   private void addMenuItem(JMenu menu, String str) {
 
-    boolean menuItemRequiresTab = false;
-
+    // Check to see if this menu item requires a tab
+    boolean requiresTab = false;
     if (str.contains("[TAB]")) {
       str = str.replace("[TAB]", "");
-      menuItemRequiresTab = true;
+      requiresTab = true;
     }
 
+    // Check to see if this menu item requires an automaton
+    boolean requiresAutomaton = false;
+    if (str.contains("[AUTOMATON]")) {
+      str = str.replace("[AUTOMATON]", "");
+      requiresAutomaton = true;
+    }
+
+    // Create menu item object
     JMenuItem menuItem = new JMenuItem(str);
     menuItem.addActionListener(this);
     menu.add(menuItem);
 
-    if (menuItemRequiresTab)
-      menuOptionsWhichRequireTab.add(menuItem);
+    // Add menu items into the appropriate lists
+    if (requiresTab)
+      componentsWhichRequireTab.add(menuItem);
+    if (requiresAutomaton)
+      componentsWhichRequireAutomaton.add(menuItem);
 
   }
 
@@ -499,10 +527,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       case "Open":
 
-        // Prompt user to select Automaton from file (stop if they did not pick a file)
-        if (selectFile("Select Automaton", index) == null)
+        // Prompt user to select Automaton from file (stop if they did not pick a file), placing it in a new tab
+        if (selectFile("Select Automaton", -1) == null)
           break;
 
+        index = tabbedPane.getSelectedIndex(); // Index has changed since a new tab was created
         tab.canvas.setImage(null);
         tab.updateTabTitle();
 
@@ -576,7 +605,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
       case "Intersection":
 
         // Allow user to pick other automaton
-        Automaton otherAutomaton = tabs.get(pickAutomaton("Which automaton would you like to take the intersection with?", index)).automaton;
+        int otherIndex = pickAutomaton("Which automaton would you like to take the intersection with?", index);
+        if (otherIndex == -1)
+          break;
+
+        Automaton otherAutomaton = tabs.get(otherIndex).automaton;
 
         headerFile = new File("intersection.hdr");
         bodyFile = new File("intersection.bdy");
@@ -593,7 +626,10 @@ public class AutomataGUI extends JFrame implements ActionListener {
       case "Union":
 
         // Allow user to pick other automaton
-        otherAutomaton = tabs.get(pickAutomaton("Which automaton would you like to take the union with?", index)).automaton;
+        otherIndex = pickAutomaton("Which automaton would you like to take the union with?", index);
+        if (otherIndex == -1)
+          break;
+        otherAutomaton = tabs.get(otherIndex).automaton;
 
         headerFile = new File("union.hdr");
         bodyFile = new File("union.bdy");
@@ -653,10 +689,23 @@ public class AutomataGUI extends JFrame implements ActionListener {
       case "Random Automaton":
 
         new RandomAutomatonPrompt(this);
-
         break;
       
     }
+
+    updateComponentsWhichRequireAutomaton();
+
+  }
+
+  /* Enable/disable components that require an automaton */
+  private void updateComponentsWhichRequireAutomaton() {
+
+    int index = tabbedPane.getSelectedIndex();
+
+    boolean enabled = (index >= 0 && tabs.get(index).automaton != null);
+    
+    for (Component component : componentsWhichRequireAutomaton)
+      component.setEnabled(enabled);
 
   }
 
@@ -698,8 +747,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
   /** 
    * Opens up a JFileChooser for the user to choose a file from their file system.
-   * @param title The title to put in the file chooser dialog box
-   * @param index The index of the tab we're selecting a file for
+   * @param title   The title to put in the file chooser dialog box
+   * @param index   The index of the tab we're selecting a file for (-1 indicates that a new tab will be created for it)
+   * @param newTab  Whether or not a new tab should be created for the selected file
    * @return the file, or null if the user did not choose anything
    **/
   private File selectFile (String title, int index) {
@@ -728,8 +778,15 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     if (fileChooser.getSelectedFile() != null) {
 
-      // Update files
+     
+      // Create new tab (if requested)
+      if (index == -1) {
+        createTab();
+        index = tabbedPane.getSelectedIndex();
+      }
       AutomatonTab tab = tabs.get(index);
+      
+       // Update files
       File headerFile = fileChooser.getSelectedFile();
       File bodyFile = new File(headerFile.getParentFile() + "/" + removeExtension(headerFile.getName()) + ".bdy");
       tab.headerFile = headerFile;
@@ -800,6 +857,12 @@ public class AutomataGUI extends JFrame implements ActionListener {
     
   }
 
+  /**
+   * Allow the user to select an automaton that is currently open.
+   * @param str         The message to display
+   * @param indexToSkip The index of the automaton which should be omitted from the options
+   * @return the index of the selected automaton (or -1 if there was not an automaton selected)
+   **/
   private int pickAutomaton(String str, int indexToSkip) {
 
       /* Create list of options */
@@ -820,6 +883,13 @@ public class AutomataGUI extends JFrame implements ActionListener {
     }
 
     String[] options = optionsList.toArray(new String[optionsList.size()]);
+
+      /* Show error message if there is no second automaton to pick from */
+
+    if (options.length == 0) {
+      JOptionPane.showMessageDialog(null, "This operation requires two generated automata.", "Operation Failed", JOptionPane.ERROR_MESSAGE);
+      return -1;
+    }
     
       /* Display prompt to user */
     
