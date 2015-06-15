@@ -15,16 +15,17 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     /** Private instance variables **/
 
+  // Tabs
   private static JTabbedPane tabbedPane;
-
   private static ArrayList<AutomatonTab> tabs = new ArrayList<AutomatonTab>();
-
-  private int imageSize = 600;
-
-  private File currentDirectory = null;
-
+  
+  // Enabling/disabling components
   private java.util.List<Component> componentsWhichRequireTab       = new ArrayList<Component>();
   private java.util.List<Component> componentsWhichRequireAutomaton = new ArrayList<Component>();
+
+  // Miscellaneous
+  private int imageSize = 600;
+  private File currentDirectory = null;
 
     /** MAIN METHOD **/
   
