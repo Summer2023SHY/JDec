@@ -1161,11 +1161,11 @@ public class Automaton {
    * @param newBodyFile    The body file where the new automaton should be stored
    * @return the automaton with the added transitions
    **/
-  public Automaton addCommunications(File newHeaderFile, File newBodyFile) {
+  public Automaton addCommunications(File newHeaderFile, File newBodyFile) throws NoUStructureException {
 
     // I'm not sure how we're supposed to handle automata with more than 1 controller (since our U-Structure has just one controller)
     if (nControllers != 1)
-      return null;
+      throw new NoUStructureException();
     
       /* Setup */
 
@@ -1305,18 +1305,21 @@ public class Automaton {
    * @param leastUpperBounds  The set of LUBs
    * @return the set of potential communications, including communication roles
    **/
-  private Set<CommunicationLabelVector> findPotentialCommunicationLabels(Set<LabelVector> leastUpperBounds) {
+  private Set<CommunicationLabelVector> findPotentialCommunicationLabels(Set<LabelVector> leastUpperBounds) throws NoUStructureException {
 
       /* Separate observable and unobservable labels */
 
     Set<LabelVector> observableLabels = new HashSet<LabelVector>();
     Set<LabelVector> unobservableLabels = new HashSet<LabelVector>();
 
-    for (LabelVector v : leastUpperBounds)
+    for (LabelVector v : leastUpperBounds) {
+      if (v.getSize() == -1)
+        throw new NoUStructureException();
       if (v.getLabelAtIndex(0).equals("*"))
         unobservableLabels.add(v);
       else
         observableLabels.add(v);
+    }
 
     // Find all LUB's of the unobservable labels (which will add communications where there is more than one reciever)
     generateLeastUpperBounds(unobservableLabels);
