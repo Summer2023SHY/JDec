@@ -55,7 +55,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         updateComponentsWhichRequireAutomaton();    
       }
     });
-    createTab();
+    createTab(true);
     add(tabbedPane);
 
       /* Add menu */
@@ -82,10 +82,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() { 
       public void run() {
 
-        for (String file : temporaryDirectory.list()) {
-          System.out.println(file);
+        for (String file : temporaryDirectory.list())
           new File(temporaryDirectory, file).delete();
-        }
 
         temporaryDirectory.delete();
 
@@ -143,8 +141,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
   /**
    * Create an empty tab.
+   * @param assignTemporaryFiles  Whether or not temporary files should be assigned to the tab
    **/
-  private void createTab() {
+  private void createTab(boolean assignTemporaryFiles) {
 
       /* Add tab */
 
@@ -153,12 +152,15 @@ public class AutomataGUI extends JFrame implements ActionListener {
     AutomatonTab tab = new AutomatonTab(index);
     tabs.add(tab);
 
-    String fileName = getTemporaryFileName();
     tabbedPane.addTab(null, null, tab, "");
     tabbedPane.setSelectedIndex(index);
-    tab.headerFile = new File(fileName + ".hdr");
-    tab.bodyFile = new File(fileName + ".bdy");
-    tab.updateTabTitle();
+
+    if (assignTemporaryFiles) {
+      String fileName = getTemporaryFileName();
+      tab.headerFile = new File(fileName + ".hdr");
+      tab.bodyFile = new File(fileName + ".bdy");
+      tab.setSaved(false);
+    }
 
       /* Re-activate appropriate components if this is the first tab */
 
@@ -176,7 +178,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       /* Create new tab */
 
-    createTab();
+    createTab(false);
     int newIndex = tabbedPane.getTabCount() - 1;
 
       /* Set tab values */
@@ -546,7 +548,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       case "New Tab":
 
-        createTab();
+        createTab(true);
         break;
 
       case "Save As...":
@@ -572,7 +574,6 @@ public class AutomataGUI extends JFrame implements ActionListener {
       case "Refresh Tab":
 
         refresh(index);
-
         break;
 
       case "Export as SVG":
@@ -594,21 +595,24 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       case "Accessible":
 
-        File headerFile = new File("accessible.hdr");
-        File bodyFile = new File("accessible.bdy");
+        String fileName = getTemporaryFileName();
+        File headerFile = new File(fileName + ".hdr");
+        File bodyFile = new File(fileName + ".bdy");
         Automaton automaton = tab.automaton.accessible(headerFile, bodyFile);
 
         // Create new tab for the accessible automaton
-        if (automaton == null)
+        if (automaton == null) {
+          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
           JOptionPane.showMessageDialog(null, "Please specify a starting state.", "Accessible Operation Failed", JOptionPane.ERROR_MESSAGE);
-        else
+        } else
           createTab(automaton);
         break;
 
       case "Co-Accessible":
 
-        headerFile = new File("coaccessible.hdr");
-        bodyFile = new File("coaccessible.bdy");
+        fileName = getTemporaryFileName();
+        headerFile = new File(fileName + ".hdr");
+        bodyFile = new File(fileName + ".bdy");
 
         // Create new tab for the co-accessible automaton
         createTab(tab.automaton.coaccessible(headerFile, bodyFile));
@@ -616,21 +620,25 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       case "Trim":
 
-        headerFile = new File("trim.hdr");
-        bodyFile = new File("trim.bdy");
+        fileName = getTemporaryFileName();
+        headerFile = new File(fileName + ".hdr");
+        bodyFile = new File(fileName + ".bdy");
+        
         automaton = tab.automaton.trim(headerFile, bodyFile);
 
         // Create new tab for the trim automaton
-        if (automaton == null)
+        if (automaton == null) {
+          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
           JOptionPane.showMessageDialog(null, "Please specify a starting state.", "Trim Operation Failed", JOptionPane.ERROR_MESSAGE);
-        else
+        } else
           createTab(automaton);
         break;
 
       case "Complement":
 
-        headerFile = new File("complement.hdr");
-        bodyFile = new File("complement.bdy");
+        fileName = getTemporaryFileName();
+        headerFile = new File(fileName + ".hdr");
+        bodyFile = new File(fileName + ".bdy");
 
         // Create new tab for complement automaton
         createTab(tab.automaton.complement(headerFile, bodyFile));
@@ -645,14 +653,16 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         Automaton otherAutomaton = tabs.get(otherIndex).automaton;
 
-        headerFile = new File("intersection.hdr");
-        bodyFile = new File("intersection.bdy");
+        fileName = getTemporaryFileName();
+        headerFile = new File(fileName + ".hdr");
+        bodyFile = new File(fileName + ".bdy");
 
         // Create new tab with the intersection
         Automaton intersection = Automaton.intersection(tab.automaton, otherAutomaton, headerFile, bodyFile);
-        if (intersection == null)
+        if (intersection == null) {
+          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
           JOptionPane.showMessageDialog(null, "Both automata must have the same number of controllers.", "Intersection Operation Failed", JOptionPane.ERROR_MESSAGE);
-        else
+        } else
           createTab(intersection);
         
         break;
@@ -665,41 +675,47 @@ public class AutomataGUI extends JFrame implements ActionListener {
           break;
         otherAutomaton = tabs.get(otherIndex).automaton;
 
-        headerFile = new File("union.hdr");
-        bodyFile = new File("union.bdy");
+        fileName = getTemporaryFileName();
+        headerFile = new File(fileName + ".hdr");
+        bodyFile = new File(fileName + ".bdy");
 
         // Create new tab with the union
         Automaton union = Automaton.union(tab.automaton, otherAutomaton, headerFile, bodyFile);
-        if (union == null)
+        if (union == null) {
+          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
           JOptionPane.showMessageDialog(null, "Both automata must have the same number of controllers.", "Union Operation Failed", JOptionPane.ERROR_MESSAGE);
-        else
+        } else
           createTab(union);
 
         break;
 
       case "Synchronized Composition":
 
-        headerFile = new File("synchronizedComposition.hdr");
-        bodyFile = new File("synchronizedComposition.bdy");
+        fileName = getTemporaryFileName();
+        headerFile = new File(fileName + ".hdr");
+        bodyFile = new File(fileName + ".bdy");
 
         // Create new tab with the U-structure generated by synchronized composition
         automaton = tab.automaton.synchronizedComposition(headerFile, bodyFile);
-        if (automaton == null)
+        if (automaton == null) {
+          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
           JOptionPane.showMessageDialog(null, "Please ensure that you specified a starting state.", "Synchronized Composition Operation Failed", JOptionPane.ERROR_MESSAGE);
-        else
+        } else
           createTab(automaton);
 
         break;
 
       case "Add Communications":
 
-        headerFile = new File("addCommunications.hdr");
-        bodyFile = new File("addCommunications.bdy");
+        fileName = getTemporaryFileName();
+        headerFile = new File(fileName + ".hdr");
+        bodyFile = new File(fileName + ".bdy");
 
         try {
           // Create a copy of the current automaton with all communications added and potential communications marked
           createTab(tab.automaton.addCommunications(headerFile, bodyFile));
         } catch(NoUStructureException e) {
+          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
           JOptionPane.showMessageDialog(null, "Please ensure that this automaton is a U-Structure generated by synchronized composition.", "Adding Communications Failed", JOptionPane.ERROR_MESSAGE);
         }
 
@@ -830,7 +846,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
      
       // Create new tab (if requested)
       if (index == -1) {
-        createTab();
+        createTab(false);
         index = tabbedPane.getSelectedIndex();
       }
       AutomatonTab tab = tabs.get(index);
@@ -1294,6 +1310,10 @@ public class AutomataGUI extends JFrame implements ActionListener {
     }
 
     public void setSaved(boolean newSavedStatus) {
+
+      // Temporary files are always considered unsaved, since the directory is wiped upon closing of the program
+      if (headerFile.getParentFile().getAbsolutePath().equals(temporaryDirectory.getAbsolutePath()))
+        newSavedStatus = false;
 
       if (newSavedStatus != saved) {
         saved = newSavedStatus;

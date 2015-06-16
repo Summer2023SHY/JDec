@@ -213,8 +213,8 @@ public class Automaton {
 
     this.headerFile     = headerFile;
     this.bodyFile       = bodyFile;
-    this.headerFileName = headerFile.getName();
-    this.bodyFileName   = bodyFile.getName();
+    this.headerFileName = headerFile.getAbsolutePath();
+    this.bodyFileName   = bodyFile.getAbsolutePath();
 
       /* Error checking */
 
@@ -1064,9 +1064,8 @@ public class Automaton {
           if (!valuesInStack.contains(combinedTargetID)) {
               stack.push(combinedTargetID);
               valuesInStack.add(combinedTargetID);
-          } else {
-            System.out.println("DEBUG: Prevented adding of state since it was already in the stack.");
-          }
+          } else
+            System.out.println("DEBUG: Prevented adding of state since it was already in the stack (NOTE: does this ever get printed to the console?).");
         }
 
         // Add transition
@@ -1870,7 +1869,9 @@ public class Automaton {
       }
           /* Rename new body file */
 
-      newBodyFile.renameTo(new File(bodyFileName));
+      if (!newBodyFile.renameTo(new File(bodyFileName)))
+        System.err.println("ERROR: Could not rename file.");
+
       bodyRAFile = newBodyRAFile;
 
     } catch (IOException e) {
@@ -2195,77 +2196,72 @@ public class Automaton {
 
     for (long s = 1; s <= nStates; s++) {
 
-      try {
+      State state = getState(s);
 
-        State state = getState(s);
-
-        if (state == null) {
-          System.err.println("ERROR: State could not be loaded.");
-          continue;
-        }
-
-        // Place '@' before label if this is the initial state
-        if (s == initialState)
-          stateInputBuilder.append("@");
-
-        // Append label and properties
-        stateInputBuilder.append(state.getLabel());
-        stateInputBuilder.append((state.isMarked() ? ",T" : ",F"));
-        
-        // Add line separator after unless this is the last state
-        if (s < nStates)
-          stateInputBuilder.append("\n");
-
-        // Append all transitions
-        for (Transition t : state.getTransitions()) {
-
-          // Add line separator before unless this is the very first transition
-          if (firstTransitionInStringBuilder)
-            firstTransitionInStringBuilder = false;
-          else
-            transitionInputBuilder.append("\n");
-
-          // Append transition
-          transitionInputBuilder.append(
-              state.getLabel()
-              + "," + t.getEvent().getLabel()
-              + "," + getStateExcludingTransitions(t.getTargetStateID()).getLabel()
-            );
-
-            /* Append special transition information */
-
-          String specialTransition = "";
-          TransitionData transitionData = new TransitionData(s, t.getEvent().getID(), t.getTargetStateID());
-          
-          if (badTransitions.contains(transitionData))
-            specialTransition += ",BAD";
-          
-          if (unconditionalViolations.contains(transitionData))
-            specialTransition += ",UNCONDITIONAL_VIOLATION";
-          
-          if (conditionalViolations.contains(transitionData))
-            specialTransition += ",CONDITIONAL_VIOLATION";
-          
-          // Search entire list since there may be more than one potential communication
-          for (CommunicationData data : potentialCommunications) {
-            if (data.equals(transitionData)) {
-              specialTransition += ",POTENTIAL_COMMUNICATION-";
-              for (CommunicationRole role : data.roles)
-                specialTransition += role.getCharacter();
-            }
-          }
-
-          if (nonPotentialCommunications.contains(transitionData))
-            specialTransition += ",COMMUNICATION";
-          
-          if (!specialTransition.equals(""))
-            transitionInputBuilder.append(":" + specialTransition.substring(1));
-        
-        }
-
-      } catch (NullPointerException e) {
-        System.out.println("NULL POINTER EXCEPTION at state " + s + ", so it was skipped..");
+      if (state == null) {
+        System.err.println("ERROR: State could not be loaded.");
+        continue;
       }
+
+      // Place '@' before label if this is the initial state
+      if (s == initialState)
+        stateInputBuilder.append("@");
+
+      // Append label and properties
+      stateInputBuilder.append(state.getLabel());
+      stateInputBuilder.append((state.isMarked() ? ",T" : ",F"));
+      
+      // Add line separator after unless this is the last state
+      if (s < nStates)
+        stateInputBuilder.append("\n");
+
+      // Append all transitions
+      for (Transition t : state.getTransitions()) {
+
+        // Add line separator before unless this is the very first transition
+        if (firstTransitionInStringBuilder)
+          firstTransitionInStringBuilder = false;
+        else
+          transitionInputBuilder.append("\n");
+
+        // Append transition
+        transitionInputBuilder.append(
+            state.getLabel()
+            + "," + t.getEvent().getLabel()
+            + "," + getStateExcludingTransitions(t.getTargetStateID()).getLabel()
+          );
+
+          /* Append special transition information */
+
+        String specialTransition = "";
+        TransitionData transitionData = new TransitionData(s, t.getEvent().getID(), t.getTargetStateID());
+        
+        if (badTransitions.contains(transitionData))
+          specialTransition += ",BAD";
+        
+        if (unconditionalViolations.contains(transitionData))
+          specialTransition += ",UNCONDITIONAL_VIOLATION";
+        
+        if (conditionalViolations.contains(transitionData))
+          specialTransition += ",CONDITIONAL_VIOLATION";
+        
+        // Search entire list since there may be more than one potential communication
+        for (CommunicationData data : potentialCommunications) {
+          if (data.equals(transitionData)) {
+            specialTransition += ",POTENTIAL_COMMUNICATION-";
+            for (CommunicationRole role : data.roles)
+              specialTransition += role.getCharacter();
+          }
+        }
+
+        if (nonPotentialCommunications.contains(transitionData))
+          specialTransition += ",COMMUNICATION";
+        
+        if (!specialTransition.equals(""))
+          transitionInputBuilder.append(":" + specialTransition.substring(1));
+
+      }
+
     }
 
   }
@@ -2324,8 +2320,11 @@ public class Automaton {
 
     try {
     
-      Files.copy(headerFile.toPath(), newHeaderFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-      Files.copy(bodyFile.toPath(), newBodyFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+      if (headerFile.exists())
+        Files.copy(headerFile.toPath(), newHeaderFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+      
+      if (bodyFile.exists())
+        Files.copy(bodyFile.toPath(), newBodyFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
     
     } catch (IOException e) {
       e.printStackTrace();
@@ -2384,7 +2383,7 @@ public class Automaton {
       if (!headerFile.delete() && headerFile.exists())
         System.err.println("ERROR: Could not delete header file.");
       
-      if (!bodyFile.delete() && headerFile.exists())
+      if (!bodyFile.delete() && bodyFile.exists())
         System.err.println("ERROR: Could not delete body file.");
 
     } catch (SecurityException e) {
