@@ -8,6 +8,7 @@
  * TABLE OF CONTENTS:
  *  -Public Class Constants
  *  -Private Class Constants
+ *  -Private Class Variables
  *  -Output Mode Enum
  *  -Private Instance Variables
  *  -Constructors
@@ -66,10 +67,11 @@ public class Automaton {
 
   private static final int HEADER_SIZE = 64; // This is the fixed amount of space needed to hold the main variables in the .hdr file
 
-  private static final String DEFAULT_HEADER_FILE_NAME = "temp.hdr";
-  private static final String DEFAULT_BODY_FILE_NAME   = "temp.bdy";
-  private static final File DEFAULT_HEADER_FILE        = new File(DEFAULT_HEADER_FILE_NAME);
-  private static final File DEFAULT_BODY_FILE          = new File(DEFAULT_BODY_FILE_NAME);
+  private static final File TEMPORARY_DIRECTORY = new File("Automaton_Temporary_Files");
+
+    /** PRIVATE CLASS VARIABLES **/
+
+  private static int temporaryFileIndex = 1;
 
     /** OUTPUT MODE ENUM **/
 
@@ -113,8 +115,8 @@ public class Automaton {
   private List<TransitionData> nonPotentialCommunications = new ArrayList<TransitionData>();
 
   // File variables
-  private String headerFileName = DEFAULT_HEADER_FILE_NAME;
-  private String bodyFileName   = DEFAULT_BODY_FILE_NAME;
+  private String headerFileName;
+  private String bodyFileName;
   private File headerFile;
   private File bodyFile;
   private RandomAccessFile headerRAFile; // Contains basic information about automaton, needed in order to read the bodyFile, as well as the events
@@ -132,8 +134,9 @@ public class Automaton {
    * Default constructor: create empty automaton with default capacity, wiping any previous data existing in the files.
    **/
   public Automaton() {
-    this(DEFAULT_HEADER_FILE,
-      DEFAULT_BODY_FILE,
+    this(
+      null,
+      null,
       DEFAULT_EVENT_CAPACITY,
       DEFAULT_STATE_CAPACITY,
       DEFAULT_TRANSITION_CAPACITY,
@@ -151,8 +154,8 @@ public class Automaton {
    **/
   public Automaton(File headerFile, File bodyFile, int nControllers) {
     this(
-      (headerFile == null || bodyFile == null) ? DEFAULT_HEADER_FILE : headerFile,
-      (headerFile == null || bodyFile == null) ? DEFAULT_BODY_FILE : bodyFile,
+      headerFile,
+      bodyFile,
       DEFAULT_EVENT_CAPACITY,
       DEFAULT_STATE_CAPACITY,
       DEFAULT_TRANSITION_CAPACITY,
@@ -170,8 +173,8 @@ public class Automaton {
    **/
   public Automaton(File headerFile, File bodyFile, boolean clearFiles) {
     this(
-      (headerFile == null || bodyFile == null) ? DEFAULT_HEADER_FILE : headerFile,
-      (headerFile == null || bodyFile == null) ? DEFAULT_BODY_FILE : bodyFile,
+      headerFile,
+      bodyFile,
       DEFAULT_EVENT_CAPACITY,
       DEFAULT_STATE_CAPACITY,
       DEFAULT_TRANSITION_CAPACITY,
@@ -195,7 +198,7 @@ public class Automaton {
    * @param clearFiles           Whether or not the header and body files should be cleared prior to use
    **/
   public Automaton(int eventCapacity, long stateCapacity, int transitionCapacity, int labelLength, int nControllers, boolean clearFiles) {
-    this(DEFAULT_HEADER_FILE, DEFAULT_BODY_FILE, eventCapacity, stateCapacity, transitionCapacity, labelLength, nControllers, clearFiles);
+    this(null, null, eventCapacity, stateCapacity, transitionCapacity, labelLength, nControllers, clearFiles);
   }
 
   /**
@@ -211,18 +214,10 @@ public class Automaton {
    **/
   public Automaton(File headerFile, File bodyFile, int eventCapacity, long stateCapacity, int transitionCapacity, int labelLength, int nControllers, boolean clearFiles) {
 
-    this.headerFile     = headerFile;
-    this.bodyFile       = bodyFile;
-    this.headerFileName = headerFile.getAbsolutePath();
-    this.bodyFileName   = bodyFile.getAbsolutePath();
-
-      /* Error checking */
-
-    if (headerFileName.contains(".bdy") || !headerFileName.contains(".hdr"))
-      System.err.println("ERROR: Header file name is " + headerFileName + ".");
-
-    if (bodyFileName.contains(".hdr") || !bodyFileName.contains(".bdy"))
-      System.err.println("ERROR: Body file name is " + bodyFileName + ".");
+    this.headerFile     = (headerFile == null ? getTemporaryFile() : headerFile);
+    this.bodyFile       = (bodyFile == null   ? getTemporaryFile() : bodyFile);
+    this.headerFileName = this.headerFile.getAbsolutePath();
+    this.bodyFileName   = this.bodyFile.getAbsolutePath();
 
       /* These variables will be overridden if we are loading information from file */
 
@@ -340,7 +335,7 @@ public class Automaton {
    **/
   public Automaton coaccessible(File newHeaderFile, File newBodyFile) {
 
-    Automaton invertedAutomaton = invert(this, new File("coaccessibleTMP.hdr"), new File("coaccessibleTMP.bdy"));
+    Automaton invertedAutomaton = invert();
 
       /* Build co-accessible automaton by seeing which states are accessible from the marked states in the inverted automaton */
 
@@ -506,34 +501,31 @@ public class Automaton {
   }
 
   /**
-   * Create a new version of the specified automaton which has all of the transitions going the opposite direction.
+   * Create a new version of this automaton which has all of the transitions going the opposite direction.
    * NOTE: This is just a shallow copy of the automaton (no special transition data is retained), which makes it slightly more efficient.
-   * @param automaton The automaton to invert
-   * @param newHeaderFile  The header file where the new automaton should be stored
-   * @param newBodyFile    The body file where the new automaton should be stored
    * @return the inverted automaton
    **/
-  private static Automaton invert(Automaton automaton, File newHeaderFile, File newBodyFile) {
+  private Automaton invert() {
 
       /* Create a new automaton that has each of the transitions going the opposite direction */
 
-    Automaton invertedAutomaton = new Automaton(newHeaderFile, newBodyFile, automaton.getEventCapacity(), automaton.getStateCapacity(), automaton.getTransitionCapacity(), automaton.getLabelLength(), automaton.getNumberOfControllers(), true);
+    Automaton invertedAutomaton = new Automaton(eventCapacity, stateCapacity, transitionCapacity, labelLength, nControllers, true);
 
     // Add events
-    invertedAutomaton.addAllEvents(automaton.getEvents());
+    invertedAutomaton.addAllEvents(events);
 
     // Add states
-    for (long s = 1; s <= automaton.getNumberOfStates(); s++) {
+    for (long s = 1; s <= nStates; s++) {
 
-      State state = automaton.getStateExcludingTransitions(s);
-      invertedAutomaton.addState(state.getLabel(), state.isMarked(), s == automaton.getInitialStateID());
+      State state = getStateExcludingTransitions(s);
+      invertedAutomaton.addState(state.getLabel(), state.isMarked(), s == initialState);
 
     }
 
     // Add transitions
-    for (long s = 1; s <= automaton.getNumberOfStates(); s++) {
+    for (long s = 1; s <= nStates; s++) {
 
-      State state = automaton.getState(s);
+      State state = getState(s);
 
       for (Transition t : state.getTransitions())
         invertedAutomaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), s);
@@ -586,7 +578,7 @@ public class Automaton {
     if (initialState == 0)
       return null;
 
-    return accessible(new File("accessibleTMP.hdr"), new File("accessibleTMP.bdy")).coaccessible(newHeaderFile, newBodyFile);
+    return accessible(getTemporaryFile(), getTemporaryFile()).coaccessible(newHeaderFile, newBodyFile);
 
   }
 
@@ -1498,7 +1490,7 @@ public class Automaton {
 
       /* Create inverted automaton, so that we can explore the automaton by crossing transitions from either direction */
 
-    Automaton invertedAutomaton = invert(this, new File("generateAllFeasibleProtocolsTMP.hdr"), new File("generateAllFeasibleProtocolsTMP.bdy"));
+    Automaton invertedAutomaton = invert();
 
       /* Generate list of feasible protocols */
 
@@ -1536,7 +1528,7 @@ public class Automaton {
 
       /* Create inverted automaton, so that we can explore the automaton by crossing transitions from either direction */
 
-    Automaton invertedAutomaton = invert(this, new File("generateSmallestFeasibleProtocols.hdr"), new File("generateSmallestFeasibleProtocols.bdy"));
+    Automaton invertedAutomaton = invert();
 
       /* Generate list of feasible protocols */
 
@@ -1588,7 +1580,7 @@ public class Automaton {
    * @return the feasible protocol
    **/
   public Set<CommunicationData> makeProtocolFeasible(Set<CommunicationData> protocol) {
-    return makeProtocolFeasible(protocol, invert(this, new File("invert.hdr"), new File("invert.bdy")));
+    return makeProtocolFeasible(protocol, invert());
   }
 
   /**
@@ -1767,7 +1759,7 @@ public class Automaton {
    **/
   public Automaton applyProtocol(Set<CommunicationData> protocol, File newHeaderFile, File newBodyFile) {
 
-    Automaton automaton = duplicate(new File("protocolTMP.hdr"), new File("protocolTMP.bdy"));
+    Automaton automaton = duplicate(getTemporaryFile(), getTemporaryFile());
 
       /* Remove all communications that are not part of the protocol */
 
@@ -1801,7 +1793,7 @@ public class Automaton {
 
         /* Create a file containing the mappings (where the new IDs can be indexed using the old IDs) */
 
-      File mappingFile = new File("renumberStatesMappings.tmp");
+      File mappingFile = getTemporaryFile();
 
       // Ensure that this temporary file does not already exist
       if (mappingFile.exists())
@@ -1821,7 +1813,7 @@ public class Automaton {
 
         /* Create new .bdy file with renumbered states */
 
-      File newBodyFile = new File("renumberStatesBody.tmp");
+      File newBodyFile = getTemporaryFile();
 
       // Ensure that this temporary file does not already exist
       if (newBodyFile.exists())
@@ -2376,9 +2368,21 @@ public class Automaton {
 
     try {
 
+      // Create temporary directory if it does not exist
+      if (!TEMPORARY_DIRECTORY.exists())
+        TEMPORARY_DIRECTORY.mkdirs();
+
+      // Create them if they do not exist
+      if (!headerFile.exists())
+        headerFile.createNewFile();
+      if (!bodyFile.exists())
+        bodyFile.createNewFile();
+
+      // Set up RandomAccessFile objects
       headerRAFile = new RandomAccessFile(headerFile, "rw");
       bodyRAFile = new RandomAccessFile(bodyFile, "rw");
 
+      // Read the header file
       readHeaderFile();
 
     } catch (IOException e) {
@@ -2431,16 +2435,15 @@ public class Automaton {
    **/
   public static void clearTemporaryFiles() {
 
-      try {
+    if (!TEMPORARY_DIRECTORY.exists())
+      return;
 
-        DEFAULT_HEADER_FILE.delete();
-        DEFAULT_BODY_FILE.delete();
+    for (String file : TEMPORARY_DIRECTORY.list())
+      new File(TEMPORARY_DIRECTORY, file).delete();
 
-      } catch (SecurityException e) {
-        e.printStackTrace();
-      }
+    TEMPORARY_DIRECTORY.delete();
 
-    }
+  }
 
   /**
    * Write all of the header information to file.
@@ -2748,7 +2751,7 @@ public class Automaton {
 
       /* Setup files */
 
-    File newBodyFile = new File("recreateBodyFile.tmp");
+    File newBodyFile = getTemporaryFile();
 
     // Ensure that this temporary file does not already exist
     if (newBodyFile.exists())
@@ -2821,6 +2824,28 @@ public class Automaton {
     nBytesPerState = newNBytesPerState;
 
     bodyRAFile = newBodyRAFile;
+
+  }
+
+  /**
+   * Get an unused temporary file.
+   * NOTE: The only way that this method will return a file that is being used already
+   * is if something has a reference to the file, but hasn't yet created the file. In
+   * order to prevent this from happening, instantiated automata create empty header and
+   * body files if needed.
+   * @return the temporary file
+   **/
+  private static File getTemporaryFile() {
+
+    // Continue to try getting a temporary file until we've found one that hasn't been used
+    while (true) {
+
+      File file = new File(TEMPORARY_DIRECTORY + "/.tmp" + temporaryFileIndex++);
+
+      if (!file.exists())
+        return file;
+
+    }
 
   }
 

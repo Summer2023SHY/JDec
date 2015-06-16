@@ -114,17 +114,24 @@ public abstract class AutomatonGenerator {
       // Update progress bar
       updateProgressBar(nEvents + (nStates * 2) + i, nTotalTasks, progressBar);
 
-      int eventID;
-      long initialStateID, targetStateID;
+      while (true) {
 
-      // Ensure that the transition exists (and that it is not already a bad transition)
-      do {
-        initialStateID = generateLong(1, nStates);
-        eventID = generateInt(1, nEvents);
-        targetStateID = generateLong(1, nStates);
-      } while (!automaton.transitionExists(initialStateID, eventID, targetStateID) || automaton.isBadTransition(initialStateID, eventID, targetStateID));
+        long initialStateID = generateLong(1, nStates);
+        java.util.List<Transition> transitions = automaton.getState(initialStateID).getTransitions();
 
-      automaton.markTransitionAsBad(initialStateID, eventID, targetStateID);
+        // There needs to be at least one transition
+        if (transitions.size() == 0)
+          continue;
+
+        Transition transition = transitions.get(generateInt(0, transitions.size() - 1));
+
+        // Mark this one as bad, as long as it isn't already a bad transition
+        if (!automaton.isBadTransition(initialStateID, transition.getEvent().getID(), transition.getTargetStateID())) {
+          automaton.markTransitionAsBad(initialStateID, transition.getEvent().getID(), transition.getTargetStateID());
+          break;
+        }
+
+      }
 
     }
 

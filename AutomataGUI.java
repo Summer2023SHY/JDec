@@ -12,7 +12,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
     /** CLASS CONSTANTS **/
 
   private static final String GUI_DATA_FILE_NAME = "gui.data";
-  private static final File temporaryDirectory = new File("tmp");
+  private static final File TEMPORARY_DIRECTORY = new File("AutomataGUI_Temporary_Files");
   private int temporaryFileIndex = 1;
 
     /** Private instance variables **/
@@ -67,7 +67,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     setGUIproperties();
     loadCurrentDirectory();
-    temporaryDirectory.mkdirs();
+    TEMPORARY_DIRECTORY.mkdirs();
     promptBeforeExit();
     cleanupBeforeProgramQuits();
 
@@ -82,10 +82,10 @@ public class AutomataGUI extends JFrame implements ActionListener {
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() { 
       public void run() {
 
-        for (String file : temporaryDirectory.list())
-          new File(temporaryDirectory, file).delete();
+        for (String file : TEMPORARY_DIRECTORY.list())
+          new File(TEMPORARY_DIRECTORY, file).delete();
 
-        temporaryDirectory.delete();
+        TEMPORARY_DIRECTORY.delete();
 
       }
     }));
@@ -136,7 +136,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
   // Excluding the extension
   public String getTemporaryFileName() {
-    return temporaryDirectory.getAbsolutePath() + "/untitled" + temporaryFileIndex++;
+    return TEMPORARY_DIRECTORY.getAbsolutePath() + "/untitled" + temporaryFileIndex++;
   }
 
   /**
@@ -1353,7 +1353,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     public boolean usingTemporaryFiles() {
 
-      return headerFile.getParentFile().getAbsolutePath().equals(temporaryDirectory.getAbsolutePath());
+      return headerFile.getParentFile().getAbsolutePath().equals(TEMPORARY_DIRECTORY.getAbsolutePath());
 
     }
 
