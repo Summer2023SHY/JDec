@@ -174,7 +174,6 @@ public class RandomAutomatonPrompt extends JFrame {
         new Thread() {
             public void run() {
               gui.generateRandomAutomaton(
-                "random",
                 nEventsDefault = (Integer) nEvents.getValue(),
                 nStatesDefault = (Integer) nStates.getValue(),
                 minTransitionsDefault = (Integer) minTransitions.getValue(),

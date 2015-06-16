@@ -135,7 +135,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
   }
 
   // Excluding the extension
-  private String getTemporaryFileName() {
+  public String getTemporaryFileName() {
     return temporaryDirectory.getAbsolutePath() + "/untitled" + temporaryFileIndex++;
   }
 
@@ -159,7 +159,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
       String fileName = getTemporaryFileName();
       tab.headerFile = new File(fileName + ".hdr");
       tab.bodyFile = new File(fileName + ".bdy");
-      tab.setSaved(false);
+      tab.updateTabTitle();
     }
 
       /* Re-activate appropriate components if this is the first tab */
@@ -211,14 +211,15 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       /* Check for unsaved information */
 
-    if (!tabs.get(index).isSaved()) {
+    AutomatonTab tab = tabs.get(index);
+    if (!tab.isSaved()) {
 
       // Prompt user to save
-      String buttons[] = { "Yes", "No" };
+      String buttons[] = { "Yes", "No"};
       
       int promptResult = JOptionPane.showOptionDialog(
         null,
-        "Are you sure you want to close this tab? Any un-generated GUI input code will be lost.",
+        "Are you sure you want to close this tab? " + (tab.usingTemporaryFiles() ? "This automaton is only being saved temporarily. To save this automaton permanently, ensure that you have generated the automaton, then select 'Save As...' from the 'File' menu." : "Any un-generated GUI input code will be lost."),
         "Unsaved Information",
         JOptionPane.DEFAULT_OPTION,
         JOptionPane.WARNING_MESSAGE,
@@ -414,7 +415,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     // Display error message
     else
-      JOptionPane.showMessageDialog(null, "Something went wrong while loading the generated image from file!", "Error", JOptionPane.ERROR_MESSAGE);
+      JOptionPane.showMessageDialog(null, "Something went wrong while reading the automaton from file or loading the generated image from file!", "Error", JOptionPane.ERROR_MESSAGE);
 
   }
 
@@ -768,7 +769,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
   }
 
-  public void generateRandomAutomaton(String fileName, int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions, JProgressBar progressBar) {
+  public void generateRandomAutomaton(int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions, JProgressBar progressBar) {
+
+    String fileName = getTemporaryFileName();
 
     Automaton automaton = AutomatonGenerator.generateRandom(
       new File(fileName + ".hdr"),
@@ -1242,6 +1245,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       generateAutomatonButton = new JButton("Generate Automaton From GUI Code");
       generateAutomatonButton.setFocusable(false);
+      generateAutomatonButton.setToolTipText(
+        "<html>Create a new automaton from the above input, saving it to file. For small automata, an image of the graph is automatically generated.<br>"
+          + "<b><u>NOTE</u></b>: The generated automaton is saved to file, not the GUI input code itself. "
+          + "The means that your automaton is not saved until you have generated it.</html>"
+      );
       generateAutomatonButton.addActionListener(new ActionListener() {
    
         public void actionPerformed(ActionEvent e) {
@@ -1256,10 +1264,14 @@ public class AutomataGUI extends JFrame implements ActionListener {
       c.gridy   = 5;
       container.add(generateAutomatonButton, c);
 
-      /* Generate automaton button */
+        /* Generate image button */
 
       generateImageButton = new JButton("Generate Image");
       generateImageButton.setFocusable(false);
+      generateImageButton.setToolTipText(
+        "<html>Given the generated automaton, produce an image of the graph, displaying it to the right.<br>"
+        + "<b><u>NOTE</u></b>: This process can take a long time for large automata (exporting as an .SVG file is usually better in this case anyway).</html>"
+      );
       generateImageButton.addActionListener(new ActionListener() {
    
         public void actionPerformed(ActionEvent e) {
@@ -1312,7 +1324,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
     public void setSaved(boolean newSavedStatus) {
 
       // Temporary files are always considered unsaved, since the directory is wiped upon closing of the program
-      if (headerFile.getParentFile().getAbsolutePath().equals(temporaryDirectory.getAbsolutePath()))
+      if (usingTemporaryFiles())
         newSavedStatus = false;
 
       if (newSavedStatus != saved) {
@@ -1336,6 +1348,12 @@ public class AutomataGUI extends JFrame implements ActionListener {
       eventInput.setText(automaton.getEventInput());
       stateInput.setText(automaton.getStateInput());
       transitionInput.setText(automaton.getTransitionInput());
+
+    }
+
+    public boolean usingTemporaryFiles() {
+
+      return headerFile.getParentFile().getAbsolutePath().equals(temporaryDirectory.getAbsolutePath());
 
     }
 

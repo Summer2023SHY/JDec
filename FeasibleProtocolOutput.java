@@ -2,6 +2,7 @@ import java.util.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
 
 public class FeasibleProtocolOutput extends JFrame {
 
@@ -76,7 +77,10 @@ public class FeasibleProtocolOutput extends JFrame {
       button.addActionListener(new ActionListener() {
    
         public void actionPerformed(ActionEvent e) {
-          Automaton generatedAutomaton = automaton.applyProtocol(protocol);
+          String fileName = gui.getTemporaryFileName();
+          File headerFile = new File(fileName + ".hdr");
+          File bodyFile = new File(fileName + ".bdy");
+          Automaton generatedAutomaton = automaton.applyProtocol(protocol, headerFile, bodyFile);
           gui.createTab(generatedAutomaton);
         }
 

@@ -513,7 +513,7 @@ public class Automaton {
    * @param newBodyFile    The body file where the new automaton should be stored
    * @return the inverted automaton
    **/
-  public static Automaton invert(Automaton automaton, File newHeaderFile, File newBodyFile) {
+  private static Automaton invert(Automaton automaton, File newHeaderFile, File newBodyFile) {
 
       /* Create a new automaton that has each of the transitions going the opposite direction */
 
@@ -1579,6 +1579,17 @@ public class Automaton {
 
   }
 
+  /**
+   * Make the specified protocol feasible (returning it as a new set).
+   * NOTE: This method is overloaded for efficiency purposes (the method accepting an inverted Automaton as a parameter is more
+   * efficient if makeProtocolFeasible() is being called multiple times on the same automaton, so there's no need to regenerate
+   * the inverted automaton each time).
+   * @param protocol  The protocol that is being made feasible
+   * @return the feasible protocol
+   **/
+  public Set<CommunicationData> makeProtocolFeasible(Set<CommunicationData> protocol) {
+    return makeProtocolFeasible(protocol, invert(this, new File("invert.hdr"), new File("invert.bdy")));
+  }
 
   /**
    * Make the specified protocol feasible (returning it as a new set).
@@ -1587,7 +1598,7 @@ public class Automaton {
    *                            NOTE: There is no need for extra information (such as special transitions) to be in the inverted automaton
    * @return the feasible protocol
    **/
-  public Set<CommunicationData> makeProtocolFeasible(Set<CommunicationData> protocol, Automaton invertedAutomaton) {
+  private Set<CommunicationData> makeProtocolFeasible(Set<CommunicationData> protocol, Automaton invertedAutomaton) {
 
     Set<CommunicationData> feasibleProtocol = new HashSet<CommunicationData>();
 
@@ -1750,9 +1761,11 @@ public class Automaton {
   /**
    * Refine this automaton by applying the specified communication protocol, and doing the necessary pruning.
    * @param protocol  The chosen protocol
+   * @param newHeaderFile  The header file where the new automaton should be stored
+   * @param newBodyFile    The body file where the new automaton should be stored
    * @return the pruned automaton that had the specified protocol applied
    **/
-  public Automaton applyProtocol(Set<CommunicationData> protocol) {
+  public Automaton applyProtocol(Set<CommunicationData> protocol, File newHeaderFile, File newBodyFile) {
 
     Automaton automaton = duplicate(new File("protocolTMP.hdr"), new File("protocolTMP.bdy"));
 
@@ -1773,7 +1786,7 @@ public class Automaton {
 
       /* Return the accessible automaton */
 
-    return automaton.accessible(new File("protocol.hdr"), new File("protocol.bdy"));
+    return automaton.accessible(newHeaderFile, newBodyFile);
 
   }
 
@@ -1788,7 +1801,13 @@ public class Automaton {
 
         /* Create a file containing the mappings (where the new IDs can be indexed using the old IDs) */
 
-      File mappingFile = new File("mappings.tmp");
+      File mappingFile = new File("renumberStatesMappings.tmp");
+
+      // Ensure that this temporary file does not already exist
+      if (mappingFile.exists())
+        if (!mappingFile.delete())
+          System.err.println("ERROR: Could not delete previously existing temporary file.");
+
       RandomAccessFile mappingRAFile = new RandomAccessFile(mappingFile, "rw");
 
       long newID = 1;
@@ -1802,7 +1821,13 @@ public class Automaton {
 
         /* Create new .bdy file with renumbered states */
 
-      File newBodyFile = new File("body.tmp");
+      File newBodyFile = new File("renumberStatesBody.tmp");
+
+      // Ensure that this temporary file does not already exist
+      if (newBodyFile.exists())
+        if (!newBodyFile.delete())
+          System.err.println("ERROR: Could not delete previously existing temporary file.");
+
       RandomAccessFile newBodyRAFile = new RandomAccessFile(newBodyFile, "rw");
 
       for (long s = 1; s <= stateCapacity; s++) {
@@ -1990,107 +2015,116 @@ public class Automaton {
       str.append("ratio=fill;");
     }
 
-      /* Mark special transitions */
+    try {
 
-    HashMap<String, String> additionalEdgeProperties = new HashMap<String, String>();
-    for (TransitionData t : unconditionalViolations) {
-      String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-      if (additionalEdgeProperties.containsKey(edge))
-        additionalEdgeProperties.put(edge, additionalEdgeProperties.get(edge) + ",color=red");
-      else
-        additionalEdgeProperties.put(edge, ",color=red"); 
-    }
-    for (TransitionData t : conditionalViolations) {
-      String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-      if (additionalEdgeProperties.containsKey(edge))
-        additionalEdgeProperties.put(edge, additionalEdgeProperties.get(edge) + ",color=green3");
-      else
-        additionalEdgeProperties.put(edge, ",color=green3"); 
-    }
-    for (TransitionData t : badTransitions) {
-      String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-      if (additionalEdgeProperties.containsKey(edge))
-        additionalEdgeProperties.put(edge, additionalEdgeProperties.get(edge) + ",style=dotted");
-      else
-        additionalEdgeProperties.put(edge, ",style=dotted"); 
-    }
-    for (TransitionData t : potentialCommunications) {
-      String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-      if (additionalEdgeProperties.containsKey(edge))
-        additionalEdgeProperties.put(edge, additionalEdgeProperties.get(edge) + ",color=blue,fontcolor=blue");
-      else
-        additionalEdgeProperties.put(edge, ",color=blue,fontcolor=blue"); 
-    }
-    
-      /* Draw all states and their transitions */
+        /* Mark special transitions */
 
-    for (long s = 1; s <= nStates; s++) {
+      HashMap<String, String> additionalEdgeProperties = new HashMap<String, String>();
+      for (TransitionData t : unconditionalViolations) {
+        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
+        if (additionalEdgeProperties.containsKey(edge))
+          additionalEdgeProperties.put(edge, additionalEdgeProperties.get(edge) + ",color=red");
+        else
+          additionalEdgeProperties.put(edge, ",color=red"); 
+      }
+      for (TransitionData t : conditionalViolations) {
+        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
+        if (additionalEdgeProperties.containsKey(edge))
+          additionalEdgeProperties.put(edge, additionalEdgeProperties.get(edge) + ",color=green3");
+        else
+          additionalEdgeProperties.put(edge, ",color=green3"); 
+      }
+      for (TransitionData t : badTransitions) {
+        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
+        if (additionalEdgeProperties.containsKey(edge))
+          additionalEdgeProperties.put(edge, additionalEdgeProperties.get(edge) + ",style=dotted");
+        else
+          additionalEdgeProperties.put(edge, ",style=dotted"); 
+      }
+      for (TransitionData t : potentialCommunications) {
+        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
+        if (additionalEdgeProperties.containsKey(edge))
+          additionalEdgeProperties.put(edge, additionalEdgeProperties.get(edge) + ",color=blue,fontcolor=blue");
+        else
+          additionalEdgeProperties.put(edge, ",color=blue,fontcolor=blue"); 
+      }
+      
+        /* Draw all states and their transitions */
 
-      // Get state from file
-      State state = getState(s);
+      for (long s = 1; s <= nStates; s++) {
 
-      // Draw state
-      if (state.isMarked())
-        str.append(String.format("\"_%s\" [peripheries=2,label=\"%s\"];", state.getLabel(), state.getLabel()));
-      else
-        str.append(String.format("\"_%s\" [peripheries=1,label=\"%s\"];", state.getLabel(), state.getLabel()));
+        // Get state from file
+        State state = getState(s);
 
-      // Draw each of its transitions
-      ArrayList<Transition> transitionsToSkip = new ArrayList<Transition>();
-      for (Transition t1 : state.getTransitions()) {
+        // Draw state
+        if (state.isMarked())
+          str.append(String.format("\"_%s\" [peripheries=2,label=\"%s\"];", state.getLabel(), state.getLabel()));
+        else
+          str.append(String.format("\"_%s\" [peripheries=1,label=\"%s\"];", state.getLabel(), state.getLabel()));
 
-        // Skip it if this was already taken care of (grouped into another transition going to the same target state)
-        if (transitionsToSkip.contains(t1))
-          continue;
-
-        String label = "";
-
-        // Look for all transitions that can be group with this one (for simplicity of code, this will also include 't1')
-        for (Transition t2 : state.getTransitions()) {
+        // Draw each of its transitions
+        ArrayList<Transition> transitionsToSkip = new ArrayList<Transition>();
+        for (Transition t1 : state.getTransitions()) {
 
           // Skip it if this was already taken care of (grouped into another transition going to the same target state)
-          if (transitionsToSkip.contains(t2))
+          if (transitionsToSkip.contains(t1))
             continue;
 
-          // Check to see if both transitions lead to the same event
-          if (t1.getTargetStateID() == t2.getTargetStateID()) {
-            label += "," + t2.getEvent().getLabel();
-            transitionsToSkip.add(t2);
+          String label = "";
+
+          // Look for all transitions that can be group with this one (for simplicity of code, this will also include 't1')
+          for (Transition t2 : state.getTransitions()) {
+
+            // Skip it if this was already taken care of (grouped into another transition going to the same target state)
+            if (transitionsToSkip.contains(t2))
+              continue;
+
+            // Check to see if both transitions lead to the same event
+            if (t1.getTargetStateID() == t2.getTargetStateID()) {
+              label += "," + t2.getEvent().getLabel();
+              transitionsToSkip.add(t2);
+            }
+
           }
 
+          // Add transition
+          String edge = "\"_" + state.getLabel() + "\" -> \"_" + getStateExcludingTransitions(t1.getTargetStateID()).getLabel() + "\"";
+          str.append(edge);
+          str.append(" [label=\"" + label.substring(1) + "\"");
+
+          // Add additional properties (if applicable)
+          String properties = additionalEdgeProperties.get(edge);
+          if (edge != null)
+            str.append(properties);
+          
+          // if (nControllers == 1) {
+          //  if (!t1.getEvent().isObservable()[0])
+          //    str.append(",style=dotted");
+
+          //  if (!t1.getEvent().isControllable()[0])
+          //    str.append(",color=red");
+          // }
+
+          str.append("];");
         }
 
-        // Add transition
-        String edge = "\"_" + state.getLabel() + "\" -> \"_" + getStateExcludingTransitions(t1.getTargetStateID()).getLabel() + "\"";
-        str.append(edge);
-        str.append(" [label=\"" + label.substring(1) + "\"");
-
-        // Add additional properties (if applicable)
-        String properties = additionalEdgeProperties.get(edge);
-        if (edge != null)
-          str.append(properties);
-        
-        // if (nControllers == 1) {
-        //  if (!t1.getEvent().isObservable()[0])
-        //    str.append(",style=dotted");
-
-        //  if (!t1.getEvent().isControllable()[0])
-        //    str.append(",color=red");
-        // }
-
-        str.append("];");
       }
 
+        /* Add arrow towards initial state */
+
+      if (initialState > 0) {
+        str.append("node [shape=plaintext];");
+        str.append("\" \"-> \"_" + getStateExcludingTransitions(initialState).getLabel() + "\" [color=blue];");
+      }
+
+      str.append("}");
+
+    } catch (NullPointerException e) {
+
+      System.err.println("ERROR: Could not generate image. Body file is likely corrupt or missing.");
+      return false;
+
     }
-
-      /* Add arrow towards initial state */
-
-    if (initialState > 0) {
-      str.append("node [shape=plaintext];");
-      str.append("\" \"-> \"_" + getStateExcludingTransitions(initialState).getLabel() + "\" [color=blue];");
-    }
-
-    str.append("}");
 
       /* Generate image */
 
@@ -2714,7 +2748,13 @@ public class Automaton {
 
       /* Setup files */
 
-    File newBodyFile = new File(".tmp");
+    File newBodyFile = new File("recreateBodyFile.tmp");
+
+    // Ensure that this temporary file does not already exist
+    if (newBodyFile.exists())
+      if (!newBodyFile.delete())
+        System.err.println("ERROR: Could not delete previously existing temporary file.");
+
     RandomAccessFile newBodyRAFile = null;
 
     try {
