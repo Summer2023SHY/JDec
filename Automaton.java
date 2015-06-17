@@ -2363,6 +2363,13 @@ public class Automaton {
    **/
   public Automaton duplicate(File newHeaderFile, File newBodyFile) {
 
+    // Assign temporary files, if necessary
+    if (newHeaderFile == null)
+      newHeaderFile = getTemporaryFile();
+    if (newBodyFile == null)
+      newBodyFile = getTemporaryFile();
+
+    // Copy the header and body files
     try {
     
       if (headerFile.exists())

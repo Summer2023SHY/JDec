@@ -55,7 +55,8 @@ public class TestAutomata {
     counter.add(runStateCreationTestRoutine());
     counter.add(runAutomatonCapacityTestRoutine());
     counter.add(runGUIInputTestRoutine());
-  	counter.add(runAutomataOperationsTestRoutine());
+    counter.add(runAutomataOperationsTestRoutine());
+  	counter.add(runExceptionHandlingTestRoutine());
 
   		/* Print summary of all tests */
 
@@ -782,6 +783,95 @@ public class TestAutomata {
 
   }
 
+  private static TestCounter runExceptionHandlingTestRoutine() {
+
+    String testRoutineName = "EXCEPTION HANDLING";
+
+    printTestOutput("RUNNING " + testRoutineName + " TESTS...", 1);
+
+    TestCounter counter = new TestCounter();
+
+      /* IncompatibleAutomataException Tests */
+
+    printTestOutput("IncompatibleAutomataException Tests: ", 2);
+
+    printTestOutput("Instantiating an automaton...", 3);
+    Automaton automaton1 = AutomatonGenerator.generateFromGUICode(
+      "a,T,T\nb,T,F\nc,F,T\nd,F,F", // Events
+      "", // States  
+      "", // Transitions
+      1, // Number of controllers
+      false, // We do not want it to be verbose
+      null, // Use temporary files
+      null // Use temporary files
+    );
+
+    printTestOutput("Instantiating a second automaton (with an incompatible event)...", 3);
+    Automaton automaton2 = AutomatonGenerator.generateFromGUICode(
+      "a,T,T\nc,T,T\ne,T,F", // Events
+      "", // States  
+      "", // Transitions
+      1, // Number of controllers
+      false, // We do not want it to be verbose
+      null, // Use temporary files
+      null // Use temporary files
+    );
+
+    try {
+      printTestOutput("Taking the union of the two instantiated automata...", 3);
+      Automaton.union(automaton1, automaton2, null, null);
+      printTestCase("Ensuring that an IncompatibleAutomataException was raised", new TestResult(false), counter);
+    } catch(IncompatibleAutomataException e) {
+      printTestCase("Ensuring that an IncompatibleAutomataException was raised", new TestResult(true), counter);
+    }
+
+    printTestOutput("Instantiating a third automaton (with different number of controllers)...", 3);
+    Automaton automaton3 = AutomatonGenerator.generateFromGUICode(
+      "", // Events
+      "", // States  
+      "", // Transitions
+      2, // Number of controllers
+      false, // We do not want it to be verbose
+      null, // Use temporary files
+      null // Use temporary files
+    );
+
+    try {
+      printTestOutput("Taking the union of the first and third instantiated automata...", 3);
+      Automaton.union(automaton1, automaton3, null, null);
+      printTestCase("Ensuring that an IncompatibleAutomataException was raised", new TestResult(false), counter);
+    } catch(IncompatibleAutomataException e) {
+      printTestCase("Ensuring that an IncompatibleAutomataException was raised", new TestResult(true), counter);
+    }
+
+      /* NoUStructureException Tests */
+
+    printTestOutput("NoUStructureException Tests: ", 2);
+
+    try {
+      printTestOutput("Adding communications to an automaton with more than 1 controller...", 3);
+      automaton3.addCommunications(null, null);
+      printTestCase("Ensuring that a NoUStructureException was raised", new TestResult(false), counter);
+    } catch(NoUStructureException e) {
+      printTestCase("Ensuring that a NoUStructureException was raised", new TestResult(true), counter);
+    }
+
+    try {
+      printTestOutput("Adding communications to an automaton which has event labels that are not vectors...", 3);
+      automaton2.addCommunications(null, null);
+      printTestCase("Ensuring that a NoUStructureException was raised", new TestResult(false), counter);
+    } catch(NoUStructureException e) {
+      printTestCase("Ensuring that a NoUStructureException was raised", new TestResult(true), counter);
+    }
+
+      /* Print summary of this test routine */
+
+    printTestRoutineSummary(testRoutineName, counter);
+
+    return counter;
+
+  }
+
   private static void printTestOutput(String str, int requiredVerbose) {
 
   	// Do not print output if the verbose is not high enough
@@ -842,14 +932,14 @@ public class TestAutomata {
 class TestResult {
 
   public boolean passed;
-  private String summary = "";
+  private String summary;
 
   public TestResult(long actual, long expected) {
     if (actual == expected)
       passed = true;
     else {
       passed = false;
-      summary += "\nEXPECTED:\n" + expected + "\n\nACTUAL:\n" + actual + "\n";
+      summary = "\nEXPECTED:\n" + expected + "\n\nACTUAL:\n" + actual + "\n";
     }
   }
 
@@ -857,7 +947,7 @@ class TestResult {
     passed = (actual == expected);
     
     if (!passed)
-      summary += "\nEXPECTED:\n" + expected + "\n\nACTUAL:\n" + actual + "\n";
+      summary = "\nEXPECTED:\n" + expected + "\n\nACTUAL:\n" + actual + "\n";
 
   }
 
@@ -906,10 +996,10 @@ class TestResult {
 
         }
 
-        summary += "\nADDED LINES:\n" + addedLines.toString() + "\n\nMISSING LINES:\n" + missingLines.toString() + "\n";
+        summary = "\nADDED LINES:\n" + addedLines.toString() + "\n\nMISSING LINES:\n" + missingLines.toString() + "\n";
 
       } else
-        summary += "\nEXPECTED:\n" + expected + "\n\nACTUAL:\n" + actual + "\n";
+        summary = "\nEXPECTED:\n" + expected + "\n\nACTUAL:\n" + actual + "\n";
 
     }
 
@@ -920,7 +1010,7 @@ class TestResult {
     passed = (actual.equals(expected));
     
     if (!passed)
-      summary += "\nEXPECTED:\n" + expected + "\n\nACTUAL:\n" + actual + "\n";
+      summary = "\nEXPECTED:\n" + expected + "\n\nACTUAL:\n" + actual + "\n";
 
   }
 
@@ -929,7 +1019,16 @@ class TestResult {
     passed = (Arrays.equals(actual, expected));
 
     if (!passed)
-      summary += "\nEXPECTED:\n" + Arrays.toString(expected) + "\n\nACTUAL:\n" + Arrays.toString(actual) + "\n";
+      summary = "\nEXPECTED:\n" + Arrays.toString(expected) + "\n\nACTUAL:\n" + Arrays.toString(actual) + "\n";
+    
+  }
+
+  public TestResult(boolean passed) {
+
+    this.passed = passed;
+
+    if (!passed)
+      summary = "";
     
   }
 
