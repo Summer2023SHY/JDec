@@ -57,16 +57,19 @@ public class FeasibleProtocolOutput extends JFrame {
 
     for (int i = 0; i < feasibleProtocols.size(); i++) {
 
+      Container containerForTextAndButton = new Container();
+      containerForTextAndButton.setLayout(new FlowLayout());
+
       final Set<CommunicationData> protocol = feasibleProtocols.get(i);
 
       // Format title text differently if there is only one protocol
       if (feasibleProtocols.size() == 1)
-        outerContainer.add(new JLabel(String.format(
+        containerForTextAndButton.add(new JLabel(String.format(
           "Feasible protocol has %d communications.",
           protocol.size()
         )));
       else
-        outerContainer.add(new JLabel(String.format(
+        containerForTextAndButton.add(new JLabel(String.format(
           "Feasible protocol #%d has %d communications.",
           i + 1,
           protocol.size()
@@ -85,7 +88,9 @@ public class FeasibleProtocolOutput extends JFrame {
         }
 
       });
-      outerContainer.add(button);
+      containerForTextAndButton.add(button);
+
+      outerContainer.add(containerForTextAndButton);
 
       // Add text to a text pane and make it so that the user cannot edit it
       StringBuilder protocolText = new StringBuilder();
@@ -111,7 +116,7 @@ public class FeasibleProtocolOutput extends JFrame {
 
     JScrollPane outerScrollPane = new JScrollPane(outerContainer) {
       @Override public Dimension getPreferredSize() {
-        return new Dimension(400, 400);  
+        return new Dimension(500, 500);  
       }
     };
     add(outerScrollPane, BorderLayout.CENTER);

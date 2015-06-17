@@ -253,7 +253,7 @@ public class Automaton {
    * Create a new copy of this automaton that has all unreachable states and transitions removed.
    * @param newHeaderFile  The header file where the accesible automaton should be stored
    * @param newBodyFile    The body file where the accesible automaton should be stored
-   * @return the accessible automaton
+   * @return               The accessible automaton
    **/
   public Automaton accessible(File newHeaderFile, File newBodyFile) {
 
@@ -331,7 +331,7 @@ public class Automaton {
    * Create a new copy of this automaton that has all states removed which are unable to reach a marked state.
    * @param newHeaderFile  The header file where the new automaton should be stored
    * @param newBodyFile    The body file where the new automaton should be stored
-   * @return the co-accessible automaton
+   * @return               The co-accessible automaton
    **/
   public Automaton coaccessible(File newHeaderFile, File newBodyFile) {
 
@@ -418,7 +418,7 @@ public class Automaton {
    * 'dead' or 'dump' state where all undefined transitions lead.
    * @param newHeaderFile  The header file where the new automaton should be stored
    * @param newBodyFile    The body file where the new automaton should be stored
-   * @return the complement automaton
+   * @return               The complement automaton
    **/
   public Automaton complement(File newHeaderFile, File newBodyFile) {
 
@@ -503,7 +503,7 @@ public class Automaton {
   /**
    * Create a new version of this automaton which has all of the transitions going the opposite direction.
    * NOTE: This is just a shallow copy of the automaton (no special transition data is retained), which makes it slightly more efficient.
-   * @return the inverted automaton
+   * @return  The inverted automaton
    **/
   private Automaton invert() {
 
@@ -571,7 +571,7 @@ public class Automaton {
    * because the accessible() method has less overhead than the coaccessible() method.
    * @param newHeaderFile  The header file where the new automaton should be stored
    * @param newBodyFile    The body file where the new automaton should be stored
-   * @return the trim automaton, or null if there was no initial state specified
+   * @return               The trim automaton, or null if there was no initial state specified
    **/
   public Automaton trim(File newHeaderFile, File newBodyFile) {
 
@@ -686,18 +686,19 @@ public class Automaton {
 
   /**
    * Generate the intersection of the two specified automata.
-   * @param first   The first automaton
-   * @param second  The second automaton
-   * @param newHeaderFile  The header file where the new automaton should be stored
-   * @param newBodyFile    The body file where the new automaton should be stored
-   * @return the intersection, or null if the number of controllers do not match
+   * @param first                           The first automaton
+   * @param second                          The second automaton
+   * @param newHeaderFile                   The header file where the new automaton should be stored
+   * @param newBodyFile                     The body file where the new automaton should be stored
+   * @return                                The intersection
+   * @throws IncompatibleAutomataException  If the number of controllers do not match, or the automata have incompatible events
    **/
-  public static Automaton intersection(Automaton first, Automaton second, File newHeaderFile, File newBodyFile) {
+  public static Automaton intersection(Automaton first, Automaton second, File newHeaderFile, File newBodyFile) throws IncompatibleAutomataException {
 
       /* Error checking */
 
     if (first.getNumberOfControllers() != second.getNumberOfControllers())
-      return null;
+      throw new IncompatibleAutomataException();
 
       /* Setup */
 
@@ -714,9 +715,17 @@ public class Automaton {
       /* Build product */
 
     // Create event set (intersection of both event sets)
-    for (Event e : first.getEvents())
-      if (second.getEvents().contains(e))
-        automaton.addEvent(e.getLabel(), e.isObservable(), e.isControllable());
+    for (Event e1 : first.getEvents())
+      for (Event e2 : second.getEvents())
+        if (e1.equals(e2)) {
+
+          // Ensure that these automata are compatible (meaning that no events have the same name, but with different properties)
+          if (!Arrays.equals(e1.isObservable(), e2.isObservable()) || !Arrays.equals(e1.isControllable(), e2.isControllable()))
+            throw new IncompatibleAutomataException();
+
+          automaton.addEvent(e1.getLabel(), e1.isObservable(), e1.isControllable());
+
+        }
 
     // Add states and transition
     while (stack1.size() > 0) {
@@ -785,18 +794,19 @@ public class Automaton {
 
   /**
    * Generate the union of the two specified automata.
-   * @param first   The first automaton
-   * @param second  The second automaton
-   * @param newHeaderFile  The header file where the new automaton should be stored
-   * @param newBodyFile    The body file where the new automaton should be stored
-   * @return the union, or null if the number of controllers do not match
+   * @param first                           The first automaton
+   * @param second                          The second automaton
+   * @param newHeaderFile                   The header file where the new automaton should be stored
+   * @param newBodyFile                     The body file where the new automaton should be stored
+   * @return                                The union
+   * @throws IncompatibleAutomataException  If the number of controllers do not match, or the automata have incompatible events
    **/
-  public static Automaton union(Automaton first, Automaton second, File newHeaderFile, File newBodyFile) {
+  public static Automaton union(Automaton first, Automaton second, File newHeaderFile, File newBodyFile) throws IncompatibleAutomataException {
 
       /* Error checking */
 
     if (first.getNumberOfControllers() != second.getNumberOfControllers())
-      return null;
+      throw new IncompatibleAutomataException();
 
       /* Setup */
 
@@ -824,7 +834,7 @@ public class Automaton {
 
     // Create event set (union of both event sets)
     automaton.addAllEvents(first.getEvents());
-    automaton.addEventsIfNonExisting(second.getEvents());
+    automaton.addEventsWithErrorChecking(second.getEvents());
 
     // Add states and transition
     while (stack1.size() > 0) {
@@ -854,19 +864,19 @@ public class Automaton {
 
       // Add new state
       automaton.addStateAt(
-          state1.getLabel() + "_" + state2.getLabel(),
-          state1.isMarked() && state2.isMarked(),
-          new ArrayList<Transition>(),
-          id1 == first.getInitialStateID() && id2 == second.getInitialStateID(),
-          newStateID
-        );
+        state1.getLabel() + "_" + state2.getLabel(),
+        state1.isMarked() && state2.isMarked(),
+        new ArrayList<Transition>(),
+        id1 == first.getInitialStateID() && id2 == second.getInitialStateID(),
+        newStateID
+      );
 
       // Find every pair of transitions that have the same events (this accounts for public events)
       for (Transition t1 : transitions1)
         for (Transition t2 : transitions2)
           if (t1.getEvent().equals(t2.getEvent())) {
 
-          // Add this pair to the stack
+            // Add this pair to the stack
             stack1.add(t1.getTargetStateID());
             stack2.add(t2.getTargetStateID());
 
@@ -924,7 +934,7 @@ public class Automaton {
    * Apply the synchronized composition algorithm to an automaton to produce the U-Structure.
    * @param newHeaderFile  The header file where the new automaton should be stored
    * @param newBodyFile    The body file where the new automaton should be stored
-   * @return the U-Structure
+   * @return               The U-Structure
    **/
   public Automaton synchronizedComposition(File newHeaderFile, File newBodyFile) {
 
@@ -1148,9 +1158,10 @@ public class Automaton {
 
   /**
    * Generate a new automaton, with all communications added (potential communications are marked).
-   * @param newHeaderFile  The header file where the new automaton should be stored
-   * @param newBodyFile    The body file where the new automaton should be stored
-   * @return the automaton with the added transitions
+   * @param newHeaderFile          The header file where the new automaton should be stored
+   * @param newBodyFile            The body file where the new automaton should be stored
+   * @return                       The automaton with the added transitions
+   * @throws NoUStructureException If the automaton is not a U-Structure (which is required for this operation)
    **/
   public Automaton addCommunications(File newHeaderFile, File newBodyFile) throws NoUStructureException {
 
@@ -1232,7 +1243,7 @@ public class Automaton {
    * @param communication       The event vector representing the communication
    * @param vectorElementsFound Indicates which elements of the vector have been found
    * @param currentState        The state that we are currently on
-   * @return the destination state (or null if the communication does not lead to a state)
+   * @return                    The destination state (or null if the communication does not lead to a state)
    **/
   private static State findWhereCommunicationLeads(Automaton automaton, LabelVector communication, boolean[] vectorElementsFound, State currentState) {
 
@@ -1293,8 +1304,9 @@ public class Automaton {
 
   /**
    * Given the complete set of least upper bounds (LUBs), return the subset of LUBs which are the event vectors for potential communications.
-   * @param leastUpperBounds  The set of LUBs
-   * @return the set of potential communications, including communication roles
+   * @param leastUpperBounds        The set of LUBs
+   * @return                        The set of potential communications, including communication roles
+   * @throws NoUStructureException  If the automaton is not a U-Structure (which is required for this operation)
    **/
   private Set<CommunicationLabelVector> findPotentialCommunicationLabels(Set<LabelVector> leastUpperBounds) throws NoUStructureException {
 
@@ -1479,7 +1491,7 @@ public class Automaton {
   /**
    * Checking the feasibility for all possible communication protocols, generate a list of the feasible protocols.
    * @param communications  The communications to be considered (which should be a subset of the potentialCommunications list of this automaton)
-   * @return the feasible protocols, which are sorted by the number of communications that each protocol has (smallest to largest)
+   * @return                The feasible protocols, which are sorted by the number of communications that each protocol has (smallest to largest)
    **/
   public List<Set<CommunicationData>> generateAllFeasibleProtocols(List<CommunicationData> communications) {
 
@@ -1522,7 +1534,7 @@ public class Automaton {
   /**
    * Generate a list of the smallest possible feasible protocols (in terms of the number of communications).
    * @param communications  The communications to be considered (which should be a subset of the potentialCommunications list of this automaton)
-   * @return the feasible protocols
+   * @return                The feasible protocols
    **/
   public List<Set<CommunicationData>> generateSmallestFeasibleProtocols(List<CommunicationData> communications) {
 
@@ -1577,7 +1589,7 @@ public class Automaton {
    * efficient if makeProtocolFeasible() is being called multiple times on the same automaton, so there's no need to regenerate
    * the inverted automaton each time).
    * @param protocol  The protocol that is being made feasible
-   * @return the feasible protocol
+   * @return          The feasible protocol
    **/
   public Set<CommunicationData> makeProtocolFeasible(Set<CommunicationData> protocol) {
     return makeProtocolFeasible(protocol, invert());
@@ -1588,7 +1600,7 @@ public class Automaton {
    * @param protocol            The protocol that is being made feasible
    * @param invertedAutomaton   An automaton identical to the previous (except all transitions are going the opposite direction)
    *                            NOTE: There is no need for extra information (such as special transitions) to be in the inverted automaton
-   * @return the feasible protocol
+   * @return                    The feasible protocol
    **/
   private Set<CommunicationData> makeProtocolFeasible(Set<CommunicationData> protocol, Automaton invertedAutomaton) {
 
@@ -1642,7 +1654,7 @@ public class Automaton {
    * @param protocol            The protocol that is being checked for feasibility
    * @param invertedAutomaton   An automaton identical to the previous (except all transitions are going the opposite direction)
    *                            NOTE: There is no need for extra information (such as special transitions) to be in the inverted automaton
-   * @return whether or not the protocol is feasible
+   * @return                    Whether or not the protocol is feasible
    **/
   private boolean isFeasibleProtocol(Set<CommunicationData> protocol, Automaton invertedAutomaton) {
 
@@ -1752,10 +1764,10 @@ public class Automaton {
 
   /**
    * Refine this automaton by applying the specified communication protocol, and doing the necessary pruning.
-   * @param protocol  The chosen protocol
-   * @param newHeaderFile  The header file where the new automaton should be stored
-   * @param newBodyFile    The body file where the new automaton should be stored
-   * @return the pruned automaton that had the specified protocol applied
+   * @param protocol      The chosen protocol
+   * @param newHeaderFile The header file where the new automaton should be stored
+   * @param newBodyFile   The body file where the new automaton should be stored
+   * @return              The pruned automaton that had the specified protocol applied
    **/
   public Automaton applyProtocol(Set<CommunicationData> protocol, File newHeaderFile, File newBodyFile) {
 
@@ -1776,9 +1788,15 @@ public class Automaton {
 
     // NOT YET IMPLEMENTED...
 
-      /* Return the accessible automaton */
+      /* Get the accessible part of the automaton */
 
-    return automaton.accessible(newHeaderFile, newBodyFile);
+    automaton = automaton.accessible(newHeaderFile, newBodyFile);
+
+      /* Remove all inactive events */
+
+    // NOT YET IMPLEMENTED...
+
+    return automaton;
 
   }
 
@@ -1905,6 +1923,7 @@ public class Automaton {
    * Helper method to re-number states in the specified list of special transitions.
    * @param mappingRAFile The binary file containing the state ID mappings
    * @param list          The list of special transition data
+   * @throws IOException  If there was problems reading from file
    **/
   private void renumberTransitionData(RandomAccessFile mappingRAFile, List<? extends TransitionData> list) throws IOException {
 
@@ -1934,7 +1953,7 @@ public class Automaton {
    * @param first   The first automaton
    * @param id2     The state ID from the second automaton
    * @param second  The second automaton
-   * @return the combined ID
+   * @return        The combined ID
    **/ 
   private static long combineTwoIDs(long id1, Automaton first, long id2, Automaton second) {
 
@@ -1965,7 +1984,7 @@ public class Automaton {
    * Given a combined ID, obtain the list of original IDs by reversing the process.
    * @param combinedID  The combined ID
    * @param maxID       The largest possible value to be used as an ID
-   * @return the original list of IDs
+   * @return            The original list of IDs
    **/
   public static List<Long> separateIDs(long combinedID, long maxID) {
 
@@ -1989,7 +2008,7 @@ public class Automaton {
    * @param size            The requested width and height in pixels
    * @param mode            The output type
    * @param outputFileName  The location to put the generated output
-   * @return whether or not the output was successfully generated
+   * @return                Whether or not the output was successfully generated
    **/
   public boolean generateImage(int size, OutputMode mode, String outputFileName) {
 
@@ -2165,7 +2184,7 @@ public class Automaton {
   /**
    * Load the generated graph image from file.
    * @param fileName  The name of the image to be loaded
-   * @return image, or null if it could not be loaded
+   * @return          The image, or null if it could not be loaded
    **/
   public BufferedImage loadImageFromFile(String fileName) {
 
@@ -2173,7 +2192,7 @@ public class Automaton {
       return ImageIO.read(new File(fileName));
     } catch (IOException e) {
       e.printStackTrace();
-      return null;
+      return null;  
     }
 
   }
@@ -2295,7 +2314,7 @@ public class Automaton {
   /**
    * Get the event input code.
    * NOTE: Must call generateInputForGUI() prior to use.
-   * @return input code in the form of a String
+   * @return  Input code in the form of a String
    **/
   public String getEventInput() {
 
@@ -2309,7 +2328,7 @@ public class Automaton {
   /**
    * Get the state input code.
    * NOTE: Must call generateInputForGUI() prior to use.
-   * @return input code in the form of a String
+   * @return  Input code in the form of a String
    **/
   public String getStateInput() {
 
@@ -2323,7 +2342,7 @@ public class Automaton {
   /**
    * Get the transition input code.
    * NOTE: Must call generateInputForGUI() prior to use.
-   * @return input code in the form of a String
+   * @return  Input code in the form of a String
    **/
   public String getTransitionInput() {
 
@@ -2340,7 +2359,7 @@ public class Automaton {
    * Duplicate this automaton and store it in a different set of files.
    * @param newHeaderFile The new header file where the automaton is being copied to
    * @param newBodyFile   The new body file where the automaton is being copied to
-   * @return the duplicated automaton
+   * @return              The duplicated automaton
    **/
   public Automaton duplicate(File newHeaderFile, File newBodyFile) {
 
@@ -2367,16 +2386,6 @@ public class Automaton {
   private void openFiles() {
 
     try {
-
-      // Create temporary directory if it does not exist
-      if (!TEMPORARY_DIRECTORY.exists())
-        TEMPORARY_DIRECTORY.mkdirs();
-
-      // Create them if they do not exist
-      if (!headerFile.exists())
-        headerFile.createNewFile();
-      if (!bodyFile.exists())
-        bodyFile.createNewFile();
 
       // Set up RandomAccessFile objects
       headerRAFile = new RandomAccessFile(headerFile, "rw");
@@ -2524,7 +2533,8 @@ public class Automaton {
 
   /**
    * A helper method to write a list of special transitions to the header file.
-   * @param list  The list of transition data
+   * @param list          The list of transition data
+   * @throws IOException  If there was problems writing to file
    **/
   private void writeTransitionDataToHeader(List<TransitionData> list) throws IOException {
 
@@ -2552,7 +2562,8 @@ public class Automaton {
    * A helper method to write a list of special transitions to the header file.
    * NOTE: This could be made more efficient by using one buffer for all communication data. This
    * is only possible because data.roles.length is supposed to be the same for all data in the list.
-   * @param list  The list of transition data
+   * @param list          The list of transition data
+   * @throws IOException  If there was problems writing to file
    **/
   private void writeCommunicationDataToHeader(List<CommunicationData> list) throws IOException {
 
@@ -2679,6 +2690,7 @@ public class Automaton {
    * A helper method to read a list of special transitions from the header file.
    * @param nTransitions  The number of transitions that need to be read
    * @param list          The list of transition data
+   * @throws IOException  If there was problems reading from file
    **/
   private void readTransitionDataFromHeader(int nTransitions, List<TransitionData> list) throws IOException {
 
@@ -2707,6 +2719,7 @@ public class Automaton {
    * A helper method to read a list of potential communication transitions from the header file.
    * @param nCommunications The number of communications that need to be read
    * @param list            The list of communication data
+   * @throws IOException    If there was problems reading from file
    **/
   private void readCommunicationDataFromHeader(int nCommunications, List<CommunicationData> list, int nControllersBeforeUStructure) throws IOException {
 
@@ -2829,21 +2842,31 @@ public class Automaton {
 
   /**
    * Get an unused temporary file.
-   * NOTE: The only way that this method will return a file that is being used already
-   * is if something has a reference to the file, but hasn't yet created the file. In
-   * order to prevent this from happening, instantiated automata create empty header and
-   * body files if needed.
-   * @return the temporary file
+   * @return  The temporary file
    **/
   private static File getTemporaryFile() {
+
+    // Create temporary directory if it does not exist
+    if (!TEMPORARY_DIRECTORY.exists())
+      TEMPORARY_DIRECTORY.mkdirs();
 
     // Continue to try getting a temporary file until we've found one that hasn't been used
     while (true) {
 
       File file = new File(TEMPORARY_DIRECTORY + "/.tmp" + temporaryFileIndex++);
 
-      if (!file.exists())
+      if (!file.exists()) {
+
+        try {
+          if (!file.createNewFile())
+            System.err.println("ERROR: Could not create empty temporary file.");
+        } catch (IOException e) {
+          System.err.println("ERROR: Could not create empty temporary file.");
+          e.printStackTrace();
+        }
+
         return file;
+      }
 
     }
 
@@ -2857,7 +2880,7 @@ public class Automaton {
    * @param newNBytesPerStateID   The number of bytes per state ID
    * @param newTransitionCapacity The transition capacity
    * @param newLabelLength        The maximum label length
-   * @return the number of bytes needed to store a state
+   * @return                      The number of bytes needed to store a state
    **/
   private long calculateNumberOfBytesPerState(int newNBytesPerEventID, long newNBytesPerStateID, int newTransitionCapacity, int newLabelLength) {
     return
@@ -2956,7 +2979,7 @@ public class Automaton {
 
   /**
    * Calculate and return the number of controllers before synchronized composition (which is related to the vector size of an event).
-   * @return number of controllers prior to the creation of the U-Structure (or -1 if the events are not vectors)
+   * @return  The number of controllers prior to the creation of the U-Structure (or -1 if the events are not vectors)
    **/
   public int calculateNumberOfControllersBeforeUStructure() {
 
@@ -2975,7 +2998,7 @@ public class Automaton {
    * @param startingStateID The ID of the state where the transition originates from
    * @param eventLabel      The label of the event that triggers the transition
    * @param targetStateID   The ID of the state where the transition leads to
-   * @return the ID of the event label (returns 0 if the addition was unsuccessful)
+   * @return                The ID of the event label (returns 0 if the addition was unsuccessful)
    **/
   public int addTransition(long startingStateID, String eventLabel, long targetStateID) {
 
@@ -2998,7 +3021,7 @@ public class Automaton {
    * @param startingStateID The ID of the state where the transition originates from
    * @param eventID         The ID of the event that triggers the transition
    * @param targetStateID   The ID of the state where the transition leads to
-   * @return whether or not the addition was successful
+   * @return                Whether or not the addition was successful
    **/
   public boolean addTransition(long startingStateID, int eventID, long targetStateID) {
 
@@ -3054,7 +3077,7 @@ public class Automaton {
    * @param startingStateID The ID of the state where the transition originates from
    * @param eventID         The ID of the event that triggers the transition
    * @param targetStateID   The ID of the state where the transition leads to
-   * @return whether or not the removal was successful
+   * @return                Whether or not the removal was successful
    **/
   public boolean removeTransition(long startingStateID, int eventID, long targetStateID) {
 
@@ -3097,7 +3120,7 @@ public class Automaton {
    * @param label           The "name" of the new state
    * @param marked          Whether or not the states is marked
    * @param isInitialState  Whether or not this is the initial state
-   * @return the ID of the added state (0 indicates the addition was unsuccessful)
+   * @return                The ID of the added state (0 indicates the addition was unsuccessful)
    **/
   public long addState(String label, boolean marked, boolean isInitialState) {
     return addState(label, marked, new ArrayList<Transition>(), isInitialState);
@@ -3109,7 +3132,7 @@ public class Automaton {
    * @param marked          Whether or not the states is marked
    * @param transitions     The list of transitions
    * @param isInitialState  Whether or not this is the initial state
-   * @return the ID of the added state (0 indicates the addition was unsuccessful)
+   * @return                The ID of the added state (0 indicates the addition was unsuccessful)
    **/
   public long addState(String label, boolean marked, ArrayList<Transition> transitions, boolean isInitialState) {
 
@@ -3132,13 +3155,13 @@ public class Automaton {
 
       // Re-create binary file
       recreateBodyFile(
-          eventCapacity,
-          stateCapacity,
-          transitionCapacity,
-          label.length(),
-          nBytesPerEventID,
-          nBytesPerStateID
-        );
+        eventCapacity,
+        stateCapacity,
+        transitionCapacity,
+        label.length(),
+        nBytesPerEventID,
+        nBytesPerStateID
+      );
 
     }
 
@@ -3154,13 +3177,13 @@ public class Automaton {
 
       // Re-create binary file
       recreateBodyFile(
-          eventCapacity,
-          stateCapacity,
-          transitions.size(),
-          labelLength,
-          nBytesPerEventID,
-          nBytesPerStateID
-        );
+        eventCapacity,
+        stateCapacity,
+        transitions.size(),
+        labelLength,
+        nBytesPerEventID,
+        nBytesPerStateID
+      );
 
     }
 
@@ -3170,13 +3193,13 @@ public class Automaton {
 
       // Re-create binary file
       recreateBodyFile(
-          eventCapacity,
-          ((stateCapacity + 1) << 8) - 1,
-          transitionCapacity,
-          labelLength,
-          nBytesPerEventID,
-          nBytesPerStateID + 1
-        );
+        eventCapacity,
+        ((stateCapacity + 1) << 8) - 1,
+        transitionCapacity,
+        labelLength,
+        nBytesPerEventID,
+        nBytesPerStateID + 1
+      );
 
     }
 
@@ -3206,12 +3229,12 @@ public class Automaton {
    * Add the specified state to the automaton. NOTE: This method assumes that no state already exists with the specified ID.
    * The method renumberStates() must be called some time after using this method has been called since it can create empty
    * spots in the .bdy file where states don't actually exist (this happens during automata operations such as intersection).
-   * @param label       The "name" of the new state
-   * @param marked      Whether or not the states is marked
-   * @param transitions   The list of transitions
+   * @param label           The "name" of the new state
+   * @param marked          Whether or not the states is marked
+   * @param transitions     The list of transitions
    * @param isInitialState  Whether or not this is the initial state
-   * @param id        The index where the state should be added at
-   * @return whether or not the addition was successful (returns false if a state already existed there)
+   * @param id              The index where the state should be added at
+   * @return                Whether or not the addition was successful (returns false if a state already existed there)
    **/
   public boolean addStateAt(String label, boolean marked, ArrayList<Transition> transitions, boolean isInitialState, long id) {
 
@@ -3233,13 +3256,13 @@ public class Automaton {
       }
 
       recreateBodyFile(
-          eventCapacity,
-          stateCapacity,
-          transitionCapacity,
-          label.length(),
-          nBytesPerEventID,
-          nBytesPerStateID
-        );
+        eventCapacity,
+        stateCapacity,
+        transitionCapacity,
+        label.length(),
+        nBytesPerEventID,
+        nBytesPerStateID
+      );
 
     }
 
@@ -3254,13 +3277,13 @@ public class Automaton {
       }
 
       recreateBodyFile(
-          eventCapacity,
-          stateCapacity,
-          transitions.size(),
-          labelLength,
-          nBytesPerEventID,
-          nBytesPerStateID
-        );
+        eventCapacity,
+        stateCapacity,
+        transitions.size(),
+        labelLength,
+        nBytesPerEventID,
+        nBytesPerStateID
+      );
 
     }
 
@@ -3278,13 +3301,13 @@ public class Automaton {
 
       // Re-create binary file
       recreateBodyFile(
-          eventCapacity,
-          newStateCapacity,
-          transitionCapacity,
-          labelLength,
-          nBytesPerEventID,
-          newNBytesPerStateID
-        );
+        eventCapacity,
+        newStateCapacity,
+        transitionCapacity,
+        labelLength,
+        nBytesPerEventID,
+        newNBytesPerStateID
+      );
 
     }
 
@@ -3317,7 +3340,7 @@ public class Automaton {
    * @param label         The "name" of the new event
    * @param observable    Whether or not the event is observable
    * @param controllable  Whether or not the event is controllable
-   * @return the ID of the added event (0 indicates failure)
+   * @return              The ID of the added event (0 indicates failure)
    **/
   public int addEvent(String label, boolean[] observable, boolean[] controllable) {
 
@@ -3334,13 +3357,13 @@ public class Automaton {
 
       // Re-create binary file
       recreateBodyFile(
-          ((eventCapacity + 1) << 8) - 1,
-          stateCapacity,
-          transitionCapacity,
-          labelLength,
-          nBytesPerEventID + 1,
-          nBytesPerStateID
-        );
+        ((eventCapacity + 1) << 8) - 1,
+        stateCapacity,
+        transitionCapacity,
+        labelLength,
+        nBytesPerEventID + 1,
+        nBytesPerStateID
+      );
 
     }
 
@@ -3363,10 +3386,11 @@ public class Automaton {
 
   /**
    * Add the specified event to the set if it does not already exist.
-   * @param label         The "name" of the new event
-   * @param observable    Whether or not the event is observable
-   * @param controllable  Whether or not the event is controllable
-   * @return the ID of the added event, negative ID indicates that the event already existed, and 0 indicates failure (due to reaching the maximum number of events)
+   * @param label                             The "name" of the new event
+   * @param observable                        Whether or not the event is observable
+   * @param controllable                      Whether or not the event is controllable
+   * @return                                  The ID of the added event, negative ID indicates that the event already existed,
+   *                                          and 0 indicates failure (due to reaching the maximum number of events)
    **/
   public int addEventIfNonExisting(String label, boolean[] observable, boolean[] controllable) {
     
@@ -3378,7 +3402,6 @@ public class Automaton {
       return -event.getID();
 
   }
-
 
   /**
    * Add the entire set of events to the automaton.
@@ -3393,12 +3416,21 @@ public class Automaton {
 
   /**
    * Add the entire set of events to the automaton (ensuring that no duplicates are added).
-   * @param label The set of events to add
+   * @param label                           The set of events to add
+   * @throws IncompatibleAutomataException  If one of the events to be added is incompatible with an existing event
    **/
-  private void addEventsIfNonExisting(Set<Event> newEvents) {
+  private void addEventsWithErrorChecking(Set<Event> newEvents) throws IncompatibleAutomataException {
 
-    for (Event e : newEvents)
-      addEventIfNonExisting(e.getLabel(), e.isObservable(), e.isControllable());
+    for (Event event1 : newEvents) {
+
+      Event event2 = getEvent(event1.getLabel());
+
+      if (event2 == null)
+        addEvent(event1.getLabel(), event1.isObservable(), event1.isControllable());
+      else if (!Arrays.equals(event1.isObservable(), event2.isObservable()) || !Arrays.equals(event1.isControllable(), event2.isControllable()))
+        throw new IncompatibleAutomataException();
+
+    }
 
   }
 
@@ -3485,7 +3517,7 @@ public class Automaton {
    * @param initialStateID   The initial state
    * @param eventID          The event triggering the transition
    * @param targetStateID    The target state
-   * @return whether or not the transition exists
+   * @return                 Whether or not the transition exists
    **/
   public boolean transitionExists(long initialStateID, int eventID, long targetStateID) {
     
@@ -3505,7 +3537,7 @@ public class Automaton {
    * @param initialStateID   The initial state
    * @param eventID          The event triggering the transition
    * @param targetStateID    The target state
-   * @return whether or not the transition is bad
+   * @return                 Whether or not the transition is bad
    **/
   public boolean isBadTransition(long initialStateID, int eventID, long targetStateID) {
     
@@ -3532,7 +3564,7 @@ public class Automaton {
   /**
    * Given the ID number of a state, get the state information.
    * @param id  The unique identifier corresponding to the requested state
-   * @return the requested state
+   * @return    The requested state
    **/
   public State getState(long id) {
     return State.readFromFile(this, bodyRAFile, id);
@@ -3542,7 +3574,7 @@ public class Automaton {
    * Given the ID number of a state, get the state information (excluding transitions).
    * NOTE: This is a light-weight method which is used when accessing or modifying the transitions is not needed.
    * @param id  The unique identifier corresponding to the requested state
-   * @return the requested state
+   * @return    The requested state
    **/
   public State getStateExcludingTransitions(long id) {
     return State.readFromFileExcludingTransitions(this, bodyRAFile, id);
@@ -3551,7 +3583,7 @@ public class Automaton {
   /**
    * Given the ID number of an event, get the event information.
    * @param id  The unique identifier corresponding to the requested event
-   * @return the requested event (or null if it does not exist)
+   * @return    The requested event (or null if it does not exist)
    **/
   public Event getEvent(int id) {
 
@@ -3566,7 +3598,7 @@ public class Automaton {
   /**
    * Given the label of an event, get the event information.
    * @param label  The unique label corresponding to the requested event
-   * @return the requested event (or null if it does not exist)
+   * @return       The requested event (or null if it does not exist)
    **/
   public Event getEvent(String label) {
 
@@ -3580,7 +3612,7 @@ public class Automaton {
 
   /**
    * Return the set of all events (in order by ID).
-   * @return the set of all events
+   * @returnsThe set of all events
    **/
   public Set<Event> getEvents() {
     return events;
@@ -3588,7 +3620,7 @@ public class Automaton {
 
   /**
    * Get the number of events that can be held in this automaton.
-   * @return current event capacity
+   * @return  Current event capacity
    **/
   public int getEventCapacity() {
     return eventCapacity;
@@ -3597,7 +3629,7 @@ public class Automaton {
 
   /**
    * Get the number of states that are currently in this automaton.
-   * @return number of states
+   * @return  Number of states
    **/
   public long getNumberOfStates() {
     return nStates;
@@ -3605,7 +3637,7 @@ public class Automaton {
 
   /**
    * Get the number of states that can be held in this automaton.
-   * @return current state capacity
+   * @return  Current state capacity
    **/
   public long getStateCapacity() {
     return stateCapacity;
@@ -3613,7 +3645,7 @@ public class Automaton {
 
   /**
    * Get the number of transitions that can be attached to each state.
-   * @return current transition capacity
+   * @return  Current transition capacity
    **/
   public int getTransitionCapacity() {
     return transitionCapacity;
@@ -3621,7 +3653,7 @@ public class Automaton {
 
   /**
    * Get the number of characters that can be used for a state's label.
-   * @return current maximum label length
+   * @return  Current maximum label length
    **/
   public int getLabelLength() {
     return labelLength;
@@ -3629,7 +3661,7 @@ public class Automaton {
 
   /**
    * Get the amount of space needed to store an event ID.
-   * @return number of bytes per event ID
+   * @return  Number of bytes per event ID
    **/
   public int getSizeOfEventID() {
     return nBytesPerEventID;
@@ -3637,7 +3669,7 @@ public class Automaton {
 
   /**
    * Get the amount of space needed to store a state ID.
-   * @return number of bytes per state ID
+   * @return  Number of bytes per state ID
    **/
   public int getSizeOfStateID() {
     return nBytesPerStateID;
@@ -3645,7 +3677,7 @@ public class Automaton {
 
   /**
    * Get the amount of space needed to store a state.
-   * @return number of bytes per state
+   * @return  Number of bytes per state
    **/
   public long getSizeOfState() {
     return nBytesPerState;
@@ -3653,7 +3685,7 @@ public class Automaton {
 
   /**
    * Get the ID of the state where the automaton begins (the entry point).
-   * @return ID of the initial state
+   * @return  The ID of the initial state
    **/
   public long getInitialStateID() {
     return initialState;
@@ -3661,7 +3693,7 @@ public class Automaton {
 
   /**
    * Get the number of controllers in the automaton (>1 indicates decentralized control).
-   * @return number of controllers
+   * @return  The number of controllers
    **/
   public int getNumberOfControllers() {
     return nControllers;
@@ -3669,7 +3701,7 @@ public class Automaton {
 
   /**
    * Get the list of potential communications.
-   * @return potential communications
+   * @return  The potential communications
    **/
   public List<CommunicationData> getPotentialCommunications() {
     return potentialCommunications;
@@ -3677,7 +3709,7 @@ public class Automaton {
 
   /**
    * Get the header file where this automaton is being stored.
-   * @return header file
+   * @return  The header file
    **/
   public File getHeaderFile() {
     return headerFile;
@@ -3685,7 +3717,7 @@ public class Automaton {
 
   /**
    * Get the body file where this automaton is being stored.
-   * @return body file
+   * @return  The body file
    **/
   public File getBodyFile() {
     return bodyFile;

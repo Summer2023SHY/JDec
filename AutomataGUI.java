@@ -388,6 +388,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
     } else
       tab.generateImageButton.setEnabled(true);
 
+    // Refresh GUI
+    updateComponentsWhichRequireAutomaton();
+
   }
 
   /**
@@ -651,20 +654,20 @@ public class AutomataGUI extends JFrame implements ActionListener {
         int otherIndex = pickAutomaton("Which automaton would you like to take the intersection with?", index);
         if (otherIndex == -1)
           break;
-
         Automaton otherAutomaton = tabs.get(otherIndex).automaton;
 
+        // Set up files
         fileName = getTemporaryFileName();
         headerFile = new File(fileName + ".hdr");
         bodyFile = new File(fileName + ".bdy");
 
-        // Create new tab with the intersection
-        Automaton intersection = Automaton.intersection(tab.automaton, otherAutomaton, headerFile, bodyFile);
-        if (intersection == null) {
+        try {
+          // Create new tab with the intersection
+          createTab(Automaton.intersection(tab.automaton, otherAutomaton, headerFile, bodyFile));
+        } catch(IncompatibleAutomataException e) {
           temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
-          JOptionPane.showMessageDialog(null, "Both automata must have the same number of controllers.", "Intersection Operation Failed", JOptionPane.ERROR_MESSAGE);
-        } else
-          createTab(intersection);
+          JOptionPane.showMessageDialog(null, "Please ensure that both automata have the same number of controllers and that there are no incompatible events (meaning that events share the same name but have different properties).", "Intersection Operation Failed", JOptionPane.ERROR_MESSAGE);
+        }
         
         break;
 
@@ -680,13 +683,13 @@ public class AutomataGUI extends JFrame implements ActionListener {
         headerFile = new File(fileName + ".hdr");
         bodyFile = new File(fileName + ".bdy");
 
-        // Create new tab with the union
-        Automaton union = Automaton.union(tab.automaton, otherAutomaton, headerFile, bodyFile);
-        if (union == null) {
+        try {
+          // Create new tab with the union
+          createTab(Automaton.union(tab.automaton, otherAutomaton, headerFile, bodyFile));
+        } catch(IncompatibleAutomataException e) {
           temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
-          JOptionPane.showMessageDialog(null, "Both automata must have the same number of controllers.", "Union Operation Failed", JOptionPane.ERROR_MESSAGE);
-        } else
-          createTab(union);
+          JOptionPane.showMessageDialog(null, "Please ensure that both automata have the same number of controllers and that there are no incompatible events (meaning that events share the same name but have different properties).", "Union Operation Failed", JOptionPane.ERROR_MESSAGE);
+        }
 
         break;
 
@@ -1295,7 +1298,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       String title = removeExtension(headerFile.getName());
 
-      if (!saved)
+      // Temporary files are always considered unsaved, since the directory is wiped upon closing of the program
+      if (!saved || usingTemporaryFiles())
         title += "*";
 
       tabbedPane.setTitleAt(index, title);
@@ -1322,10 +1326,6 @@ public class AutomataGUI extends JFrame implements ActionListener {
     }
 
     public void setSaved(boolean newSavedStatus) {
-
-      // Temporary files are always considered unsaved, since the directory is wiped upon closing of the program
-      if (usingTemporaryFiles())
-        newSavedStatus = false;
 
       if (newSavedStatus != saved) {
         saved = newSavedStatus;
