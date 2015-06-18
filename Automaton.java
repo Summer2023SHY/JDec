@@ -532,6 +532,10 @@ public class Automaton {
 
     }
 
+      /* Ensure that the header file has been written to disk */
+      
+    invertedAutomaton.writeHeaderFile();
+
     return invertedAutomaton;
 
   }
@@ -1192,7 +1196,7 @@ public class Automaton {
       for (LabelVector vector : leastUpperBounds) {
         
         boolean[] vectorElementsFound = new boolean[vector.getSize()];
-        State destinationState = findWhereCommunicationLeads(automaton, vector, vectorElementsFound, startingState);
+        State destinationState = automaton.findWhereCommunicationLeads(vector, vectorElementsFound, startingState);
         
         if (destinationState != null) {
 
@@ -1239,13 +1243,12 @@ public class Automaton {
 
   /**
    * Using recursion, starting at a given state, determine which state the specified communication leads to (if it exists).
-   * @param automaton           The automaton we are working with
    * @param communication       The event vector representing the communication
    * @param vectorElementsFound Indicates which elements of the vector have been found
    * @param currentState        The state that we are currently on
    * @return                    The destination state (or null if the communication does not lead to a state)
    **/
-  private static State findWhereCommunicationLeads(Automaton automaton, LabelVector communication, boolean[] vectorElementsFound, State currentState) {
+  private State findWhereCommunicationLeads(LabelVector communication, boolean[] vectorElementsFound, State currentState) {
 
       /* Base case */
 
@@ -1290,7 +1293,7 @@ public class Automaton {
       }
 
       // Recursive call to the state where this transition leads
-      State destinationState = findWhereCommunicationLeads(automaton, communication, copy, automaton.getState(t.getTargetStateID()));
+      State destinationState = findWhereCommunicationLeads(communication, copy, getState(t.getTargetStateID()));
       
       // Return destination if it is found (there will only ever be one destination for a given communication from a given state, so we can stop as soon as we find it the first time)
       if (destinationState != null)
@@ -1763,13 +1766,13 @@ public class Automaton {
   }
 
   /**
-   * Refine this automaton by applying the specified communication protocol, and doing the necessary pruning.
-   * @param protocol      The chosen protocol
+   * Refine this automaton by applying the specified feasible communication protocol, and doing the necessary pruning.
+   * @param protocol      The chosen protocol (which must be feasible)
    * @param newHeaderFile The header file where the new automaton should be stored
    * @param newBodyFile   The body file where the new automaton should be stored
    * @return              The pruned automaton that had the specified protocol applied
    **/
-  public Automaton applyProtocol(Set<CommunicationData> protocol, File newHeaderFile, File newBodyFile) {
+  public Automaton applyFeasibleProtocol(Set<CommunicationData> protocol, File newHeaderFile, File newBodyFile) {
 
     Automaton automaton = duplicate(getTemporaryFile(), getTemporaryFile());
 
@@ -1786,7 +1789,14 @@ public class Automaton {
 
       /* Prune (which removes more transitions) */
 
-    // NOT YET IMPLEMENTED...
+    for (CommunicationData data : protocol) {
+
+      LabelVector vector = getEvent(data.eventID).vector;
+      boolean[] vectorElementsFound = new boolean[vector.getSize()];
+
+      automaton.prune(protocol, vector, vectorElementsFound, getState(data.initialStateID), 1, calculateNumberOfControllersBeforeUStructure());
+
+    }
 
       /* Get the accessible part of the automaton */
 
@@ -1794,9 +1804,74 @@ public class Automaton {
 
       /* Remove all inactive events */
 
-    // NOT YET IMPLEMENTED...
+    automaton.removeInactiveEvents();
+
+      /* Write header file */
+
+    automaton.writeHeaderFile();
 
     return automaton;
+
+  }
+
+  /**
+   * Using recursion, starting at a given state, prune away all necessary transitions.
+   * @param protocol                      The chosen protocol (which must be feasible)
+   * @param communication                 The event vector representing the chosen communication
+   * @param vectorElementsFound           Indicates which elements of the vector have already been found
+   * @param currentState                  The state that we are currently on
+   * @param depth                         The current depth of the recursion (first iteration has a depth of 0)
+   * @param nControllersBeforeUStructure  The number of controllers that were present before synchronized composition
+   **/
+  private void prune(Set<CommunicationData> protocol, LabelVector communication, boolean[] vectorElementsFound, State currentState, int depth, int nControllersBeforeUStructure) {
+
+      /* Base case */
+
+    if (depth == nControllersBeforeUStructure)
+      return;
+
+      /* Recursive case */
+
+    // Try all transitions leading from this state
+    outer: for (Transition t : currentState.getTransitions()) {
+
+      // We do not want to prune any of the chosen communications
+      if (depth == 0)
+        for (CommunicationData data : protocol)
+          if (currentState.getID() == data.initialStateID && t.getEvent().getID() == data.eventID && t.getTargetStateID() == data.targetStateID)
+            continue;
+
+      boolean[] copy = (boolean[]) vectorElementsFound.clone();
+
+      // Check to see if the event vector of this transition is compatible with what we've found so far
+      for (int i = 0; i < t.getEvent().vector.getSize(); i++) {
+
+        String element = t.getEvent().vector.getLabelAtIndex(i);
+
+        if (!element.equals("*")) {
+
+          // Conflict since we have already found an element for this index (so they aren't compatible)
+          if (copy[i])
+            continue outer;
+
+          // Is compatible
+          else if (element.equals(communication.getLabelAtIndex(i)))
+            copy[i] = true;
+
+          // Conflict since the elements do not match (meaning they aren't compatible)
+          else
+            continue outer;
+        }
+
+      }
+
+      // Prune this transition
+      
+
+      // Recursive call to the state where this transition leads
+      prune(protocol, communication, copy, getState(t.getTargetStateID()), depth + 1, nControllersBeforeUStructure);
+
+    }
 
   }
 
@@ -3449,6 +3524,55 @@ public class Automaton {
         throw new IncompatibleAutomataException();
 
     }
+
+  }
+
+  /**
+   * Remove all events which are inactive (meaning that they do not appear in a transition)
+   **/
+  private void removeInactiveEvents() {
+
+    // Determine which events are active
+    boolean[] active = new boolean[events.size() + 1];
+    for (long s = 0; s <= nStates; s++) 
+      for (Transition t : getState(s).getTransitions())
+        active[t.getEvent().getID()] = true;
+   
+    // Remove the inactive events
+    for (int id = 1; id <= events.size(); id++)
+      if (!active[id])
+        removeEvent(id);
+   
+  }
+
+  /**
+   * Remove the event with the specified ID.
+   * @param id  The event's ID
+   * @return    Whether or not the event was successfully removed
+   **/
+  private boolean removeEvent(int id) {
+
+    Iterator iterator = events.iterator();
+
+    while (iterator.hasNext()) {
+
+      Event e = (Event) iterator.next();
+
+      // Remove the event if the ID matches
+      if (e.getID() == id) {
+        
+        iterator.remove();
+
+        // Indicate that the header file needs to be updated
+        headerFileNeedsToBeWritten = true;
+
+        return true;
+
+      }
+
+    }
+
+    return false;
 
   }
 

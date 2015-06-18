@@ -1,3 +1,15 @@
+/**
+ * FeasibleProtocolOutput - This class is used to display a pop-up which contains a list of feasible protocols.
+ *                          The user has the ability to generate automata by applying any of the protocols in the list.
+ *
+ * @author Micah Stairs
+ *
+ * TABLE OF CONTENTS:
+ *  -Private Instance Variables
+ *  -Constructor
+ *  -Methods
+ **/
+
 import java.util.*;
 import javax.swing.*;
 import java.awt.*;
@@ -5,6 +17,8 @@ import java.awt.event.*;
 import java.io.*;
 
 public class FeasibleProtocolOutput extends JFrame {
+
+    /** PRIVATE INSTANCE VARIABLES **/
 
   private AutomataGUI gui;
   private Automaton automaton;
@@ -83,7 +97,7 @@ public class FeasibleProtocolOutput extends JFrame {
           String fileName = gui.getTemporaryFileName();
           File headerFile = new File(fileName + ".hdr");
           File bodyFile = new File(fileName + ".bdy");
-          Automaton generatedAutomaton = automaton.applyProtocol(protocol, headerFile, bodyFile);
+          Automaton generatedAutomaton = automaton.applyFeasibleProtocol(protocol, headerFile, bodyFile);
           gui.createTab(generatedAutomaton);
         }
 
@@ -125,7 +139,7 @@ public class FeasibleProtocolOutput extends JFrame {
 
   /**
    * Set some default GUI Properties.
-   * @param title The title of the popup box
+   * @param title The title of the pop-up box
    **/
   private void setGUIproperties(String title) {
 
