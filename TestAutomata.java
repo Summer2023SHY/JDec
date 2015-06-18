@@ -932,7 +932,7 @@ public class TestAutomata {
 class TestResult {
 
   public boolean passed;
-  private String summary;
+  private String summary = "";
 
   public TestResult(long actual, long expected) {
     if (actual == expected)

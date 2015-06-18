@@ -2827,7 +2827,7 @@ public class Automaton {
     try {
       bodyRAFile.close();
       bodyFile.delete();
-      newBodyRAFile.close();
+      // newBodyRAFile.close();
     } catch (SecurityException | IOException e) {
       e.printStackTrace();
     }
@@ -2838,22 +2838,23 @@ public class Automaton {
     }
       /* Update variables */
 
-    eventCapacity = newEventCapacity;
-    stateCapacity = newStateCapacity;
+    eventCapacity      = newEventCapacity;
+    stateCapacity      = newStateCapacity;
     transitionCapacity = newTransitionCapacity;
-    labelLength = newLabelLength;
-    nBytesPerEventID = newNBytesPerEventID;
-    nBytesPerStateID = newNBytesPerStateID;
-    nBytesPerState = newNBytesPerState;
+    labelLength        = newLabelLength;
+    nBytesPerEventID   = newNBytesPerEventID;
+    nBytesPerStateID   = newNBytesPerStateID;
+    nBytesPerState     = newNBytesPerState;
+
+    bodyRAFile = newBodyRAFile;
 
       /* Re-open RandomAccessFile object for the new body file */
-
-    try {
-      bodyRAFile = new RandomAccessFile(newBodyFile, "rw");
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
+    
+    // try {
+    //   bodyRAFile = new RandomAccessFile(newBodyFile, "rw");
+    // } catch (IOException e) {
+    //   e.printStackTrace();
+    // }
 
   }
 
