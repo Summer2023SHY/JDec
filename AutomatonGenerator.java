@@ -47,7 +47,7 @@ public abstract class AutomatonGenerator {
       String.valueOf(nStates).length(),
       nControllers,
       true
-      );
+    );
 
       /* Generate events */
 

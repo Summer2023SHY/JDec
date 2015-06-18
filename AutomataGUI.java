@@ -348,6 +348,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
     else {
 
       try {
+        
         String fileName = tab.headerFile.getName();
         String destinationFileName = currentDirectory + "/" + removeExtension(fileName) + ".svg";
 

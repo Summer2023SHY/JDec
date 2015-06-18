@@ -2012,7 +2012,7 @@ public class Automaton {
    * @throws MissingOrCorruptBodyFile   If any of the states are unable to be read from the body file
    * @throws MissingDependencyException If GraphViz is not installed and/or its directory has been added to the PATH variable
    **/
-  public boolean generateImage(int size, OutputMode mode, String outputFileName) throws MissingDependencyException, MissingOrCorruptBodyFileException {
+  public boolean generateImage(int size, OutputMode mode, String outputFileName) throws MissingOrCorruptBodyFileException, MissingDependencyException {
 
       /* Setup */
 
