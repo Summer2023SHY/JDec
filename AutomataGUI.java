@@ -450,6 +450,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
     menuBar.add(createMenu("File", "New Tab", "Open", "Save As...[TAB]", "Refresh Tab[TAB]", null, "Clear[TAB]", "Close Tab[TAB]", null, "Export as SVG[AUTOMATON]", null, "Quit"));
     menuBar.add(createMenu("Standard Operations[AUTOMATON]", "Accessible", "Co-Accessible", "Trim", "Complement", null, "Intersection", "Union"));
     menuBar.add(createMenu("U-Stucture Operations[AUTOMATON]", "Synchronized Composition", "Add Communications", "Feasible Protocols->Generate All,Make Protocol Feasible,Find Smallest"));
+    menuBar.add(createMenu("Quantitative Communication[AUTOMATON]", "Nash", "Pareto"));
     menuBar.add(createMenu("Generate", "Random Automaton"));
 
     this.setJMenuBar(menuBar);
