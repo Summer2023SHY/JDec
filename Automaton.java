@@ -2827,6 +2827,7 @@ public class Automaton {
     try {
       bodyRAFile.close();
       bodyFile.delete();
+      newBodyRAFile.close();
     } catch (SecurityException | IOException e) {
       e.printStackTrace();
     }
@@ -2845,7 +2846,14 @@ public class Automaton {
     nBytesPerStateID = newNBytesPerStateID;
     nBytesPerState = newNBytesPerState;
 
-    bodyRAFile = newBodyRAFile;
+      /* Re-open RandomAccessFile object for the new body file */
+
+    try {
+      bodyRAFile = new RandomAccessFile(newBodyFile, "rw");
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
 
   }
 
