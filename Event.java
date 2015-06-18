@@ -10,6 +10,7 @@
  * TABLE OF CONTENTS:
  *	-Private Instance Variables
  *	-Constructor
+ *  -Mutator Method
  *	-Accessor Methods
  *	-Overridden Methods
  **/
@@ -47,6 +48,16 @@ public class Event implements Comparable<Event> {
 		this.vector = new LabelVector(label);
 
 	}
+
+    /** MUTATOR METHOD **/
+
+  /**
+   * Set the ID number of the event
+   * @param id  The new ID for the event
+   **/
+  public void setID(int id) {
+    this.id = id;
+  }
 
 		/** ACCESSOR METHODS **/
 

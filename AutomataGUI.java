@@ -429,7 +429,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       // Display error message
       else
-        JOptionPane.showMessageDialog(null, "Something went wrong while trying to generate and display the image!", "Error", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(null, "Something went wrong while trying to generate and display the image. NOTE: It may be the case that you do not have X11 installed.", "Error", JOptionPane.ERROR_MESSAGE);
     
     } catch (MissingDependencyException e) {
       JOptionPane.showMessageDialog(null, "Please ensure that GraphViz is installed, with its directory added to the PATH environment variable.", "Missing Dependency", JOptionPane.ERROR_MESSAGE);

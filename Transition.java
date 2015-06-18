@@ -43,6 +43,15 @@ public class Transition {
 		targetStateID = id;
 	}
 
+  /**
+   * Change the event which triggers this transition.
+   * @param event The new event
+   **/
+  public void setEvent(Event event) {
+    this.event = event;
+  }
+
+
 		/** ACCESSOR METHODS **/
 
 	/**

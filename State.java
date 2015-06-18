@@ -293,6 +293,7 @@ public class State {
 
     	// Add transition to the list
     	state.addTransition(new Transition(automaton.getEvent(eventID), targetStateID));
+
     }
 
 	  return state;

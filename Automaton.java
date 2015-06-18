@@ -1794,7 +1794,7 @@ public class Automaton {
       LabelVector vector = getEvent(data.eventID).vector;
       boolean[] vectorElementsFound = new boolean[vector.getSize()];
 
-      automaton.prune(protocol, vector, vectorElementsFound, getState(data.initialStateID), 1, calculateNumberOfControllersBeforeUStructure());
+      automaton.prune(protocol, vector, vectorElementsFound, getState(data.initialStateID), 0, calculateNumberOfControllersBeforeUStructure());
 
     }
 
@@ -1839,7 +1839,7 @@ public class Automaton {
       if (depth == 0)
         for (CommunicationData data : protocol)
           if (currentState.getID() == data.initialStateID && t.getEvent().getID() == data.eventID && t.getTargetStateID() == data.targetStateID)
-            continue;
+            continue outer;
 
       boolean[] copy = (boolean[]) vectorElementsFound.clone();
 
@@ -1866,7 +1866,7 @@ public class Automaton {
       }
 
       // Prune this transition
-      
+      removeTransition(currentState.getID(), t.getEvent().getID(), t.getTargetStateID());
 
       // Recursive call to the state where this transition leads
       prune(protocol, communication, copy, getState(t.getTargetStateID()), depth + 1, nControllersBeforeUStructure);
@@ -1887,12 +1887,6 @@ public class Automaton {
         /* Create a file containing the mappings (where the new IDs can be indexed using the old IDs) */
 
       File mappingFile = getTemporaryFile();
-
-      // Ensure that this temporary file does not already exist
-      if (mappingFile.exists())
-        if (!mappingFile.delete())
-          System.err.println("ERROR: Could not delete previously existing temporary file.");
-
       RandomAccessFile mappingRAFile = new RandomAccessFile(mappingFile, "rw");
 
       long newID = 1;
@@ -1907,12 +1901,6 @@ public class Automaton {
         /* Create new .bdy file with renumbered states */
 
       File newBodyFile = getTemporaryFile();
-
-      // Ensure that this temporary file does not already exist
-      if (newBodyFile.exists())
-        if (!newBodyFile.delete())
-          System.err.println("ERROR: Could not delete previously existing temporary file.");
-
       RandomAccessFile newBodyRAFile = new RandomAccessFile(newBodyFile, "rw");
 
       for (long s = 1; s <= stateCapacity; s++) {
@@ -1956,25 +1944,18 @@ public class Automaton {
 
         /* Update the special transitions in the header file */
 
-      renumberTransitionData(mappingRAFile, badTransitions);
-      renumberTransitionData(mappingRAFile, unconditionalViolations);
-      renumberTransitionData(mappingRAFile, conditionalViolations);
-      renumberTransitionData(mappingRAFile, potentialCommunications);
-      renumberTransitionData(mappingRAFile, nonPotentialCommunications);
+      renumberStatesInTransitionData(mappingRAFile, badTransitions);
+      renumberStatesInTransitionData(mappingRAFile, unconditionalViolations);
+      renumberStatesInTransitionData(mappingRAFile, conditionalViolations);
+      renumberStatesInTransitionData(mappingRAFile, potentialCommunications);
+      renumberStatesInTransitionData(mappingRAFile, nonPotentialCommunications);
 
         /* Remove old body file and mappings file */
 
       try {
-
         bodyRAFile.close();
-
-        if (!bodyFile.delete())
-          System.err.println("ERROR: Could not delete old body file.");
-              
-        if (!mappingFile.delete())
-          System.err.println("ERROR: Could not delete mapping file.");
-
-      } catch (SecurityException e) {
+        mappingRAFile.close();
+      } catch (IOException e) {
         e.printStackTrace();
       }
           /* Rename new body file */
@@ -2000,7 +1981,7 @@ public class Automaton {
    * @param list          The list of special transition data
    * @throws IOException  If there was problems reading from file
    **/
-  private void renumberTransitionData(RandomAccessFile mappingRAFile, List<? extends TransitionData> list) throws IOException {
+  private void renumberStatesInTransitionData(RandomAccessFile mappingRAFile, List<? extends TransitionData> list) throws IOException {
 
     byte[] buffer = new byte[nBytesPerStateID];
 
@@ -2242,7 +2223,7 @@ public class Automaton {
 
       // Wait for it to finish
       if (process.waitFor() != 0) {
-        System.err.println("ERROR: GraphViz failed to generate image of graph.");
+        System.err.println("ERROR: GraphViz failed to generate image of graph. Check to ensure that X11 is installed.");
         return false;
       }
 
@@ -2251,6 +2232,7 @@ public class Automaton {
 
     } catch (InterruptedException e) {
       e.printStackTrace();
+      System.err.println("ERROR: GraphViz was interrupted while trying to generate image of graph.");
       return false;
     }
     
@@ -3530,23 +3512,77 @@ public class Automaton {
   /**
    * Remove all events which are inactive (meaning that they do not appear in a transition)
    **/
-  private void removeInactiveEvents() {
+  private void removeInactiveEvents() { 
 
-    // Determine which events are active
+      /* Determine which events are active */
+
     boolean[] active = new boolean[events.size() + 1];
-    for (long s = 0; s <= nStates; s++) 
+    for (long s = 1; s <= nStates; s++) 
       for (Transition t : getState(s).getTransitions())
         active[t.getEvent().getID()] = true;
-   
-    // Remove the inactive events
-    for (int id = 1; id <= events.size(); id++)
-      if (!active[id])
-        removeEvent(id);
-   
+    
+      /* Remove the inactive events */
+    
+    Map<Integer, Integer> mapping = new HashMap<Integer, Integer>();
+    int maxID = events.size();
+    int newID = 1;
+    for (int id = 1; id <= maxID; id++) {
+      if (!active[id]) {
+        if (!removeEvent(id))
+          System.err.println("ERROR: Failed to remove inactive event.");
+      } else
+        mapping.put(id, newID++);
+    }
+
+      /* Re-number event IDs */
+
+    // Update event IDs in body file
+    for (long s = 1; s <= nStates; s++) {
+      
+      State state = getState(s);
+      
+      // Update the event ID in the transitions
+      for (Transition t : state.getTransitions()) {
+        Event e = t.getEvent();
+        t.setEvent(new Event(e.getLabel(), mapping.get(e.getID()), e.isObservable(), e.isControllable()));
+      }
+
+      // Write updated state to file
+      if (!state.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID))
+        System.err.println("ERROR: Could not write state to file.");
+
+    }
+
+    // Update event IDs in header file
+    for (Event e : events)
+      e.setID(mapping.get(e.getID()));
+    renumberEventsInTransitionData(mapping, badTransitions);
+    renumberEventsInTransitionData(mapping, unconditionalViolations);
+    renumberEventsInTransitionData(mapping, conditionalViolations);
+    renumberEventsInTransitionData(mapping, potentialCommunications);
+    renumberEventsInTransitionData(mapping, nonPotentialCommunications);
+
+      /* Indicate that the header file needs to be updated */
+    
+    headerFileNeedsToBeWritten = true;
+
+  }
+
+  /**
+   * Helper method to re-number event IDs in the specified list of special transitions.
+   * @param mapping The binary file containing the state ID mappings
+   * @param list    The list of special transition data
+   **/
+  private void renumberEventsInTransitionData(Map<Integer, Integer> mapping, List<? extends TransitionData> list) {
+
+    for (TransitionData data : list)
+      data.eventID = mapping.get((Integer) data.eventID);
+
   }
 
   /**
    * Remove the event with the specified ID.
+   * NOTE: After calling this method, the events must be re-numbered, otherwise there will be complications.
    * @param id  The event's ID
    * @return    Whether or not the event was successfully removed
    **/
