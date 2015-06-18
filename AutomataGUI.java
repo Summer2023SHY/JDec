@@ -347,13 +347,21 @@ public class AutomataGUI extends JFrame implements ActionListener {
     // Try to create graph image
     else {
 
-      String fileName = tab.headerFile.getName();
-      String destinationFileName = currentDirectory + "/" + removeExtension(fileName) + ".svg";
+      try {
+        String fileName = tab.headerFile.getName();
+        String destinationFileName = currentDirectory + "/" + removeExtension(fileName) + ".svg";
 
-      if (automaton.generateImage(imageSize, Automaton.OutputMode.SVG, destinationFileName))
-        JOptionPane.showMessageDialog(null, "The image of the graph has been exported to '" + destinationFileName + "'.", "Export Complete", JOptionPane.INFORMATION_MESSAGE);
-      else
-        JOptionPane.showMessageDialog(null, "The image of the graph could not be exported!", "Export Failed", JOptionPane.ERROR_MESSAGE);
+        if (automaton.generateImage(imageSize, Automaton.OutputMode.SVG, destinationFileName))
+          JOptionPane.showMessageDialog(null, "The image of the graph has been exported to '" + destinationFileName + "'.", "Export Complete", JOptionPane.INFORMATION_MESSAGE);
+        else
+          JOptionPane.showMessageDialog(null, "Something went wrong while generating and exporting the image of the graph.", "Export Failed", JOptionPane.ERROR_MESSAGE);
+      
+      } catch (MissingDependencyException e) {
+        JOptionPane.showMessageDialog(null, "Please ensure that GraphViz is installed, with its directory added to the PATH environment variable.", "Missing Dependency", JOptionPane.ERROR_MESSAGE);
+    
+      } catch (MissingOrCorruptBodyFileException e) {
+        JOptionPane.showMessageDialog(null, "Please ensure that the .bdy file associated with this automaton is not corrupt or missing.", "Corrupt or Missing File", JOptionPane.ERROR_MESSAGE);
+      }
 
     }
 
@@ -408,17 +416,26 @@ public class AutomataGUI extends JFrame implements ActionListener {
       destinationFileName = currentDirectory + "/" + removeExtension(fileName) + ".png";
     }
 
-    // Set the image blank if there were no states entered
-    if (tab.automaton == null)
-      tab.canvas.setImage(null);
+    try {
 
-    // Try to create graph image, displaying it on the screen
-    else if (tab.automaton.generateImage(imageSize, Automaton.OutputMode.PNG, destinationFileName))
-      tab.canvas.setImage(tab.automaton.loadImageFromFile(destinationFileName));
+      // Set the image blank if there were no states entered
+      if (tab.automaton == null)
+        tab.canvas.setImage(null);
 
-    // Display error message
-    else
-      JOptionPane.showMessageDialog(null, "Something went wrong while reading the automaton from file or loading the generated image from file!", "Error", JOptionPane.ERROR_MESSAGE);
+      // Try to create graph image, displaying it on the screen
+      else if (tab.automaton.generateImage(imageSize, Automaton.OutputMode.PNG, destinationFileName))
+        tab.canvas.setImage(tab.automaton.loadImageFromFile(destinationFileName));
+
+      // Display error message
+      else
+        JOptionPane.showMessageDialog(null, "Something went wrong while trying to generate and display the image!", "Error", JOptionPane.ERROR_MESSAGE);
+    
+    } catch (MissingDependencyException e) {
+      JOptionPane.showMessageDialog(null, "Please ensure that GraphViz is installed, with its directory added to the PATH environment variable.", "Missing Dependency", JOptionPane.ERROR_MESSAGE);
+    
+    } catch (MissingOrCorruptBodyFileException e) {
+      JOptionPane.showMessageDialog(null, "Please ensure that the .bdy file associated with this automaton is not corrupt or missing.", "Corrupt or Missing File", JOptionPane.ERROR_MESSAGE);
+    }
 
   }
 

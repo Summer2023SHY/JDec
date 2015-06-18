@@ -99,7 +99,7 @@ public class Automaton {
   // Variables which determine how large the .bdy file will become
   private int eventCapacity;
   private long stateCapacity;
-  private int transitionCapacity = 2;
+  private int transitionCapacity;
   private int labelLength;
 
   // Initialized based on the above capacities
@@ -290,12 +290,12 @@ public class Automaton {
 
       // Add new state
       automaton.addStateAt(
-          state.getLabel(),
-          state.isMarked(),
-          new ArrayList<Transition>(),
-          id == getInitialStateID(),
-          id
-        );
+        state.getLabel(),
+        state.isMarked(),
+        new ArrayList<Transition>(),
+        id == getInitialStateID(),
+        id
+      );
 
       // Traverse each transition
       for (Transition t : transitions) {
@@ -2005,12 +2005,14 @@ public class Automaton {
 
   /**
    * Output this automaton in a format that is readable by GraphViz, then export as requested.
-   * @param size            The requested width and height in pixels
-   * @param mode            The output type
-   * @param outputFileName  The location to put the generated output
-   * @return                Whether or not the output was successfully generated
+   * @param size                        The requested width and height in pixels
+   * @param mode                        The output type
+   * @param outputFileName              The location to put the generated output
+   * @return                            Whether or not the output was successfully generated
+   * @throws MissingOrCorruptBodyFile   If any of the states are unable to be read from the body file
+   * @throws MissingDependencyException If GraphViz is not installed and/or its directory has been added to the PATH variable
    **/
-  public boolean generateImage(int size, OutputMode mode, String outputFileName) {
+  public boolean generateImage(int size, OutputMode mode, String outputFileName) throws MissingDependencyException, MissingOrCorruptBodyFileException {
 
       /* Setup */
 
@@ -2131,10 +2133,7 @@ public class Automaton {
       str.append("}");
 
     } catch (NullPointerException e) {
-
-      System.err.println("ERROR: Could not generate image. Body file is likely corrupt or missing.");
-      return false;
-
+      throw new MissingOrCorruptBodyFileException();
     }
 
       /* Generate image */
@@ -2172,7 +2171,10 @@ public class Automaton {
         return false;
       }
 
-    } catch (IOException | InterruptedException e) {
+    } catch (IOException e) {
+      throw new MissingDependencyException();
+
+    } catch (InterruptedException e) {
       e.printStackTrace();
       return false;
     }

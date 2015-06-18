@@ -237,7 +237,7 @@ public abstract class AutomatonGenerator {
    * @param verbose             Whether or not parsing errors should be printed to the console
    * @param headerFile          The header file where the automaton will be written to
    * @param bodyFile            The body file where the automaton will be written to
-   * @return the generated automaton
+   * @return                    The generated automaton
    **/
   public static Automaton generateFromGUICode(String eventInputText, String stateInputText, String transitionInputText, int nControllers, boolean verbose, File headerFile, File bodyFile) {
 
