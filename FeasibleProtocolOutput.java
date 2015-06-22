@@ -21,7 +21,7 @@ public class FeasibleProtocolOutput extends JFrame {
     /** PRIVATE INSTANCE VARIABLES **/
 
   private AutomataGUI gui;
-  private Automaton automaton;
+  private UStructure uStructure;
   private java.util.List<Set<CommunicationData>> feasibleProtocols;
   private JTextPane[] detailedProtocolText;
 
@@ -30,15 +30,15 @@ public class FeasibleProtocolOutput extends JFrame {
   /**
    * Construct a FeasibleProtocolOutput object.
    * @param gui               A reference to the GUI which will be recieving requests for new tabs
-   * @param automaton         The automaton that is being worked with
+   * @param uStructure        The uStructure that is being worked with
    * @param feasibleProtocols The list of protocols that are feasible
    * @param title             The title of the popup box
    * @param message           The text for the label to be displayed at the top of the screen
    **/
-  public FeasibleProtocolOutput(AutomataGUI gui, Automaton automaton, java.util.List<Set<CommunicationData>> feasibleProtocols, String title, String message) {
+  public FeasibleProtocolOutput(AutomataGUI gui, UStructure uStructure, java.util.List<Set<CommunicationData>> feasibleProtocols, String title, String message) {
 
     this.gui = gui;
-    this.automaton = automaton;
+    this.uStructure = uStructure;
     this.feasibleProtocols = feasibleProtocols;
 
     addComponents(message);
@@ -89,7 +89,7 @@ public class FeasibleProtocolOutput extends JFrame {
           protocol.size()
         )));
 
-      // Add a button to generate the automaton with this protocol
+      // Add a button to generate the U-Structure with this protocol
       JButton button = new JButton("Generate Automaton");
       button.addActionListener(new ActionListener() {
    
@@ -97,7 +97,7 @@ public class FeasibleProtocolOutput extends JFrame {
           String fileName = gui.getTemporaryFileName();
           File headerFile = new File(fileName + ".hdr");
           File bodyFile = new File(fileName + ".bdy");
-          Automaton generatedAutomaton = automaton.applyFeasibleProtocol(protocol, headerFile, bodyFile);
+          Automaton generatedAutomaton = uStructure.applyFeasibleProtocol(protocol, headerFile, bodyFile);
           gui.createTab(generatedAutomaton);
         }
 
@@ -109,7 +109,7 @@ public class FeasibleProtocolOutput extends JFrame {
       // Add text to a text pane and make it so that the user cannot edit it
       StringBuilder protocolText = new StringBuilder();
       for (CommunicationData data : protocol)
-        protocolText.append(data.toString(automaton) + "\n");
+        protocolText.append(data.toString(uStructure) + "\n");
       detailedProtocolText[i] = new JTextPane();
       detailedProtocolText[i].setText(protocolText.toString());
       detailedProtocolText[i].setEditable(false);

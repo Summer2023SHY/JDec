@@ -42,8 +42,10 @@ public class CommunicationData extends TransitionData {
       if (role == CommunicationRole.SENDER)
         nSenders++;
 
-    if (nSenders != 1)
+    if (nSenders != 1) {
+      Thread.dumpStack();
       System.err.println("ERROR: A communication must contain exactly one sender. " + nSenders + " senders were found.");
+    }
 
   }
 
