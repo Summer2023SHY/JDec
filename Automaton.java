@@ -65,7 +65,7 @@ public class Automaton {
 
     /** PROTECTED CLASS CONSTANTS **/
 
-  private static final int HEADER_SIZE = 48; // This is the fixed amount of space needed to hold the main variables in the .hdr file
+  private static final int HEADER_SIZE = 52; // This is the fixed amount of space needed to hold the main variables in the .hdr file
 
   protected static final File TEMPORARY_DIRECTORY = new File("Automaton_Temporary_Files");
 
@@ -92,9 +92,10 @@ public class Automaton {
   protected Set<Event> events = new TreeSet<Event>(); // Due to Event's compareTo and equals implementations, a TreeSet cannot not guarantee that it is actually a set (considering changing this to an ArrayList)
 
   // Special transitions
-  protected List<TransitionData> badTransitions = new ArrayList<TransitionData>();
+  protected List<TransitionData> badTransitions;
 
   // Basic properties of the automaton
+  protected int automatonType; // 0 = Automaton, 1 = U-Structure
   protected long nStates      = 0;
   protected long initialState = 0;
   protected int nControllers;
@@ -127,23 +128,18 @@ public class Automaton {
     /** CONSTRUCTORS **/
 
   /**
-   * Default constructor: create empty automaton with default capacity, wiping any previous data existing in the files.
+   * Default constructor: create empty automaton with default capacity using temporary files.
    **/
   public Automaton() {
     this(
       null,
       null,
-      DEFAULT_EVENT_CAPACITY,
-      DEFAULT_STATE_CAPACITY,
-      DEFAULT_TRANSITION_CAPACITY,
-      DEFAULT_LABEL_LENGTH,
-      DEFAULT_NUMBER_OF_CONTROLLERS,
-      true
+      DEFAULT_NUMBER_OF_CONTROLLERS
     );
   }
 
   /**
-   * Implicit constructor: create an automaton with a specified number of controllers.
+   * Implicit constructor: create an automaton with a specified number of controllers in the given files.
    * @param headerFile    The file where the header should be stored
    * @param bodyFile      The file where the body should be stored
    * @param nControllers  The number of controllers that this automaton has
@@ -178,10 +174,11 @@ public class Automaton {
       DEFAULT_NUMBER_OF_CONTROLLERS,
       clearFiles
     );
+
   }
 
   /**
-   * Implicit constructor: create automaton with specified initial capacities.
+   * Implicit constructor: create automaton with specified initial capacities using temporary files.
    * NOTE: Choosing larger values increases the amount of space needed to store the binary file.
    * Choosing smaller values increases the frequency that you need to re-write the entire binary file in order to expand it
    * @param eventCapacity        The initial event capacity (increases by a factor of 256 when it is exceeded)
@@ -236,9 +233,7 @@ public class Automaton {
 
     initializeVariables();
     nBytesPerState = calculateNumberOfBytesPerState(nBytesPerEventID, nBytesPerStateID, this.transitionCapacity, this.labelLength);
-
-      /* Update header file */
-
+    automatonType = 0;
     headerFileNeedsToBeWritten = true;
 
   }
@@ -249,13 +244,15 @@ public class Automaton {
    * Create a new copy of this automaton that has all unreachable states and transitions removed.
    * @param newHeaderFile  The header file where the accesible automaton should be stored
    * @param newBodyFile    The body file where the accesible automaton should be stored
-   * @return               The accessible automaton
+   * @return The accessible automaton
    **/
   public Automaton accessible(File newHeaderFile, File newBodyFile) {
+    return accessibleHelper(new Automaton(newHeaderFile, newBodyFile, nControllers));
+  }
+
+  protected <T extends Automaton> T accessibleHelper(T automaton) {
 
       /* Setup */
-
-    Automaton automaton = new Automaton(newHeaderFile, newBodyFile, nControllers);
 
     // Add events
     automaton.addAllEvents(events);
@@ -308,7 +305,7 @@ public class Automaton {
 
       /* Add special transitions if they still appear in the accessible part */
 
-    automaton.copyOverSpecialTransitions();
+    copyOverSpecialTransitions(automaton);
 
       /* Re-number states (by removing empty ones) */
 
@@ -394,7 +391,7 @@ public class Automaton {
 
       /* Add special transitions if they still appear in the accessible part */
 
-    automaton.copyOverSpecialTransitions();
+    copyOverSpecialTransitions(automaton);
 
       /* Re-number states (by removing empty ones) */
 
@@ -485,7 +482,7 @@ public class Automaton {
 
       /* Add special transitions */
 
-    automaton.copyOverSpecialTransitions();
+    copyOverSpecialTransitions(automaton);
 
       /* Ensure that the header file has been written to disk */
       
@@ -499,12 +496,14 @@ public class Automaton {
   /**
    * Helper method to copy over all special transition data from this automaton to another.
    * NOTE: The data is only copied over if both of the states involved in the transition actually exist
+   * @param automaton The automaton which is recieving the special transitions
    **/
-  protected void copyOverSpecialTransitions() {
+  protected <T extends Automaton> void copyOverSpecialTransitions(T automaton) {
 
-    for (TransitionData data : badTransitions)
-      if (stateExists(data.initialStateID) && stateExists(data.targetStateID))
-        markTransitionAsBad(data.initialStateID, data.eventID, data.targetStateID);
+    if (badTransitions != null)
+      for (TransitionData data : badTransitions)
+        if (automaton.stateExists(data.initialStateID) && automaton.stateExists(data.targetStateID))
+          automaton.markTransitionAsBad(data.initialStateID, data.eventID, data.targetStateID);
 
   }
 
@@ -925,7 +924,7 @@ public class Automaton {
 
     Stack<Long> stack = new Stack<Long>();
     HashSet<Long> valuesInStack = new HashSet<Long>();
-    UStructure automaton = new UStructure(newHeaderFile, newBodyFile, true);
+    UStructure automaton = new UStructure(newHeaderFile, newBodyFile, nControllers, true);
 
       /* Add initial state to the stack */
 
@@ -979,7 +978,7 @@ public class Automaton {
         String combinedStateLabel = getStateExcludingTransitions(t1.getTargetStateID()).getLabel();
 
         // If this is the system has a bad transition, then it is an unconditional violation by default until we've found a controller that prevents it
-        boolean isBadTransition = badTransitions.contains(new TransitionData(listOfStates.get(0).getID(), e.getID(), t1.getTargetStateID()));
+        boolean isBadTransition = (badTransitions != null && badTransitions.contains(new TransitionData(listOfStates.get(0).getID(), e.getID(), t1.getTargetStateID())));
         boolean isUnconditionalViolation = isBadTransition;
 
         // A conditional violation can only occur when an event is controllable by at least 2 controllers, and the system must have a good transition
@@ -1012,12 +1011,12 @@ public class Automaton {
 
             // Check to see if this controller can prevent an unconditional violation
             if (isUnconditionalViolation && e.isControllable()[i])
-              if (badTransitions.contains(new TransitionData(listOfStates.get(i + 1).getID(), e.getID(), targetID)))
+              if (badTransitions != null && badTransitions.contains(new TransitionData(listOfStates.get(i + 1).getID(), e.getID(), targetID)))
                 isUnconditionalViolation = false;
 
             // Check to see if this controller can prevent a conditional violation
             if (isConditionalViolation && e.isControllable()[i])
-              if (!badTransitions.contains(new TransitionData(listOfStates.get(i + 1).getID(), e.getID(), targetID)))
+              if (badTransitions == null || !badTransitions.contains(new TransitionData(listOfStates.get(i + 1).getID(), e.getID(), targetID)))
                 isConditionalViolation = false;
 
           // Unobservable events by this controller
@@ -1085,7 +1084,6 @@ public class Automaton {
                 combinedStateLabel += "_" + listOfStates.get(j).getLabel(); 
               }
 
-
             }
 
             combinedEventLabel = "<" + combinedEventLabel.substring(1) + ">";
@@ -1106,11 +1104,10 @@ public class Automaton {
             
               // Only add the ID if it's not already waiting to be processed
               if (!valuesInStack.contains(combinedTargetID)) {
-                  stack.push(combinedTargetID);
-                  valuesInStack.add(combinedTargetID);
-              } else {
+                stack.push(combinedTargetID);
+                valuesInStack.add(combinedTargetID);
+              } else
                 System.out.println("DEBUG: Prevented adding of state since it was already in the stack.");
-              }
 
             }
 
@@ -1144,7 +1141,7 @@ public class Automaton {
    * and re-numbers all of the states accordingly. This must be done after operations such as intersection or union.
    * NOTE: To make this method more efficient we could make the buffer larger.
    **/
-  private void renumberStates() {
+  protected void renumberStates() {
 
     try {
 
@@ -1235,7 +1232,7 @@ public class Automaton {
 
   }
 
-  protected void renumberStatesInAllTransitionData(RandomAccessFile mappingRAFile) {
+  protected void renumberStatesInAllTransitionData(RandomAccessFile mappingRAFile) throws IOException {
 
     renumberStatesInTransitionData(mappingRAFile, badTransitions);
 
@@ -1248,6 +1245,9 @@ public class Automaton {
    * @throws IOException  If there was problems reading from file
    **/
   protected void renumberStatesInTransitionData(RandomAccessFile mappingRAFile, List<? extends TransitionData> list) throws IOException {
+
+    if (list == null)
+      return;
 
     byte[] buffer = new byte[nBytesPerStateID];
 
@@ -1428,6 +1428,7 @@ public class Automaton {
       str.append("}");
 
     } catch (NullPointerException e) {
+      e.printStackTrace();
       throw new MissingOrCorruptBodyFileException();
     }
 
@@ -1481,13 +1482,14 @@ public class Automaton {
 
   protected void addAdditionalEdgeProperties(Map<String, String> map) {
 
-    for (TransitionData t : badTransitions) {
-      String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-      if (map.containsKey(edge))
-        map.put(edge, map.get(edge) + ",style=dotted");
-      else
-        map.put(edge, ",style=dotted"); 
-    }
+    if (badTransitions != null)
+      for (TransitionData t : badTransitions) {
+        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
+        if (map.containsKey(edge))
+          map.put(edge, map.get(edge) + ",style=dotted");
+        else
+          map.put(edge, ",style=dotted"); 
+      }
 
   }
 
@@ -1602,12 +1604,7 @@ public class Automaton {
 
   protected String getInputCodeForSpecialTransitions(TransitionData data) {
 
-    String str = "";
-
-    if (badTransitions.contains(data))
-      str += ",BAD";
-
-    return str;
+    return (badTransitions != null && badTransitions.contains(data)) ? ",BAD" : "";
 
   }
 
@@ -1661,7 +1658,7 @@ public class Automaton {
    * @param newBodyFile   The new body file where the automaton is being copied to
    * @return              The duplicated automaton
    **/
-  private Automaton duplicate(File newHeaderFile, File newBodyFile) {
+  public Automaton duplicate(File newHeaderFile, File newBodyFile) {
 
     // Assign temporary files, if necessary
     if (newHeaderFile == null)
@@ -1689,14 +1686,15 @@ public class Automaton {
 
   /**
    * Open the header and body files, and read in the header file.
+   * NOTE: This must only be performed once during the instantiation of this object (otherwise duplicate events and special transitions will be imported).
    **/
-  private void openFiles() {
+  public void openFiles() {
 
     try {
 
       // Set up RandomAccessFile objects
       headerRAFile = new RandomAccessFile(headerFile, "rw");
-      bodyRAFile = new RandomAccessFile(bodyFile, "rw");
+      bodyRAFile   = new RandomAccessFile(bodyFile, "rw");
 
       // Read the header file
       readHeaderFile();
@@ -1708,15 +1706,14 @@ public class Automaton {
   }
 
   /**
-   * Files need to be closed on tge Windows operating system because there are problems trying to delete files if they are in use.
-   * NOTE: Do not attempt to use the automaton again unless the files are re-opened using openFiles().
+   * Files need to be closed on the Windows operating system because there are problems trying to delete files if they are in use.
+   * NOTE: Do not attempt to use this automaton instance again afterwards.
    **/
   public void closeFiles() {
 
       try {
 
-        if (headerFileNeedsToBeWritten)
-          writeHeaderFile();
+        writeHeaderFile();
 
         headerRAFile.close();
         bodyRAFile.close();
@@ -1774,15 +1771,16 @@ public class Automaton {
     
     byte[] buffer = new byte[HEADER_SIZE];
 
-    ByteManipulator.writeLongAsBytes(buffer, 0, nStates, 8);
-    ByteManipulator.writeLongAsBytes(buffer, 8, eventCapacity, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 12, stateCapacity, 8);
-    ByteManipulator.writeLongAsBytes(buffer, 20, transitionCapacity, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 24, labelLength, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 28, initialState, 8);
-    ByteManipulator.writeLongAsBytes(buffer, 36, nControllers, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 40, events.size(), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 44, badTransitions.size(), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 0, automatonType, 4);
+    ByteManipulator.writeLongAsBytes(buffer, 4, nStates, 8);
+    ByteManipulator.writeLongAsBytes(buffer, 12, eventCapacity, 4);
+    ByteManipulator.writeLongAsBytes(buffer, 16, stateCapacity, 8);
+    ByteManipulator.writeLongAsBytes(buffer, 24, transitionCapacity, 4);
+    ByteManipulator.writeLongAsBytes(buffer, 28, labelLength, 4);
+    ByteManipulator.writeLongAsBytes(buffer, 32, initialState, 8);
+    ByteManipulator.writeLongAsBytes(buffer, 40, nControllers, 4);
+    ByteManipulator.writeLongAsBytes(buffer, 44, events.size(), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 48, (badTransitions == null ? 0 : badTransitions.size()), 4);
 
     try {
 
@@ -1837,6 +1835,9 @@ public class Automaton {
    **/
   protected void writeTransitionDataToHeader(List<TransitionData> list) throws IOException {
 
+    if (list == null)
+      return;
+
     byte[] buffer = new byte[list.size() * 20];
     int index = 0;
 
@@ -1860,7 +1861,7 @@ public class Automaton {
   /**
    * Read all of the header information from file.
    **/
-  private void readHeaderFile() {
+  protected void readHeaderFile() {
 
     byte[] buffer = new byte[HEADER_SIZE];
 
@@ -1878,20 +1879,21 @@ public class Automaton {
 
        /* Calculate the values stored in these bytes */
 
-      nStates            = ByteManipulator.readBytesAsLong(buffer, 0, 8);
-      eventCapacity      = (int) ByteManipulator.readBytesAsLong(buffer, 8, 4);
-      stateCapacity      = ByteManipulator.readBytesAsLong(buffer, 12, 8);
-      transitionCapacity = (int) ByteManipulator.readBytesAsLong(buffer, 20, 4);
-      labelLength        = (int) ByteManipulator.readBytesAsLong(buffer, 24, 4);
-      initialState       = ByteManipulator.readBytesAsLong(buffer, 28, 8);
-      nControllers       = (int) ByteManipulator.readBytesAsLong(buffer, 36, 4);
-      int nEvents        = (int) ByteManipulator.readBytesAsLong(buffer, 40, 4);
+      automatonType      = (int) ByteManipulator.readBytesAsLong(buffer, 0, 4);
+      nStates            =       ByteManipulator.readBytesAsLong(buffer, 4, 8);
+      eventCapacity      = (int) ByteManipulator.readBytesAsLong(buffer, 12, 4);
+      stateCapacity      =       ByteManipulator.readBytesAsLong(buffer, 16, 8);
+      transitionCapacity = (int) ByteManipulator.readBytesAsLong(buffer, 24, 4);
+      labelLength        = (int) ByteManipulator.readBytesAsLong(buffer, 28, 4);
+      initialState       =       ByteManipulator.readBytesAsLong(buffer, 32, 8);
+      nControllers       = (int) ByteManipulator.readBytesAsLong(buffer, 40, 4);
+      int nEvents        = (int) ByteManipulator.readBytesAsLong(buffer, 44, 4);
 
       // None of the folowing things can exist if there are no events
       if (nEvents == 0)
         return;
 
-      int nBadTransitions = (int) ByteManipulator.readBytesAsLong(buffer, 44, 4);
+      int nBadTransitions = (int) ByteManipulator.readBytesAsLong(buffer, 48, 4);
 
         /* Read in the events */
 
@@ -1926,8 +1928,11 @@ public class Automaton {
 
         /* Read in special transitions */
 
-      if (nBadTransitions > 0)
+      if (nBadTransitions > 0) {
+        badTransitions = new ArrayList<TransitionData>();
         readTransitionDataFromHeader(nBadTransitions, badTransitions);
+      }
+
 
     } catch (IOException e) {
       e.printStackTrace();
@@ -2202,20 +2207,6 @@ public class Automaton {
 
   }
 
-  /**
-   * Calculate and return the number of controllers before synchronized composition (which is related to the vector size of an event).
-   * @return  The number of controllers prior to the creation of the U-Structure (or -1 if the events are not vectors)
-   **/
-  public int calculateNumberOfControllersBeforeUStructure() {
-
-    // Grab a random event and get the vector size
-    if (events.size() > 0)
-      return events.iterator().next().vector.getSize() - 1; 
-    
-    return -1;
-
-  }
-
     /** MUTATOR METHODS **/
 
   /**
@@ -2340,7 +2331,8 @@ public class Automaton {
    **/
   protected void removeTransitionData(TransitionData data) {
 
-    badTransitions.remove(data);
+    if (badTransitions != null)
+      badTransitions.remove(data);
 
   }
 
@@ -2671,6 +2663,9 @@ public class Automaton {
    **/
   public void markTransitionAsBad(long initialStateID, int eventID, long targetStateID) {
 
+    if (badTransitions == null)
+      badTransitions = new ArrayList<TransitionData>();
+
     badTransitions.add(new TransitionData(initialStateID, eventID, targetStateID));
 
     // Update header file
@@ -2708,6 +2703,9 @@ public class Automaton {
    * @return                 Whether or not the transition is bad
    **/
   public boolean isBadTransition(long initialStateID, int eventID, long targetStateID) {
+
+    if (badTransitions == null)
+      return false;
     
     TransitionData transitionData = new TransitionData(initialStateID, eventID, targetStateID);
 

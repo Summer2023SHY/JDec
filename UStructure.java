@@ -4,21 +4,53 @@ import java.nio.file.*;
 
 public class UStructure extends Automaton {
 
-  private static final int HEADER_SIZE = 64; // This is the fixed amount of space needed to hold the main variables in the .hdr file
+  private static final int HEADER_SIZE = 72; // This is the fixed amount of space needed to hold the main variables in the .hdr file
 
   // Special transitions
-  private List<TransitionData> unconditionalViolations    = new ArrayList<TransitionData>();
-  private List<TransitionData> conditionalViolations      = new ArrayList<TransitionData>();
-  private List<CommunicationData> potentialCommunications = new ArrayList<CommunicationData>();
-  private List<TransitionData> nonPotentialCommunications = new ArrayList<TransitionData>();
+  private List<TransitionData> unconditionalViolations;
+  private List<TransitionData> conditionalViolations;
+  private List<CommunicationData> potentialCommunications;
+  private List<TransitionData> nonPotentialCommunications;
+
+  private int nControllersBeforeUStructure;
 
   /**
-   * Implicit constructor: load automaton from file.
-   * @param headerFile  The file where the header should be stored
-   * @param bodyFile    The file where the body should be stored
-   * @param clearFiles  Whether or not the header and body files should be wiped before use
+   * Implicit constructor: used to load automaton from file.
+   * @param headerFile                    The file where the header should be stored
+   * @param bodyFile                      The file where the body should be stored
    **/
-  public UStructure(File headerFile, File bodyFile, boolean clearFiles) {
+  public UStructure(File headerFile, File bodyFile) {
+    this(
+      headerFile,
+      bodyFile,
+      -1, // This value will be overwritten when the header file is read
+      false
+    );
+  }
+
+  /**
+   * Implicit constructor: used when creating a new U-Structure.
+   * @param headerFile                    The file where the header should be stored
+   * @param bodyFile                      The file where the body should be stored
+   * @param nControllersBeforeUStructure  The number of controllers that were present before the U-Structure was created
+   **/
+  public UStructure(File headerFile, File bodyFile, int nControllersBeforeUStructure) {
+    this(
+      headerFile,
+      bodyFile,
+      nControllersBeforeUStructure,
+      true
+    );
+  }
+
+  /**
+   * Implicit constructor: used to load automaton from file or when creating a new U-Structure.
+   * @param headerFile                    The file where the header should be stored
+   * @param bodyFile                      The file where the body should be stored
+   * @param nControllersBeforeUStructure  The number of controllers that were present before the U-Structure was created
+   * @param clearFiles                    Whether or not the header and body files should be wiped before use
+   **/
+  public UStructure(File headerFile, File bodyFile, int nControllersBeforeUStructure, boolean clearFiles) {
     this(
       headerFile,
       bodyFile,
@@ -26,47 +58,64 @@ public class UStructure extends Automaton {
       DEFAULT_STATE_CAPACITY,
       DEFAULT_TRANSITION_CAPACITY,
       DEFAULT_LABEL_LENGTH,
+      nControllersBeforeUStructure,
       clearFiles
     );
   }
 	
 	/**
    * Main constructor.
-   * @param headerFile         The binary file to load the header information of the automaton from (information about events, etc.)
-   * @param bodyFile           The binary file to load the body information of the automaton from (states and transitions)
-   * @param eventCapacity      The initial event capacity (increases by a factor of 256 when it is exceeded)
-   * @param stateCapacity      The initial state capacity (increases by a factor of 256 when it is exceeded)
-   * @param transitionCapacity The initial maximum number of transitions per state (increases by 1 whenever it is exceeded)
-   * @param labelLength        The initial maximum number characters per state label (increases by 1 whenever it is exceeded)
-   * @param clearFiles         Whether or not the header and body files should be cleared prior to use
+   * @param headerFile                    The binary file to load the header information of the automaton from (information about events, etc.)
+   * @param bodyFile                      The binary file to load the body information of the automaton from (states and transitions)
+   * @param eventCapacity                 The initial event capacity (increases by a factor of 256 when it is exceeded)
+   * @param stateCapacity                 The initial state capacity (increases by a factor of 256 when it is exceeded)
+   * @param transitionCapacity            The initial maximum number of transitions per state (increases by 1 whenever it is exceeded)
+   * @param labelLength                   The initial maximum number characters per state label (increases by 1 whenever it is exceeded)
+   * @param nControllersBeforeUStructure  The number of controllers that were present before the U-Structure was created
+   * @param clearFiles                    Whether or not the header and body files should be cleared prior to use
    **/
-  public UStructure(File headerFile, File bodyFile, int eventCapacity, long stateCapacity, int transitionCapacity, int labelLength, boolean clearFiles) {
+  public UStructure(File headerFile, File bodyFile, int eventCapacity, long stateCapacity, int transitionCapacity, int labelLength, int nControllersBeforeUStructure, boolean clearFiles) {
+    
     super(headerFile, bodyFile, eventCapacity, stateCapacity, transitionCapacity, labelLength, 1, clearFiles);
+    
+    // This variable is only reset if this is not being read from file
+    if (nControllersBeforeUStructure != -1)
+      this.nControllersBeforeUStructure = nControllersBeforeUStructure;
+    
+    automatonType = 1;
+    headerFileNeedsToBeWritten = true;
+
 	}
 
-  /**
-   * Helper method to copy over all special transition data from this automaton to another.
-   * NOTE: The data is only copied over if both of the states involved in the transition actually exist
-   **/
-  @Override protected void copyOverSpecialTransitions() {
+  @Override public UStructure accessible(File newHeaderFile, File newBodyFile) {
+    return accessibleHelper(new UStructure(newHeaderFile, newBodyFile, nControllersBeforeUStructure));
+  }
 
-    super.copyOverSpecialTransitions();
+  @Override protected <T extends Automaton> void copyOverSpecialTransitions(T automaton) {
 
-    for (TransitionData data : unconditionalViolations)
-      if (stateExists(data.initialStateID) && stateExists(data.targetStateID))
-        addUnconditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
+    super.copyOverSpecialTransitions(automaton);
 
-    for (TransitionData data : conditionalViolations)
-      if (stateExists(data.initialStateID) && stateExists(data.targetStateID))
-        addConditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
+    UStructure uStructure = (UStructure) automaton;
 
-    for (CommunicationData data : potentialCommunications)
-      if (stateExists(data.initialStateID) && stateExists(data.targetStateID))
-        addPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID, (CommunicationRole[]) data.roles.clone());
+    if (unconditionalViolations != null)
+      for (TransitionData data : unconditionalViolations)
+        if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
+          uStructure.addUnconditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
+    
+    if (conditionalViolations != null)  
+      for (TransitionData data : conditionalViolations)
+        if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
+          uStructure.addConditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
 
-    for (TransitionData data : nonPotentialCommunications)
-      if (stateExists(data.initialStateID) && stateExists(data.targetStateID))
-        addNonPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID);
+    if (potentialCommunications != null)  
+      for (CommunicationData data : potentialCommunications)
+        if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
+          uStructure.addPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID, (CommunicationRole[]) data.roles.clone());
+
+    if (nonPotentialCommunications != null)  
+      for (TransitionData data : nonPotentialCommunications)
+        if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
+          uStructure.addNonPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID);
 
   }
 
@@ -140,7 +189,12 @@ public class UStructure extends Automaton {
 
     }
 
-    // Ensure that the header file has been written to disk
+      /* Copy over all of the special transitions */
+
+    copyOverSpecialTransitions(automaton);
+
+      /* Ensure that the header file has been written to disk */
+
     automaton.writeHeaderFile();
 
     return automaton;
@@ -700,7 +754,7 @@ public class UStructure extends Automaton {
       LabelVector vector = getEvent(data.eventID).vector;
       boolean[] vectorElementsFound = new boolean[vector.getSize()];
 
-      automaton.prune(protocol, vector, vectorElementsFound, getState(data.initialStateID), 0, calculateNumberOfControllersBeforeUStructure());
+      automaton.prune(protocol, vector, vectorElementsFound, getState(data.initialStateID), 0);
 
     }
 
@@ -727,9 +781,8 @@ public class UStructure extends Automaton {
    * @param vectorElementsFound           Indicates which elements of the vector have already been found
    * @param currentState                  The state that we are currently on
    * @param depth                         The current depth of the recursion (first iteration has a depth of 0)
-   * @param nControllersBeforeUStructure  The number of controllers that were present before synchronized composition
    **/
-  private void prune(Set<CommunicationData> protocol, LabelVector communication, boolean[] vectorElementsFound, State currentState, int depth, int nControllersBeforeUStructure) {
+  private void prune(Set<CommunicationData> protocol, LabelVector communication, boolean[] vectorElementsFound, State currentState, int depth) {
 
       /* Base case */
 
@@ -775,7 +828,7 @@ public class UStructure extends Automaton {
       removeTransition(currentState.getID(), t.getEvent().getID(), t.getTargetStateID());
 
       // Recursive call to the state where this transition leads
-      prune(protocol, communication, copy, getState(t.getTargetStateID()), depth + 1, nControllersBeforeUStructure);
+      prune(protocol, communication, copy, getState(t.getTargetStateID()), depth + 1);
 
     }
 
@@ -790,7 +843,7 @@ public class UStructure extends Automaton {
 
       /* Create a new automaton that has each of the transitions going the opposite direction */
 
-    UStructure invertedAutomaton = new UStructure(null, null, eventCapacity, stateCapacity, transitionCapacity, labelLength, true);
+    UStructure invertedAutomaton = new UStructure(null, null, eventCapacity, stateCapacity, transitionCapacity, labelLength, nControllersBeforeUStructure, true);
 
     // Add events
     invertedAutomaton.addAllEvents(events);
@@ -829,10 +882,17 @@ public class UStructure extends Automaton {
 
     super.removeTransitionData(data);
     
-    unconditionalViolations.remove(data);
-    conditionalViolations.remove(data);
-    while (potentialCommunications.remove(data)); // Multiple potential communications could exist for the same transition (more than one potential sender)
-    nonPotentialCommunications.remove(data);
+    if (unconditionalViolations != null)
+      unconditionalViolations.remove(data);
+
+    if (conditionalViolations != null)
+      conditionalViolations.remove(data);
+    
+    if (potentialCommunications != null)
+      while (potentialCommunications.remove(data)); // Multiple potential communications could exist for the same transition (more than one potential sender)
+    
+    if (nonPotentialCommunications != null)
+      nonPotentialCommunications.remove(data);
 
   }
 
@@ -934,8 +994,9 @@ public class UStructure extends Automaton {
    **/
   private void renumberEventsInTransitionData(Map<Integer, Integer> mapping, List<? extends TransitionData> list) {
 
-    for (TransitionData data : list)
-      data.eventID = mapping.get((Integer) data.eventID);
+    if (list != null)
+      for (TransitionData data : list)
+        data.eventID = mapping.get((Integer) data.eventID);
 
   }
 
@@ -946,6 +1007,9 @@ public class UStructure extends Automaton {
    * @param targetStateID    The target state
    **/
   public void addUnconditionalViolation(long initialStateID, int eventID, long targetStateID) {
+
+    if (unconditionalViolations == null)
+      unconditionalViolations = new ArrayList<TransitionData>();
 
     unconditionalViolations.add(new TransitionData(initialStateID, eventID, targetStateID));
 
@@ -961,6 +1025,9 @@ public class UStructure extends Automaton {
    * @param targetStateID    The target state
    **/
   public void addConditionalViolation(long initialStateID, int eventID, long targetStateID) {
+
+    if (conditionalViolations == null)
+      conditionalViolations = new ArrayList<TransitionData>();
 
     conditionalViolations.add(new TransitionData(initialStateID, eventID, targetStateID));
 
@@ -978,6 +1045,9 @@ public class UStructure extends Automaton {
    **/
   public void addPotentialCommunication(long initialStateID, int eventID, long targetStateID, CommunicationRole[] communicationRoles) {
 
+    if (potentialCommunications == null)
+      potentialCommunications = new ArrayList<CommunicationData>();
+
     potentialCommunications.add(new CommunicationData(initialStateID, eventID, targetStateID, communicationRoles));
 
     // Update header file
@@ -992,6 +1062,9 @@ public class UStructure extends Automaton {
    * @param targetStateID    The target state
    **/
   public void addNonPotentialCommunication(long initialStateID, int eventID, long targetStateID) {
+
+    if (nonPotentialCommunications == null)
+      nonPotentialCommunications = new ArrayList<TransitionData>();
 
     nonPotentialCommunications.add(new TransitionData(initialStateID, eventID, targetStateID));
 
@@ -1014,7 +1087,7 @@ public class UStructure extends Automaton {
    * @param newBodyFile   The new body file where the automaton is being copied to
    * @return              The duplicated automaton
    **/
-  private UStructure duplicate(File newHeaderFile, File newBodyFile) {
+  public UStructure duplicate(File newHeaderFile, File newBodyFile) {
 
     // Assign temporary files, if necessary
     if (newHeaderFile == null)
@@ -1036,41 +1109,41 @@ public class UStructure extends Automaton {
       return null;
     }
 
-    return new UStructure(newHeaderFile, newBodyFile, false);
+    return new UStructure(newHeaderFile, newBodyFile);
 
   }
-
 
   @Override protected String getInputCodeForSpecialTransitions(TransitionData transitionData) {
 
     String str = "";
 
-    if (unconditionalViolations.contains(transitionData))
+    if (unconditionalViolations != null && unconditionalViolations.contains(transitionData))
       str += ",UNCONDITIONAL_VIOLATION";
     
-    if (conditionalViolations.contains(transitionData))
+    if (conditionalViolations != null && conditionalViolations.contains(transitionData))
       str += ",CONDITIONAL_VIOLATION";
     
     // Search entire list since there may be more than one potential communication
-    for (CommunicationData communicationData : potentialCommunications) {
-      if (transitionData.equals(communicationData)) {
-        str += ",POTENTIAL_COMMUNICATION-";
-        for (CommunicationRole role : communicationData.roles)
-          str += role.getCharacter();
+    if (potentialCommunications != null)
+      for (CommunicationData communicationData : potentialCommunications) {
+        if (transitionData.equals(communicationData)) {
+          str += ",POTENTIAL_COMMUNICATION-";
+          for (CommunicationRole role : communicationData.roles)
+            str += role.getCharacter();
+        }
       }
-    }
 
-    if (nonPotentialCommunications.contains(transitionData))
+    if (nonPotentialCommunications != null && nonPotentialCommunications.contains(transitionData))
       str += ",COMMUNICATION";
 
-    return str;
+    return super.getInputCodeForSpecialTransitions(transitionData) + str;
 
   }
 
   /**
    * Read all of the header information from file.
    **/
-  private void readHeaderFile() {
+  @Override protected void readHeaderFile() {
 
     byte[] buffer = new byte[HEADER_SIZE];
 
@@ -1088,24 +1161,26 @@ public class UStructure extends Automaton {
 
         /* Calculate the values stored in these bytes */
 
-      nStates            = ByteManipulator.readBytesAsLong(buffer, 0, 8);
-      eventCapacity      = (int) ByteManipulator.readBytesAsLong(buffer, 8, 4);
-      stateCapacity      = ByteManipulator.readBytesAsLong(buffer, 12, 8);
-      transitionCapacity = (int) ByteManipulator.readBytesAsLong(buffer, 20, 4);
-      labelLength        = (int) ByteManipulator.readBytesAsLong(buffer, 24, 4);
-      initialState       = ByteManipulator.readBytesAsLong(buffer, 28, 8);
-      nControllers       = (int) ByteManipulator.readBytesAsLong(buffer, 36, 4);
-      int nEvents        = (int) ByteManipulator.readBytesAsLong(buffer, 40, 4);
+      automatonType                = (int) ByteManipulator.readBytesAsLong(buffer, 0,  4);
+      nStates                      =       ByteManipulator.readBytesAsLong(buffer, 4,  8);
+      eventCapacity                = (int) ByteManipulator.readBytesAsLong(buffer, 12, 4);
+      stateCapacity                =       ByteManipulator.readBytesAsLong(buffer, 16, 8);
+      transitionCapacity           = (int) ByteManipulator.readBytesAsLong(buffer, 24, 4);
+      labelLength                  = (int) ByteManipulator.readBytesAsLong(buffer, 28, 4);
+      initialState                 =       ByteManipulator.readBytesAsLong(buffer, 32, 8);
+      nControllers                 = (int) ByteManipulator.readBytesAsLong(buffer, 40, 4);
+      nControllersBeforeUStructure = (int) ByteManipulator.readBytesAsLong(buffer, 44, 4);
+      int nEvents                  = (int) ByteManipulator.readBytesAsLong(buffer, 48, 4);
 
       // None of the folowing things can exist if there are no events
       if (nEvents == 0)
         return;
 
-      int nBadTransitions             = (int) ByteManipulator.readBytesAsLong(buffer, 44, 4);
-      int nUnconditionalViolations    = (int) ByteManipulator.readBytesAsLong(buffer, 48, 4);
-      int nConditionalViolations      = (int) ByteManipulator.readBytesAsLong(buffer, 52, 4);
-      int nPotentialCommunications    = (int) ByteManipulator.readBytesAsLong(buffer, 56, 4);
-      int nNonPotentialCommunications = (int) ByteManipulator.readBytesAsLong(buffer, 60, 4);
+      int nBadTransitions             = (int) ByteManipulator.readBytesAsLong(buffer, 52, 4);
+      int nUnconditionalViolations    = (int) ByteManipulator.readBytesAsLong(buffer, 56, 4);
+      int nConditionalViolations      = (int) ByteManipulator.readBytesAsLong(buffer, 60, 4);
+      int nPotentialCommunications    = (int) ByteManipulator.readBytesAsLong(buffer, 64, 4);
+      int nNonPotentialCommunications = (int) ByteManipulator.readBytesAsLong(buffer, 68, 4);
 
         /* Read in the events */
 
@@ -1140,22 +1215,30 @@ public class UStructure extends Automaton {
 
         /* Read in special transitions */
 
-      if (nBadTransitions > 0)
+      if (nBadTransitions > 0) {
+        badTransitions = new ArrayList<TransitionData>();
         readTransitionDataFromHeader(nBadTransitions, badTransitions);
+      }
       
-      if (nUnconditionalViolations > 0)
+      if (nUnconditionalViolations > 0) {
+        unconditionalViolations = new ArrayList<TransitionData>();
         readTransitionDataFromHeader(nUnconditionalViolations, unconditionalViolations);
+      }
       
-      if (nConditionalViolations > 0)
+      if (nConditionalViolations > 0) {
+        conditionalViolations = new ArrayList<TransitionData>();
         readTransitionDataFromHeader(nConditionalViolations, conditionalViolations);
+      }
       
       if (nPotentialCommunications > 0) {
-        int nControllersBeforeUStructure = calculateNumberOfControllersBeforeUStructure();
-        readCommunicationDataFromHeader(nPotentialCommunications, potentialCommunications, nControllersBeforeUStructure);
+        potentialCommunications = new ArrayList<CommunicationData>();
+        readCommunicationDataFromHeader(nPotentialCommunications, potentialCommunications);
       }
 
-      if (nNonPotentialCommunications > 0)
+      if (nNonPotentialCommunications > 0) {
+        nonPotentialCommunications = new ArrayList<TransitionData>();
         readTransitionDataFromHeader(nNonPotentialCommunications, nonPotentialCommunications);
+      }
 
     } catch (IOException e) {
       e.printStackTrace();
@@ -1169,7 +1252,7 @@ public class UStructure extends Automaton {
    * @param list            The list of communication data
    * @throws IOException    If there was problems reading from file
    **/
-  private void readCommunicationDataFromHeader(int nCommunications, List<CommunicationData> list, int nControllersBeforeUStructure) throws IOException {
+  private void readCommunicationDataFromHeader(int nCommunications, List<CommunicationData> list) throws IOException {
 
     byte[] buffer = new byte[nCommunications * (20 + nControllersBeforeUStructure)];
     headerRAFile.read(buffer);
@@ -1185,7 +1268,7 @@ public class UStructure extends Automaton {
       
       long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
       index += 8;
-      
+
       CommunicationRole[] roles = new CommunicationRole[nControllersBeforeUStructure];
       for (int j = 0; j < roles.length; j++)
         roles[j] = CommunicationRole.getRole(buffer[index++]);
@@ -1196,10 +1279,10 @@ public class UStructure extends Automaton {
 
   }
 
-    /**
+  /**
    * Write all of the header information to file.
    **/
-  public void writeHeaderFile() {
+  @Override public void writeHeaderFile() {
 
     // Do not write the header file unless we need to
     if (!headerFileNeedsToBeWritten)
@@ -1209,19 +1292,21 @@ public class UStructure extends Automaton {
     
     byte[] buffer = new byte[HEADER_SIZE];
 
-    ByteManipulator.writeLongAsBytes(buffer, 0, nStates, 8);
-    ByteManipulator.writeLongAsBytes(buffer, 8, eventCapacity, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 12, stateCapacity, 8);
-    ByteManipulator.writeLongAsBytes(buffer, 20, transitionCapacity, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 24, labelLength, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 28, initialState, 8);
-    ByteManipulator.writeLongAsBytes(buffer, 36, nControllers, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 40, events.size(), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 44, badTransitions.size(), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 48, unconditionalViolations.size(), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 52, conditionalViolations.size(), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 56, potentialCommunications.size(), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 60, nonPotentialCommunications.size(), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 0,  automatonType, 4);
+    ByteManipulator.writeLongAsBytes(buffer, 4,  nStates, 8);
+    ByteManipulator.writeLongAsBytes(buffer, 12, eventCapacity, 4);
+    ByteManipulator.writeLongAsBytes(buffer, 16, stateCapacity, 8);
+    ByteManipulator.writeLongAsBytes(buffer, 24, transitionCapacity, 4);
+    ByteManipulator.writeLongAsBytes(buffer, 28, labelLength, 4);
+    ByteManipulator.writeLongAsBytes(buffer, 32, initialState, 8);
+    ByteManipulator.writeLongAsBytes(buffer, 40, nControllers, 4);
+    ByteManipulator.writeLongAsBytes(buffer, 44, nControllersBeforeUStructure, 4);
+    ByteManipulator.writeLongAsBytes(buffer, 48, events.size(), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 52, (badTransitions             == null ? 0 : badTransitions.size()), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 56, (unconditionalViolations    == null ? 0 : unconditionalViolations.size()), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 60, (conditionalViolations      == null ? 0 : conditionalViolations.size()), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 64, (potentialCommunications    == null ? 0 : potentialCommunications.size()), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 68, (nonPotentialCommunications == null ? 0 : nonPotentialCommunications.size()), 4);
 
     try {
 
@@ -1270,6 +1355,7 @@ public class UStructure extends Automaton {
     } catch (IOException e) {
       e.printStackTrace();
     } 
+    
 
   }
 
@@ -1281,6 +1367,9 @@ public class UStructure extends Automaton {
    * @throws IOException  If there was problems writing to file
    **/
   private void writeCommunicationDataToHeader(List<CommunicationData> list) throws IOException {
+
+    if (list == null)
+      return;
 
     for (CommunicationData data : list) {
 
@@ -1309,31 +1398,36 @@ public class UStructure extends Automaton {
 
     super.addAdditionalEdgeProperties(map);
 
-    for (TransitionData t : unconditionalViolations) {
-      String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-      if (map.containsKey(edge))
-        map.put(edge, map.get(edge) + ",color=red");
-      else
-        map.put(edge, ",color=red"); 
-    }
-    for (TransitionData t : conditionalViolations) {
-      String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-      if (map.containsKey(edge))
-        map.put(edge, map.get(edge) + ",color=green3");
-      else
-        map.put(edge, ",color=green3"); 
-    }
-    for (TransitionData t : potentialCommunications) {
-      String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-      if (map.containsKey(edge))
-        map.put(edge, map.get(edge) + ",color=blue,fontcolor=blue");
-      else
-        map.put(edge, ",color=blue,fontcolor=blue"); 
-    }
+    if (unconditionalViolations != null)
+      for (TransitionData t : unconditionalViolations) {
+        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
+        if (map.containsKey(edge))
+          map.put(edge, map.get(edge) + ",color=red");
+        else
+          map.put(edge, ",color=red"); 
+      }
+
+    if (conditionalViolations != null)
+      for (TransitionData t : conditionalViolations) {
+        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
+        if (map.containsKey(edge))
+          map.put(edge, map.get(edge) + ",color=green3");
+        else
+          map.put(edge, ",color=green3"); 
+      }
+
+    if (potentialCommunications != null)
+      for (TransitionData t : potentialCommunications) {
+        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
+        if (map.containsKey(edge))
+          map.put(edge, map.get(edge) + ",color=blue,fontcolor=blue");
+        else
+          map.put(edge, ",color=blue,fontcolor=blue"); 
+      }
 
   }
 
-  @Override protected void renumberStatesInAllTransitionData(RandomAccessFile mappingRAFile) {
+  @Override protected void renumberStatesInAllTransitionData(RandomAccessFile mappingRAFile) throws IOException {
 
     super.renumberStatesInAllTransitionData(mappingRAFile);
 
@@ -1342,6 +1436,10 @@ public class UStructure extends Automaton {
     renumberStatesInTransitionData(mappingRAFile, potentialCommunications);
     renumberStatesInTransitionData(mappingRAFile, nonPotentialCommunications);
 
+  }
+
+  public int getNumberOfControllersBeforeUStructure() {
+    return nControllersBeforeUStructure;
   }
 
 }

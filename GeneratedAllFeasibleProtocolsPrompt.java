@@ -6,7 +6,7 @@ import java.awt.*;
 public class GeneratedAllFeasibleProtocolsPrompt extends JFrame {
 
   private AutomataGUI gui;
-  private Automaton automaton;
+  private UStructure uStructure;
   private JCheckBox[][] checkBoxes;
 
 
@@ -14,13 +14,13 @@ public class GeneratedAllFeasibleProtocolsPrompt extends JFrame {
 
   /**
    * Construct a GeneratedAllFeasibleProtocolsPrompt object.
-   * @param gui       A reference to the GUI which is being worked with
-   * @param automaton The automaton that is being worked with
+   * @param gui         A reference to the GUI which is being worked with
+   * @param uStructure  The UStructure that is being worked with
    **/
-  public GeneratedAllFeasibleProtocolsPrompt(AutomataGUI gui, Automaton automaton) {
+  public GeneratedAllFeasibleProtocolsPrompt(AutomataGUI gui, UStructure uStructure) {
 
     this.gui = gui;
-    this.automaton = automaton;
+    this.uStructure = uStructure;
 
     addComponents();
 
@@ -56,7 +56,7 @@ public class GeneratedAllFeasibleProtocolsPrompt extends JFrame {
       
             // Generate list of communications which are still allowed based on which boxes the user selected
             java.util.List<CommunicationData> chosenCommunications = new ArrayList<CommunicationData>();
-            outer: for (CommunicationData data : automaton.getPotentialCommunications()) {
+            outer: for (CommunicationData data : uStructure.getPotentialCommunications()) {
               
               int sender = data.getIndexOfSender();
 
@@ -71,10 +71,10 @@ public class GeneratedAllFeasibleProtocolsPrompt extends JFrame {
             }
 
             // Print feasible protocols
-            java.util.List<Set<CommunicationData>> feasibleProtocols = automaton.generateAllFeasibleProtocols(chosenCommunications);
+            java.util.List<Set<CommunicationData>> feasibleProtocols = uStructure.generateAllFeasibleProtocols(chosenCommunications);
 
             // Display results in another window
-            new FeasibleProtocolOutput(gui, automaton, feasibleProtocols, "Feasible Protocols", " Here is the list of all feasible protocols: ");
+            new FeasibleProtocolOutput(gui, uStructure, feasibleProtocols, "Feasible Protocols", " Here is the list of all feasible protocols: ");
 
             // Dispose of this window
             GeneratedAllFeasibleProtocolsPrompt.this.dispose();
@@ -89,7 +89,7 @@ public class GeneratedAllFeasibleProtocolsPrompt extends JFrame {
 
     Container container = new Container();
 
-    int nControllers = automaton.calculateNumberOfControllersBeforeUStructure();
+    int nControllers = uStructure.getNumberOfControllersBeforeUStructure();
     checkBoxes = new JCheckBox[nControllers][nControllers];
 
     container.setLayout(new GridLayout(nControllers + 1, nControllers + 1));

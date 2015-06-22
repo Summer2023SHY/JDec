@@ -8,7 +8,7 @@ import java.io.*;
 public class MakeProtocolFeasiblePrompt extends JFrame {
 
   private AutomataGUI gui;
-  private Automaton automaton;
+  private UStructure uStructure;
   private java.util.List<CommunicationData> potentialCommunications;
   private JCheckBox[] checkBoxes;
 
@@ -17,14 +17,14 @@ public class MakeProtocolFeasiblePrompt extends JFrame {
 
   /**
    * Construct a MakeProtocolFeasiblePrompt object.
-   * @param gui       A reference to the GUI which is being worked with
-   * @param automaton The automaton that is being worked with
+   * @param gui         A reference to the GUI which is being worked with
+   * @param uStructure  The uStructure that is being worked with
    **/
-  public MakeProtocolFeasiblePrompt(AutomataGUI gui, Automaton automaton) {
+  public MakeProtocolFeasiblePrompt(AutomataGUI gui, UStructure uStructure) {
 
     this.gui = gui;
-    this.automaton = automaton;
-    potentialCommunications = automaton.getPotentialCommunications();
+    this.uStructure = uStructure;
+    potentialCommunications = uStructure.getPotentialCommunications();
 
     addComponents();
 
@@ -54,7 +54,7 @@ public class MakeProtocolFeasiblePrompt extends JFrame {
     checkBoxes = new JCheckBox[potentialCommunications.size()];
 
     for (int i = 0; i < potentialCommunications.size(); i++) {
-      checkBoxes[i] = new JCheckBox(potentialCommunications.get(i).toString(automaton));
+      checkBoxes[i] = new JCheckBox(potentialCommunications.get(i).toString(uStructure));
       container.add(checkBoxes[i]);
     }
 
@@ -79,12 +79,12 @@ public class MakeProtocolFeasiblePrompt extends JFrame {
                 protocol.add(potentialCommunications.get(i));
       
             // Make the protocol feasible
-            Set<CommunicationData> feasibleProtocol = automaton.makeProtocolFeasible(protocol);
+            Set<CommunicationData> feasibleProtocol = uStructure.makeProtocolFeasible(protocol);
             
             // Display results in another window
             java.util.List<Set<CommunicationData>> list = new ArrayList<Set<CommunicationData>>();
             list.add(feasibleProtocol);
-            new FeasibleProtocolOutput(gui, automaton, list, "Feasible Protocol", " Here is the feasible protocol: ");
+            new FeasibleProtocolOutput(gui, uStructure, list, "Feasible Protocol", " Here is the feasible protocol: ");
 
             // Dispose of this window
             MakeProtocolFeasiblePrompt.this.dispose();

@@ -209,72 +209,66 @@ public class TestAutomata {
   	printTestOutput("BASIC STATE CREATION: ", 2);
 
   	printTestOutput("Instantiating empty automaton...", 3);
-  	Automaton a = new Automaton();
+  	Automaton automaton = new Automaton();
 
   	printTestOutput("Adding a state that is marked...", 3);
-  	long id = a.addState("firstState", true, false);
-  	printTestCase("Ensuring that 'nStates' was incremented", new TestResult(a.getNumberOfStates(), 1), counter);
-  	printTestCase("Ensuring that 'stateCapacity' was not increased", new TestResult(a.getStateCapacity(), 255), counter);
-  	printTestCase("Ensuring that the added state exists", new TestResult(a.stateExists(id), true), counter);
-  	printTestCase("Ensuring that the added state was not labeled the initial state", new TestResult(a.getInitialStateID(), 0), counter);
-  	printTestCase("Ensuring that the added state has the proper label", new TestResult(a.getState(id).getLabel(), "firstState"), counter);
-  	printTestCase("Ensuring that the added state is marked", new TestResult(a.getState(id).isMarked(), true), counter);
+  	long id = automaton.addState("firstState", true, false);
+  	printTestCase("Ensuring that 'nStates' was incremented", new TestResult(automaton.getNumberOfStates(), 1), counter);
+  	printTestCase("Ensuring that 'stateCapacity' was not increased", new TestResult(automaton.getStateCapacity(), 255), counter);
+  	printTestCase("Ensuring that the added state exists", new TestResult(automaton.stateExists(id), true), counter);
+  	printTestCase("Ensuring that the added state was not labeled the initial state", new TestResult(automaton.getInitialStateID(), 0), counter);
+  	printTestCase("Ensuring that the added state has the proper label", new TestResult(automaton.getState(id).getLabel(), "firstState"), counter);
+  	printTestCase("Ensuring that the added state is marked", new TestResult(automaton.getState(id).isMarked(), true), counter);
 
   	printTestOutput("Adding an initial state that is unmarked...", 3);
-  	id = a.addState("secondState", false, true);
-  	printTestCase("Ensuring that 'nStates' was incremented", new TestResult(a.getNumberOfStates(), 2), counter);
-  	printTestCase("Ensuring that 'stateCapacity' was not increased", new TestResult(a.getStateCapacity(), 255), counter);
-  	printTestCase("Ensuring that the added state exists", new TestResult(a.stateExists(id), true), counter);
-  	printTestCase("Ensuring that the added state was labeled the initial state", new TestResult(a.getInitialStateID(), id), counter);
-  	printTestCase("Ensuring that the added state has the proper label", new TestResult(a.getState(id).getLabel(), "secondState"), counter);
-  	printTestCase("Ensuring that the added state is unmarked", new TestResult(a.getState(id).isMarked(), false), counter);
+  	id = automaton.addState("secondState", false, true);
+  	printTestCase("Ensuring that 'nStates' was incremented", new TestResult(automaton.getNumberOfStates(), 2), counter);
+  	printTestCase("Ensuring that 'stateCapacity' was not increased", new TestResult(automaton.getStateCapacity(), 255), counter);
+  	printTestCase("Ensuring that the added state exists", new TestResult(automaton.stateExists(id), true), counter);
+  	printTestCase("Ensuring that the added state was labeled the initial state", new TestResult(automaton.getInitialStateID(), id), counter);
+  	printTestCase("Ensuring that the added state has the proper label", new TestResult(automaton.getState(id).getLabel(), "secondState"), counter);
+  	printTestCase("Ensuring that the added state is unmarked", new TestResult(automaton.getState(id).isMarked(), false), counter);
 
     printTestOutput("Adding a state with a label of maximum length...", 3);
-    id = a.addState("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv", false, true);
-    printTestCase("Ensuring that the added state has the proper label", new TestResult(a.getState(id).getLabel(), "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv"), counter);
+    id = automaton.addState("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv", false, true);
+    printTestCase("Ensuring that the added state has the proper label", new TestResult(automaton.getState(id).getLabel(), "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv"), counter);
 
     printTestOutput("Adding a state with a label exceeding maximum length...", 3);
-    id = a.addState("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvw", false, true);
+    id = automaton.addState("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvw", false, true);
     printTestCase("Ensuring that the state was not added", new TestResult(id, 0), counter);
 
-    a.closeFiles();
+    automaton.closeFiles();
   	
   		/* State ID Assignment Tests */
 
   	printTestOutput("STATE ID ASSIGNMENTS: ", 2);
 
   	printTestOutput("Instantiating empty automaton...", 3);
-  	a = new Automaton();
+  	automaton = new Automaton();
 
   	printTestOutput("Adding a state...", 3);
-  	id = a.addState("firstState", true, true);
+  	id = automaton.addState("firstState", true, true);
   	printTestCase("Ensuring that the state's ID is 1", new TestResult(id, 1), counter);
 
   	printTestOutput("Adding a second state...", 3);
-    id = a.addState("secondState", true, true);
+    id = automaton.addState("secondState", true, true);
     printTestCase("Ensuring that the state's ID is 2", new TestResult(id, 2), counter);
-
-    a.closeFiles();
 
       /* State Label Trimming Tests */
 
     printTestOutput("STATE LABEL TRIMMING TESTS: ", 2);
 
     printTestOutput("Instantiating automaton...", 3);
-    a = AutomatonGenerator.generateFromGUICode(
-        "", // Events
-        "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv0\nabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv1", // States 
-        "", // Transitions
-        1, // Number of controllers
-        false, // We do not want it to be verbose
-        null, // Use temporary files
-        null // Use temporary files
-      );
+    automaton = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+      new Automaton(),
+      "", // Events
+      "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv0\nabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv1", // States 
+      "", // Transitions
+      false // We do not want it to be verbose
+    ));
 
-    a.generateInputForGUI();
-    printTestCase("Ensuring the states are correct", new TestResult(a.getStateInput(), "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv,T"), counter);
-
-    a.closeFiles();
+    automaton.generateInputForGUI();
+    printTestCase("Ensuring the states are correct", new TestResult(automaton.getStateInput(), "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv,T"), counter);
 
   		/* Print summary of this test routine */
 
@@ -297,86 +291,86 @@ public class TestAutomata {
   	printTestOutput("AUTOMATON CAPACITY INITIALIZATION: ", 2);
 
   	printTestOutput("Instantiating empty automaton (Event capacity: 0, State capacity: 0, Transition capacity: 0, Label length: 0, Number of controllers: 0)...", 3);
-  	Automaton a = new Automaton(0, 0, 0, 0, 0, true);
-    printTestCase("Ensuring that 'eventCapacity' was reset to '255'", new TestResult(a.getEventCapacity(), 255), counter);
-  	printTestCase("Ensuring that 'stateCapacity' was reset to '255'", new TestResult(a.getStateCapacity(), 255), counter);
-  	printTestCase("Ensuring that 'transitionCapacity' was reset to '1'", new TestResult(a.getTransitionCapacity(), 1), counter);
-    printTestCase("Ensuring that 'labelLength' was reset to '1'", new TestResult(a.getLabelLength(), 1), counter);
-  	printTestCase("Ensuring that 'nControllers' was reset to '1'", new TestResult(a.getNumberOfControllers(), 1), counter);
-    printTestCase("Ensuring that 'nBytesPerEventID' was initialized to '1'", new TestResult(a.getSizeOfEventID(), 1), counter);
-  	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '1'", new TestResult(a.getSizeOfStateID(), 1), counter);
-  	printTestCase("Ensuring that 'nBytesPerState' was initialized to '4'", new TestResult(a.getSizeOfState(), 4), counter);
-    a.closeFiles();
+  	Automaton automaton = saveAndLoadAutomaton(new Automaton(0, 0, 0, 0, 0, true));
+    printTestCase("Ensuring that 'eventCapacity' was reset to '255'", new TestResult(automaton.getEventCapacity(), 255), counter);
+  	printTestCase("Ensuring that 'stateCapacity' was reset to '255'", new TestResult(automaton.getStateCapacity(), 255), counter);
+  	printTestCase("Ensuring that 'transitionCapacity' was reset to '1'", new TestResult(automaton.getTransitionCapacity(), 1), counter);
+    printTestCase("Ensuring that 'labelLength' was reset to '1'", new TestResult(automaton.getLabelLength(), 1), counter);
+  	printTestCase("Ensuring that 'nControllers' was reset to '1'", new TestResult(automaton.getNumberOfControllers(), 1), counter);
+    printTestCase("Ensuring that 'nBytesPerEventID' was initialized to '1'", new TestResult(automaton.getSizeOfEventID(), 1), counter);
+  	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '1'", new TestResult(automaton.getSizeOfStateID(), 1), counter);
+  	printTestCase("Ensuring that 'nBytesPerState' was initialized to '4'", new TestResult(automaton.getSizeOfState(), 4), counter);
+    automaton.closeFiles();
 
   	printTestOutput("Instantiating empty automaton (Event capacity: -1, State capacity: -1, Transition capacity: -1, Label length: -1, Number of controllers: -1)...", 3);
-  	a = new Automaton(-1, -1, -1, -1, -1, true);
-    printTestCase("Ensuring that 'eventCapacity' was reset to '255'", new TestResult(a.getEventCapacity(), 255), counter);
-  	printTestCase("Ensuring that 'stateCapacity' was reset to '255'", new TestResult(a.getStateCapacity(), 255), counter);
-  	printTestCase("Ensuring that 'transitionCapacity' was reset to '1'", new TestResult(a.getTransitionCapacity(), 1), counter);
-  	printTestCase("Ensuring that 'labelLength' was reset to '1'", new TestResult(a.getLabelLength(), 1), counter);
-    printTestCase("Ensuring that 'nControllers' was reset to '1'", new TestResult(a.getNumberOfControllers(), 1), counter);
-    printTestCase("Ensuring that 'nBytesPerEventID' was initialized to '1'", new TestResult(a.getSizeOfEventID(), 1), counter);
-  	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '1'", new TestResult(a.getSizeOfStateID(), 1), counter);
-  	printTestCase("Ensuring that 'nBytesPerState' was initialized to '4'", new TestResult(a.getSizeOfState(), 4), counter);
-    a.closeFiles();
+  	automaton = saveAndLoadAutomaton(new Automaton(-1, -1, -1, -1, -1, true));
+    printTestCase("Ensuring that 'eventCapacity' was reset to '255'", new TestResult(automaton.getEventCapacity(), 255), counter);
+  	printTestCase("Ensuring that 'stateCapacity' was reset to '255'", new TestResult(automaton.getStateCapacity(), 255), counter);
+  	printTestCase("Ensuring that 'transitionCapacity' was reset to '1'", new TestResult(automaton.getTransitionCapacity(), 1), counter);
+  	printTestCase("Ensuring that 'labelLength' was reset to '1'", new TestResult(automaton.getLabelLength(), 1), counter);
+    printTestCase("Ensuring that 'nControllers' was reset to '1'", new TestResult(automaton.getNumberOfControllers(), 1), counter);
+    printTestCase("Ensuring that 'nBytesPerEventID' was initialized to '1'", new TestResult(automaton.getSizeOfEventID(), 1), counter);
+  	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '1'", new TestResult(automaton.getSizeOfStateID(), 1), counter);
+  	printTestCase("Ensuring that 'nBytesPerState' was initialized to '4'", new TestResult(automaton.getSizeOfState(), 4), counter);
+    automaton.closeFiles();
 
   	printTestOutput("Instantiating empty automaton (Event capacity: 255, State capacity: 255, Transition capacity: 2, Label length: 1, Number of controllers: 1)...", 3);
-  	a = new Automaton(255, 255, 2, 1, 1, true);
-    printTestCase("Ensuring that 'eventCapacity' was left at '255'", new TestResult(a.getEventCapacity(), 255), counter);
-  	printTestCase("Ensuring that 'stateCapacity' was left at '255'", new TestResult(a.getStateCapacity(), 255), counter);
-  	printTestCase("Ensuring that 'transitionCapacity' was left at '2'", new TestResult(a.getTransitionCapacity(), 2), counter);
-  	printTestCase("Ensuring that 'labelLength' was left at '1'", new TestResult(a.getLabelLength(), 1), counter);
-    printTestCase("Ensuring that 'nControllers' was left at '1'", new TestResult(a.getNumberOfControllers(), 1), counter);
-    printTestCase("Ensuring that 'nBytesPerEventID' was initialized to '1'", new TestResult(a.getSizeOfEventID(), 1), counter);
-  	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '1'", new TestResult(a.getSizeOfStateID(), 1), counter);
-  	printTestCase("Ensuring that 'nBytesPerState' was initialized to '6'", new TestResult(a.getSizeOfState(), 6), counter);
-    a.closeFiles();
+  	automaton = saveAndLoadAutomaton(new Automaton(255, 255, 2, 1, 1, true));
+    printTestCase("Ensuring that 'eventCapacity' was left at '255'", new TestResult(automaton.getEventCapacity(), 255), counter);
+  	printTestCase("Ensuring that 'stateCapacity' was left at '255'", new TestResult(automaton.getStateCapacity(), 255), counter);
+  	printTestCase("Ensuring that 'transitionCapacity' was left at '2'", new TestResult(automaton.getTransitionCapacity(), 2), counter);
+  	printTestCase("Ensuring that 'labelLength' was left at '1'", new TestResult(automaton.getLabelLength(), 1), counter);
+    printTestCase("Ensuring that 'nControllers' was left at '1'", new TestResult(automaton.getNumberOfControllers(), 1), counter);
+    printTestCase("Ensuring that 'nBytesPerEventID' was initialized to '1'", new TestResult(automaton.getSizeOfEventID(), 1), counter);
+  	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '1'", new TestResult(automaton.getSizeOfStateID(), 1), counter);
+  	printTestCase("Ensuring that 'nBytesPerState' was initialized to '6'", new TestResult(automaton.getSizeOfState(), 6), counter);
+    automaton.closeFiles();
 
   	printTestOutput("Instantiating empty automaton (Event capacity: 256, State capacity: 256, Transition capacity: 1, Label length: Automaton.MAX_LABEL_LENGTH, Number of controllers: Automaton.MAX_NUMBER_OF_CONTROLLERS)...", 3);
-  	a = new Automaton(256, 256, 1, Automaton.MAX_LABEL_LENGTH, Automaton.MAX_NUMBER_OF_CONTROLLERS, true);
-    printTestCase("Ensuring that 'eventCapacity' was increased to '65535'", new TestResult(a.getEventCapacity(), 65535), counter);
-  	printTestCase("Ensuring that 'stateCapacity' was increased to '65535'", new TestResult(a.getStateCapacity(), 65535), counter);
-  	printTestCase("Ensuring that 'transitionCapacity' was left at '1'", new TestResult(a.getTransitionCapacity(), 1), counter);
-  	printTestCase("Ensuring that 'labelLength' was left at 'Automaton.MAX_LABEL_LENGTH'", new TestResult(a.getLabelLength(), Automaton.MAX_LABEL_LENGTH), counter);
-    printTestCase("Ensuring that 'nControllers' was left at 'Automaton.MAX_NUMBER_OF_CONTROLLERS'", new TestResult(a.getNumberOfControllers(), Automaton.MAX_NUMBER_OF_CONTROLLERS), counter);
-    printTestCase("Ensuring that 'nBytesPerEventID' was initialized to '2'", new TestResult(a.getSizeOfEventID(), 2), counter);
-  	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '2'", new TestResult(a.getSizeOfStateID(), 2), counter);
-  	printTestCase("Ensuring that 'nBytesPerState' was initialized to '105'", new TestResult(a.getSizeOfState(), 105), counter);
-    a.closeFiles();
+  	automaton = saveAndLoadAutomaton(new Automaton(256, 256, 1, Automaton.MAX_LABEL_LENGTH, Automaton.MAX_NUMBER_OF_CONTROLLERS, true));
+    printTestCase("Ensuring that 'eventCapacity' was increased to '65535'", new TestResult(automaton.getEventCapacity(), 65535), counter);
+  	printTestCase("Ensuring that 'stateCapacity' was increased to '65535'", new TestResult(automaton.getStateCapacity(), 65535), counter);
+  	printTestCase("Ensuring that 'transitionCapacity' was left at '1'", new TestResult(automaton.getTransitionCapacity(), 1), counter);
+  	printTestCase("Ensuring that 'labelLength' was left at 'Automaton.MAX_LABEL_LENGTH'", new TestResult(automaton.getLabelLength(), Automaton.MAX_LABEL_LENGTH), counter);
+    printTestCase("Ensuring that 'nControllers' was left at 'Automaton.MAX_NUMBER_OF_CONTROLLERS'", new TestResult(automaton.getNumberOfControllers(), Automaton.MAX_NUMBER_OF_CONTROLLERS), counter);
+    printTestCase("Ensuring that 'nBytesPerEventID' was initialized to '2'", new TestResult(automaton.getSizeOfEventID(), 2), counter);
+  	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '2'", new TestResult(automaton.getSizeOfStateID(), 2), counter);
+  	printTestCase("Ensuring that 'nBytesPerState' was initialized to '105'", new TestResult(automaton.getSizeOfState(), 105), counter);
+    automaton.closeFiles();
 
   	printTestOutput("Instantiating empty automaton (Event capacity: Integer.MAX_VALUE, State capacity: Long.MAX_VALUE, Transition capacity: Integer.MAX_VALUE, Label length: Automaton.MAX_LABEL_LENGTH + 1)...", 3);
-  	a = new Automaton(Integer.MAX_VALUE, Long.MAX_VALUE, Integer.MAX_VALUE, Automaton.MAX_LABEL_LENGTH + 1, Automaton.MAX_NUMBER_OF_CONTROLLERS + 1, true);
-    printTestCase("Ensuring that 'eventCapacity' remained at 'Integer.MAX_VALUE'", new TestResult(a.getEventCapacity(), Integer.MAX_VALUE), counter);
-  	printTestCase("Ensuring that 'stateCapacity' remained at 'Long.MAX_VALUE'", new TestResult(a.getStateCapacity(), Long.MAX_VALUE), counter);
-  	printTestCase("Ensuring that 'transitionCapacity' remained at 'Integer.MAX_VALUE'", new TestResult(a.getTransitionCapacity(), Integer.MAX_VALUE), counter);
-  	printTestCase("Ensuring that 'labelLength' was reduced to 'Automaton.MAX_LABEL_LENGTH'", new TestResult(a.getLabelLength(), Automaton.MAX_LABEL_LENGTH), counter);
-    printTestCase("Ensuring that 'nControllers' was reduced to 'Automaton.MAX_NUMBER_OF_CONTROLLERS'", new TestResult(a.getNumberOfControllers(), Automaton.MAX_NUMBER_OF_CONTROLLERS), counter);
-    printTestCase("Ensuring that 'nBytesPerEventID' was initialized to '4'", new TestResult(a.getSizeOfEventID(), 4), counter);
-  	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '8'", new TestResult(a.getSizeOfStateID(), 8), counter);
-  	printTestCase("Ensuring that 'nBytesPerState' was initialized to '101 + 12 * Integer.MAX_VALUE'", new TestResult(a.getSizeOfState(), 101 + 12 * (long) Integer.MAX_VALUE), counter);
-    a.closeFiles();
+  	automaton = saveAndLoadAutomaton(new Automaton(Integer.MAX_VALUE, Long.MAX_VALUE, Integer.MAX_VALUE, Automaton.MAX_LABEL_LENGTH + 1, Automaton.MAX_NUMBER_OF_CONTROLLERS + 1, true));
+    printTestCase("Ensuring that 'eventCapacity' remained at 'Integer.MAX_VALUE'", new TestResult(automaton.getEventCapacity(), Integer.MAX_VALUE), counter);
+  	printTestCase("Ensuring that 'stateCapacity' remained at 'Long.MAX_VALUE'", new TestResult(automaton.getStateCapacity(), Long.MAX_VALUE), counter);
+  	printTestCase("Ensuring that 'transitionCapacity' remained at 'Integer.MAX_VALUE'", new TestResult(automaton.getTransitionCapacity(), Integer.MAX_VALUE), counter);
+  	printTestCase("Ensuring that 'labelLength' was reduced to 'Automaton.MAX_LABEL_LENGTH'", new TestResult(automaton.getLabelLength(), Automaton.MAX_LABEL_LENGTH), counter);
+    printTestCase("Ensuring that 'nControllers' was reduced to 'Automaton.MAX_NUMBER_OF_CONTROLLERS'", new TestResult(automaton.getNumberOfControllers(), Automaton.MAX_NUMBER_OF_CONTROLLERS), counter);
+    printTestCase("Ensuring that 'nBytesPerEventID' was initialized to '4'", new TestResult(automaton.getSizeOfEventID(), 4), counter);
+  	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '8'", new TestResult(automaton.getSizeOfStateID(), 8), counter);
+  	printTestCase("Ensuring that 'nBytesPerState' was initialized to '101 + 12 * Integer.MAX_VALUE'", new TestResult(automaton.getSizeOfState(), 101 + 12 * (long) Integer.MAX_VALUE), counter);
+    automaton.closeFiles();
 
   	printTestOutput("Instantiating empty automaton (Event capacity: Integer.MAX_VALUE - 1, State capacity: Long.MAX_VALUE - 1, Transition capacity: Integer.MAX_VALUE - 1, Label length: 1)...", 3);
-  	a = new Automaton(Integer.MAX_VALUE - 1, Long.MAX_VALUE - 1, Integer.MAX_VALUE - 1, 1, 1, true);
-    printTestCase("Ensuring that 'eventCapacity' was increased to 'Integer.MAX_VALUE'", new TestResult(a.getEventCapacity(), Integer.MAX_VALUE), counter);
-  	printTestCase("Ensuring that 'stateCapacity' was increased to 'Long.MAX_VALUE'", new TestResult(a.getStateCapacity(), Long.MAX_VALUE), counter);
-  	printTestCase("Ensuring that 'transitionCapacity' remained at 'Integer.MAX_VALUE - 1'", new TestResult(a.getTransitionCapacity(), Integer.MAX_VALUE - 1), counter);
-    printTestCase("Ensuring that 'nBytesPerEventID' was initialized to '4'", new TestResult(a.getSizeOfEventID(), 4), counter);
-  	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '8'", new TestResult(a.getSizeOfStateID(), 8), counter);
-  	printTestCase("Ensuring that 'nBytesPerState' was initialized to '2 + 12 * (Integer.MAX_VALUE - 1)'", new TestResult(a.getSizeOfState(), 2 + 12 * (long) (Integer.MAX_VALUE - 1)), counter);
-    a.closeFiles();
+  	automaton = saveAndLoadAutomaton(new Automaton(Integer.MAX_VALUE - 1, Long.MAX_VALUE - 1, Integer.MAX_VALUE - 1, 1, 1, true));
+    printTestCase("Ensuring that 'eventCapacity' was increased to 'Integer.MAX_VALUE'", new TestResult(automaton.getEventCapacity(), Integer.MAX_VALUE), counter);
+  	printTestCase("Ensuring that 'stateCapacity' was increased to 'Long.MAX_VALUE'", new TestResult(automaton.getStateCapacity(), Long.MAX_VALUE), counter);
+  	printTestCase("Ensuring that 'transitionCapacity' remained at 'Integer.MAX_VALUE - 1'", new TestResult(automaton.getTransitionCapacity(), Integer.MAX_VALUE - 1), counter);
+    printTestCase("Ensuring that 'nBytesPerEventID' was initialized to '4'", new TestResult(automaton.getSizeOfEventID(), 4), counter);
+  	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '8'", new TestResult(automaton.getSizeOfStateID(), 8), counter);
+  	printTestCase("Ensuring that 'nBytesPerState' was initialized to '2 + 12 * (Integer.MAX_VALUE - 1)'", new TestResult(automaton.getSizeOfState(), 2 + 12 * (long) (Integer.MAX_VALUE - 1)), counter);
+    automaton.closeFiles();
 
   	printTestOutput("Instantiating empty automaton (Event capacity: (Integer.MAX_VALUE >> 7) + 1, State capacity: (Long.MAX_VALUE >> 7) + 1, Transition capacity: 1, Label length: 1)...", 3);
-  	a = new Automaton((Integer.MAX_VALUE >> 7) + 1, (Long.MAX_VALUE >> 7) + 1, 1, 1, 1, true);
-    printTestCase("Ensuring that 'eventCapacity' was increased to 'Integer.MAX_VALUE'", new TestResult(a.getEventCapacity(), Integer.MAX_VALUE), counter);
-  	printTestCase("Ensuring that 'stateCapacity' was increased to 'Long.MAX_VALUE'", new TestResult(a.getStateCapacity(), Long.MAX_VALUE), counter);
-    a.closeFiles();
+  	automaton = saveAndLoadAutomaton(new Automaton((Integer.MAX_VALUE >> 7) + 1, (Long.MAX_VALUE >> 7) + 1, 1, 1, 1, true));
+    printTestCase("Ensuring that 'eventCapacity' was increased to 'Integer.MAX_VALUE'", new TestResult(automaton.getEventCapacity(), Integer.MAX_VALUE), counter);
+  	printTestCase("Ensuring that 'stateCapacity' was increased to 'Long.MAX_VALUE'", new TestResult(automaton.getStateCapacity(), Long.MAX_VALUE), counter);
+    automaton.closeFiles();
 
   	printTestOutput("Instantiating empty automaton (Event capacity: Integer.MAX_VALUE >> 7, State capacity: Long.MAX_VALUE >> 7, Transition capacity: 1, Label length: 1)...", 3);
-  	a = new Automaton(Integer.MAX_VALUE >> 7, Long.MAX_VALUE >> 7, 1, 1, 1, true);
-    printTestCase("Ensuring that 'eventCapacity' remained at 'Integer.MAX_VALUE >> 7'", new TestResult(a.getEventCapacity(), Integer.MAX_VALUE >> 7), counter);
-  	printTestCase("Ensuring that 'stateCapacity' remained at 'Long.MAX_VALUE >> 7'", new TestResult(a.getStateCapacity(), Long.MAX_VALUE >> 7), counter);
-  	a.closeFiles();
+  	automaton = saveAndLoadAutomaton(new Automaton(Integer.MAX_VALUE >> 7, Long.MAX_VALUE >> 7, 1, 1, 1, true));
+    printTestCase("Ensuring that 'eventCapacity' remained at 'Integer.MAX_VALUE >> 7'", new TestResult(automaton.getEventCapacity(), Integer.MAX_VALUE >> 7), counter);
+  	printTestCase("Ensuring that 'stateCapacity' remained at 'Long.MAX_VALUE >> 7'", new TestResult(automaton.getStateCapacity(), Long.MAX_VALUE >> 7), counter);
+  	automaton.closeFiles();
 
   		/* Print summary of this test routine */
 
@@ -399,36 +393,30 @@ public class TestAutomata {
     printTestOutput("BASIC GUI INPUT: ", 2);
 
     printTestOutput("Instantiating automaton from simple GUI input code...", 3);
-    Automaton a = AutomatonGenerator.generateFromGUICode(
+    Automaton automaton = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+      new Automaton(),
       "a,T,T\nb,T,F\nc,F,T\nd,F,F", // Events
       "e,T\nf,F", // States  
       "e,a,f\nf,b,e", // Transitions
-      1, // Number of controllers
-      false, // We do not want it to be verbose
-      null, // Use temporary files
-      null // Use temporary files
-    );
-    a.generateInputForGUI();
-    printTestCase("Ensuring the event input was saved and loaded correctly", new TestResult(a.getEventInput(), "a,T,T\nb,T,F\nc,F,T\nd,F,F"), counter);
-    printTestCase("Ensuring the state input was saved and loaded correctly", new TestResult(a.getStateInput(), "e,T\nf,F"), counter);
-    printTestCase("Ensuring the transition input was saved and loaded correctly", new TestResult(a.getTransitionInput(), "e,a,f\nf,b,e"), counter);
-    a.closeFiles();
+      false // We do not want it to be verbose
+    ));
+    automaton.generateInputForGUI();
+    printTestCase("Ensuring the event input was saved and loaded correctly", new TestResult(automaton.getEventInput(), "a,T,T\nb,T,F\nc,F,T\nd,F,F"), counter);
+    printTestCase("Ensuring the state input was saved and loaded correctly", new TestResult(automaton.getStateInput(), "e,T\nf,F"), counter);
+    printTestCase("Ensuring the transition input was saved and loaded correctly", new TestResult(automaton.getTransitionInput(), "e,a,f\nf,b,e"), counter);
 
     printTestOutput("Instantiating automaton from GUI input code with duplicate labels, omitted optional parameters, and an initial state...", 3);
-    a = AutomatonGenerator.generateFromGUICode(
+    automaton = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+      new Automaton(),
       "a\nb,F,F\na,F,F\nb", // Events
       "@c\nc,F", // States  
       "", // Transitions
-      1, // Number of controllers
-      false, // We do not want it to be verbose
-      null, // Use temporary files
-      null // Use temporary files
-    );
-    a.generateInputForGUI();
-    printTestCase("Ensuring the event input was saved and loaded correctly", new TestResult(a.getEventInput(), "a,T,T\nb,F,F"), counter);
-    printTestCase("Ensuring the state input was saved and loaded correctly", new TestResult(a.getStateInput(), "@c,T"), counter);
-    printTestCase("Ensuring the transition input was saved and loaded correctly", new TestResult(a.getTransitionInput(), ""), counter);
-    a.closeFiles();
+      false // We do not want it to be verbose
+    ));
+    automaton.generateInputForGUI();
+    printTestCase("Ensuring the event input was saved and loaded correctly", new TestResult(automaton.getEventInput(), "a,T,T\nb,F,F"), counter);
+    printTestCase("Ensuring the state input was saved and loaded correctly", new TestResult(automaton.getStateInput(), "@c,T"), counter);
+    printTestCase("Ensuring the transition input was saved and loaded correctly", new TestResult(automaton.getTransitionInput(), ""), counter);
 
       /* Print summary of this test routine */
 
@@ -451,18 +439,16 @@ public class TestAutomata {
     printTestOutput("CO-ACCESSIBLE OPERATION: ", 2);
 
     printTestOutput("Instantiating automaton from Figure 2.1...", 3);
-    Automaton fig2_12 = AutomatonGenerator.generateFromGUICode(
+    Automaton fig2_12 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+      new Automaton(new File("fig2_12.hdr"), new File("fig2_12.bdy"), 1),
       "a,T,T\nb,T,T\ng,T,T", // Events
       "@zero,F\none,F\ntwo,T\nthree,F\nfour,F\nfive,F\nsix,F", // States 
       "zero,a,one\none,a,three\none,b,two\none,g,five\ntwo,g,zero\nthree,b,four\nfour,g,four\nfour,a,three\nsix,a,three\nsix,b,two", // Transitions
-      1, // Number of controllers
-      false, // We do not want it to be verbose
-      new File("fig2_12.hdr"),
-      new File("fig2_12.bdy")
-    );
+      false // We do not want it to be verbose
+    ));
 
     printTestOutput("Taking the co-accessible part of Figure 2.12 (and comparing the result to the automaton in Figure 2.13a)...", 3);
-    Automaton result = fig2_12.coaccessible(new File("coaccessible.hdr"), new File("coaccessible.bdy"));
+    Automaton result = saveAndLoadAutomaton(fig2_12.coaccessible(new File("coaccessible.hdr"), new File("coaccessible.bdy")));
 
     result.generateInputForGUI();
     printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T\ng,T,T"), counter);
@@ -474,7 +460,7 @@ public class TestAutomata {
     printTestOutput("TRIM OPERATION: ", 2);
 
     printTestOutput("Trimming the automaton in Figure 2.12 (and comparing the result to the automaton in Figure 2.13b)...", 3);
-    result = fig2_12.trim(new File("trim.hdr"), new File("trim.bdy"));
+    result = saveAndLoadAutomaton(fig2_12.trim(new File("trim.hdr"), new File("trim.bdy")));
 
     result.generateInputForGUI();
     printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T\ng,T,T"), counter);
@@ -486,18 +472,16 @@ public class TestAutomata {
     printTestOutput("COMPLEMENT OPERATION: ", 2);
 
     printTestOutput("Instantiating an automaton...", 3);
-    Automaton complementExample = AutomatonGenerator.generateFromGUICode(
+    Automaton complementExample = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+      new Automaton(new File("complementExample.hdr"), new File("complementExample.bdy"), 3),
       "a1,TFF,FFF\na2,TFF,FFF\nb1,FTF,FFF\nb2,FTF,FFF\nc1,FFT,FFF\nc2,FFT,FFF\no,FFF,TTT", // Events
       "@0,F\n1,F\n2,F\n3,F\n4,F\n5,F\n6,F\n7,F\n8,F\n9,F\n10,F\n11,F\n12,F\n13,F\n14,F\n15,F\n16,F\n17,F\n18,F\n19,F", // States 
       "0,a1,4\n0,b2,3\n0,b1,2\n0,c1,1\n1,b2,6\n1,a2,5\n2,a1,7\n3,c2,8\n4,b1,9\n5,b1,10\n6,a1,11\n7,c2,12\n8,a2,13\n9,c1,14\n10,o,15\n11,o,16\n12,o,17\n13,o,18:BAD\n14,o,19:BAD", // Transitions
-      3, // Number of controllers
-      false, // We do not want it to be verbose
-      new File("complementExample.hdr"),
-      new File("complementExample.bdy")
-    );
+      false // We do not want it to be verbose
+    ));
 
     printTestOutput("Taking the complement of the automaton...", 3);
-    result = complementExample.complement(new File("complement.hdr"), new File("complement.bdy"));
+    result = saveAndLoadAutomaton(complementExample.complement(new File("complement.hdr"), new File("complement.bdy")));
 
     result.generateInputForGUI();
     printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a1,TFF,FFF\na2,TFF,FFF\nb1,FTF,FFF\nb2,FTF,FFF\nc1,FFT,FFF\nc2,FFT,FFF\no,FFF,TTT"), counter);
@@ -509,30 +493,26 @@ public class TestAutomata {
     printTestOutput("INTERSECTION OPERATION: ", 2);
 
     printTestOutput("Instantiating automaton from Figure 2.1...", 3);
-    Automaton fig2_1 = AutomatonGenerator.generateFromGUICode(
+    Automaton fig2_1 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+      new Automaton(new File("fig2_1.hdr"), new File("fig2_1.bdy"), 1),
       "a,T,T\nb,T,T\ng,T,T", // Events
       "@x,T\ny,F\nz,T", // States 
       "x,a,x\nx,g,z\ny,b,y\ny,a,x\nz,b,z\nz,a,y\nz,g,y", // Transitions
-      1, // Number of controllers
-      false, // We do not want it to be verbose
-      new File("fig2_1.hdr"),
-      new File("fig2_1.bdy")
-    );
+      false // We do not want it to be verbose
+    ));
     printTestOutput("Instantiating automaton from Figure 2.2...", 3);
-    Automaton fig2_2 = AutomatonGenerator.generateFromGUICode(
+    Automaton fig2_2 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+      new Automaton(new File("fig2_2.hdr"), new File("fig2_2.bdy"), 1),
       "a,T,T\nb,T,T", // Events
       "@zero,F\none,T", // States 
       "zero,b,zero\nzero,a,one\none,a,one\none,b,zero", // Transitions
-      1, // Number of controllers
-      false, // We do not want it to be verbose
-      new File("fig2_2.hdr"),
-      new File("fig2_2.bdy")
-    );
+      false // We do not want it to be verbose
+    ));
 
     printTestOutput("Taking the intersection of Figure 2.1 and Figure 2.2 (and comparing the result to the first automaton in Figure 2.15)...", 3);
 
     try {
-      result = Automaton.intersection(fig2_1, fig2_2, new File("intersection.hdr"), new File("intersection.bdy"));
+      result = saveAndLoadAutomaton(Automaton.intersection(fig2_1, fig2_2, new File("intersection.hdr"), new File("intersection.bdy")));
       result.generateInputForGUI();
       printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T"), counter);
       printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@x_zero,F\nx_one,T"), counter);
@@ -546,20 +526,18 @@ public class TestAutomata {
     }
 
     printTestOutput("Instantiating automaton from Figure 2.13(b)...", 3);
-    Automaton fig2_13b = AutomatonGenerator.generateFromGUICode(
+    Automaton fig2_13b = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+      new Automaton(new File("fig2_13b.hdr"), new File("fig2_13b.bdy"), 1),
       "a,T,T\nb,T,T\ng,T,T", // Events
       "@zero,F\none,F\ntwo,T", // States 
       "zero,a,one\none,b,two\ntwo,g,zero", // Transitions
-      1, // Number of controllers
-      false, // We do not want it to be verbose
-      new File("fig2_13b.hdr"),
-      new File("fig2_13b.bdy")
-    );
+      false // We do not want it to be verbose
+    ));
 
     printTestOutput("Taking the intersection of Figure 2.2 and Figure 2.13(b) (and comparing the result to the second automaton in Figure 2.15)...", 3);
 
     try {
-      result = Automaton.intersection(fig2_2, fig2_13b, new File("intersection.hdr"), new File("intersection.bdy"));
+      result = saveAndLoadAutomaton(Automaton.intersection(fig2_2, fig2_13b, new File("intersection.hdr"), new File("intersection.bdy")));
       result.generateInputForGUI();
       printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T"), counter);
       printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@zero_zero,F\none_one,F\nzero_two,F"), counter);
@@ -573,30 +551,26 @@ public class TestAutomata {
     }
 
     printTestOutput("Instantiating the first automaton from Figure 2.20...", 3);
-    Automaton fig2_20a = AutomatonGenerator.generateFromGUICode(
+    Automaton fig2_20a = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+      new Automaton(new File("fig2_20a.hdr"), new File("fig2_20a.bdy"), 1),
       "a1\na2\nb\nr", // Events
       "@x1,F\nx2,F\nx3,T", // States 
       "x1,a1,x2\nx1,a2,x2\nx2,b,x3\nx3,r,x1", // Transitions
-      1, // Number of controllers
-      false, // We do not want it to be verbose
-      new File("fig2_20a.hdr"),
-      new File("fig2_20a.bdy")
-    );
+      false // We do not want it to be verbose
+    ));
 
     printTestOutput("Instantiating the second automaton from Figure 2.20...", 3);
-    Automaton fig2_20b = AutomatonGenerator.generateFromGUICode(
+    Automaton fig2_20b = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+      new Automaton(new File("fig2_20b.hdr"), new File("fig2_20b.bdy"), 1),
       "a1\nb\nc1\nr\na2\nc2", // Events
       "@y1,F\ny2,F\ny3,F\ny4,F\ny5,F\ny6,F", // States 
       "y1,a1,y2\ny2,b,y4\ny4,r,y1\ny4,c1,y6\ny6,r,y1\ny1,a2,y3\ny3,b,y5\ny5,c2,y6\ny5,r,y1", // Transitions
-      1, // Number of controllers
-      false, // We do not want it to be verbose
-      new File("fig2_20b.hdr"),
-      new File("fig2_20b.bdy")
-    );
+      false // We do not want it to be verbose
+    ));
 
     printTestOutput("Taking the intersection of the first two automata in Figure 2.20 (and comparing the result to the third automaton in Figure 2.20)...", 3);
     try {
-      result = Automaton.intersection(fig2_20a, fig2_20b, new File("intersection.hdr"), new File("intersection.bdy"));
+      result = saveAndLoadAutomaton(Automaton.intersection(fig2_20a, fig2_20b, new File("intersection.hdr"), new File("intersection.bdy")));
       result.generateInputForGUI();
       printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a1,T,T\na2,T,T\nb,T,T\nr,T,T"), counter);
       printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@x1_y1,F\nx2_y2,F\nx2_y3,F\nx3_y4,F\nx3_y5,F"), counter);
@@ -616,7 +590,7 @@ public class TestAutomata {
     printTestOutput("Taking the union of Figure 2.1 and Figure 2.2 (and comparing the result to the automaton in Figure 2.16)...", 3);
 
     try {
-      result = Automaton.union(fig2_1, fig2_2, new File("union.hdr"), new File("union.bdy"));
+      result = saveAndLoadAutomaton(Automaton.union(fig2_1, fig2_2, new File("union.hdr"), new File("union.bdy")));
       result.generateInputForGUI();
       printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T\ng,T,T"), counter);
       printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@x_zero,F\ny_zero,F\nz_zero,F\nx_one,T\ny_one,F\nz_one,T"), counter);
@@ -630,47 +604,41 @@ public class TestAutomata {
     }
 
     printTestOutput("Instantiating the first automaton from Figure 2.17...", 3);
-    Automaton fig2_17a = AutomatonGenerator.generateFromGUICode(
+    Automaton fig2_17a = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+      new Automaton(new File("fig2_17a.hdr"), new File("fig2_17a.bdy"), 1),
       "a,T,T\nb,T,T\nc,T,T", // Events
       "@one,T\ntwo,F", // States 
       "one,c,one\none,a,two\ntwo,b,two", // Transitions
-      1, // Number of controllers
-      false, // We do not want it to be verbose
-      new File("fig2_17a.hdr"),
-      new File("fig2_17a.bdy")
-    );
+      false // We do not want it to be verbose
+    ));
 
     printTestOutput("Instantiating the second automaton from Figure 2.17...", 3);
-    Automaton fig2_17b = AutomatonGenerator.generateFromGUICode(
+    Automaton fig2_17b = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+      new Automaton(new File("fig2_17b.hdr"), new File("fig2_17b.bdy"), 1),
       "b,T,T\na,T,T\nd,T,T", // Events
       "@A,T\nB,F", // States 
       "A,b,A\nA,a,B\nB,d,B", // Transitions
-      1, // Number of controllers
-      false, // We do not want it to be verbose
-      new File("fig2_17b.hdr"),
-      new File("fig2_17b.bdy")
-    );
+      false // We do not want it to be verbose
+    ));
 
     printTestOutput("Instantiating the third automaton from Figure 2.17...", 3);
-    Automaton fig2_17c = AutomatonGenerator.generateFromGUICode(
+    Automaton fig2_17c = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+      new Automaton(new File("fig2_17c.hdr"), new File("fig2_17c.bdy"), 1),
       "c,T,T\nb,T,T\na,T,T", // Events
       "@D,T\nE,F", // States 
       "D,c,D\nD,b,E\nE,a,E", // Transitions
-      1, // Number of controllers
-      false, // We do not want it to be verbose
-      new File("fig2_17c.hdr"),
-      new File("fig2_17c.bdy")
-    );
+      false // We do not want it to be verbose
+    ));
 
     printTestOutput("Taking the union of the three automata in Figure 2.17 (and comparing the result to the automaton described in Example 2.17)...", 3);
     
     try {
-      result = Automaton.union(
-        Automaton.union(fig2_17a, fig2_17b, new File("union1.hdr"), new File("union1.bdy")),
+      result = saveAndLoadAutomaton(Automaton.union(
+        saveAndLoadAutomaton(Automaton.union(fig2_17a, fig2_17b, new File("union1.hdr"), new File("union1.bdy"))),
         fig2_17c,
         new File("union2.hdr"),
         new File("union2.bdy")
-      );
+      ));
       result.generateInputForGUI();
       printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T\nc,T,T\nd,T,T"), counter);
       printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@one_A_D,T"), counter);
@@ -688,34 +656,31 @@ public class TestAutomata {
     printTestOutput("SYNCHRONIZED COMPOSITION OPERATION: ", 2);
 
     printTestOutput("Instantiating an automaton...", 3);
-    Automaton synchronizedCompositionExample = AutomatonGenerator.generateFromGUICode(
+    Automaton synchronizedCompositionExample = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+      new Automaton(new File("synchronizedCompositionExample.hdr"), new File("synchronizedCompositionExample.bdy"), 2),
       "a,TF,TF\nb,FT,FT\no,TT,TT", // Events
       "@1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T", // States
       "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD", // Transitions
-      2, // Number of controllers
-      false, // We do not want it to be verbose
-      new File("synchronizedCompositionExample.hdr"),
-      new File("synchronizedCompositionExample.bdy")
-    );
+      false // We do not want it to be verbose
+    ));
 
     printTestOutput("Taking the synchronized composition of an automaton...", 3);
-    result = synchronizedCompositionExample.synchronizedComposition(new File("synchronizedComposition.hdr"), new File("synchronizedComposition.bdy"));
-
-    result.generateInputForGUI();
-    printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "<a_a_*>,T,T\n<b_*_b>,T,T\n<*_b_*>,T,T\n<*_*_a>,T,T\n<o_o_o>,T,T"), counter);
-    printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@1_1_1,F\n1_1_2,F\n1_3_1,F\n1_3_2,F\n2_2_1,F\n2_2_2,F\n2_4_1,F\n2_4_2,F\n2_5_1,F\n2_5_2,F\n3_1_3,F\n3_1_4,F\n3_1_5,F\n3_3_3,F\n3_3_4,F\n3_3_5,F\n4_2_3,F\n4_2_4,F\n4_2_5,F\n4_4_3,F\n4_4_4,F\n4_4_5,F\n4_5_3,F\n4_5_4,F\n4_5_5,F\n5_2_3,F\n5_2_4,F\n5_2_5,F\n5_4_3,F\n5_4_4,F\n5_4_5,F\n5_5_3,F\n5_5_4,F\n5_5_5,F\n6_6_6,F\n6_6_7,F\n6_7_6,F\n6_7_7,F\n7_6_6,F\n7_6_7,F\n7_7_6,F\n7_7_7,F"), counter);
-    printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "1_1_1,<a_a_*>,2_2_1\n1_1_1,<b_*_b>,3_1_3\n1_1_1,<*_b_*>,1_3_1\n1_1_1,<*_*_a>,1_1_2\n1_1_2,<a_a_*>,2_2_2\n1_1_2,<b_*_b>,3_1_4\n1_1_2,<*_b_*>,1_3_2\n1_3_1,<a_a_*>,2_5_1\n1_3_1,<b_*_b>,3_3_3\n1_3_1,<*_*_a>,1_3_2\n1_3_2,<a_a_*>,2_5_2\n1_3_2,<b_*_b>,3_3_4\n2_2_1,<b_*_b>,4_2_3\n2_2_1,<*_b_*>,2_4_1\n2_2_1,<*_*_a>,2_2_2\n2_2_2,<b_*_b>,4_2_4\n2_2_2,<*_b_*>,2_4_2\n2_4_1,<b_*_b>,4_4_3\n2_4_1,<*_*_a>,2_4_2\n2_4_2,<b_*_b>,4_4_4\n2_5_1,<b_*_b>,4_5_3\n2_5_1,<*_*_a>,2_5_2\n2_5_2,<b_*_b>,4_5_4\n3_1_3,<a_a_*>,5_2_3\n3_1_3,<*_b_*>,3_3_3\n3_1_3,<*_*_a>,3_1_5\n3_1_4,<a_a_*>,5_2_4\n3_1_4,<*_b_*>,3_3_4\n3_1_5,<a_a_*>,5_2_5\n3_1_5,<*_b_*>,3_3_5\n3_3_3,<a_a_*>,5_5_3\n3_3_3,<*_*_a>,3_3_5\n3_3_4,<a_a_*>,5_5_4\n3_3_5,<a_a_*>,5_5_5\n4_2_3,<*_b_*>,4_4_3\n4_2_3,<*_*_a>,4_2_5\n4_2_4,<*_b_*>,4_4_4\n4_2_5,<*_b_*>,4_4_5\n4_4_3,<*_*_a>,4_4_5\n4_4_4,<o_o_o>,6_6_6\n4_4_5,<o_o_o>,6_6_7\n4_5_3,<*_*_a>,4_5_5\n4_5_4,<o_o_o>,6_7_6\n4_5_5,<o_o_o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*_b_*>,5_4_3\n5_2_3,<*_*_a>,5_2_5\n5_2_4,<*_b_*>,5_4_4\n5_2_5,<*_b_*>,5_4_5\n5_4_3,<*_*_a>,5_4_5\n5_4_4,<o_o_o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o_o_o>,7_6_7\n5_5_3,<*_*_a>,5_5_5\n5_5_4,<o_o_o>,7_7_6\n5_5_5,<o_o_o>,7_7_7"), counter);
+    UStructure uStructure = saveAndLoadUStructure(synchronizedCompositionExample.synchronizedComposition(new File("synchronizedComposition.hdr"), new File("synchronizedComposition.bdy")));
+    uStructure.generateInputForGUI();
+    printTestCase("Ensuring the events are correct", new TestResult(uStructure.getEventInput(), "<a_a_*>,T,T\n<b_*_b>,T,T\n<*_b_*>,T,T\n<*_*_a>,T,T\n<o_o_o>,T,T"), counter);
+    printTestCase("Ensuring the states are correct", new TestResult(uStructure.getStateInput(), "@1_1_1,F\n1_1_2,F\n1_3_1,F\n1_3_2,F\n2_2_1,F\n2_2_2,F\n2_4_1,F\n2_4_2,F\n2_5_1,F\n2_5_2,F\n3_1_3,F\n3_1_4,F\n3_1_5,F\n3_3_3,F\n3_3_4,F\n3_3_5,F\n4_2_3,F\n4_2_4,F\n4_2_5,F\n4_4_3,F\n4_4_4,F\n4_4_5,F\n4_5_3,F\n4_5_4,F\n4_5_5,F\n5_2_3,F\n5_2_4,F\n5_2_5,F\n5_4_3,F\n5_4_4,F\n5_4_5,F\n5_5_3,F\n5_5_4,F\n5_5_5,F\n6_6_6,F\n6_6_7,F\n6_7_6,F\n6_7_7,F\n7_6_6,F\n7_6_7,F\n7_7_6,F\n7_7_7,F"), counter);
+    printTestCase("Ensuring the transitions are correct", new TestResult(uStructure.getTransitionInput(), "1_1_1,<a_a_*>,2_2_1\n1_1_1,<b_*_b>,3_1_3\n1_1_1,<*_b_*>,1_3_1\n1_1_1,<*_*_a>,1_1_2\n1_1_2,<a_a_*>,2_2_2\n1_1_2,<b_*_b>,3_1_4\n1_1_2,<*_b_*>,1_3_2\n1_3_1,<a_a_*>,2_5_1\n1_3_1,<b_*_b>,3_3_3\n1_3_1,<*_*_a>,1_3_2\n1_3_2,<a_a_*>,2_5_2\n1_3_2,<b_*_b>,3_3_4\n2_2_1,<b_*_b>,4_2_3\n2_2_1,<*_b_*>,2_4_1\n2_2_1,<*_*_a>,2_2_2\n2_2_2,<b_*_b>,4_2_4\n2_2_2,<*_b_*>,2_4_2\n2_4_1,<b_*_b>,4_4_3\n2_4_1,<*_*_a>,2_4_2\n2_4_2,<b_*_b>,4_4_4\n2_5_1,<b_*_b>,4_5_3\n2_5_1,<*_*_a>,2_5_2\n2_5_2,<b_*_b>,4_5_4\n3_1_3,<a_a_*>,5_2_3\n3_1_3,<*_b_*>,3_3_3\n3_1_3,<*_*_a>,3_1_5\n3_1_4,<a_a_*>,5_2_4\n3_1_4,<*_b_*>,3_3_4\n3_1_5,<a_a_*>,5_2_5\n3_1_5,<*_b_*>,3_3_5\n3_3_3,<a_a_*>,5_5_3\n3_3_3,<*_*_a>,3_3_5\n3_3_4,<a_a_*>,5_5_4\n3_3_5,<a_a_*>,5_5_5\n4_2_3,<*_b_*>,4_4_3\n4_2_3,<*_*_a>,4_2_5\n4_2_4,<*_b_*>,4_4_4\n4_2_5,<*_b_*>,4_4_5\n4_4_3,<*_*_a>,4_4_5\n4_4_4,<o_o_o>,6_6_6\n4_4_5,<o_o_o>,6_6_7\n4_5_3,<*_*_a>,4_5_5\n4_5_4,<o_o_o>,6_7_6\n4_5_5,<o_o_o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*_b_*>,5_4_3\n5_2_3,<*_*_a>,5_2_5\n5_2_4,<*_b_*>,5_4_4\n5_2_5,<*_b_*>,5_4_5\n5_4_3,<*_*_a>,5_4_5\n5_4_4,<o_o_o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o_o_o>,7_6_7\n5_5_3,<*_*_a>,5_5_5\n5_5_4,<o_o_o>,7_7_6\n5_5_5,<o_o_o>,7_7_7"), counter);
 
       /* Add Communications Operation Tests */
 
     printTestOutput("ADD COMMUNICATIONS OPERATION: ", 2);
 
     printTestOutput("Add communications to the automaton generated by synchronized composition (Test case for GitHub Issue #9)...", 3);
-    Automaton addCommunications = null;
+    UStructure addCommunications = null;
 
     try {
 
-      addCommunications = result.addCommunications(new File("addCommunications.hdr"), new File("addCommunications.bdy"));
+      addCommunications = saveAndLoadUStructure(uStructure.addCommunications(new File("addCommunications.hdr"), new File("addCommunications.bdy")));
       addCommunications.generateInputForGUI();
       printTestCase("Ensuring the events are correct", new TestResult(addCommunications.getEventInput(), "<a_a_*>,T,T\n<b_*_b>,T,T\n<*_b_*>,T,T\n<*_*_a>,T,T\n<o_o_o>,T,T\n<*_b_a>,T,T\n<b_b_b>,T,T\n<a_a_a>,T,T"), counter);
       printTestCase("Ensuring the states are correct", new TestResult(addCommunications.getStateInput(), "@1_1_1,F\n1_1_2,F\n1_3_1,F\n1_3_2,F\n2_2_1,F\n2_2_2,F\n2_4_1,F\n2_4_2,F\n2_5_1,F\n2_5_2,F\n3_1_3,F\n3_1_4,F\n3_1_5,F\n3_3_3,F\n3_3_4,F\n3_3_5,F\n4_2_3,F\n4_2_4,F\n4_2_5,F\n4_4_3,F\n4_4_4,F\n4_4_5,F\n4_5_3,F\n4_5_4,F\n4_5_5,F\n5_2_3,F\n5_2_4,F\n5_2_5,F\n5_4_3,F\n5_4_4,F\n5_4_5,F\n5_5_3,F\n5_5_4,F\n5_5_5,F\n6_6_6,F\n6_6_7,F\n6_7_6,F\n6_7_7,F\n7_6_6,F\n7_6_7,F\n7_7_6,F\n7_7_7,F"), counter);
@@ -732,20 +697,18 @@ public class TestAutomata {
     }
     
     printTestOutput("Add communications to the same automaton as above (but this time generated by GUI input code)...", 3);
-    printTestOutput("Instantiating an automaton...", 3);
-    Automaton synchronizedComposition = AutomatonGenerator.generateFromGUICode(
+    printTestOutput("Instantiating a U-Structure...", 3);
+    UStructure synchronizedComposition = saveAndLoadUStructure(AutomatonGenerator.generateFromGUICode(
+      new UStructure(new File("synchronizedComposition.hdr"), new File("synchronizedComposition.bdy"), 2),
       "<a_a_*>,T,T\n<b_*_b>,T,T\n<*_b_*>,T,T\n<*_*_a>,T,T\n<o_o_o>,T,T", // Events
       "@1_1_1,F\n1_1_2,F\n1_3_1,F\n1_3_2,F\n2_2_1,F\n2_2_2,F\n2_4_1,F\n2_4_2,F\n2_5_1,F\n2_5_2,F\n3_1_3,F\n3_1_4,F\n3_1_5,F\n3_3_3,F\n3_3_4,F\n3_3_5,F\n4_2_3,F\n4_2_4,F\n4_2_5,F\n4_4_3,F\n4_4_4,F\n4_4_5,F\n4_5_3,F\n4_5_4,F\n4_5_5,F\n5_2_3,F\n5_2_4,F\n5_2_5,F\n5_4_3,F\n5_4_4,F\n5_4_5,F\n5_5_3,F\n5_5_4,F\n5_5_5,F\n6_6_6,F\n6_6_7,F\n6_7_6,F\n6_7_7,F\n7_6_6,F\n7_6_7,F\n7_7_6,F\n7_7_7,F", // States
       "1_1_1,<a_a_*>,2_2_1\n1_1_1,<b_*_b>,3_1_3\n1_1_1,<*_b_*>,1_3_1\n1_1_1,<*_*_a>,1_1_2\n1_1_2,<a_a_*>,2_2_2\n1_1_2,<b_*_b>,3_1_4\n1_1_2,<*_b_*>,1_3_2\n1_3_1,<a_a_*>,2_5_1\n1_3_1,<b_*_b>,3_3_3\n1_3_1,<*_*_a>,1_3_2\n1_3_2,<a_a_*>,2_5_2\n1_3_2,<b_*_b>,3_3_4\n2_2_1,<b_*_b>,4_2_3\n2_2_1,<*_b_*>,2_4_1\n2_2_1,<*_*_a>,2_2_2\n2_2_2,<b_*_b>,4_2_4\n2_2_2,<*_b_*>,2_4_2\n2_4_1,<b_*_b>,4_4_3\n2_4_1,<*_*_a>,2_4_2\n2_4_2,<b_*_b>,4_4_4\n2_5_1,<b_*_b>,4_5_3\n2_5_1,<*_*_a>,2_5_2\n2_5_2,<b_*_b>,4_5_4\n3_1_3,<a_a_*>,5_2_3\n3_1_3,<*_b_*>,3_3_3\n3_1_3,<*_*_a>,3_1_5\n3_1_4,<a_a_*>,5_2_4\n3_1_4,<*_b_*>,3_3_4\n3_1_5,<a_a_*>,5_2_5\n3_1_5,<*_b_*>,3_3_5\n3_3_3,<a_a_*>,5_5_3\n3_3_3,<*_*_a>,3_3_5\n3_3_4,<a_a_*>,5_5_4\n3_3_5,<a_a_*>,5_5_5\n4_2_3,<*_b_*>,4_4_3\n4_2_3,<*_*_a>,4_2_5\n4_2_4,<*_b_*>,4_4_4\n4_2_5,<*_b_*>,4_4_5\n4_4_3,<*_*_a>,4_4_5\n4_4_4,<o_o_o>,6_6_6\n4_4_5,<o_o_o>,6_6_7\n4_5_3,<*_*_a>,4_5_5\n4_5_4,<o_o_o>,6_7_6\n4_5_5,<o_o_o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*_b_*>,5_4_3\n5_2_3,<*_*_a>,5_2_5\n5_2_4,<*_b_*>,5_4_4\n5_2_5,<*_b_*>,5_4_5\n5_4_3,<*_*_a>,5_4_5\n5_4_4,<o_o_o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o_o_o>,7_6_7\n5_5_3,<*_*_a>,5_5_5\n5_5_4,<o_o_o>,7_7_6\n5_5_5,<o_o_o>,7_7_7", // Transitions
-      1, // Number of controllers
-      false, // We do not want it to be verbose
-      new File("synchronizedComposition.hdr"),
-      new File("synchronizedComposition.bdy")
-    );
+      false // We do not want it to be verbose
+    ));
 
     try {
 
-      addCommunications = synchronizedComposition.addCommunications(new File("addCommunications.hdr"), new File("addCommunications.bdy"));
+      addCommunications = saveAndLoadUStructure(synchronizedComposition.addCommunications(new File("addCommunications.hdr"), new File("addCommunications.bdy")));
       addCommunications.generateInputForGUI();
       printTestCase("Ensuring the events are correct", new TestResult(addCommunications.getEventInput(), "<a_a_*>,T,T\n<b_*_b>,T,T\n<*_b_*>,T,T\n<*_*_a>,T,T\n<o_o_o>,T,T\n<*_b_a>,T,T\n<b_b_b>,T,T\n<a_a_a>,T,T"), counter);
       printTestCase("Ensuring the states are correct", new TestResult(addCommunications.getStateInput(), "@1_1_1,F\n1_1_2,F\n1_3_1,F\n1_3_2,F\n2_2_1,F\n2_2_2,F\n2_4_1,F\n2_4_2,F\n2_5_1,F\n2_5_2,F\n3_1_3,F\n3_1_4,F\n3_1_5,F\n3_3_3,F\n3_3_4,F\n3_3_5,F\n4_2_3,F\n4_2_4,F\n4_2_5,F\n4_4_3,F\n4_4_4,F\n4_4_5,F\n4_5_3,F\n4_5_4,F\n4_5_5,F\n5_2_3,F\n5_2_4,F\n5_2_5,F\n5_4_3,F\n5_4_4,F\n5_4_5,F\n5_5_3,F\n5_5_4,F\n5_5_5,F\n6_6_6,F\n6_6_7,F\n6_7_6,F\n6_7_7,F\n7_6_6,F\n7_6_7,F\n7_7_6,F\n7_7_7,F"), counter);
@@ -796,26 +759,22 @@ public class TestAutomata {
     printTestOutput("IncompatibleAutomataException Tests: ", 2);
 
     printTestOutput("Instantiating an automaton...", 3);
-    Automaton automaton1 = AutomatonGenerator.generateFromGUICode(
+    Automaton automaton1 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+      new Automaton(),
       "a,T,T\nb,T,F\nc,F,T\nd,F,F", // Events
       "", // States  
       "", // Transitions
-      1, // Number of controllers
-      false, // We do not want it to be verbose
-      null, // Use temporary files
-      null // Use temporary files
-    );
+      false // We do not want it to be verbose
+    ));
 
     printTestOutput("Instantiating a second automaton (with an incompatible event)...", 3);
-    Automaton automaton2 = AutomatonGenerator.generateFromGUICode(
+    Automaton automaton2 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+      new Automaton(),
       "a,T,T\nc,T,T\ne,T,F", // Events
       "", // States  
       "", // Transitions
-      1, // Number of controllers
-      false, // We do not want it to be verbose
-      null, // Use temporary files
-      null // Use temporary files
-    );
+      false // We do not want it to be verbose
+    ));
 
     try {
       printTestOutput("Taking the union of the two instantiated automata...", 3);
@@ -826,15 +785,13 @@ public class TestAutomata {
     }
 
     printTestOutput("Instantiating a third automaton (with different number of controllers)...", 3);
-    Automaton automaton3 = AutomatonGenerator.generateFromGUICode(
+    Automaton automaton3 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+      new Automaton(null, null, 2),
       "", // Events
       "", // States  
       "", // Transitions
-      2, // Number of controllers
-      false, // We do not want it to be verbose
-      null, // Use temporary files
-      null // Use temporary files
-    );
+      false // We do not want it to be verbose
+    ));
 
     try {
       printTestOutput("Taking the union of the first and third instantiated automata...", 3);
@@ -846,29 +803,46 @@ public class TestAutomata {
 
       /* NoUStructureException Tests */
 
-    printTestOutput("NoUStructureException Tests: ", 2);
+    // printTestOutput("NoUStructureException Tests: ", 2);
 
-    try {
-      printTestOutput("Adding communications to an automaton with more than 1 controller...", 3);
-      automaton3.addCommunications(null, null);
-      printTestCase("Ensuring that a NoUStructureException was raised", new TestResult(false), counter);
-    } catch(NoUStructureException e) {
-      printTestCase("Ensuring that a NoUStructureException was raised", new TestResult(true), counter);
-    }
+    // try {
+    //   printTestOutput("Adding communications to an automaton with more than 1 controller...", 3);
+    //   automaton3.addCommunications(null, null);
+    //   printTestCase("Ensuring that a NoUStructureException was raised", new TestResult(false), counter);
+    // } catch(NoUStructureException e) {
+    //   printTestCase("Ensuring that a NoUStructureException was raised", new TestResult(true), counter);
+    // }
 
-    try {
-      printTestOutput("Adding communications to an automaton which has event labels that are not vectors...", 3);
-      automaton2.addCommunications(null, null);
-      printTestCase("Ensuring that a NoUStructureException was raised", new TestResult(false), counter);
-    } catch(NoUStructureException e) {
-      printTestCase("Ensuring that a NoUStructureException was raised", new TestResult(true), counter);
-    }
+    // try {
+    //   printTestOutput("Adding communications to an automaton which has event labels that are not vectors...", 3);
+    //   automaton2.addCommunications(null, null);
+    //   printTestCase("Ensuring that a NoUStructureException was raised", new TestResult(false), counter);
+    // } catch(NoUStructureException e) {
+    //   printTestCase("Ensuring that a NoUStructureException was raised", new TestResult(true), counter);
+    // }
 
       /* Print summary of this test routine */
 
     printTestRoutineSummary(testRoutineName, counter);
 
     return counter;
+
+  }
+
+  // This brings out a lot of subtle bugs
+  private static Automaton saveAndLoadAutomaton(Automaton automaton) {
+    
+    automaton.closeFiles();
+
+    return new Automaton(automaton.getHeaderFile(), automaton.getBodyFile(), false);
+
+  }
+
+  private static UStructure saveAndLoadUStructure(UStructure uStructure) {
+    
+    uStructure.closeFiles();
+    
+    return new UStructure(uStructure.getHeaderFile(), uStructure.getBodyFile());
 
   }
 

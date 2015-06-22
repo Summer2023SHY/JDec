@@ -14,7 +14,7 @@ import java.io.*;
 import javax.swing.*;
 import java.awt.*;
 
-public abstract class AutomatonGenerator {
+public abstract class AutomatonGenerator<T> {
 
     /** RANDOM AUTOMATON GENERATION (AND ASSOCIATED HELPER METHODS) **/
 
@@ -230,20 +230,20 @@ public abstract class AutomatonGenerator {
 
   /**
    * Generate an automaton using the given GUI input code.
+   * @param automaton           The empty automaton in which the generated data will be inserted
    * @param eventInputText      The event input text
    * @param stateInputText      The state input text
    * @param transitionInputText The transitionsInputText
-   * @param nControllers        The number of controllers in the automaton
+   * @param nControllers        The number of controllers in the automaton (or in the case of a U-Structure, the number of controllers prior to )
    * @param verbose             Whether or not parsing errors should be printed to the console
    * @param headerFile          The header file where the automaton will be written to
    * @param bodyFile            The body file where the automaton will be written to
    * @return                    The generated automaton
    **/
-  public static Automaton generateFromGUICode(String eventInputText, String stateInputText, String transitionInputText, int nControllers, boolean verbose, File headerFile, File bodyFile) {
+  public static <T extends Automaton> T generateFromGUICode(T automaton, String eventInputText, String stateInputText, String transitionInputText, boolean verbose) {
 
       /* Setup */
-    
-    Automaton automaton = new Automaton(headerFile, bodyFile, nControllers);
+
     HashMap<String, Integer> eventMapping = new HashMap<String, Integer>(); // Maps the events' labels to the events' ID
     HashMap<String, Long> stateMapping = new HashMap<String, Long>(); // Maps the states' labels to the state's ID
 
@@ -318,21 +318,21 @@ public abstract class AutomatonGenerator {
       if (splitLine.length >= 1 && label.length() > 0) {
 
         // Setup (properties are true by default)
-        boolean[] observable = new boolean[nControllers];
-        boolean[] controllable = new boolean[nControllers];
+        boolean[] observable = new boolean[automaton.getNumberOfControllers()];
+        boolean[] controllable = new boolean[automaton.getNumberOfControllers()];
         Arrays.fill(observable, true);
         Arrays.fill(controllable, true);
 
         // Parse controller properties
         if (splitLine.length == 3) {
-          if (splitLine[1].length() == nControllers && splitLine[2].length() == nControllers) {
+          if (splitLine[1].length() == automaton.getNumberOfControllers() && splitLine[2].length() == automaton.getNumberOfControllers()) {
             observable = isTrueArray(splitLine[1]);
             controllable = isTrueArray(splitLine[2]);
           } else {
             System.out.println(
               String.format(
                 "ERROR: The number of controllers (%d) does not match the number of properties specified (%d and %d).",
-                nControllers,
+                automaton.getNumberOfControllers(),
                 splitLine[1].length(),
                 splitLine[2].length()
                 )
@@ -418,7 +418,7 @@ public abstract class AutomatonGenerator {
    * @param line      The text to parse
    * @param data      The transition data (IDs of the associated event and states)
    **/
-  private static void parseAndAddSpecialTransitions(Automaton automaton, String line, TransitionData data) {
+  private static <T extends Automaton> void parseAndAddSpecialTransitions(T automaton, String line, TransitionData data) {
 
     String[] split = line.split(",");
 
@@ -430,23 +430,30 @@ public abstract class AutomatonGenerator {
       if (str.equals("BAD"))
         automaton.markTransitionAsBad(data.initialStateID, data.eventID, data.targetStateID);
       
-      else if (str.equals("UNCONDITIONAL_VIOLATION"))
-        automaton.addUnconditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
-      
-      else if (str.equals("CONDITIONAL_VIOLATION"))
-        automaton.addConditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
+      else if (automaton.getClass().equals(UStructure.class)) {
 
-      else if (str.equals("COMMUNICATION"))
-        automaton.addNonPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID);
-      
-      else {
+        UStructure uStructure = (UStructure) automaton;
 
-        String[] parts = str.split("-");
+        if (str.equals("UNCONDITIONAL_VIOLATION"))
+          uStructure.addUnconditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
         
-        if (parts[0].equals("POTENTIAL_COMMUNICATION") && parts.length == 2)
-          automaton.addPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID, parseCommunicationRoles(parts[1]));
-        else
-          System.err.println("ERROR: Could not parse '" + line + "' as special transition information.");
+        else if (str.equals("CONDITIONAL_VIOLATION"))
+          uStructure.addConditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
+    
+
+        else if (str.equals("COMMUNICATION"))
+          uStructure.addNonPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID);
+        
+        else {
+
+          String[] parts = str.split("-");
+          
+          if (parts[0].equals("POTENTIAL_COMMUNICATION") && parts.length == 2)
+            uStructure.addPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID, parseCommunicationRoles(parts[1]));
+          else
+            System.err.println("ERROR: Could not parse '" + line + "' as special transition information.");
+
+        }
 
       }
 
