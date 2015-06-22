@@ -66,7 +66,7 @@ public class Automaton {
 
     /** PROTECTED CLASS CONSTANTS **/
 
-  private static final int HEADER_SIZE = 52; // This is the fixed amount of space needed to hold the main variables in the .hdr file
+  private static final int HEADER_SIZE = 48; // This is the fixed amount of space needed to hold the main variables in the .hdr file, which apply to all automaton types
 
   protected static final File TEMPORARY_DIRECTORY = new File("Automaton_Temporary_Files");
 
@@ -96,7 +96,7 @@ public class Automaton {
   protected List<TransitionData> badTransitions;
 
   // Basic properties of the automaton
-  protected int automatonType; // 0 = Automaton, 1 = U-Structure
+  protected int automatonType; // 0 = Automaton, 1 = U-Structure, 2 = Nash U-Structure
   protected long nStates      = 0;
   protected long initialState = 0;
   protected int nControllers;
@@ -1786,7 +1786,6 @@ public class Automaton {
     ByteManipulator.writeLongAsBytes(buffer, 32, initialState, 8);
     ByteManipulator.writeLongAsBytes(buffer, 40, nControllers, 4);
     ByteManipulator.writeLongAsBytes(buffer, 44, events.size(), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 48, (badTransitions == null ? 0 : badTransitions.size()), 4);
 
     try {
 
@@ -1820,9 +1819,9 @@ public class Automaton {
 
       }
 
-        /* Write special transitions to the .hdr file */
+        /* This is where the .hdr content corresponding to the relevant automaton type is written */
 
-      writeTransitionDataToHeader(badTransitions);     
+      writeExtraStuffToHeader();     
 
         /* Indicate that the header file no longer need to be written */
 
@@ -1831,6 +1830,20 @@ public class Automaton {
     } catch (IOException e) {
       e.printStackTrace();
     } 
+
+  }
+
+  protected void writeExtraStuffToHeader() throws IOException {
+
+      /* Write a number which indicates how many special transitions are in the file */
+
+    byte[] buffer = new byte[4];
+    ByteManipulator.writeLongAsBytes(buffer, 0, (badTransitions == null ? 0 : badTransitions.size()), 4);
+    headerRAFile.write(buffer);
+
+      /* Write special transitions to the .hdr file */
+
+    writeTransitionDataToHeader(badTransitions);
 
   }
 
@@ -1869,8 +1882,6 @@ public class Automaton {
    **/
   protected void readHeaderFile() {
 
-    byte[] buffer = new byte[HEADER_SIZE];
-
     try {
 
        /* Do not try to load an empty file */
@@ -1880,6 +1891,7 @@ public class Automaton {
 
        /* Go to the proper position and read in the bytes */
 
+      byte[] buffer = new byte[HEADER_SIZE];
       headerRAFile.seek(0);
       headerRAFile.read(buffer);
 
@@ -1898,8 +1910,6 @@ public class Automaton {
       // None of the folowing things can exist if there are no events
       if (nEvents == 0)
         return;
-
-      int nBadTransitions = (int) ByteManipulator.readBytesAsLong(buffer, 48, 4);
 
         /* Read in the events */
 
@@ -1932,17 +1942,30 @@ public class Automaton {
 
       }
 
-        /* Read in special transitions */
+        /* This is where the .hdr content corresponding to the relevant automaton type is read */
 
-      if (nBadTransitions > 0) {
-        badTransitions = new ArrayList<TransitionData>();
-        readTransitionDataFromHeader(nBadTransitions, badTransitions);
-      }
-
+      readExtraStuffFromHeader();
 
     } catch (IOException e) {
       e.printStackTrace();
     } 
+
+  }
+
+  protected void readExtraStuffFromHeader() throws IOException {
+
+      /* Read the number which indicates how many special transitions are in the file */
+
+    byte[] buffer = new byte[4];
+    headerRAFile.read(buffer);
+    int nBadTransitions = (int) ByteManipulator.readBytesAsLong(buffer, 0, 4);
+
+      /* Read in special transitions from the .hdr file */
+    
+    if (nBadTransitions > 0) {
+      badTransitions = new ArrayList<TransitionData>();
+      readTransitionDataFromHeader(nBadTransitions, badTransitions);
+    }
 
   }
 

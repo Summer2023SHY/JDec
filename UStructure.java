@@ -4,8 +4,6 @@ import java.nio.file.*;
 
 public class UStructure extends Automaton {
 
-  private static final int HEADER_SIZE = 72; // This is the fixed amount of space needed to hold the main variables in the .hdr file
-
   // Special transitions
   private List<TransitionData> unconditionalViolations;
   private List<TransitionData> conditionalViolations;
@@ -1142,109 +1140,40 @@ public class UStructure extends Automaton {
 
   }
 
-  /**
-   * Read all of the header information from file.
-   **/
-  @Override protected void readHeaderFile() {
+  @Override protected void readExtraStuffFromHeader() throws IOException {
 
-    byte[] buffer = new byte[HEADER_SIZE];
+      /* Read the number which indicates how many special transitions are in the file */
 
-    try {
+    byte[] buffer = new byte[20];
+    headerRAFile.read(buffer);
 
-        /* Do not try to load an empty file */
+    nControllersBeforeUStructure    = (int) ByteManipulator.readBytesAsLong(buffer, 0,  4);
+    int nUnconditionalViolations    = (int) ByteManipulator.readBytesAsLong(buffer, 4,  4);
+    int nConditionalViolations      = (int) ByteManipulator.readBytesAsLong(buffer, 8,  4);
+    int nPotentialCommunications    = (int) ByteManipulator.readBytesAsLong(buffer, 12, 4);
+    int nNonPotentialCommunications = (int) ByteManipulator.readBytesAsLong(buffer, 16, 4);
 
-      if (headerRAFile.length() == 0)
-        return;
+      /* Read in special transitions from the .hdr file */
+    
+    if (nUnconditionalViolations > 0) {
+      unconditionalViolations = new ArrayList<TransitionData>();
+      readTransitionDataFromHeader(nUnconditionalViolations, unconditionalViolations);
+    }
+    
+    if (nConditionalViolations > 0) {
+      conditionalViolations = new ArrayList<TransitionData>();
+      readTransitionDataFromHeader(nConditionalViolations, conditionalViolations);
+    }
+    
+    if (nPotentialCommunications > 0) {
+      potentialCommunications = new ArrayList<CommunicationData>();
+      readCommunicationDataFromHeader(nPotentialCommunications, potentialCommunications);
+    }
 
-        /* Go to the proper position and read in the bytes */
-
-      headerRAFile.seek(0);
-      headerRAFile.read(buffer);
-
-        /* Calculate the values stored in these bytes */
-
-      automatonType                = (int) ByteManipulator.readBytesAsLong(buffer, 0,  4);
-      nStates                      =       ByteManipulator.readBytesAsLong(buffer, 4,  8);
-      eventCapacity                = (int) ByteManipulator.readBytesAsLong(buffer, 12, 4);
-      stateCapacity                =       ByteManipulator.readBytesAsLong(buffer, 16, 8);
-      transitionCapacity           = (int) ByteManipulator.readBytesAsLong(buffer, 24, 4);
-      labelLength                  = (int) ByteManipulator.readBytesAsLong(buffer, 28, 4);
-      initialState                 =       ByteManipulator.readBytesAsLong(buffer, 32, 8);
-      nControllers                 = (int) ByteManipulator.readBytesAsLong(buffer, 40, 4);
-      nControllersBeforeUStructure = (int) ByteManipulator.readBytesAsLong(buffer, 44, 4);
-      int nEvents                  = (int) ByteManipulator.readBytesAsLong(buffer, 48, 4);
-
-      // None of the folowing things can exist if there are no events
-      if (nEvents == 0)
-        return;
-
-      int nBadTransitions             = (int) ByteManipulator.readBytesAsLong(buffer, 52, 4);
-      int nUnconditionalViolations    = (int) ByteManipulator.readBytesAsLong(buffer, 56, 4);
-      int nConditionalViolations      = (int) ByteManipulator.readBytesAsLong(buffer, 60, 4);
-      int nPotentialCommunications    = (int) ByteManipulator.readBytesAsLong(buffer, 64, 4);
-      int nNonPotentialCommunications = (int) ByteManipulator.readBytesAsLong(buffer, 68, 4);
-
-        /* Read in the events */
-
-      for (int e = 1; e <= nEvents; e++) {
-
-        // Read properties
-        buffer = new byte[nControllers * 2];
-        headerRAFile.read(buffer);
-        boolean[] observable = new boolean[nControllers];
-        boolean[] controllable = new boolean[nControllers];
-        for (int i = 0; i < nControllers; i++) {
-          observable[i] = (buffer[2 * i] == 1);
-          controllable[i] = (buffer[(2 * i) + 1] == 1);
-        }
-
-        // Read the number of characters in the label
-        buffer = new byte[4];
-        headerRAFile.read(buffer);
-        int eventLabelLength = (int) ByteManipulator.readBytesAsLong(buffer, 0, 4);
-
-        // Read each character of the label, building an array of characters
-        buffer = new byte[eventLabelLength];
-        headerRAFile.read(buffer);
-        char[] arr = new char[eventLabelLength];
-        for (int i = 0; i < arr.length; i++)
-          arr[i] = (char) buffer[i];
-
-        // Create the event and add it to the list
-        addEvent(new String(arr), observable, controllable);
-
-      }
-
-        /* Read in special transitions */
-
-      if (nBadTransitions > 0) {
-        badTransitions = new ArrayList<TransitionData>();
-        readTransitionDataFromHeader(nBadTransitions, badTransitions);
-      }
-      
-      if (nUnconditionalViolations > 0) {
-        unconditionalViolations = new ArrayList<TransitionData>();
-        readTransitionDataFromHeader(nUnconditionalViolations, unconditionalViolations);
-      }
-      
-      if (nConditionalViolations > 0) {
-        conditionalViolations = new ArrayList<TransitionData>();
-        readTransitionDataFromHeader(nConditionalViolations, conditionalViolations);
-      }
-      
-      if (nPotentialCommunications > 0) {
-        potentialCommunications = new ArrayList<CommunicationData>();
-        readCommunicationDataFromHeader(nPotentialCommunications, potentialCommunications);
-      }
-
-      if (nNonPotentialCommunications > 0) {
-        nonPotentialCommunications = new ArrayList<TransitionData>();
-        readTransitionDataFromHeader(nNonPotentialCommunications, nonPotentialCommunications);
-      }
-
-    } catch (IOException e) {
-      e.printStackTrace();
-    } 
+    if (nNonPotentialCommunications > 0) {
+      nonPotentialCommunications = new ArrayList<TransitionData>();
+      readTransitionDataFromHeader(nNonPotentialCommunications, nonPotentialCommunications);
+    }
 
   }
 
@@ -1281,83 +1210,24 @@ public class UStructure extends Automaton {
 
   }
 
-  /**
-   * Write all of the header information to file.
-   **/
-  @Override public void writeHeaderFile() {
+  @Override protected void writeExtraStuffToHeader() throws IOException {
 
-    // Do not write the header file unless we need to
-    if (!headerFileNeedsToBeWritten)
-      return;
+      /* Write numbers to indicate how many special transitions are in the file */
 
-      /* Write the header of the .hdr file */
-    
-    byte[] buffer = new byte[HEADER_SIZE];
+    byte[] buffer = new byte[20];
+    ByteManipulator.writeLongAsBytes(buffer, 0,  nControllersBeforeUStructure, 4);
+    ByteManipulator.writeLongAsBytes(buffer, 4,  (unconditionalViolations    == null ? 0 : unconditionalViolations.size()), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 8,  (conditionalViolations      == null ? 0 : conditionalViolations.size()), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 12, (potentialCommunications    == null ? 0 : potentialCommunications.size()), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 16, (nonPotentialCommunications == null ? 0 : nonPotentialCommunications.size()), 4);
+    headerRAFile.write(buffer);
 
-    ByteManipulator.writeLongAsBytes(buffer, 0,  automatonType, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 4,  nStates, 8);
-    ByteManipulator.writeLongAsBytes(buffer, 12, eventCapacity, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 16, stateCapacity, 8);
-    ByteManipulator.writeLongAsBytes(buffer, 24, transitionCapacity, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 28, labelLength, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 32, initialState, 8);
-    ByteManipulator.writeLongAsBytes(buffer, 40, nControllers, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 44, nControllersBeforeUStructure, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 48, events.size(), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 52, (badTransitions             == null ? 0 : badTransitions.size()), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 56, (unconditionalViolations    == null ? 0 : unconditionalViolations.size()), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 60, (conditionalViolations      == null ? 0 : conditionalViolations.size()), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 64, (potentialCommunications    == null ? 0 : potentialCommunications.size()), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 68, (nonPotentialCommunications == null ? 0 : nonPotentialCommunications.size()), 4);
+      /* Write special transitions to the .hdr file */
 
-    try {
-
-      headerRAFile.seek(0);
-      headerRAFile.write(buffer);
-
-        /* Write the events to the .hdr file */
-
-      for (Event e : events) {
-      
-        // Fill the buffer
-        buffer = new byte[ (2 * nControllers) + 4 + e.getLabel().length()];
-
-        // Read event properties (NOTE: If we ever need to condense the space required to hold an event in a file, we can place a property in each bit instead of each byte)
-        int index = 0;
-        for (int i = 0; i < nControllers; i++) {
-          buffer[index] = (byte) (e.isObservable()[i] ? 1 : 0);
-          buffer[index + 1] = (byte) (e.isControllable()[i] ? 1 : 0);
-          index += 2;
-        }
-
-        // Write the length of the label
-        ByteManipulator.writeLongAsBytes(buffer, index, e.getLabel().length(), 4);
-        index += 4;
-
-        // Write each character of the label
-        for (int i = 0; i < e.getLabel().length(); i++)
-          buffer[index++] = (byte) e.getLabel().charAt(i);
-
-        headerRAFile.write(buffer);
-
-      }
-
-        /* Write special transitions to the .hdr file */
-
-      writeTransitionDataToHeader(badTransitions);
-      writeTransitionDataToHeader(unconditionalViolations);
-      writeTransitionDataToHeader(conditionalViolations);
-      writeCommunicationDataToHeader(potentialCommunications);
-      writeTransitionDataToHeader(nonPotentialCommunications);  
-
-        /* Indicate that the header file no longer need to be written */
-
-      headerFileNeedsToBeWritten = false;
-
-    } catch (IOException e) {
-      e.printStackTrace();
-    } 
-    
+    writeTransitionDataToHeader(unconditionalViolations);
+    writeTransitionDataToHeader(conditionalViolations);
+    writeCommunicationDataToHeader(potentialCommunications);
+    writeTransitionDataToHeader(nonPotentialCommunications);  
 
   }
 
