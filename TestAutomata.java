@@ -54,7 +54,7 @@ public class TestAutomata {
     counter.add(runEventCreationTestRoutine());
     counter.add(runStateCreationTestRoutine());
     counter.add(runAutomatonCapacityTestRoutine());
-    counter.add(runGUIInputTestRoutine());
+    counter.add(runGuiInputTestRoutine());
     counter.add(runAutomataOperationsTestRoutine());
   	counter.add(runExceptionHandlingTestRoutine());
 
@@ -268,7 +268,7 @@ public class TestAutomata {
     ));
 
     automaton.generateInputForGUI();
-    printTestCase("Ensuring the states are correct", new TestResult(automaton.getStateInput(), "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv,T"), counter);
+    printTestCase("Ensuring the states are correct", new TestResult(automaton.getStateInput(), "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv,F"), counter);
 
   		/* Print summary of this test routine */
 
@@ -380,7 +380,7 @@ public class TestAutomata {
 
   }
 
-  private static TestCounter runGUIInputTestRoutine() {
+  private static TestCounter runGuiInputTestRoutine() {
 
     String testRoutineName = "GUI INPUT";
 
@@ -415,7 +415,7 @@ public class TestAutomata {
     ));
     automaton.generateInputForGUI();
     printTestCase("Ensuring the event input was saved and loaded correctly", new TestResult(automaton.getEventInput(), "a,T,T\nb,F,F"), counter);
-    printTestCase("Ensuring the state input was saved and loaded correctly", new TestResult(automaton.getStateInput(), "@c,T"), counter);
+    printTestCase("Ensuring the state input was saved and loaded correctly", new TestResult(automaton.getStateInput(), "@c,F"), counter);
     printTestCase("Ensuring the transition input was saved and loaded correctly", new TestResult(automaton.getTransitionInput(), ""), counter);
 
       /* Print summary of this test routine */

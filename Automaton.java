@@ -13,6 +13,7 @@
  *  -Protected Instance Variables
  *  -Constructors
  *  -Automata Operations
+ *  -Automata Operations Helper Methods
  *  -Image Generation
  *  -GUI Input Code Generation
  *  -Working with Files
@@ -327,12 +328,12 @@ public class Automaton {
    * @return               The co-accessible automaton
    **/
   public Automaton coaccessible(File newHeaderFile, File newBodyFile) {
+    return coaccessibleHelper(new Automaton(newHeaderFile, newBodyFile, nControllers), invert());
+  }
 
-    Automaton invertedAutomaton = invert();
+  protected <T extends Automaton> T coaccessibleHelper(T automaton, T invertedAutomaton) {
 
       /* Build co-accessible automaton by seeing which states are accessible from the marked states in the inverted automaton */
-
-    Automaton automaton = new Automaton(newHeaderFile, newBodyFile, nControllers);
 
     // Add events
     automaton.addAllEvents(events);
@@ -415,8 +416,6 @@ public class Automaton {
    **/
   public Automaton complement(File newHeaderFile, File newBodyFile) {
 
-      /* Setup */
-
     Automaton automaton = new Automaton(
       newHeaderFile,
       newBodyFile,
@@ -427,6 +426,13 @@ public class Automaton {
       nControllers,
       true
     );
+
+    return complementHelper(automaton);
+  }
+
+  protected <T extends Automaton> T complementHelper(T automaton) {
+
+      /* Setup */
 
     // Add events
     automaton.addAllEvents(events);
@@ -494,20 +500,6 @@ public class Automaton {
   }
 
   /**
-   * Helper method to copy over all special transition data from this automaton to another.
-   * NOTE: The data is only copied over if both of the states involved in the transition actually exist
-   * @param automaton The automaton which is recieving the special transitions
-   **/
-  protected <T extends Automaton> void copyOverSpecialTransitions(T automaton) {
-
-    if (badTransitions != null)
-      for (TransitionData data : badTransitions)
-        if (automaton.stateExists(data.initialStateID) && automaton.stateExists(data.targetStateID))
-          automaton.markTransitionAsBad(data.initialStateID, data.eventID, data.targetStateID);
-
-  }
-
-  /**
    * Create a new copy of this automaton that is trim (both accessible and co-accessible).
    * NOTE: I am taking the accessible part of the automaton before the co-accessible part of the automaton
    * because the accessible() method has less overhead than the coaccessible() method.
@@ -515,13 +507,8 @@ public class Automaton {
    * @param newBodyFile    The body file where the new automaton should be stored
    * @return               The trim automaton, or null if there was no initial state specified
    **/
-  public Automaton trim(File newHeaderFile, File newBodyFile) {
-
-    if (initialState == 0)
-      return null;
-
-    return accessible(getTemporaryFile(), getTemporaryFile()).coaccessible(newHeaderFile, newBodyFile);
-
+  public final Automaton trim(File newHeaderFile, File newBodyFile) {
+    return accessible(null, null).coaccessible(newHeaderFile, newBodyFile);
   }
 
   /**
@@ -529,11 +516,13 @@ public class Automaton {
    * NOTE: This is just a shallow copy of the automaton (no special transition data is retained), which makes it slightly more efficient.
    * @return  The inverted automaton
    **/
-  private Automaton invert() {
+  protected Automaton invert() {
+    return invertHelper(new Automaton(eventCapacity, stateCapacity, transitionCapacity, labelLength, nControllers, true));
+  }
+
+  protected <T extends Automaton> T invertHelper(T invertedAutomaton) {
 
       /* Create a new automaton that has each of the transitions going the opposite direction */
-
-    Automaton invertedAutomaton = new Automaton(eventCapacity, stateCapacity, transitionCapacity, labelLength, nControllers, true);
 
     // Add events
     invertedAutomaton.addAllEvents(events);
@@ -1136,6 +1125,22 @@ public class Automaton {
 
   }
 
+    /** AUTOMATA OPERAION HELPER METHODS **/
+
+  /**
+   * Helper method to copy over all special transition data from this automaton to another.
+   * NOTE: The data is only copied over if both of the states involved in the transition actually exist
+   * @param automaton The automaton which is recieving the special transitions
+   **/
+  protected <T extends Automaton> void copyOverSpecialTransitions(T automaton) {
+
+    if (badTransitions != null)
+      for (TransitionData data : badTransitions)
+        if (automaton.stateExists(data.initialStateID) && automaton.stateExists(data.targetStateID))
+          automaton.markTransitionAsBad(data.initialStateID, data.eventID, data.targetStateID);
+
+  }
+
   /**
    * This method looks for blank spots in the .bdy file (which indicates that no state exists there),
    * and re-numbers all of the states accordingly. This must be done after operations such as intersection or union.
@@ -1231,6 +1236,7 @@ public class Automaton {
     headerFileNeedsToBeWritten = true;
 
   }
+
 
   protected void renumberStatesInAllTransitionData(RandomAccessFile mappingRAFile) throws IOException {
 

@@ -274,7 +274,7 @@ public abstract class AutomatonGenerator<T> {
 
         }
 
-        // Remove '@' from the label name
+        // Remove '@' character from the label name
         if (isInitialState)
           label = label.substring(1);
 
@@ -284,7 +284,7 @@ public abstract class AutomatonGenerator<T> {
           continue;
         }
 
-        long id = automaton.addState(label, splitLine.length < 2 || isTrue(splitLine[1]), isInitialState);
+        long id = automaton.addState(label, splitLine.length >= 2 && isTrue(splitLine[1]), isInitialState);
 
         // Error checking
         if (id == 0) {

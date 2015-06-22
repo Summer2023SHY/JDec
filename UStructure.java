@@ -91,6 +91,27 @@ public class UStructure extends Automaton {
     return accessibleHelper(new UStructure(newHeaderFile, newBodyFile, nControllersBeforeUStructure));
   }
 
+  @Override public UStructure coaccessible(File newHeaderFile, File newBodyFile) {
+    return coaccessibleHelper(new UStructure(newHeaderFile, newBodyFile, nControllersBeforeUStructure), invert());
+  }
+
+  @Override public UStructure complement(File newHeaderFile, File newBodyFile) {
+
+    UStructure uStructure = new UStructure(
+      newHeaderFile,
+      newBodyFile,
+      eventCapacity,
+      stateCapacity,
+      events.size(), // This is the new number of transitions that will be required for each state
+      labelLength,
+      nControllersBeforeUStructure,
+      true
+    );
+
+    return complementHelper(uStructure);
+
+  }
+
   @Override protected <T extends Automaton> void copyOverSpecialTransitions(T automaton) {
 
     super.copyOverSpecialTransitions(automaton);
@@ -117,6 +138,10 @@ public class UStructure extends Automaton {
         if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
           uStructure.addNonPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID);
 
+  }
+
+  @Override protected UStructure invert() {
+    return invertHelper(new UStructure(null, null, eventCapacity, stateCapacity, transitionCapacity, labelLength, nControllersBeforeUStructure, true));
   }
 
   /**
@@ -735,6 +760,7 @@ public class UStructure extends Automaton {
   public UStructure applyFeasibleProtocol(Set<CommunicationData> protocol, File newHeaderFile, File newBodyFile) {
 
     UStructure automaton = duplicate(getTemporaryFile(), getTemporaryFile());
+    // UStructure invertedAutomaton = invert();
 
       /* Remove all communications that are not part of the protocol */
 
@@ -749,7 +775,23 @@ public class UStructure extends Automaton {
 
       /* Prune (which removes more transitions) */
 
+    // CommunicationData initialData = null;
+
     for (CommunicationData data : protocol) {
+
+      // if (initialData == null)
+      //   initialData = data;
+
+      // // Ensure that this state is still indistinguishable
+      // else {
+
+      //   // Find reachable states
+      //   Set<Long> reachableStates = new HashSet<Long>();
+      //   findReachableStates(automaton, invertedAutomaton, reachableStates, initialData.initialStateID, data.getIndexOfSender() + 1);
+      //   if (!reachableStates.contains(initialData.initialStateID))
+      //     continue;
+
+      // }
 
       LabelVector vector = getEvent(data.eventID).vector;
       boolean[] vectorElementsFound = new boolean[vector.getSize()];
@@ -831,46 +873,6 @@ public class UStructure extends Automaton {
       prune(protocol, communication, copy, getState(t.getTargetStateID()), depth + 1);
 
     }
-
-  }
-
-  /**
-   * Create a new version of this automaton which has all of the transitions going the opposite direction.
-   * NOTE: This is just a shallow copy of the automaton (no special transition data is retained), which makes it slightly more efficient.
-   * @return  The inverted automaton
-   **/
-  private UStructure invert() {
-
-      /* Create a new automaton that has each of the transitions going the opposite direction */
-
-    UStructure invertedAutomaton = new UStructure(null, null, eventCapacity, stateCapacity, transitionCapacity, labelLength, nControllersBeforeUStructure, true);
-
-    // Add events
-    invertedAutomaton.addAllEvents(events);
-
-    // Add states
-    for (long s = 1; s <= nStates; s++) {
-
-      State state = getStateExcludingTransitions(s);
-      invertedAutomaton.addState(state.getLabel(), state.isMarked(), s == initialState);
-
-    }
-
-    // Add transitions
-    for (long s = 1; s <= nStates; s++) {
-
-      State state = getState(s);
-
-      for (Transition t : state.getTransitions())
-        invertedAutomaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), s);
-
-    }
-
-      /* Ensure that the header file has been written to disk */
-      
-    invertedAutomaton.writeHeaderFile();
-
-    return invertedAutomaton;
 
   }
 
