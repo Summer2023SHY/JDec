@@ -1658,6 +1658,7 @@ public class Automaton {
 
     /** WORKING WITH FILES **/
 
+
   /**
    * Duplicate this automaton and store it in a different set of files.
    * @param newHeaderFile The new header file where the automaton is being copied to
@@ -1665,6 +1666,15 @@ public class Automaton {
    * @return              The duplicated automaton
    **/
   public Automaton duplicate(File newHeaderFile, File newBodyFile) {
+
+    if (!duplicateHelper(newHeaderFile, newBodyFile))
+      return null;
+
+    return new Automaton(newHeaderFile, newBodyFile, false);
+
+  }
+
+  protected boolean duplicateHelper(File newHeaderFile, File newBodyFile) {
 
     // Assign temporary files, if necessary
     if (newHeaderFile == null)
@@ -1683,10 +1693,10 @@ public class Automaton {
     
     } catch (IOException e) {
       e.printStackTrace();
-      return null;
+      return false;
     }
 
-    return new Automaton(newHeaderFile, newBodyFile, false);
+    return true;
 
   }
 

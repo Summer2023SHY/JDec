@@ -14,8 +14,8 @@ public class UStructure extends Automaton {
 
   /**
    * Implicit constructor: used to load automaton from file.
-   * @param headerFile                    The file where the header should be stored
-   * @param bodyFile                      The file where the body should be stored
+   * @param headerFile  The file where the header should be stored
+   * @param bodyFile    The file where the body should be stored
    **/
   public UStructure(File headerFile, File bodyFile) {
     this(
@@ -1081,33 +1081,10 @@ public class UStructure extends Automaton {
     return potentialCommunications;
   }
 
-  /**
-   * Duplicate this automaton and store it in a different set of files.
-   * @param newHeaderFile The new header file where the automaton is being copied to
-   * @param newBodyFile   The new body file where the automaton is being copied to
-   * @return              The duplicated automaton
-   **/
-  public UStructure duplicate(File newHeaderFile, File newBodyFile) {
+  @Override public UStructure duplicate(File newHeaderFile, File newBodyFile) {
 
-    // Assign temporary files, if necessary
-    if (newHeaderFile == null)
-      newHeaderFile = getTemporaryFile();
-    if (newBodyFile == null)
-      newBodyFile = getTemporaryFile();
-
-    // Copy the header and body files
-    try {
-    
-      if (headerFile.exists())
-        Files.copy(headerFile.toPath(), newHeaderFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-      
-      if (bodyFile.exists())
-        Files.copy(bodyFile.toPath(), newBodyFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-    
-    } catch (IOException e) {
-      e.printStackTrace();
+    if (!duplicateHelper(newHeaderFile, newBodyFile))
       return null;
-    }
 
     return new UStructure(newHeaderFile, newBodyFile);
 
