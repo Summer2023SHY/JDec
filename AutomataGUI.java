@@ -823,7 +823,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
     AutomatonTab tab = tabs.get(index);
 
     // Determine what type of automaton it is
-    int automatonType = -1;
+    Automaton.Type automatonType = null;
     try {
 
       RandomAccessFile headerRAFile = new RandomAccessFile(tab.headerFile, "rw");
@@ -832,7 +832,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
       headerRAFile.seek(0);
       headerRAFile.read(buffer);
 
-      automatonType = (int) ByteManipulator.readBytesAsLong(buffer, 0, 4);
+      automatonType = Automaton.Type.getType((byte) ByteManipulator.readBytesAsLong(buffer, 0, 1));
 
       headerRAFile.close();
 
@@ -843,11 +843,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
     // Instantiate automaton
     switch (automatonType) {
 
-      case 0:
+      case AUTOMATON:
         tab.automaton = new Automaton(tab.headerFile, tab.bodyFile, false);
         break;
 
-      case 1:
+      case U_STRUCTURE:
         tab.automaton = new UStructure(tab.headerFile, tab.bodyFile);
         break;
 
@@ -875,7 +875,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
    * @param title   The title to put in the file chooser dialog box
    * @param index   The index of the tab we're selecting a file for (-1 indicates that a new tab will be created for it)
    * @param newTab  Whether or not a new tab should be created for the selected file
-   * @return the file, or null if the user did not choose anything
+   * @return        The file, or null if the user did not choose anything
    **/
   private File selectFile(String title, int index) {
 

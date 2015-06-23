@@ -77,11 +77,11 @@ public class UStructure extends Automaton {
     super(headerFile, bodyFile, eventCapacity, stateCapacity, transitionCapacity, labelLength, 1, clearFiles);
     
     // This variable is only reset if this is not being read from file
-    if (nControllersBeforeUStructure != -1)
+    if (nControllersBeforeUStructure != -1) {
       this.nControllersBeforeUStructure = nControllersBeforeUStructure;
+      headerFileNeedsToBeWritten = true;
+    }
     
-    automatonType = 1;
-    headerFileNeedsToBeWritten = true;
 
 	}
 

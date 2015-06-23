@@ -9,8 +9,8 @@
  *  -Public Class Constants
  *  -Protected Class Constants
  *  -Protected Class Variables
- *  -Output Mode Enum
  *  -Protected Instance Variables
+ *  -Enums
  *  -Constructors
  *  -Automata Operations
  *  -Automata Operations Helper Methods
@@ -66,26 +66,13 @@ public class Automaton {
 
     /** PROTECTED CLASS CONSTANTS **/
 
-  private static final int HEADER_SIZE = 48; // This is the fixed amount of space needed to hold the main variables in the .hdr file, which apply to all automaton types
+  private static final int HEADER_SIZE = 45; // This is the fixed amount of space needed to hold the main variables in the .hdr file, which apply to all automaton types
 
   protected static final File TEMPORARY_DIRECTORY = new File("Automaton_Temporary_Files");
 
     /** PROTECTED CLASS VARIABLES **/
 
   protected static int temporaryFileIndex = 1;
-
-    /** OUTPUT MODE ENUM **/
-
-  /** Image of automaton can be formatted as either .png or .svg. */
-  public static enum OutputMode {
-
-    /** Output the image of the graph as .png. NOTE: The image size is limited since this image is intended for the GUI. */
-    PNG,
-
-    /** Output the image of the graph as .svg, which is an XML-based format. The image is blown up so that no nodes overlap. */
-    SVG
-
-  }
 
     /** PROTECTED INSTANCE VARIABLES **/
 
@@ -96,7 +83,7 @@ public class Automaton {
   protected List<TransitionData> badTransitions;
 
   // Basic properties of the automaton
-  protected int automatonType; // 0 = Automaton, 1 = U-Structure, 2 = Nash U-Structure
+  protected Type type;
   protected long nStates      = 0;
   protected long initialState = 0;
   protected int nControllers;
@@ -125,6 +112,73 @@ public class Automaton {
   protected StringBuilder eventInputBuilder;
   protected StringBuilder stateInputBuilder;
   protected StringBuilder transitionInputBuilder;
+
+    /** ENUMS **/
+
+  /** Image of automaton can be formatted as either .png or .svg. */
+  public static enum OutputMode {
+
+    /** Output the image of the graph as .png. NOTE: The image size is limited since this image is intended for the GUI. */
+    PNG,
+
+    /** Output the image of the graph as .svg, which is an XML-based format. The image is blown up so that no nodes overlap. */
+    SVG;
+
+  }
+
+  public static enum Type {
+
+    AUTOMATON((byte) 0, Automaton.class),
+    U_STRUCTURE((byte) 1, UStructure.class),
+    NASH_U_STRUCTURE((byte) 2, NashUStructure.class);
+
+    private final byte numericValue;
+    private final Class classType;
+
+    Type(byte numericValue, Class classType) {
+      this.numericValue = numericValue;
+      this.classType    = classType;
+    }
+
+    /**
+     * Get the numeric value associated with this enumeration value.
+     * @return numeric value
+     **/
+    public byte getNumericValue() {
+      return numericValue;
+    }
+
+    /**
+     * Given a numeric value, get the associated automaton type.
+     * @param value The numeric value
+     * @return      The automaton type (or null, if it could not be found)
+     **/
+    public static Type getType(byte value) {
+
+      for (Type type : Type.values())
+        if (type.numericValue == value)
+          return type;
+
+      return null;
+
+    }
+
+    /**
+     * Given a class, get the associated enumeration value.
+     * @param class The class
+     * @return      The automaton type (or null, if it could not be found)
+     **/
+    public static Type getType(Class classType) {
+
+      for (Type type : Type.values())
+        if (type.classType == classType)
+          return type;
+
+      return null;
+
+    }
+
+  }
 
     /** CONSTRUCTORS **/
 
@@ -234,7 +288,7 @@ public class Automaton {
 
     initializeVariables();
     nBytesPerState = calculateNumberOfBytesPerState(nBytesPerEventID, nBytesPerStateID, this.transitionCapacity, this.labelLength);
-    automatonType = 0;
+    type = Type.getType(this.getClass());
     headerFileNeedsToBeWritten = true;
 
   }
@@ -1787,15 +1841,15 @@ public class Automaton {
     
     byte[] buffer = new byte[HEADER_SIZE];
 
-    ByteManipulator.writeLongAsBytes(buffer, 0, automatonType, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 4, nStates, 8);
-    ByteManipulator.writeLongAsBytes(buffer, 12, eventCapacity, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 16, stateCapacity, 8);
-    ByteManipulator.writeLongAsBytes(buffer, 24, transitionCapacity, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 28, labelLength, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 32, initialState, 8);
-    ByteManipulator.writeLongAsBytes(buffer, 40, nControllers, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 44, events.size(), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 0, type.getNumericValue(), 1);
+    ByteManipulator.writeLongAsBytes(buffer, 1, nStates, 8);
+    ByteManipulator.writeLongAsBytes(buffer, 9, eventCapacity, 4);
+    ByteManipulator.writeLongAsBytes(buffer, 13, stateCapacity, 8);
+    ByteManipulator.writeLongAsBytes(buffer, 21, transitionCapacity, 4);
+    ByteManipulator.writeLongAsBytes(buffer, 25, labelLength, 4);
+    ByteManipulator.writeLongAsBytes(buffer, 29, initialState, 8);
+    ByteManipulator.writeLongAsBytes(buffer, 37, nControllers, 4);
+    ByteManipulator.writeLongAsBytes(buffer, 41, events.size(), 4);
 
     try {
 
@@ -1894,28 +1948,28 @@ public class Automaton {
 
     try {
 
-       /* Do not try to load an empty file */
+        /* Do not try to load an empty file */
 
       if (headerRAFile.length() == 0)
         return;
 
-       /* Go to the proper position and read in the bytes */
+        /* Go to the proper position and read in the bytes */
 
       byte[] buffer = new byte[HEADER_SIZE];
       headerRAFile.seek(0);
       headerRAFile.read(buffer);
 
-       /* Calculate the values stored in these bytes */
+        /* Calculate the values stored in these bytes */
 
-      automatonType      = (int) ByteManipulator.readBytesAsLong(buffer, 0, 4);
-      nStates            =       ByteManipulator.readBytesAsLong(buffer, 4, 8);
-      eventCapacity      = (int) ByteManipulator.readBytesAsLong(buffer, 12, 4);
-      stateCapacity      =       ByteManipulator.readBytesAsLong(buffer, 16, 8);
-      transitionCapacity = (int) ByteManipulator.readBytesAsLong(buffer, 24, 4);
-      labelLength        = (int) ByteManipulator.readBytesAsLong(buffer, 28, 4);
-      initialState       =       ByteManipulator.readBytesAsLong(buffer, 32, 8);
-      nControllers       = (int) ByteManipulator.readBytesAsLong(buffer, 40, 4);
-      int nEvents        = (int) ByteManipulator.readBytesAsLong(buffer, 44, 4);
+      type = Type.getType((byte) ByteManipulator.readBytesAsLong(buffer, 0,  1));
+      nStates            =       ByteManipulator.readBytesAsLong(buffer, 1,  8);
+      eventCapacity      = (int) ByteManipulator.readBytesAsLong(buffer, 9,  4);
+      stateCapacity      =       ByteManipulator.readBytesAsLong(buffer, 13, 8);
+      transitionCapacity = (int) ByteManipulator.readBytesAsLong(buffer, 21, 4);
+      labelLength        = (int) ByteManipulator.readBytesAsLong(buffer, 25, 4);
+      initialState       =       ByteManipulator.readBytesAsLong(buffer, 29, 8);
+      nControllers       = (int) ByteManipulator.readBytesAsLong(buffer, 37, 4);
+      int nEvents        = (int) ByteManipulator.readBytesAsLong(buffer, 41, 4);
 
       // None of the folowing things can exist if there are no events
       if (nEvents == 0)

@@ -11,8 +11,6 @@
  *  -Overridden Method
  **/
 
-import java.util.*;
-
 public class CommunicationData extends TransitionData {
 
     /** PUBLIC INSTANCE VARIABLE **/

@@ -9,10 +9,6 @@ public class NashUStructure extends UStructure {
    **/
   public NashUStructure(File headerFile, File bodyFile) {
     super(headerFile, bodyFile);
-
-    automatonType = 2;
-    headerFileNeedsToBeWritten = true;
-
   }
 
 }
