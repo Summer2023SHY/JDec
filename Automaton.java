@@ -80,7 +80,7 @@ public class Automaton {
   protected Set<Event> events = new TreeSet<Event>(); // Due to Event's compareTo and equals implementations, a TreeSet cannot not guarantee that it is actually a set (considering changing this to an ArrayList)
 
   // Special transitions
-  protected List<TransitionData> badTransitions;
+  private List<TransitionData> badTransitions;
 
   // Basic properties of the automaton
   protected Type type;
@@ -175,6 +175,27 @@ public class Automaton {
           return type;
 
       return null;
+
+    }
+
+    /**
+     * Given a header file of an automaton, get the associated enumeration value.
+     * @param file  The header file of the automaton
+     * @return      The automaton type (or null, if it could not be found)
+     **/
+    public static Type getType(File file) {
+
+      try {
+      
+        return Automaton.Type.getType(new RandomAccessFile(file, "r").readByte());
+      
+      } catch (IOException e) {
+        
+        e.printStackTrace();
+        return null;
+      
+      }
+
 
     }
 
@@ -1589,17 +1610,22 @@ public class Automaton {
     for (Event e : events) {
 
       // Label
-      eventInputBuilder.append(e.getLabel() + ",");
+      eventInputBuilder.append(e.getLabel());
 
-      // Observability properties
-      for (int i = 0; i < nControllers; i++)
-        eventInputBuilder.append((e.isObservable()[i] ? "T" : "F"));
+      // Properties
+      if (type == Type.AUTOMATON) {
 
-      eventInputBuilder.append(",");
+        // Observability properties
+        eventInputBuilder.append(",");
+        for (int i = 0; i < nControllers; i++)
+          eventInputBuilder.append((e.isObservable()[i] ? "T" : "F"));
 
-      // Controllability properties
-      for (int i = 0; i < nControllers; i++)
-        eventInputBuilder.append((e.isControllable()[i] ? "T" : "F"));
+        // Controllability properties
+        eventInputBuilder.append(",");
+        for (int i = 0; i < nControllers; i++)
+          eventInputBuilder.append((e.isControllable()[i] ? "T" : "F"));
+
+      }
       
       // End of line character
       if (++counter < events.size())
@@ -1626,7 +1652,8 @@ public class Automaton {
 
       // Append label and properties
       stateInputBuilder.append(state.getLabel());
-      stateInputBuilder.append((state.isMarked() ? ",T" : ",F"));
+      if (type == Type.AUTOMATON)
+        stateInputBuilder.append((state.isMarked() ? ",T" : ",F"));
       
       // Add line separator after unless this is the last state
       if (s < nStates)

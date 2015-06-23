@@ -112,8 +112,6 @@ public class UStructure extends Automaton {
 
   @Override protected <T extends Automaton> void copyOverSpecialTransitions(T automaton) {
 
-    super.copyOverSpecialTransitions(automaton);
-
     UStructure uStructure = (UStructure) automaton;
 
     if (unconditionalViolations != null)
@@ -879,8 +877,6 @@ public class UStructure extends Automaton {
    * @param data  The transition data associated with the special transitions to be removed
    **/
   @Override protected void removeTransitionData(TransitionData data) {
-
-    super.removeTransitionData(data);
     
     if (unconditionalViolations != null)
       unconditionalViolations.remove(data);
@@ -943,7 +939,6 @@ public class UStructure extends Automaton {
     // Update event IDs in header file
     for (Event e : events)
       e.setID(mapping.get(e.getID()));
-    renumberEventsInTransitionData(mapping, badTransitions);
     renumberEventsInTransitionData(mapping, unconditionalViolations);
     renumberEventsInTransitionData(mapping, conditionalViolations);
     renumberEventsInTransitionData(mapping, potentialCommunications);
@@ -1113,7 +1108,7 @@ public class UStructure extends Automaton {
     if (nonPotentialCommunications != null && nonPotentialCommunications.contains(transitionData))
       str += ",COMMUNICATION";
 
-    return super.getInputCodeForSpecialTransitions(transitionData) + str;
+    return str;
 
   }
 
@@ -1245,8 +1240,6 @@ public class UStructure extends Automaton {
 
   @Override protected void addAdditionalEdgeProperties(Map<String, String> map) {
 
-    super.addAdditionalEdgeProperties(map);
-
     if (unconditionalViolations != null)
       for (TransitionData t : unconditionalViolations) {
         String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
@@ -1277,8 +1270,6 @@ public class UStructure extends Automaton {
   }
 
   @Override protected void renumberStatesInAllTransitionData(RandomAccessFile mappingRAFile) throws IOException {
-
-    super.renumberStatesInAllTransitionData(mappingRAFile);
 
     renumberStatesInTransitionData(mappingRAFile, unconditionalViolations);
     renumberStatesInTransitionData(mappingRAFile, conditionalViolations);

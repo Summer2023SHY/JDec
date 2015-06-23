@@ -55,7 +55,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         updateComponentsWhichRequireAutomaton();    
       }
     });
-    createTab(true);
+    createTab(true, Automaton.Type.AUTOMATON);
     add(tabbedPane);
 
       /* Add menu */
@@ -80,7 +80,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
   
     // The code within this will execute when the program exits for good
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() { 
-      public void run() {
+      @Override public void run() {
 
         for (String file : TEMPORARY_DIRECTORY.list())
           new File(TEMPORARY_DIRECTORY, file).delete();
@@ -143,13 +143,13 @@ public class AutomataGUI extends JFrame implements ActionListener {
    * Create an empty tab.
    * @param assignTemporaryFiles  Whether or not temporary files should be assigned to the tab
    **/
-  private void createTab(boolean assignTemporaryFiles) {
+  private void createTab(boolean assignTemporaryFiles, Automaton.Type type) {
 
       /* Add tab */
 
     int index = tabbedPane.getTabCount();
 
-    AutomatonTab tab = new AutomatonTab(index);
+    AutomatonTab tab = new AutomatonTab(index, type);
     tabs.add(tab);
 
     tabbedPane.addTab(null, null, tab, "");
@@ -178,7 +178,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       /* Create new tab */
 
-    createTab(false);
+    createTab(false, Automaton.Type.getType(automaton.getClass()));
     int newIndex = tabbedPane.getTabCount() - 1;
 
       /* Set tab values */
@@ -187,7 +187,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
     tab.headerFile   = automaton.getHeaderFile();
     tab.bodyFile     = automaton.getBodyFile();
     tab.automaton    = automaton;
-    tab.updateInputFields();
+    tab.refreshGUI();
     tab.setSaved(true);
 
       /* Generate an image (unless it's quite large) */
@@ -378,15 +378,38 @@ public class AutomataGUI extends JFrame implements ActionListener {
     AutomatonTab tab = tabs.get(index);
 
     // Create automaton from input code
-    int nControllers = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
-    Automaton automaton = AutomatonGenerator.generateFromGUICode(
-        new Automaton(tab.headerFile, tab.bodyFile, nControllers),
-        tab.eventInput.getText(),
-        tab.stateInput.getText(),
-        tab.transitionInput.getText(),
-        true
-      );
-    tab.automaton = automaton;
+    switch (tab.type) {
+
+      case AUTOMATON:
+
+        int nControllers = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
+        tab.automaton = AutomatonGenerator.generateFromGUICode(
+          new Automaton(tab.headerFile, tab.bodyFile, nControllers),
+          tab.eventInput.getText(),
+          tab.stateInput.getText(),
+          tab.transitionInput.getText(),
+          true
+        );
+        break;
+
+      case U_STRUCTURE:
+
+        int nControllersBeforeUStructure = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
+        tab.automaton = AutomatonGenerator.generateFromGUICode(
+          new UStructure(tab.headerFile, tab.bodyFile, nControllersBeforeUStructure),
+          tab.eventInput.getText(),
+          tab.stateInput.getText(),
+          tab.transitionInput.getText(),
+          true
+        );
+        break;
+
+      default:
+
+        // ERROR MESSAGE HERE!!
+        break;
+
+    }
     tab.setSaved(true);
 
     // Generate an image (unless it's quite large)
@@ -446,9 +469,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     JMenuBar menuBar = new JMenuBar();
 
-    menuBar.add(createMenu("File", "New Tab", "Open", "Save As...[TAB]", "Refresh Tab[TAB]", null, "Clear[TAB]", "Close Tab[TAB]", null, "Export as SVG[AUTOMATON]", null, "Quit"));
+    menuBar.add(createMenu("File", "New Tab->New Automaton,New U-Structure,New Nash U-Structure", "Open", "Save As...[TAB]", "Refresh Tab[TAB]", null, "Clear[TAB]", "Close Tab[TAB]", null, "Export as SVG[AUTOMATON]", null, "Quit"));
     menuBar.add(createMenu("Standard Operations[AUTOMATON]", "Accessible", "Co-Accessible", "Trim", "Complement", null, "Intersection", "Union"));
-    menuBar.add(createMenu("U-Stucture Operations[AUTOMATON]", "Synchronized Composition", "Add Communications", "Feasible Protocols->Generate All,Make Protocol Feasible,Find Smallest"));
+    menuBar.add(createMenu("U-Structure Operations[AUTOMATON]", "Synchronized Composition", "Add Communications", "Feasible Protocols->Generate All,Make Protocol Feasible,Find Smallest"));
     menuBar.add(createMenu("Quantitative Communication[AUTOMATON]", "Nash", "Pareto"));
     menuBar.add(createMenu("Generate", "Random Automaton"));
 
@@ -568,9 +591,19 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         break;
 
-      case "New Tab":
+      case "New Automaton":
 
-        createTab(true);
+        createTab(true, Automaton.Type.AUTOMATON);
+        break;
+
+      case "New U-Structure":
+
+        createTab(true, Automaton.Type.U_STRUCTURE);
+        break;
+
+      case "New Nash U-Structure":
+
+        createTab(true, Automaton.Type.NASH_U_STRUCTURE);
         break;
 
       case "Save As...":
@@ -822,26 +855,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     AutomatonTab tab = tabs.get(index);
 
-    // Determine what type of automaton it is
-    Automaton.Type automatonType = null;
-    try {
-
-      RandomAccessFile headerRAFile = new RandomAccessFile(tab.headerFile, "rw");
-
-      byte[] buffer = new byte[4];
-      headerRAFile.seek(0);
-      headerRAFile.read(buffer);
-
-      automatonType = Automaton.Type.getType((byte) ByteManipulator.readBytesAsLong(buffer, 0, 1));
-
-      headerRAFile.close();
-
-    } catch (IOException e) {
-      e.printStackTrace();
-    } 
-
     // Instantiate automaton
-    switch (automatonType) {
+    switch (Automaton.Type.getType(tab.headerFile)) {
 
       case AUTOMATON:
         tab.automaton = new Automaton(tab.headerFile, tab.bodyFile, false);
@@ -857,7 +872,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     }
 
-    tab.updateInputFields();
+    tab.refreshGUI();
 
     // Generate an image (unless it's quite large)
     if (tab.automaton.getNumberOfStates() <= 100) {
@@ -909,17 +924,19 @@ public class AutomataGUI extends JFrame implements ActionListener {
           JOptionPane.showMessageDialog(null, "The specified file is already open in another tab.", "File Already Open", JOptionPane.ERROR_MESSAGE);
           return null;
         }
+
+      // Get files
+      File headerFile = fileChooser.getSelectedFile();
+      File bodyFile = new File(headerFile.getParentFile() + "/" + removeExtension(headerFile.getName()) + ".bdy");
      
       // Create new tab (if requested)
       if (index == -1) {
-        createTab(false);
+        createTab(false, Automaton.Type.getType(headerFile));
         index = tabbedPane.getSelectedIndex();
       }
       AutomatonTab tab = tabs.get(index);
       
-       // Update files
-      File headerFile = fileChooser.getSelectedFile();
-      File bodyFile = new File(headerFile.getParentFile() + "/" + removeExtension(headerFile.getName()) + ".bdy");
+      // Update files
       tab.headerFile = headerFile;
       tab.bodyFile = bodyFile;
 
@@ -1142,35 +1159,77 @@ public class AutomataGUI extends JFrame implements ActionListener {
     public File headerFile = null;
     public File bodyFile   = null;
 
-    public Automaton automaton;
+    public Automaton automaton = null;
 
     private boolean saved = true;
 
-    public int index = -1;
+    public int index;
 
     public JButton generateAutomatonButton = null;
     public JButton generateImageButton     = null;
 
+    public Automaton.Type type;
+
       /* Constructor */
 
-    public AutomatonTab(int index) {
+    public AutomatonTab(int index, Automaton.Type type) {
 
-      super();
       this.index = index;
+      this.type = type;
 
-        /* Setup */
+      // setLayout(new BorderLayout());
+
+      // Container upperContainer = createSelectAutomatonTypeContainer();
+      // add(upperContainer, BorderLayout.NORTH);
+
+      // Container lowerContainer = new Container();
+      // lowerContainer.setLayout(new FlowLayout());
+      // lowerContainer.add(createInputContainer());
+      // lowerContainer.add(canvas = new Canvas());
+      // add(lowerContainer, BorderLayout.CENTER);
 
       setLayout(new FlowLayout());
-      add(createInputContainer());
+      add(createInputContainer(type));
+      add(canvas = new Canvas());
 
-
-        /* Create canvas */
-
-      canvas = new Canvas();
-      add(canvas);
     }
 
-    private Container createInputContainer() {
+    // private Container createSelectAutomatonTypeContainer() {
+
+    //     /* Setup */
+
+    //   Container container = new Container();
+    //   container.setLayout(new FlowLayout());
+
+    //     /* Add instructions */
+
+    //   container.add(new JLabel("Select Automaton Type:"));
+
+    //     /* Create button group */
+
+    //   ButtonGroup buttonGroup = new ButtonGroup();
+
+    //   JRadioButton automatonButton      = new JRadioButton("Automaton");
+    //   JRadioButton uStructureButton     = new JRadioButton("U-Structure");
+    //   JRadioButton nashUStructureButton = new JRadioButton("Nash U-Structure");
+
+    //   buttonGroup.add(automatonButton);
+    //   buttonGroup.add(uStructureButton);
+    //   buttonGroup.add(nashUStructureButton);
+
+    //   automatonButton.setSelected(true);
+
+    //     /* Add button group to container */
+
+    //   container.add(automatonButton);
+    //   container.add(uStructureButton);
+    //   container.add(nashUStructureButton);
+
+    //   return container;
+
+    // }
+
+    private Container createInputContainer(Automaton.Type type) {
 
         /* Setup */
 
@@ -1181,7 +1240,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         /* Controller Input */
 
-      JLabel controllerInputLabel = new JLabel("# Controllers:");
+      c.gridwidth = 1;
+
+      JLabel controllerInputLabel = new JLabel( (type == Automaton.Type.AUTOMATON ? "# Controllers:" : "# Controllers Before U-Structure:") );
       c.ipady   = 0;
       c.weightx = 0.5;
       c.weighty = 0.0;
@@ -1199,25 +1260,12 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         /* Event Input */
 
-      JLabel eventInputInstructions = new JLabel("Enter events:");
       c.ipady   = 0;
       c.weightx = 0.5;
       c.weighty = 0.0;
       c.gridx   = 0;
       c.gridy   = 1;
-      container.add(new TooltipComponent(
-          eventInputInstructions,
-          "<html>1 event per line, formatted as <i>LABEL[,OBSERVABLE,CONTROLLABLE]</i>.<br>"
-          + "<b><u>EXAMPLE</u></b>: '<i>EventName,T,F</i>' denotes an event called <b>EventName</b> "
-          + "that is <b>observable</b> but <b>not controllable</b> for 1 controller.<br>"
-          + "<b><u>EXAMPLE</u></b>: '<i>EventName,TT,FT</i>' denotes an event called <b>EventName</b> "
-          + "that is <b>observable</b> but <b>not controllable</b> for the first controller, and is "
-          + "<b>observable</b> and <b>controllable</b> for the second controller.<br><b><u>NOTE</u></b>: "
-          + "'<i>T</i>' and '<i>F</i>' are case in-sensitive. If the observable and controllable properties are "
-          + "omitted, then it is assumed that they are observable and controllable for all controllers.<br>"
-          + "It is not possible, however, to omit the properties for some controllers, but not all.</html>"
-        ),c);
-
+      container.add(new TooltipComponent(new JLabel("Enter events:"), getEventInstructions(type)), c);
       eventInput = new JTextPane();
       eventInput.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
       eventInput.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
@@ -1236,21 +1284,12 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         /* State Input */
 
-      JLabel stateInputInstructions = new JLabel("Enter states:");
       c.ipady   = 0;
       c.weightx = 0.5;
       c.weighty = 0.0;
       c.gridx   = 1;
       c.gridy   = 1;
-      container.add(new TooltipComponent(
-          stateInputInstructions,
-          "<html>1 state per line, formatted as <i>[@]LABEL[,MARKED]</i> (where the '@' symbol denotes that this is the initial state).<br>"
-          + "<b><u>EXAMPLE</u></b>: <i>'StateName,F'</i> denotes a state called <b>StateName</b> that is <b>unmarked</b>.<br>"
-          + "<b><u>EXAMPLE</u></b>: <i>'@StateName'</i> denotes a state called <b>StateName</b> that is the <b>initial state</b> and is "
-          + "<b>marked</b>.<br><b><u>NOTE</u></b>: '<i>T</i>' and '<i>F</i>' are case in-sensitive. If omitted, the default value is "
-          + "'<i>T</i>'. There is only allowed to be one initial state.</html>"
-        ),c);
-
+      container.add(new TooltipComponent(new JLabel("Enter states:"), getStateInstructions(type)), c);
       stateInput = new JTextPane();
       stateInput.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
       stateInput.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
@@ -1271,23 +1310,12 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       c.gridwidth = 2;
 
-      JLabel transitionInputInstructions = new JLabel("Enter transitions:");
       c.ipady   = 0;
       c.weightx = 1.0;
       c.weighty = 0.0;
       c.gridx   = 0;
       c.gridy   = 3;
-      container.add(new TooltipComponent(
-          transitionInputInstructions,
-          "<html>1 transition per line, formatted as <i>INITIAL_STATE,EVENT,TARGET_STATE[:SPECIAL_PROPERTIES]</i>"
-          + ", which are used in the synchronized composition operation).<br>"
-          + "<b><u>EXAMPLE</u></b>: <i>'FirstState,Event,SecondState'</i> denotes a transition that goes from "
-          + "the state <b>'FirstState'</b> to the state <b>'SecondState'</b> by the event called <b>'Event'</b>.<br>"
-          + "<b><u>NOTE</u></b>: <i>SPECIAL_PROPERTIES</i> can be added to a transition by appending ':NAME_OF_PROPERTY'. "
-          + "Additional properties are separated by commas.<br><b><u>Names of special properties:</u></b>: <i>'BAD'</i>, "
-          + "<i>'UNCONDITIONAL_VIOLATION'</i>, <i>'CONDITIONAL_VIOLATION'</i>, and <i>'POTENTIAL_COMMUNICATION'</i>.</html>"
-        ),c);
-
+      container.add(new TooltipComponent(new JLabel("Enter transitions:"), getTransitionInstructions(type)), c);
       transitionInput = new JTextPane();
       transitionInput.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
       transitionInput.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
@@ -1354,6 +1382,86 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     }
 
+    private String getEventInstructions(Automaton.Type type) {
+
+      switch (type) {
+        
+        case AUTOMATON:
+          return "<html>1 event per line, formatted as <i>LABEL[,OBSERVABLE,CONTROLLABLE]</i>.<br>"
+               + "<b><u>EXAMPLE 1</u></b>: '<i>EventName,T,F</i>' denotes an event called <b>EventName</b> "
+               + "that is <b>observable</b> but <b>not controllable</b> for 1 controller.<br>"
+               + "<b><u>EXAMPLE 2</u></b>: '<i>EventName,TT,FT</i>' denotes an event called <b>EventName</b> "
+               + "that is <b>observable</b> but <b>not controllable</b> for the first controller, and is "
+               + "<b>observable</b> and <b>controllable</b> for the second controller.<br><b><u>NOTE</u></b>: "
+               + "'<i>T</i>' and '<i>F</i>' are case insensitive. If the observable and controllable properties are "
+               + "omitted, then it is assumed that they are observable and controllable for all controllers.<br>"
+               + "It is not possible, however, to omit the properties for some controllers, but not all.</html>";
+
+        case U_STRUCTURE:
+          return "<html>1 event vector per line, formatted as <i>&lt;Event1_Event2...></i>.<br>"
+               + "<b><u>EXAMPLE</u></b>: '<i><&lt;FirstEvent_SecondEvent_ThirdEvent></i>' denotes an event vector "
+               + "containing the 3 events named <b>FirstEvent</b>, <b>SecondEvent</b>, and <b>ThirdEvent</b>.<br></html>";
+
+        default:
+          return null;
+
+      }
+
+    }
+
+    private String getStateInstructions(Automaton.Type type) {
+
+      switch (type) {
+        
+        case AUTOMATON:
+          return "<html>1 state per line, formatted as <i>[@]LABEL[,MARKED]</i> (where the '@' symbol denotes that this is the initial state).<br>"
+               + "<b><u>EXAMPLE 1</u></b>: <i>'StateName,F'</i> denotes a state called <b>StateName</b> that is <b>unmarked</b>.<br>"
+               + "<b><u>EXAMPLE 2</u></b>: <i>'@StateName'</i> denotes a state called <b>StateName</b> that is the <b>initial state</b> and is "
+               + "<b>marked</b>.<br><b><u>NOTE</u></b>: '<i>T</i>' and '<i>F</i>' are case insensitive. If omitted, the default value is "
+               + "'<i>T</i>'. There is only allowed to be one initial state.</html>";
+
+        case U_STRUCTURE:
+          return "<html>1 state per line, formatted as <i>[@]LABEL</i> (where the '@' symbol denotes that this is the initial state).<br>"
+               + "<b><u>EXAMPLE 1</u></b>: <i>'StateName'</i> denotes a state called <b>StateName</b>.<br>"
+               + "<b><u>EXAMPLE 2</u></b>: <i>'@StateName'</i> denotes a state called <b>StateName</b> that is the <b>initial state</b><br>"
+               + "<b><u>NOTE</u></b>: Unobservable events in an event vector are denoted by an asterisk.</html>";
+
+        default:
+          return null;
+
+      }
+
+    }
+
+    private String getTransitionInstructions(Automaton.Type type) {
+
+      switch (type) {
+        
+        case AUTOMATON:
+          return "<html>1 transition per line, formatted as <i>INITIAL_STATE,EVENT,TARGET_STATE[:BAD]</i>.<br>"
+               + "<b><u>EXAMPLE 1</u></b>: <i>'FirstState,Event,SecondState'</i> denotes a transition that goes from "
+               + "the state <b>'FirstState'</b> to the state <b>'SecondState'</b> by the event called <b>'Event'</b>.<br>"
+               + "<b><u>EXAMPLE 2</u></b>: <i>'FirstState,Event,SecondState:BAD'</i> denotes a transition that is identical "
+               + "to the transition in example 1, except that it has been marked as a bad transition (which is used for synchronized composition).</html>";
+
+        case U_STRUCTURE:
+          return "<html>1 transition per line, formatted as <i>INITIAL_STATE,EVENT,TARGET_STATE[:SPECIAL_PROPERTIES]</i>"
+               + ", which are used in the synchronized composition operation).<br>"
+               + "<b><u>EXAMPLE</u></b>: <i>'FirstState,Event,SecondState'</i> denotes a transition that goes from "
+               + "the state <b>'FirstState'</b> to the state <b>'SecondState'</b> by the event vector called <b>'Event'</b>.<br>"
+               + "<b><u>NOTE</u></b>: <i>SPECIAL_PROPERTIES</i> can be added to a transition by appending ':NAME_OF_PROPERTY'. "
+               + "Additional properties are separated by commas.<br><b>Names of special properties in a U-Structure:</b>: "
+               + "<i>'UNCONDITIONAL_VIOLATION'</i>, <i>'CONDITIONAL_VIOLATION'</i>, <i>'COMMUNICATION*'</i>, and <i>'POTENTIAL_COMMUNICATION'</i>.<br>"
+               + "<i>*<b>'COMMUNICATION'</b> is used to mark all of the communications which are not potential communications, but have been added "
+               + "to the U-Structure for mathematical completion.</i></html>";
+
+        default:
+          return null;
+          
+      }
+
+    }
+
     private void updateTabTitle() {
 
       String title = removeExtension(headerFile.getName());
@@ -1400,7 +1508,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
       return saved;
     }
 
-    public void updateInputFields() {
+    public void refreshGUI() {
 
       automaton.generateInputForGUI();
 
