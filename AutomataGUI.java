@@ -26,12 +26,13 @@ public class AutomataGUI extends JFrame implements ActionListener {
   private java.util.List<Component> componentsWhichRequireAutomaton = new ArrayList<Component>();
 
   // Miscellaneous
-  private int imageSize = 600;
+  private int imageSize = 800;
   private File currentDirectory = null;
 
     /** MAIN METHOD **/
   
   public static void main(String[] args) {
+    System.setProperty("apple.laf.useScreenMenuBar", "true");
     new AutomataGUI();
   }
 
@@ -259,7 +260,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       /* Pack things in nicely */
 
-    pack();
+    // pack();
+    setExtendedState(JFrame.MAXIMIZED_BOTH);
     
       /* Ensure our application will be closed when the user presses the "X" */
 
@@ -406,8 +408,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       default:
 
-        // ERROR MESSAGE HERE!!
-        break;
+        // NOTE: The following error should never appear to the user, and it indicates a bug in the program
+        JOptionPane.showMessageDialog(null, "Unable to generate automaton from GUI input code due to unrecognized automaton type.", "Crucial Error", JOptionPane.ERROR_MESSAGE);
+        return;
 
     }
     tab.setSaved(true);
@@ -505,7 +508,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
       if (str == null)
         menu.addSeparator();
 
-      // Add submenu with its menu items
+      // Add sub-menu with its menu items
       else if (str.contains("->")) {
 
         String[] parts = str.split("->");
@@ -1018,7 +1021,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
    * Allow the user to select an automaton that is currently open.
    * @param str         The message to display
    * @param indexToSkip The index of the automaton which should be omitted from the options
-   * @return the index of the selected automaton (or -1 if there was not an automaton selected)
+   * @return            The index of the selected automaton (or -1 if there was not an automaton selected)
    **/
   private int pickAutomaton(String str, int indexToSkip) {
 
@@ -1073,7 +1076,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
   /**
    * Removes the last 4 characters of the string, which is used to trim either '.hdr' or '.bdy' off the end.
    * @param str The string to be trimmed
-   * @return the trimmed string
+   * @return    The trimmed string
    **/
   private String removeExtension(String str) {
 
@@ -1107,7 +1110,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     /**
      * Returns the dimensions that the canvas should be.
-     * @return the preferred dimension
+     * @return  The preferred dimension
      **/
     @Override public Dimension getPreferredSize() {
 
@@ -1123,18 +1126,21 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       super.paintComponent(graphics);
 
+      int horizontalPadding = (getWidth()  - imageSize) / 2;
+      int verticalPadding   = (getHeight() - imageSize) / 2;
+
         /* Draw blank canvas */
       
       if (image == null) {
 
         graphics.setColor(Color.LIGHT_GRAY);
-        graphics.fillRect(0, 0, imageSize, imageSize);
+        graphics.fillRect(horizontalPadding, verticalPadding, imageSize, imageSize);
 
         /* Draw image */
 
       } else {
 
-        graphics.drawImage(image, 0, 0, null);
+        graphics.drawImage(image, horizontalPadding, verticalPadding, null);
 
       }
 
@@ -1177,20 +1183,16 @@ public class AutomataGUI extends JFrame implements ActionListener {
       this.index = index;
       this.type = type;
 
-      // setLayout(new BorderLayout());
+      setLayout(new BorderLayout());
 
       // Container upperContainer = createSelectAutomatonTypeContainer();
-      // add(upperContainer, BorderLayout.NORTH);
+      add(new JLabel("Automaton type: " + type.toString(), SwingConstants.CENTER), BorderLayout.NORTH);
 
-      // Container lowerContainer = new Container();
-      // lowerContainer.setLayout(new FlowLayout());
-      // lowerContainer.add(createInputContainer());
-      // lowerContainer.add(canvas = new Canvas());
-      // add(lowerContainer, BorderLayout.CENTER);
-
-      setLayout(new FlowLayout());
-      add(createInputContainer(type));
-      add(canvas = new Canvas());
+      Container lowerContainer = new Container();
+      lowerContainer.setLayout(new GridLayout(1, 2));
+      lowerContainer.add(createInputContainer(type));
+      lowerContainer.add(canvas = new Canvas());
+      add(lowerContainer, BorderLayout.CENTER);
 
     }
 
@@ -1271,7 +1273,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
       eventInput.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
       JScrollPane eventInputScrollPane = new JScrollPane(eventInput) {
         @Override public Dimension getPreferredSize() {
-          return new Dimension(100, 100);  
+          return new Dimension(200, 200);  
         }
       };
       watchForChanges(eventInput);
@@ -1295,7 +1297,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
       stateInput.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
       JScrollPane stateInputScrollPane = new JScrollPane(stateInput) {
         @Override public Dimension getPreferredSize() {
-          return new Dimension(100, 100);  
+          return new Dimension(200, 200);  
         }
       };
       watchForChanges(stateInput);
@@ -1321,7 +1323,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
       transitionInput.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
       JScrollPane transitionInputScrollPane = new JScrollPane(transitionInput) {
         @Override public Dimension getPreferredSize() {
-          return new Dimension(100, 100);  
+          return new Dimension(200, 200);  
         }
       };
       watchForChanges(transitionInput);
