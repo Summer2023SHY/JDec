@@ -30,7 +30,7 @@ public abstract class AutomatonGenerator<T> {
    * @param nControllers            The number of controllers in the automaton
    * @param nBadTransitions         The number of bad transition in the automaton
    * @param progressBar             The progress bar to be updated during the generation process
-   * @return the randomly generated automaton
+   * @return                        The randomly generated automaton
    **/
   public static Automaton generateRandom(File headerFile, File bodyFile, int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions, JProgressBar progressBar) {
 
@@ -172,7 +172,7 @@ public abstract class AutomatonGenerator<T> {
    * Give a unique name to the event, based on its ID and the largest possible ID (which is used to calculate how many letters are needed).
    * @param id    ID of the event
    * @param maxID Largest possible ID in this event set
-   * @return the generated event label
+   * @return      The generated event label
    **/
   private static String generateEventLabel(int id, int maxID) {
 
@@ -196,7 +196,7 @@ public abstract class AutomatonGenerator<T> {
    * Generate random long value in the given range (inclusive).
    * @param min Minimum value
    * @param max Maximum value
-   * @param random long value
+   * @return    The randomly generated long value
    **/
   private static long generateLong(long min, long max) {
 
@@ -208,7 +208,7 @@ public abstract class AutomatonGenerator<T> {
    * Generate random integer value in the given range (inclusive).
    * @param min Minimum value
    * @param max Maximum value
-   * @param random integer value
+   * @return    The randomly generated integer value       
    **/
   private static int generateInt(int min, int max) {
 
@@ -218,7 +218,7 @@ public abstract class AutomatonGenerator<T> {
 
   /**
    * Generate random boolean.
-   * @param random boolean value
+   * @return  The randomly generated boolean value
    **/
   private static boolean generateBoolean() {
 
@@ -234,10 +234,7 @@ public abstract class AutomatonGenerator<T> {
    * @param eventInputText      The event input text
    * @param stateInputText      The state input text
    * @param transitionInputText The transitionsInputText
-   * @param nControllers        The number of controllers in the automaton (or in the case of a U-Structure, the number of controllers prior to )
    * @param verbose             Whether or not parsing errors should be printed to the console
-   * @param headerFile          The header file where the automaton will be written to
-   * @param bodyFile            The body file where the automaton will be written to
    * @return                    The generated automaton
    **/
   public static <T extends Automaton> T generateFromGUICode(T automaton, String eventInputText, String stateInputText, String transitionInputText, boolean verbose) {

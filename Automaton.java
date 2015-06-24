@@ -177,8 +177,8 @@ public class Automaton {
 
     /**
      * Given a class, get the associated enumeration value.
-     * @param class The class
-     * @return      The automaton type (or null, if it could not be found)
+     * @param classType The class
+     * @return          The automaton type (or null, if it could not be found)
      **/
     public static Type getType(Class classType) {
 
@@ -630,18 +630,18 @@ public class Automaton {
    * @param automaton The generic automaton object
    * @return          The same automaton that was passed into the method, now containing the inverse of this automaton
    **/
-  protected <T extends Automaton> T invertHelper(T invertedAutomaton) {
+  protected <T extends Automaton> T invertHelper(T automaton) {
 
       /* Create a new automaton that has each of the transitions going the opposite direction */
 
     // Add events
-    invertedAutomaton.addAllEvents(events);
+    automaton.addAllEvents(events);
 
     // Add states
     for (long s = 1; s <= nStates; s++) {
 
       State state = getStateExcludingTransitions(s);
-      invertedAutomaton.addState(state.getLabel(), state.isMarked(), s == initialState);
+      automaton.addState(state.getLabel(), state.isMarked(), s == initialState);
 
     }
 
@@ -651,15 +651,15 @@ public class Automaton {
       State state = getState(s);
 
       for (Transition t : state.getTransitions())
-        invertedAutomaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), s);
+        automaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), s);
 
     }
 
       /* Ensure that the header file has been written to disk */
       
-    invertedAutomaton.writeHeaderFile();
+    automaton.writeHeaderFile();
 
-    return invertedAutomaton;
+    return automaton;
 
   }
 
@@ -2781,7 +2781,7 @@ public class Automaton {
 
   /**
    * Add the entire set of events to the automaton.
-   * @param label The set of events to add
+   * @param newEvents The set of events to add
    **/
   protected void addAllEvents(Set<Event> newEvents) {
 
@@ -2792,7 +2792,7 @@ public class Automaton {
 
   /**
    * Add the entire set of events to the automaton (ensuring that no duplicates are added).
-   * @param label                           The set of events to add
+   * @param newEvents                       The set of events to add
    * @throws IncompatibleAutomataException  If one of the events to be added is incompatible with an existing event
    **/
   protected void addEventsWithErrorChecking(Set<Event> newEvents) throws IncompatibleAutomataException {
@@ -2933,7 +2933,7 @@ public class Automaton {
 
   /**
    * Return the set of all events (in order by ID).
-   * @returnsThe set of all events
+   * @return  The set of all events
    **/
   public Set<Event> getEvents() {
     return events;
