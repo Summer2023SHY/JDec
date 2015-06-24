@@ -686,7 +686,7 @@ public class TestAutomata {
       printTestCase("Ensuring the states are correct", new TestResult(addCommunications.getStateInput(), "@1_1_1\n1_1_2\n1_3_1\n1_3_2\n2_2_1\n2_2_2\n2_4_1\n2_4_2\n2_5_1\n2_5_2\n3_1_3\n3_1_4\n3_1_5\n3_3_3\n3_3_4\n3_3_5\n4_2_3\n4_2_4\n4_2_5\n4_4_3\n4_4_4\n4_4_5\n4_5_3\n4_5_4\n4_5_5\n5_2_3\n5_2_4\n5_2_5\n5_4_3\n5_4_4\n5_4_5\n5_5_3\n5_5_4\n5_5_5\n6_6_6\n6_6_7\n6_7_6\n6_7_7\n7_6_6\n7_6_7\n7_7_6\n7_7_7"), counter);
       printTestCase("Ensuring the transitions are correct", new TestResult(addCommunications.getTransitionInput(), "1_1_1,<a_a_*>,2_2_1\n1_1_1,<b_*_b>,3_1_3\n1_1_1,<*_b_*>,1_3_1\n1_1_1,<*_*_a>,1_1_2\n1_1_1,<*_b_a>,1_3_2:COMMUNICATION\n1_1_1,<b_b_b>,3_3_3:POTENTIAL_COMMUNICATION-RS\n1_1_1,<a_a_a>,2_2_2:POTENTIAL_COMMUNICATION-SR\n1_1_2,<a_a_*>,2_2_2\n1_1_2,<b_*_b>,3_1_4\n1_1_2,<*_b_*>,1_3_2\n1_1_2,<b_b_b>,3_3_4:POTENTIAL_COMMUNICATION-RS\n1_3_1,<a_a_*>,2_5_1\n1_3_1,<b_*_b>,3_3_3\n1_3_1,<*_*_a>,1_3_2\n1_3_1,<a_a_a>,2_5_2:POTENTIAL_COMMUNICATION-SR\n1_3_2,<a_a_*>,2_5_2\n1_3_2,<b_*_b>,3_3_4\n2_2_1,<b_*_b>,4_2_3\n2_2_1,<*_b_*>,2_4_1\n2_2_1,<*_*_a>,2_2_2\n2_2_1,<*_b_a>,2_4_2:COMMUNICATION\n2_2_1,<b_b_b>,4_4_3:POTENTIAL_COMMUNICATION-RS\n2_2_2,<b_*_b>,4_2_4\n2_2_2,<*_b_*>,2_4_2\n2_2_2,<b_b_b>,4_4_4:POTENTIAL_COMMUNICATION-RS\n2_4_1,<b_*_b>,4_4_3\n2_4_1,<*_*_a>,2_4_2\n2_4_2,<b_*_b>,4_4_4\n2_5_1,<b_*_b>,4_5_3\n2_5_1,<*_*_a>,2_5_2\n2_5_2,<b_*_b>,4_5_4\n3_1_3,<a_a_*>,5_2_3\n3_1_3,<*_b_*>,3_3_3\n3_1_3,<*_*_a>,3_1_5\n3_1_3,<*_b_a>,3_3_5:COMMUNICATION\n3_1_3,<a_a_a>,5_2_5:POTENTIAL_COMMUNICATION-SR\n3_1_4,<a_a_*>,5_2_4\n3_1_4,<*_b_*>,3_3_4\n3_1_5,<a_a_*>,5_2_5\n3_1_5,<*_b_*>,3_3_5\n3_3_3,<a_a_*>,5_5_3\n3_3_3,<*_*_a>,3_3_5\n3_3_3,<a_a_a>,5_5_5:POTENTIAL_COMMUNICATION-SR\n3_3_4,<a_a_*>,5_5_4\n3_3_5,<a_a_*>,5_5_5\n4_2_3,<*_b_*>,4_4_3\n4_2_3,<*_*_a>,4_2_5\n4_2_3,<*_b_a>,4_4_5:COMMUNICATION\n4_2_4,<*_b_*>,4_4_4\n4_2_5,<*_b_*>,4_4_5\n4_4_3,<*_*_a>,4_4_5\n4_4_4,<o_o_o>,6_6_6\n4_4_5,<o_o_o>,6_6_7\n4_5_3,<*_*_a>,4_5_5\n4_5_4,<o_o_o>,6_7_6\n4_5_5,<o_o_o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*_b_*>,5_4_3\n5_2_3,<*_*_a>,5_2_5\n5_2_3,<*_b_a>,5_4_5:COMMUNICATION\n5_2_4,<*_b_*>,5_4_4\n5_2_5,<*_b_*>,5_4_5\n5_4_3,<*_*_a>,5_4_5\n5_4_4,<o_o_o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o_o_o>,7_6_7\n5_5_3,<*_*_a>,5_5_5\n5_5_4,<o_o_o>,7_7_6\n5_5_5,<o_o_o>,7_7_7"), counter);
     
-    } catch (NullPointerException | NoUStructureException e) {
+    } catch (NullPointerException e) {
 
       e.printStackTrace();
       counter.increment(false);
@@ -705,24 +705,11 @@ public class TestAutomata {
       "1_1_1,<a_a_*>,2_2_1\n1_1_1,<b_*_b>,3_1_3\n1_1_1,<*_b_*>,1_3_1\n1_1_1,<*_*_a>,1_1_2\n1_1_2,<a_a_*>,2_2_2\n1_1_2,<b_*_b>,3_1_4\n1_1_2,<*_b_*>,1_3_2\n1_3_1,<a_a_*>,2_5_1\n1_3_1,<b_*_b>,3_3_3\n1_3_1,<*_*_a>,1_3_2\n1_3_2,<a_a_*>,2_5_2\n1_3_2,<b_*_b>,3_3_4\n2_2_1,<b_*_b>,4_2_3\n2_2_1,<*_b_*>,2_4_1\n2_2_1,<*_*_a>,2_2_2\n2_2_2,<b_*_b>,4_2_4\n2_2_2,<*_b_*>,2_4_2\n2_4_1,<b_*_b>,4_4_3\n2_4_1,<*_*_a>,2_4_2\n2_4_2,<b_*_b>,4_4_4\n2_5_1,<b_*_b>,4_5_3\n2_5_1,<*_*_a>,2_5_2\n2_5_2,<b_*_b>,4_5_4\n3_1_3,<a_a_*>,5_2_3\n3_1_3,<*_b_*>,3_3_3\n3_1_3,<*_*_a>,3_1_5\n3_1_4,<a_a_*>,5_2_4\n3_1_4,<*_b_*>,3_3_4\n3_1_5,<a_a_*>,5_2_5\n3_1_5,<*_b_*>,3_3_5\n3_3_3,<a_a_*>,5_5_3\n3_3_3,<*_*_a>,3_3_5\n3_3_4,<a_a_*>,5_5_4\n3_3_5,<a_a_*>,5_5_5\n4_2_3,<*_b_*>,4_4_3\n4_2_3,<*_*_a>,4_2_5\n4_2_4,<*_b_*>,4_4_4\n4_2_5,<*_b_*>,4_4_5\n4_4_3,<*_*_a>,4_4_5\n4_4_4,<o_o_o>,6_6_6\n4_4_5,<o_o_o>,6_6_7\n4_5_3,<*_*_a>,4_5_5\n4_5_4,<o_o_o>,6_7_6\n4_5_5,<o_o_o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*_b_*>,5_4_3\n5_2_3,<*_*_a>,5_2_5\n5_2_4,<*_b_*>,5_4_4\n5_2_5,<*_b_*>,5_4_5\n5_4_3,<*_*_a>,5_4_5\n5_4_4,<o_o_o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o_o_o>,7_6_7\n5_5_3,<*_*_a>,5_5_5\n5_5_4,<o_o_o>,7_7_6\n5_5_5,<o_o_o>,7_7_7", // Transitions
       false // We do not want it to be verbose
     ));
-
-    try {
-
-      addCommunications = saveAndLoadUStructure(synchronizedComposition.addCommunications(new File("addCommunications.hdr"), new File("addCommunications.bdy")));
-      addCommunications.generateInputForGUI();
-      printTestCase("Ensuring the events are correct", new TestResult(addCommunications.getEventInput(), "<a_a_*>\n<b_*_b>\n<*_b_*>\n<*_*_a>\n<o_o_o>\n<*_b_a>\n<b_b_b>\n<a_a_a>"), counter);
-      printTestCase("Ensuring the states are correct", new TestResult(addCommunications.getStateInput(), "@1_1_1\n1_1_2\n1_3_1\n1_3_2\n2_2_1\n2_2_2\n2_4_1\n2_4_2\n2_5_1\n2_5_2\n3_1_3\n3_1_4\n3_1_5\n3_3_3\n3_3_4\n3_3_5\n4_2_3\n4_2_4\n4_2_5\n4_4_3\n4_4_4\n4_4_5\n4_5_3\n4_5_4\n4_5_5\n5_2_3\n5_2_4\n5_2_5\n5_4_3\n5_4_4\n5_4_5\n5_5_3\n5_5_4\n5_5_5\n6_6_6\n6_6_7\n6_7_6\n6_7_7\n7_6_6\n7_6_7\n7_7_6\n7_7_7"), counter);
-      printTestCase("Ensuring the transitions are correct", new TestResult(addCommunications.getTransitionInput(), "1_1_1,<a_a_*>,2_2_1\n1_1_1,<b_*_b>,3_1_3\n1_1_1,<*_b_*>,1_3_1\n1_1_1,<*_*_a>,1_1_2\n1_1_1,<*_b_a>,1_3_2:COMMUNICATION\n1_1_1,<b_b_b>,3_3_3:POTENTIAL_COMMUNICATION-RS\n1_1_1,<a_a_a>,2_2_2:POTENTIAL_COMMUNICATION-SR\n1_1_2,<a_a_*>,2_2_2\n1_1_2,<b_*_b>,3_1_4\n1_1_2,<*_b_*>,1_3_2\n1_1_2,<b_b_b>,3_3_4:POTENTIAL_COMMUNICATION-RS\n1_3_1,<a_a_*>,2_5_1\n1_3_1,<b_*_b>,3_3_3\n1_3_1,<*_*_a>,1_3_2\n1_3_1,<a_a_a>,2_5_2:POTENTIAL_COMMUNICATION-SR\n1_3_2,<a_a_*>,2_5_2\n1_3_2,<b_*_b>,3_3_4\n2_2_1,<b_*_b>,4_2_3\n2_2_1,<*_b_*>,2_4_1\n2_2_1,<*_*_a>,2_2_2\n2_2_1,<*_b_a>,2_4_2:COMMUNICATION\n2_2_1,<b_b_b>,4_4_3:POTENTIAL_COMMUNICATION-RS\n2_2_2,<b_*_b>,4_2_4\n2_2_2,<*_b_*>,2_4_2\n2_2_2,<b_b_b>,4_4_4:POTENTIAL_COMMUNICATION-RS\n2_4_1,<b_*_b>,4_4_3\n2_4_1,<*_*_a>,2_4_2\n2_4_2,<b_*_b>,4_4_4\n2_5_1,<b_*_b>,4_5_3\n2_5_1,<*_*_a>,2_5_2\n2_5_2,<b_*_b>,4_5_4\n3_1_3,<a_a_*>,5_2_3\n3_1_3,<*_b_*>,3_3_3\n3_1_3,<*_*_a>,3_1_5\n3_1_3,<*_b_a>,3_3_5:COMMUNICATION\n3_1_3,<a_a_a>,5_2_5:POTENTIAL_COMMUNICATION-SR\n3_1_4,<a_a_*>,5_2_4\n3_1_4,<*_b_*>,3_3_4\n3_1_5,<a_a_*>,5_2_5\n3_1_5,<*_b_*>,3_3_5\n3_3_3,<a_a_*>,5_5_3\n3_3_3,<*_*_a>,3_3_5\n3_3_3,<a_a_a>,5_5_5:POTENTIAL_COMMUNICATION-SR\n3_3_4,<a_a_*>,5_5_4\n3_3_5,<a_a_*>,5_5_5\n4_2_3,<*_b_*>,4_4_3\n4_2_3,<*_*_a>,4_2_5\n4_2_3,<*_b_a>,4_4_5:COMMUNICATION\n4_2_4,<*_b_*>,4_4_4\n4_2_5,<*_b_*>,4_4_5\n4_4_3,<*_*_a>,4_4_5\n4_4_4,<o_o_o>,6_6_6\n4_4_5,<o_o_o>,6_6_7\n4_5_3,<*_*_a>,4_5_5\n4_5_4,<o_o_o>,6_7_6\n4_5_5,<o_o_o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*_b_*>,5_4_3\n5_2_3,<*_*_a>,5_2_5\n5_2_3,<*_b_a>,5_4_5:COMMUNICATION\n5_2_4,<*_b_*>,5_4_4\n5_2_5,<*_b_*>,5_4_5\n5_4_3,<*_*_a>,5_4_5\n5_4_4,<o_o_o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o_o_o>,7_6_7\n5_5_3,<*_*_a>,5_5_5\n5_5_4,<o_o_o>,7_7_6\n5_5_5,<o_o_o>,7_7_7"), counter);
-    
-    } catch (NoUStructureException e) {
-
-      e.printStackTrace();
-      counter.increment(false);
-      counter.increment(false);
-      counter.increment(false);
-      System.out.println(RED + "\t\t\t*** FAILED 3 TESTS DUE TO EXCEPTION ***" + RESET);
-
-    }
+    addCommunications = saveAndLoadUStructure(synchronizedComposition.addCommunications(new File("addCommunications.hdr"), new File("addCommunications.bdy")));
+    addCommunications.generateInputForGUI();
+    printTestCase("Ensuring the events are correct", new TestResult(addCommunications.getEventInput(), "<a_a_*>\n<b_*_b>\n<*_b_*>\n<*_*_a>\n<o_o_o>\n<*_b_a>\n<b_b_b>\n<a_a_a>"), counter);
+    printTestCase("Ensuring the states are correct", new TestResult(addCommunications.getStateInput(), "@1_1_1\n1_1_2\n1_3_1\n1_3_2\n2_2_1\n2_2_2\n2_4_1\n2_4_2\n2_5_1\n2_5_2\n3_1_3\n3_1_4\n3_1_5\n3_3_3\n3_3_4\n3_3_5\n4_2_3\n4_2_4\n4_2_5\n4_4_3\n4_4_4\n4_4_5\n4_5_3\n4_5_4\n4_5_5\n5_2_3\n5_2_4\n5_2_5\n5_4_3\n5_4_4\n5_4_5\n5_5_3\n5_5_4\n5_5_5\n6_6_6\n6_6_7\n6_7_6\n6_7_7\n7_6_6\n7_6_7\n7_7_6\n7_7_7"), counter);
+    printTestCase("Ensuring the transitions are correct", new TestResult(addCommunications.getTransitionInput(), "1_1_1,<a_a_*>,2_2_1\n1_1_1,<b_*_b>,3_1_3\n1_1_1,<*_b_*>,1_3_1\n1_1_1,<*_*_a>,1_1_2\n1_1_1,<*_b_a>,1_3_2:COMMUNICATION\n1_1_1,<b_b_b>,3_3_3:POTENTIAL_COMMUNICATION-RS\n1_1_1,<a_a_a>,2_2_2:POTENTIAL_COMMUNICATION-SR\n1_1_2,<a_a_*>,2_2_2\n1_1_2,<b_*_b>,3_1_4\n1_1_2,<*_b_*>,1_3_2\n1_1_2,<b_b_b>,3_3_4:POTENTIAL_COMMUNICATION-RS\n1_3_1,<a_a_*>,2_5_1\n1_3_1,<b_*_b>,3_3_3\n1_3_1,<*_*_a>,1_3_2\n1_3_1,<a_a_a>,2_5_2:POTENTIAL_COMMUNICATION-SR\n1_3_2,<a_a_*>,2_5_2\n1_3_2,<b_*_b>,3_3_4\n2_2_1,<b_*_b>,4_2_3\n2_2_1,<*_b_*>,2_4_1\n2_2_1,<*_*_a>,2_2_2\n2_2_1,<*_b_a>,2_4_2:COMMUNICATION\n2_2_1,<b_b_b>,4_4_3:POTENTIAL_COMMUNICATION-RS\n2_2_2,<b_*_b>,4_2_4\n2_2_2,<*_b_*>,2_4_2\n2_2_2,<b_b_b>,4_4_4:POTENTIAL_COMMUNICATION-RS\n2_4_1,<b_*_b>,4_4_3\n2_4_1,<*_*_a>,2_4_2\n2_4_2,<b_*_b>,4_4_4\n2_5_1,<b_*_b>,4_5_3\n2_5_1,<*_*_a>,2_5_2\n2_5_2,<b_*_b>,4_5_4\n3_1_3,<a_a_*>,5_2_3\n3_1_3,<*_b_*>,3_3_3\n3_1_3,<*_*_a>,3_1_5\n3_1_3,<*_b_a>,3_3_5:COMMUNICATION\n3_1_3,<a_a_a>,5_2_5:POTENTIAL_COMMUNICATION-SR\n3_1_4,<a_a_*>,5_2_4\n3_1_4,<*_b_*>,3_3_4\n3_1_5,<a_a_*>,5_2_5\n3_1_5,<*_b_*>,3_3_5\n3_3_3,<a_a_*>,5_5_3\n3_3_3,<*_*_a>,3_3_5\n3_3_3,<a_a_a>,5_5_5:POTENTIAL_COMMUNICATION-SR\n3_3_4,<a_a_*>,5_5_4\n3_3_5,<a_a_*>,5_5_5\n4_2_3,<*_b_*>,4_4_3\n4_2_3,<*_*_a>,4_2_5\n4_2_3,<*_b_a>,4_4_5:COMMUNICATION\n4_2_4,<*_b_*>,4_4_4\n4_2_5,<*_b_*>,4_4_5\n4_4_3,<*_*_a>,4_4_5\n4_4_4,<o_o_o>,6_6_6\n4_4_5,<o_o_o>,6_6_7\n4_5_3,<*_*_a>,4_5_5\n4_5_4,<o_o_o>,6_7_6\n4_5_5,<o_o_o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*_b_*>,5_4_3\n5_2_3,<*_*_a>,5_2_5\n5_2_3,<*_b_a>,5_4_5:COMMUNICATION\n5_2_4,<*_b_*>,5_4_4\n5_2_5,<*_b_*>,5_4_5\n5_4_3,<*_*_a>,5_4_5\n5_4_4,<o_o_o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o_o_o>,7_6_7\n5_5_3,<*_*_a>,5_5_5\n5_5_4,<o_o_o>,7_7_6\n5_5_5,<o_o_o>,7_7_7"), counter);
 
        /* Feasible Protocol Operations Tests */
 
@@ -800,26 +787,6 @@ public class TestAutomata {
     } catch(IncompatibleAutomataException e) {
       printTestCase("Ensuring that an IncompatibleAutomataException was raised", new TestResult(true), counter);
     }
-
-      /* NoUStructureException Tests */
-
-    // printTestOutput("NoUStructureException Tests: ", 2);
-
-    // try {
-    //   printTestOutput("Adding communications to an automaton with more than 1 controller...", 3);
-    //   automaton3.addCommunications(null, null);
-    //   printTestCase("Ensuring that a NoUStructureException was raised", new TestResult(false), counter);
-    // } catch(NoUStructureException e) {
-    //   printTestCase("Ensuring that a NoUStructureException was raised", new TestResult(true), counter);
-    // }
-
-    // try {
-    //   printTestOutput("Adding communications to an automaton which has event labels that are not vectors...", 3);
-    //   automaton2.addCommunications(null, null);
-    //   printTestCase("Ensuring that a NoUStructureException was raised", new TestResult(false), counter);
-    // } catch(NoUStructureException e) {
-    //   printTestCase("Ensuring that a NoUStructureException was raised", new TestResult(true), counter);
-    // }
 
       /* Print summary of this test routine */
 

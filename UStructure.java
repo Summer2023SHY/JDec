@@ -145,9 +145,8 @@ public class UStructure extends Automaton {
    * @param newHeaderFile          The header file where the new automaton should be stored
    * @param newBodyFile            The body file where the new automaton should be stored
    * @return                       The automaton with the added transitions
-   * @throws NoUStructureException If the automaton is not a U-Structure (which is required for this operation)
    **/
-  public UStructure addCommunications(File newHeaderFile, File newBodyFile) throws NoUStructureException {
+  public UStructure addCommunications(File newHeaderFile, File newBodyFile) {
     
       /* Setup */
 
@@ -290,9 +289,8 @@ public class UStructure extends Automaton {
    * Given the complete set of least upper bounds (LUBs), return the subset of LUBs which are the event vectors for potential communications.
    * @param leastUpperBounds        The set of LUBs
    * @return                        The set of potential communications, including communication roles
-   * @throws NoUStructureException  If the automaton is not a U-Structure (which is required for this operation)
    **/
-  private Set<CommunicationLabelVector> findPotentialCommunicationLabels(Set<LabelVector> leastUpperBounds) throws NoUStructureException {
+  private Set<CommunicationLabelVector> findPotentialCommunicationLabels(Set<LabelVector> leastUpperBounds) {
 
       /* Separate observable and unobservable labels */
 
@@ -300,8 +298,6 @@ public class UStructure extends Automaton {
     Set<LabelVector> unobservableLabels = new HashSet<LabelVector>();
 
     for (LabelVector v : leastUpperBounds) {
-      if (v.getSize() == -1)
-        throw new NoUStructureException();
       if (v.getLabelAtIndex(0).equals("*"))
         unobservableLabels.add(v);
       else
