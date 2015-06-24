@@ -90,10 +90,11 @@ public class FeasibleProtocolOutput extends JFrame {
         )));
 
       // Add a button to generate the U-Structure with this protocol
-      JButton button = new JButton("Generate Automaton");
+      final JButton button = new JButton("Generate Automaton");
       button.addActionListener(new ActionListener() {
    
         public void actionPerformed(ActionEvent e) {
+          button.setEnabled(false);
           String fileName = gui.getTemporaryFileName();
           File headerFile = new File(fileName + ".hdr");
           File bodyFile = new File(fileName + ".bdy");
@@ -118,21 +119,14 @@ public class FeasibleProtocolOutput extends JFrame {
       Container innerContainer = new Container();
       innerContainer.setLayout(new BoxLayout(innerContainer, BoxLayout.PAGE_AXIS));
       innerContainer.add(detailedProtocolText[i]);
-      JScrollPane innerScrollPane = new JScrollPane(innerContainer) {
-        @Override public Dimension getPreferredSize() {
-          return new Dimension(200, 100);  
-        }
-      };
+      JScrollPane innerScrollPane = new JScrollPane(innerContainer);
       innerScrollPane.removeMouseWheelListener(innerScrollPane.getMouseWheelListeners()[0]);
       outerContainer.add(innerScrollPane);
 
     }
 
-    JScrollPane outerScrollPane = new JScrollPane(outerContainer) {
-      @Override public Dimension getPreferredSize() {
-        return new Dimension(500, 500);  
-      }
-    };
+    JScrollPane outerScrollPane = new JScrollPane(outerContainer);
+    outerScrollPane.setMaximumSize(new Dimension(500, 500));
     add(outerScrollPane, BorderLayout.CENTER);
 
   }

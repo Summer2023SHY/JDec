@@ -126,15 +126,27 @@ public class Automaton {
 
   }
 
+  /** The automaton type is directly correlated to the class of the instantiated Automaton */
   public static enum Type {
 
+    /** The basic automaton */
     AUTOMATON((byte) 0, Automaton.class),
+
+    /** The U-Structure */
     U_STRUCTURE((byte) 1, UStructure.class),
+
+    /** The U-Structure which also has cost and probility information for the communications */
     NASH_U_STRUCTURE((byte) 2, NashUStructure.class);
 
+    // Private variables
     private final byte numericValue;
     private final Class classType;
 
+    /**
+     * Construct a Type enum object.
+     * @param numericValue  The numeric value associated with this enum value (used in .hdr file)
+     * @param classType     The associated class
+     **/
     Type(byte numericValue, Class classType) {
       this.numericValue = numericValue;
       this.classType    = classType;
@@ -142,7 +154,7 @@ public class Automaton {
 
     /**
      * Get the numeric value associated with this enumeration value.
-     * @return numeric value
+     * @return  The numeric value
      **/
     public byte getNumericValue() {
       return numericValue;
@@ -195,7 +207,6 @@ public class Automaton {
         return null;
       
       }
-
 
     }
 
@@ -318,14 +329,20 @@ public class Automaton {
 
   /**
    * Create a new copy of this automaton that has all unreachable states and transitions removed.
-   * @param newHeaderFile  The header file where the accesible automaton should be stored
-   * @param newBodyFile    The body file where the accesible automaton should be stored
-   * @return The accessible automaton
+
+   * @param newHeaderFile   The header file where the accesible automaton should be stored
+   * @param newBodyFile     The body file where the accesible automaton should be stored
+   * @return                The accessible automaton
    **/
   public Automaton accessible(File newHeaderFile, File newBodyFile) {
     return accessibleHelper(new Automaton(newHeaderFile, newBodyFile, nControllers));
   }
 
+  /**
+   * A helper method used to generate the accessible portion of this automaton.
+   * @param automaton The generic automaton object
+   * @return          The same automaton that was passed into the method, now containing the accessible part of this automaton
+   **/
   protected <T extends Automaton> T accessibleHelper(T automaton) {
 
       /* Setup */
@@ -398,6 +415,7 @@ public class Automaton {
 
   /**
    * Create a new copy of this automaton that has all states removed which are unable to reach a marked state.
+   * NOTE: This method should be overridden by subclasses, using the coaccessibleHelper() method.
    * @param newHeaderFile  The header file where the new automaton should be stored
    * @param newBodyFile    The body file where the new automaton should be stored
    * @return               The co-accessible automaton
@@ -406,6 +424,11 @@ public class Automaton {
     return coaccessibleHelper(new Automaton(newHeaderFile, newBodyFile, nControllers), invert());
   }
 
+  /**
+   * A helper method used to generate the co-accessible portion of this automaton.
+   * @param automaton The generic automaton object
+   * @return          The same automaton that was passed into the method, now containing the co-accessible part of this automaton
+   **/
   protected <T extends Automaton> T coaccessibleHelper(T automaton, T invertedAutomaton) {
 
       /* Build co-accessible automaton by seeing which states are accessible from the marked states in the inverted automaton */
@@ -485,6 +508,7 @@ public class Automaton {
   /**
    * Create a new copy of this automaton that has the marking status of all states toggled, and that has an added
    * 'dead' or 'dump' state where all undefined transitions lead.
+   * NOTE: This method should be overridden by subclasses, using the complementHelper() method.
    * @param newHeaderFile  The header file where the new automaton should be stored
    * @param newBodyFile    The body file where the new automaton should be stored
    * @return               The complement automaton
@@ -505,6 +529,11 @@ public class Automaton {
     return complementHelper(automaton);
   }
 
+  /**
+   * A helper method used to generate complement of this automaton.
+   * @param automaton The generic automaton object
+   * @return          The same automaton that was passed into the method, now containing the complement of this automaton
+   **/
   protected <T extends Automaton> T complementHelper(T automaton) {
 
       /* Setup */
@@ -589,12 +618,18 @@ public class Automaton {
   /**
    * Create a new version of this automaton which has all of the transitions going the opposite direction.
    * NOTE: This is just a shallow copy of the automaton (no special transition data is retained), which makes it slightly more efficient.
+   * NOTE: This method should be overridden by subclasses, using the invertHelper() method.
    * @return  The inverted automaton
    **/
   protected Automaton invert() {
     return invertHelper(new Automaton(eventCapacity, stateCapacity, transitionCapacity, labelLength, nControllers, true));
   }
 
+  /**
+   * A helper method used to generate the inverse of this automaton.
+   * @param automaton The generic automaton object
+   * @return          The same automaton that was passed into the method, now containing the inverse of this automaton
+   **/
   protected <T extends Automaton> T invertHelper(T invertedAutomaton) {
 
       /* Create a new automaton that has each of the transitions going the opposite direction */

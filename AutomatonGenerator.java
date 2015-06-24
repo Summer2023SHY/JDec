@@ -427,44 +427,102 @@ public abstract class AutomatonGenerator<T> {
 
       str = str.trim();
       
-      if (str.equals("BAD"))
-        automaton.markTransitionAsBad(data.initialStateID, data.eventID, data.targetStateID);
+      // Only applies to automata
+      if (automaton.getClass().equals(Automaton.class)) {
+
+        if (str.equals("BAD")) {
+          automaton.markTransitionAsBad(data.initialStateID, data.eventID, data.targetStateID);
+          continue;
+        }
+
+      }
       
-      else if (automaton.getClass().equals(UStructure.class)) {
+      // Applies to both U-Structures and Nash U-Structures 
+      if (automaton.getClass().equals(UStructure.class) || automaton.getClass().equals(NashUStructure.class)) {
 
         UStructure uStructure = (UStructure) automaton;
 
-        if (str.equals("UNCONDITIONAL_VIOLATION"))
+        if (str.equals("UNCONDITIONAL_VIOLATION")) {
           uStructure.addUnconditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
+          continue;
+        }
         
-        else if (str.equals("CONDITIONAL_VIOLATION"))
+        if (str.equals("CONDITIONAL_VIOLATION")) {
           uStructure.addConditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
+          continue;
+        }
     
-
-        else if (str.equals("COMMUNICATION"))
+        if (str.equals("COMMUNICATION")) {
           uStructure.addNonPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID);
-        
-        else {
+          continue;
+        }
 
-          String[] parts = str.split("-");
-          
-          if (parts[0].equals("POTENTIAL_COMMUNICATION") && parts.length == 2)
+      }
+
+      // Only applies to U-Structures
+      if (automaton.getClass().equals(UStructure.class)) {
+
+        UStructure uStructure = (UStructure) automaton;
+
+        String[] parts = str.split("-");
+
+        if (parts[0].equals("POTENTIAL_COMMUNICATION")) {
+
+          if (parts.length == 2)
             uStructure.addPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID, parseCommunicationRoles(parts[1]));
           else
             System.err.println("ERROR: Could not parse '" + line + "' as special transition information.");
+
+          continue;
 
         }
 
       }
 
-    }
+      // Only applies to Nash U-Structures
+      if (automaton.getClass().equals(NashUStructure.class)) {
+
+        NashUStructure nashUStructure = (NashUStructure) automaton;
+
+        String[] parts = str.split("-");
+
+        if (parts[0].equals("NASH_COMMUNICATION")) {
+
+          try {
+
+            if (parts.length == 4) {
+              nashUStructure.addNashCommunication(
+                data.initialStateID,
+                data.eventID,
+                data.targetStateID,
+                parseCommunicationRoles(parts[1]),
+                Integer.valueOf(parts[2]),
+                Double.valueOf(parts[3])
+              );
+            }
+
+          } catch (NumberFormatException e) {
+            // Do nothing
+
+          } finally {
+            System.err.println("ERROR: Could not parse '" + str + "' as as a Nash communication. Please ensure that it is formatted correctly.");
+            continue;
+          }
+
+        }
+
+      }
+
+      System.err.println("ERROR: Unable to parse '" + str + "' as a special transition identifier.");
+
+    } // for
 
   }
 
   /**
    * Given a string, parse each character as a communication role, and return the generated array.
    * @param str The string representing the sequence of communication roles
-   * @return the array of communication roles
+   * @return    The array of communication roles
    **/
   private static CommunicationRole[] parseCommunicationRoles(String str) {
 
@@ -484,7 +542,7 @@ public abstract class AutomatonGenerator<T> {
   /**
    * Simple helper method to detect whether the given String is either "T" or "t".
    * @param str   The String to parse
-   * @return whether or not the String represents "TRUE" 
+   * @return      Whether or not the String represents "TRUE" 
    **/
   public static boolean isTrue(String str) {
       return str.toUpperCase().equals("T");
@@ -493,7 +551,7 @@ public abstract class AutomatonGenerator<T> {
   /**
    * Simple helper method to transform a series of T's and F's into a boolean array.
    * @param str   The String to parse
-   * @return an array containing a boolean value for each character
+   * @return      An array containing a boolean value for each character
    **/
   public static boolean[] isTrueArray(String str) {
 
@@ -515,7 +573,7 @@ public abstract class AutomatonGenerator<T> {
    * Label must consist of only letters, digits, and/or a small set of other special characters.
    * NOTE: Special characters have special meaning attached to them so it is advised not to use them when naming states and events.
    * @param label The label to validate
-   * @return whether or not the label is valid
+   * @return      Whether or not the label is valid
    **/
   private static boolean isValidLabel(String label) {
 
@@ -541,7 +599,7 @@ public abstract class AutomatonGenerator<T> {
    * @param str     The string that needs to be trimmed
    * @param length  The desired length
    * @param verbose Whether or not a message should be printed if a label is trimmed
-   * @return the trimmed string (or the original if it doesn't exceed the desired length)
+   * @return        The trimmed string (or the original if it doesn't exceed the desired length)
    **/
   private static String trimStateLabel(String str, int length, boolean verbose) {
 

@@ -58,11 +58,8 @@ public class MakeProtocolFeasiblePrompt extends JFrame {
       container.add(checkBoxes[i]);
     }
 
-    JScrollPane scrollPane = new JScrollPane(container) {
-      @Override public Dimension getPreferredSize() {
-        return new Dimension(200, 200);  
-      }
-    };
+    JScrollPane scrollPane = new JScrollPane(container);
+    scrollPane.setMaximumSize(new Dimension(200, 200));
     add(scrollPane);
 
       /* Add Button */

@@ -22,8 +22,10 @@ public class AutomataGUI extends JFrame implements ActionListener {
   private ArrayList<AutomatonTab> tabs = new ArrayList<AutomatonTab>();
   
   // Enabling/disabling components
-  private java.util.List<Component> componentsWhichRequireTab       = new ArrayList<Component>();
-  private java.util.List<Component> componentsWhichRequireAutomaton = new ArrayList<Component>();
+  private java.util.List<Component> componentsWhichRequireTab            = new ArrayList<Component>();
+  private java.util.List<Component> componentsWhichRequireAnyAutomaton   = new ArrayList<Component>();
+  private java.util.List<Component> componentsWhichRequireBasicAutomaton = new ArrayList<Component>();
+  private java.util.List<Component> componentsWhichRequireUStructure     = new ArrayList<Component>();
 
   // Miscellaneous
   private int imageSize = 800;
@@ -53,7 +55,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
     tabbedPane.setFocusable(false);
     tabbedPane.addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent e) {
-        updateComponentsWhichRequireAutomaton();    
+        updateComponentsWhichRequireAutomaton();  
       }
     });
     createTab(true, Automaton.Type.AUTOMATON);
@@ -406,6 +408,18 @@ public class AutomataGUI extends JFrame implements ActionListener {
         );
         break;
 
+      case NASH_U_STRUCTURE:
+
+        nControllersBeforeUStructure = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
+        tab.automaton = AutomatonGenerator.generateFromGUICode(
+          new NashUStructure(tab.headerFile, tab.bodyFile, nControllersBeforeUStructure),
+          tab.eventInput.getText(),
+          tab.stateInput.getText(),
+          tab.transitionInput.getText(),
+          true
+        );
+        break;
+
       default:
 
         // NOTE: The following error should never appear to the user, and it indicates a bug in the program
@@ -423,7 +437,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
       tab.generateImageButton.setEnabled(true);
 
     // Refresh GUI
-    updateComponentsWhichRequireAutomaton();
+    updateComponentsWhichRequireAutomaton(); 
 
   }
 
@@ -473,9 +487,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
     JMenuBar menuBar = new JMenuBar();
 
     menuBar.add(createMenu("File", "New Tab->New Automaton,New U-Structure,New Nash U-Structure", "Open", "Save As...[TAB]", "Refresh Tab[TAB]", null, "Clear[TAB]", "Close Tab[TAB]", null, "Export as SVG[AUTOMATON]", null, "Quit"));
-    menuBar.add(createMenu("Standard Operations[AUTOMATON]", "Accessible", "Co-Accessible", "Trim", "Complement", null, "Intersection", "Union"));
-    menuBar.add(createMenu("U-Structure Operations[AUTOMATON]", "Synchronized Composition", "Add Communications", "Feasible Protocols->Generate All,Make Protocol Feasible,Find Smallest"));
-    menuBar.add(createMenu("Quantitative Communication[AUTOMATON]", "Nash", "Pareto"));
+    menuBar.add(createMenu("Standard Operations", "Accessible[AUTOMATON]", "Co-Accessible[AUTOMATON]", "Trim[AUTOMATON]", "Complement[AUTOMATON]", null, "Intersection[BASIC_AUTOMATON]", "Union[BASIC_AUTOMATON]"));
+    menuBar.add(createMenu("Special Operations", "Synchronized Composition[BASIC_AUTOMATON]", null, "Add Communications[U_STRUCTURE]", "Feasible Protocols->Generate All[U_STRUCTURE],Make Protocol Feasible[U_STRUCTURE],Find Smallest[U_STRUCTURE]"));
+    menuBar.add(createMenu("Quantitative Communication", "Nash", "Pareto"));
     menuBar.add(createMenu("Generate", "Random Automaton"));
 
     this.setJMenuBar(menuBar);
@@ -490,17 +504,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
    **/
   private JMenu createMenu(String menuTitle, String... strings) {
 
-    boolean requiresAutomaton = false;
-
-   if (menuTitle.contains("[AUTOMATON]")) {
-      menuTitle = menuTitle.replace("[AUTOMATON]", "");
-      requiresAutomaton = true;
-    }
-
     JMenu menu = new JMenu(menuTitle);
-
-    if (requiresAutomaton)
-      componentsWhichRequireAutomaton.add(menu);
 
     for (String str : strings) {
 
@@ -544,11 +548,25 @@ public class AutomataGUI extends JFrame implements ActionListener {
       requiresTab = true;
     }
 
-    // Check to see if this menu item requires an automaton
-    boolean requiresAutomaton = false;
+    // Check to see if this menu item requires any type of automaton
+    boolean requiresAnyAutomaton = false;
     if (str.contains("[AUTOMATON]")) {
       str = str.replace("[AUTOMATON]", "");
-      requiresAutomaton = true;
+      requiresAnyAutomaton = true;
+    }
+
+    // Check to see if this menu item requires a basic automaton (so not a U-Structure)
+    boolean requiresBasicAutomaton = false;
+    if (str.contains("[BASIC_AUTOMATON]")) {
+      str = str.replace("[BASIC_AUTOMATON]", "");
+      requiresBasicAutomaton = true;
+    }
+
+        // Check to see if this menu item requires a U-Structure
+    boolean requiresUStructure = false;
+    if (str.contains("[U_STRUCTURE]")) {
+      str = str.replace("[U_STRUCTURE]", "");
+      requiresUStructure = true;
     }
 
     // Create menu item object
@@ -559,8 +577,12 @@ public class AutomataGUI extends JFrame implements ActionListener {
     // Add menu items into the appropriate lists
     if (requiresTab)
       componentsWhichRequireTab.add(menuItem);
-    if (requiresAutomaton)
-      componentsWhichRequireAutomaton.add(menuItem);
+    if (requiresAnyAutomaton)
+      componentsWhichRequireAnyAutomaton.add(menuItem);
+    if (requiresBasicAutomaton)
+      componentsWhichRequireBasicAutomaton.add(menuItem);
+    if (requiresUStructure)
+      componentsWhichRequireUStructure.add(menuItem);
 
   }
 
@@ -822,22 +844,71 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
   }
 
-  /* Enable/disable components that require an automaton */
   private void updateComponentsWhichRequireAutomaton() {
+    updateComponentsWhichRequireAnyAutomaton();
+    updateComponentsWhichRequireBasicAutomaton();
+    updateComponentsWhichRequireUStructure();
+  }
+
+  /* Enable/disable components that require any type automaton */
+  private void updateComponentsWhichRequireAnyAutomaton() {
 
     int index = tabbedPane.getSelectedIndex();
 
-    boolean enabled = (index >= 0 && tabs.get(index).automaton != null);
+    // Determine whether the components should be enabled or disabled
+    boolean enabled = (
+      index >= 0
+      && tabs.get(index).automaton != null
+    );
     
-    for (Component component : componentsWhichRequireAutomaton)
+    // Enabled/disable all components in the list
+    for (Component component : componentsWhichRequireAnyAutomaton)
+      component.setEnabled(enabled);
+
+  }
+
+  /* Enable/disable components that require a basic automaton */
+  private void updateComponentsWhichRequireBasicAutomaton() {
+
+    int index = tabbedPane.getSelectedIndex();
+
+    // Determine whether the components should be enabled or disabled
+    boolean enabled = (
+      index >= 0
+      && tabs.get(index).automaton != null
+      && tabs.get(index).automaton.getClass().equals(Automaton.class)
+    );
+    
+    // Enabled/disable all components in the list
+    for (Component component : componentsWhichRequireBasicAutomaton)
+      component.setEnabled(enabled);
+
+  }
+
+  /* Enable/disable components that require a U-Structure */
+  private void updateComponentsWhichRequireUStructure() {
+
+    int index = tabbedPane.getSelectedIndex();
+
+    // Determine whether the components should be enabled or disabled
+    boolean enabled = (
+      index >= 0
+      && tabs.get(index).automaton != null
+      && tabs.get(index).automaton.getClass().equals(UStructure.class)
+    );
+    
+    // Enabled/disable all components in the list
+    for (Component component : componentsWhichRequireUStructure)
       component.setEnabled(enabled);
 
   }
 
   public void generateRandomAutomaton(int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions, JProgressBar progressBar) {
 
+    // Get a temporary file name
     String fileName = getTemporaryFileName();
 
+    // Generate random automaton
     Automaton automaton = AutomatonGenerator.generateRandom(
       new File(fileName + ".hdr"),
       new File(fileName + ".bdy"),
@@ -850,6 +921,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
       progressBar
     );
     createTab(automaton);
+
+    // Refresh GUI
+    updateComponentsWhichRequireAutomaton();
 
   }
 
@@ -1399,7 +1473,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
                + "omitted, then it is assumed that they are observable and controllable for all controllers.<br>"
                + "It is not possible, however, to omit the properties for some controllers, but not all.</html>";
 
-        case U_STRUCTURE:
+        case U_STRUCTURE: case NASH_U_STRUCTURE:
           return "<html>1 event vector per line, formatted as <i>&lt;Event1_Event2...></i>.<br>"
                + "<b><u>EXAMPLE</u></b>: '<i><&lt;FirstEvent_SecondEvent_ThirdEvent></i>' denotes an event vector "
                + "containing the 3 events named <b>FirstEvent</b>, <b>SecondEvent</b>, and <b>ThirdEvent</b>.<br></html>";
@@ -1422,7 +1496,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
                + "<b>marked</b>.<br><b><u>NOTE</u></b>: '<i>T</i>' and '<i>F</i>' are case insensitive. If omitted, the default value is "
                + "'<i>T</i>'. There is only allowed to be one initial state.</html>";
 
-        case U_STRUCTURE:
+        case U_STRUCTURE: case NASH_U_STRUCTURE:
           return "<html>1 state per line, formatted as <i>[@]LABEL</i> (where the '@' symbol denotes that this is the initial state).<br>"
                + "<b><u>EXAMPLE 1</u></b>: <i>'StateName'</i> denotes a state called <b>StateName</b>.<br>"
                + "<b><u>EXAMPLE 2</u></b>: <i>'@StateName'</i> denotes a state called <b>StateName</b> that is the <b>initial state</b><br>"
@@ -1453,9 +1527,23 @@ public class AutomataGUI extends JFrame implements ActionListener {
                + "the state <b>'FirstState'</b> to the state <b>'SecondState'</b> by the event vector called <b>'Event'</b>.<br>"
                + "<b><u>NOTE</u></b>: <i>SPECIAL_PROPERTIES</i> can be added to a transition by appending ':NAME_OF_PROPERTY'. "
                + "Additional properties are separated by commas.<br><b>Names of special properties in a U-Structure:</b>: "
-               + "<i>'UNCONDITIONAL_VIOLATION'</i>, <i>'CONDITIONAL_VIOLATION'</i>, <i>'COMMUNICATION*'</i>, and <i>'POTENTIAL_COMMUNICATION'</i>.<br>"
-               + "<i>*<b>'COMMUNICATION'</b> is used to mark all of the communications which are not potential communications, but have been added "
-               + "to the U-Structure for mathematical completion.</i></html>";
+               + "<i>'UNCONDITIONAL_VIOLATION'</i>, <i>'CONDITIONAL_VIOLATION'</i>, <i>'COMMUNICATION*'</i>, and <i>'POTENTIAL_COMMUNICATION**'</i>.<br>"
+               + "<i>*'COMMUNICATION' is used to mark all of the communications which are not potential communications, but have been added "
+               + "to the U-Structure for mathematical completion.</i><br>"
+               + "<i>**'POTENTIAL_COMMUNICATION' must have the communication roles appended to it. For example, appending '-SRR' (where the dash is simply a separator) "
+               + "means that controller 1 is sending the communication to controllers 2 and 3.<br>Appending '-R*S' means that controller 3 is sending the "
+               + "communication to controller 1 (where '*' denotes that a controller that doesn't have a role in the communication).</i></html>";
+
+        // case NASH_U_STRUCTURE:
+          // return "<html>1 transition per line, formatted as <i>INITIAL_STATE,EVENT,TARGET_STATE[:SPECIAL_PROPERTIES]</i>"
+          //      + ", which are used in the synchronized composition operation).<br>"
+          //      + "<b><u>EXAMPLE</u></b>: <i>'FirstState,Event,SecondState'</i> denotes a transition that goes from "
+          //      + "the state <b>'FirstState'</b> to the state <b>'SecondState'</b> by the event vector called <b>'Event'</b>.<br>"
+          //      + "<b><u>NOTE</u></b>: <i>SPECIAL_PROPERTIES</i> can be added to a transition by appending ':NAME_OF_PROPERTY'. "
+          //      + "Additional properties are separated by commas.<br><b>Names of special properties in a U-Structure:</b>: "
+          //      + "<i>'UNCONDITIONAL_VIOLATION'</i>, <i>'CONDITIONAL_VIOLATION'</i>, <i>'COMMUNICATION*'</i>, and <i>'POTENTIAL_COMMUNICATION'</i>.<br>"
+          //      + "<i>*'COMMUNICATION' is used to mark all of the communications which are not potential communications, but have been added "
+          //      + "to the U-Structure for mathematical completion.</i></html>";
 
         default:
           return null;
