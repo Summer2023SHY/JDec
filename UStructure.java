@@ -480,10 +480,6 @@ public class UStructure extends Automaton {
     List<Set<CommunicationData>> protocols = new ArrayList<Set<CommunicationData>>();
     powerSet(protocols, communications, new HashSet<CommunicationData>(), 0);
 
-      /* Create inverted automaton, so that we can explore the automaton by crossing transitions from either direction */
-
-    Automaton invertedAutomaton = invert();
-
       /* Generate list of feasible protocols */
 
     List<Set<CommunicationData>> feasibleProtocols = new ArrayList<Set<CommunicationData>>();
@@ -493,7 +489,7 @@ public class UStructure extends Automaton {
       if (protocol.size() == 0)
         continue;
 
-      if (isFeasibleProtocol(protocol, invertedAutomaton))
+      if (isFeasibleProtocol(protocol))
         feasibleProtocols.add(protocol);
 
     }
@@ -518,43 +514,39 @@ public class UStructure extends Automaton {
    **/
   public List<Set<CommunicationData>> generateSmallestFeasibleProtocols(List<CommunicationData> communications) {
 
-      /* Create inverted automaton, so that we can explore the automaton by crossing transitions from either direction */
+      /* Generate powerset of communication protocols */
 
-    Automaton invertedAutomaton = invert();
+    List<Set<CommunicationData>> protocols = new ArrayList<Set<CommunicationData>>();
+    powerSet(protocols, communications, new HashSet<CommunicationData>(), 0);
+
+      /* Sort sets by size (so that protocols with fewer communications appear first) */
+
+    Collections.sort(protocols, new Comparator<Set<?>>() {
+        @Override public int compare(Set<?> set1, Set<?> set2) {
+          return Integer.valueOf(set1.size()).compareTo(set2.size());
+        }
+      }
+    );
 
       /* Generate list of feasible protocols */
 
     List<Set<CommunicationData>> feasibleProtocols = new ArrayList<Set<CommunicationData>>();
-    int sizeOfSmallestProtocol = -1;
-
-    // Each communication only needs to appear once in order to generate the smallest feasible protocols
-    Set<CommunicationData> communicationsToSkip = new HashSet<CommunicationData>();
+    int minFeasibleSize = Integer.MAX_VALUE;
     
-    for (CommunicationData data : communications) {
+    for (Set<CommunicationData> protocol : protocols) {
 
-      // Skip if this communication has already been seen before (prevents the generation of duplicate protocols)
-      if (communicationsToSkip.contains(data))
+      // We only want the smalelst feasible protocols
+      if (protocol.size() > minFeasibleSize)
+        break;
+
+      // Ignore the protocol with no communications (doesn't make sense in our context)
+      if (protocol.size() == 0)
         continue;
 
-      // Create a protocol uisng only this communication
-      Set<CommunicationData> protocol = new HashSet<CommunicationData>();
-      protocol.add(data);
-
-      // Make this protocol feasible
-      Set<CommunicationData> feasibleProtocol = makeProtocolFeasible(protocol, invertedAutomaton);
-
-      // Add each communication in the feasible protocol to list of communications to skip
-      communicationsToSkip.addAll(feasibleProtocol);
-
-      // Add it to the list if it is tied as the smallest feasible protocol so far
-      if (sizeOfSmallestProtocol == feasibleProtocol.size())
-        feasibleProtocols.add(feasibleProtocol);
-
-      // Clear the list if this is the new smallest feasible protocol
-      else if (sizeOfSmallestProtocol == -1 || feasibleProtocol.size() < sizeOfSmallestProtocol) {
-        feasibleProtocols.clear();
-        sizeOfSmallestProtocol = feasibleProtocol.size();
-        feasibleProtocols.add(feasibleProtocol);
+      // Add the protocol to the list if it is feasible
+      if (isFeasibleProtocol(protocol)) {
+        feasibleProtocols.add(protocol);
+        minFeasibleSize = protocol.size();
       }
 
     }
@@ -565,13 +557,13 @@ public class UStructure extends Automaton {
 
   /**
    * Make the specified protocol feasible (returning it as a new set).
-   * NOTE: This method is overloaded for efficiency purposes (the method accepting an inverted Automaton as a parameter is more
+   * NOTE: This method is overloaded for efficiency purposes (the method accepting an inverted automaton as a parameter is more
    * efficient if makeProtocolFeasible() is being called multiple times on the same automaton, so there's no need to regenerate
    * the inverted automaton each time).
    * @param protocol  The protocol that is being made feasible
-   * @return          The feasible protocol
+   * @return          The list of feasible protocols
    **/
-  public Set<CommunicationData> makeProtocolFeasible(Set<CommunicationData> protocol) {
+  public List<Set<CommunicationData>> makeProtocolFeasible(Set<CommunicationData> protocol) {
     return makeProtocolFeasible(protocol, invert());
   }
 
@@ -582,93 +574,90 @@ public class UStructure extends Automaton {
    *                            NOTE: There is no need for extra information (such as special transitions) to be in the inverted automaton
    * @return                    The feasible protocol
    **/
-  private Set<CommunicationData> makeProtocolFeasible(Set<CommunicationData> protocol, Automaton invertedAutomaton) {
+  private List<Set<CommunicationData>> makeProtocolFeasible(Set<CommunicationData> requestedProtocol, Automaton invertedAutomaton) {
 
-    Set<CommunicationData> feasibleProtocol = new HashSet<CommunicationData>();
+    /* Generate powerset of communication protocols */
 
-    // Start at each communication in the protocol
-    outer: for (CommunicationData data : protocol) {
+    List<Set<CommunicationData>> protocols = new ArrayList<Set<CommunicationData>>();
+    powerSetSubset(protocols, potentialCommunications, new HashSet<CommunicationData>(), 0, requestedProtocol);
 
-      feasibleProtocol.add(data);
+      /* Generate list of feasible protocols */
 
-      // Find reachable states
-      Set<Long> reachableStates = new HashSet<Long>();
-      findReachableStates(this, invertedAutomaton, reachableStates, data.initialStateID, data.getIndexOfSender() + 1);
+    List<Set<CommunicationData>> feasibleProtocols = new ArrayList<Set<CommunicationData>>();
+    for (Set<CommunicationData> protocol : protocols) {
 
-      // Check for an indistinguishable state outside the protocol
-      for (Long id : reachableStates)
+      // Ignore the protocol with no communications (doesn't make sense in our context)
+      if (protocol.size() == 0)
+        continue;
 
-        // Check if this state is indistinguishable
-        for (Transition t : getState(id).getTransitions()) {
+      if (isFeasibleProtocol(protocol))
+        feasibleProtocols.add(protocol);
 
-          if (t.getEvent().getID() == data.eventID) {
-
-            // Check if this communication is outside of the protocol
-            boolean found = false;
-            for (CommunicationData data2 : protocol)
-              if (data2.initialStateID == id && data2.eventID == t.getEvent().getID() && data2.targetStateID == t.getTargetStateID()) {
-                found = true;
-                break;
-              }
-
-            // If this is not in the protocol, then add it to the protocol to maintain feasibility
-            if (!found) {
-              for (CommunicationData data2 : potentialCommunications)
-                if (data2.initialStateID == id && data2.eventID == t.getEvent().getID() && data2.targetStateID == t.getTargetStateID()) {
-                  feasibleProtocol.add(data2);
-                  break;
-                }
-            }
-
-          }
-        }
     }
 
-    return feasibleProtocol;
+      /* Sort sets by size (so that protocols with fewer communications appear first) */
+
+    Collections.sort(feasibleProtocols, new Comparator<Set<?>>() {
+        @Override public int compare(Set<?> set1, Set<?> set2) {
+          return Integer.valueOf(set1.size()).compareTo(set2.size());
+        }
+      }
+    );
+
+    return feasibleProtocols;
 
   }
 
-
   /**
    * Check to see if the specified protocol is feasible.
-   * @param protocol            The protocol that is being checked for feasibility
-   * @param invertedAutomaton   An automaton identical to the previous (except all transitions are going the opposite direction)
-   *                            NOTE: There is no need for extra information (such as special transitions) to be in the inverted automaton
-   * @return                    Whether or not the protocol is feasible
+   * NOTE: This method works under the assumption that the protocol has at least one communication.
+   * @param protocol  The protocol that is being checked for feasibility
+   * @return          Whether or not the protocol is feasible
    **/
-  private boolean isFeasibleProtocol(Set<CommunicationData> protocol, Automaton invertedAutomaton) {
+  private boolean isFeasibleProtocol(Set<CommunicationData> protocol) {
 
-    // Start at each communication in the protocol
-    outer: for (CommunicationData data : protocol) {
+    UStructure copy = duplicate(new File("tmp.hdr"), new File("tmp.bdy"));
+    // UStructure copy = duplicate(null, null);
+    copy = copy.applyProtocol(protocol, null, null);
 
-      // Find reachable states
+    if (copy.potentialCommunications.size() != protocol.size())
+      return false;
+
+    UStructure invertedUStructure = copy.invert();
+
+    for (CommunicationData data : copy.potentialCommunications) {
+      
+      // Find indistinguishable states
       Set<Long> reachableStates = new HashSet<Long>();
-      findReachableStates(this, invertedAutomaton, reachableStates, data.initialStateID, data.getIndexOfSender() + 1);
+      findReachableStates(copy, invertedUStructure, reachableStates, data.initialStateID, data.getIndexOfSender() + 1);
+      
+      // Any strict subset of this communication's event vector which is found at an indistinguishable states
+      // indicates that there used to be a communication here (before the protocol was applied), but that
+      // it should have been part of the protocol, meaning this protocol is not feasible
+      LabelVector eventVector = copy.getEvent(data.eventID).vector;
+      for (Long s : reachableStates)
+        for (Transition t : copy.getState(s).getTransitions())
+          if (isStrictSubVector(t.getEvent().vector, eventVector))
+            return false;
 
-      // Check for an indistinguishable state outside the protocol
-      for (Long id : reachableStates)
-
-        // Check if this state is indistinguishable
-        for (Transition t : getState(id).getTransitions()) {
-          
-          if (t.getEvent().getID() == data.eventID) {
-
-            // Check if this communication is outside of the protocol
-            boolean found = false;
-            for (CommunicationData data2 : protocol)
-              if (data2.initialStateID == id && data2.eventID == t.getEvent().getID() && data2.targetStateID == t.getTargetStateID()) {
-                found = true;
-                break;
-              }
-
-            // If this is not in the protocol, then it is not feasible
-            if (!found)
-              return false;
-
-          }
-        }
     }
-    
+  
+    return true;
+
+  }
+
+  private boolean isStrictSubVector(LabelVector v1, LabelVector v2) {
+
+    if (v1.equals(v2) || v1.getSize() != v2.getSize())
+      return false;
+
+    for (int i = 0; i < v1.getSize(); i++) {
+      String label1 = v1.getLabelAtIndex(i);
+      String label2 = v2.getLabelAtIndex(i);
+      if (!label1.equals(label2) && !label1.equals("*"))
+        return false;
+    }
+
     return true;
 
   }
@@ -708,6 +697,15 @@ public class UStructure extends Automaton {
 
   }
 
+  private static <T> void powerSetSubset(List<Set<T>> results, List<T> masterList, Set<T> elementsChosen, int index, Set<T> requiredElements) {
+
+    List<T> copyOfMasterList = new ArrayList<T>(masterList);
+    copyOfMasterList.removeAll(requiredElements);
+
+    powerSet(results, copyOfMasterList, elementsChosen, 0);
+
+  }
+
   /**
    * A generic method to generate the powerset of the given list, which are stored in the list of sets that you give it.
    * @param results         This is a list of sets where all of the sets in the powerset will be stored
@@ -726,8 +724,8 @@ public class UStructure extends Automaton {
 
       /* Recursive case */
 
-    Set<T>  includingElement = new HashSet<T>(),
-            notIncludingElement = new HashSet<T>();
+    Set<T> includingElement = new HashSet<T>();
+    Set<T> notIncludingElement = new HashSet<T>();
     
     for (T e : elementsChosen) {
       includingElement.add(e);
@@ -743,80 +741,69 @@ public class UStructure extends Automaton {
   }
 
   /**
-   * Refine this automaton by applying the specified feasible communication protocol, and doing the necessary pruning.
-   * @param protocol      The chosen protocol (which must be feasible)
+   * Refine this automaton by applying the specified communication protocol, and doing the necessary pruning.
+   * @param protocol      The chosen protocol
    * @param newHeaderFile The header file where the new automaton should be stored
    * @param newBodyFile   The body file where the new automaton should be stored
    * @return              The pruned automaton that had the specified protocol applied
    **/
-  public UStructure applyFeasibleProtocol(Set<CommunicationData> protocol, File newHeaderFile, File newBodyFile) {
+  public UStructure applyProtocol(Set<CommunicationData> protocol, File newHeaderFile, File newBodyFile) {
 
-    UStructure automaton = duplicate(getTemporaryFile(), getTemporaryFile());
-    // UStructure invertedAutomaton = invert();
-
+    UStructure uStructure = duplicate(getTemporaryFile(), getTemporaryFile());
+  
       /* Remove all communications that are not part of the protocol */
 
-    for (TransitionData data : nonPotentialCommunications)
-      automaton.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
+    if (nonPotentialCommunications != null)
+      for (TransitionData data : nonPotentialCommunications)
+        uStructure.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
 
-    Set<CommunicationData> potentialCommunicationsToRemove = new HashSet<CommunicationData>(potentialCommunications);
-    potentialCommunicationsToRemove.removeAll(protocol);
-    
-    for (CommunicationData data : potentialCommunicationsToRemove)
-      automaton.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
+    if (potentialCommunications != null)
+      for (CommunicationData data : potentialCommunications)
+        if (!protocol.contains(data))
+          uStructure.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
 
       /* Prune (which removes more transitions) */
 
-    // CommunicationData initialData = null;
-
-    for (CommunicationData data : protocol) {
-
-      // if (initialData == null)
-      //   initialData = data;
-
-      // // Ensure that this state is still indistinguishable
-      // else {
-
-      //   // Find reachable states
-      //   Set<Long> reachableStates = new HashSet<Long>();
-      //   findReachableStates(automaton, invertedAutomaton, reachableStates, initialData.initialStateID, data.getIndexOfSender() + 1);
-      //   if (!reachableStates.contains(initialData.initialStateID))
-      //     continue;
-
-      // }
-
-      LabelVector vector = getEvent(data.eventID).vector;
-      boolean[] vectorElementsFound = new boolean[vector.getSize()];
-
-      automaton.prune(protocol, vector, vectorElementsFound, getState(data.initialStateID), 0);
-
-    }
+    for (CommunicationData data : protocol)
+      uStructure.prune(protocol, getEvent(data.eventID).vector, data.initialStateID);
 
       /* Get the accessible part of the automaton */
 
-    automaton = automaton.accessible(newHeaderFile, newBodyFile);
+    uStructure = uStructure.accessible(newHeaderFile, newBodyFile);
 
       /* Remove all inactive events */
 
-    automaton.removeInactiveEvents();
+    uStructure.removeInactiveEvents();
 
       /* Write header file */
 
-    automaton.writeHeaderFile();
+    uStructure.writeHeaderFile();
 
-    return automaton;
+    return uStructure;
 
   }
 
   /**
    * Using recursion, starting at a given state, prune away all necessary transitions.
-   * @param protocol                      The chosen protocol (which must be feasible)
-   * @param communication                 The event vector representing the chosen communication
-   * @param vectorElementsFound           Indicates which elements of the vector have already been found
-   * @param currentState                  The state that we are currently on
-   * @param depth                         The current depth of the recursion (first iteration has a depth of 0)
+   * @param protocol        The chosen protocol (which must be feasible)
+   * @param communication   The event vector representing the chosen communication
+   * @param initialStateID  The ID of the state where the pruning begins at
    **/
-  private void prune(Set<CommunicationData> protocol, LabelVector communication, boolean[] vectorElementsFound, State currentState, int depth) {
+  private void prune(Set<CommunicationData> protocol, LabelVector communication, long initialStateID) {
+
+    pruneHelper(protocol, communication, new boolean[communication.getSize()], getState(initialStateID), 0);
+  
+  }
+
+  /**
+   * Helper method used to prune the automaton.
+   * @param protocol            The chosen protocol (which must be feasible)
+   * @param communication       The event vector representing the chosen communication
+   * @param vectorElementsFound Indicates which elements of the vector have already been found
+   * @param currentState        The state that we are currently on
+   * @param depth               The current depth of the recursion (first iteration has a depth of 0)
+   **/
+  private void pruneHelper(Set<CommunicationData> protocol, LabelVector communication, boolean[] vectorElementsFound, State currentState, int depth) {
 
       /* Base case */
 
@@ -862,7 +849,7 @@ public class UStructure extends Automaton {
       removeTransition(currentState.getID(), t.getEvent().getID(), t.getTargetStateID());
 
       // Recursive call to the state where this transition leads
-      prune(protocol, communication, copy, getState(t.getTargetStateID()), depth + 1);
+      pruneHelper(protocol, communication, copy, getState(t.getTargetStateID()), depth + 1);
 
     }
 

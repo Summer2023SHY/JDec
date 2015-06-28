@@ -98,7 +98,7 @@ public class FeasibleProtocolOutput extends JFrame {
           String fileName = gui.getTemporaryFileName();
           File headerFile = new File(fileName + ".hdr");
           File bodyFile = new File(fileName + ".bdy");
-          Automaton generatedAutomaton = uStructure.applyFeasibleProtocol(protocol, headerFile, bodyFile);
+          Automaton generatedAutomaton = uStructure.applyProtocol(protocol, headerFile, bodyFile);
           gui.createTab(generatedAutomaton);
         }
 

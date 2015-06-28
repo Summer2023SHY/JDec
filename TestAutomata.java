@@ -717,13 +717,12 @@ public class TestAutomata {
 
     printTestOutput("Generate all feasible protocols in the automaton generated above by adding communications...", 3);
     List<Set<CommunicationData>> feasibleProtocols = addCommunications.generateAllFeasibleProtocols(addCommunications.getPotentialCommunications());
-    printTestCase("Ensuring that there are 3 feasible protocols", new TestResult(feasibleProtocols.size(), 3), counter);
+    printTestCase("Ensuring that there are 8 feasible protocols", new TestResult(feasibleProtocols.size(), 8), counter);
 
     printTestOutput("Generate smallest feasible protocols in the automaton generated above by adding communications...", 3);
     List<Set<CommunicationData>> smallestFeasibleProtocols = addCommunications.generateSmallestFeasibleProtocols(addCommunications.getPotentialCommunications());
-    printTestCase("Ensuring that there are 2 smallest feasible protocols", new TestResult(smallestFeasibleProtocols.size(), 2), counter);
-    printTestCase("Ensuring that the first protocol has 4 communications", new TestResult(smallestFeasibleProtocols.get(0).size(), 4), counter);
-    printTestCase("Ensuring that the second protocol has 4 communications", new TestResult(smallestFeasibleProtocols.get(1).size(), 4), counter);
+    printTestCase("Ensuring that there is 1 smallest feasible protocol", new TestResult(smallestFeasibleProtocols.size(), 1), counter);
+    printTestCase("Ensuring that it has 2 communications", new TestResult(smallestFeasibleProtocols.get(0).size(), 2), counter);
     
       /* Print summary of this test routine */
 

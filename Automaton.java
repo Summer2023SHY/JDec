@@ -2168,7 +2168,7 @@ public class Automaton {
     // Continue to try getting a temporary file until we've found one that hasn't been used
     while (true) {
 
-      File file = new File(TEMPORARY_DIRECTORY + "/.tmp" + temporaryFileIndex++);
+      File file = new File(TEMPORARY_DIRECTORY + "/tmp" + temporaryFileIndex++);
 
       if (!file.exists()) {
 
@@ -2179,7 +2179,7 @@ public class Automaton {
           System.err.println("ERROR: Could not create empty temporary file.");
           e.printStackTrace();
         }
-
+        
         return file;
       }
 

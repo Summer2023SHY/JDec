@@ -75,13 +75,11 @@ public class MakeProtocolFeasiblePrompt extends JFrame {
               if (checkBoxes[i].isSelected())
                 protocol.add(potentialCommunications.get(i));
       
-            // Make the protocol feasible
-            Set<CommunicationData> feasibleProtocol = uStructure.makeProtocolFeasible(protocol);
+            // Find all feasible protocols which include the chosen communications
+            java.util.List<Set<CommunicationData>> feasibleProtocols = uStructure.makeProtocolFeasible(protocol);
             
             // Display results in another window
-            java.util.List<Set<CommunicationData>> list = new ArrayList<Set<CommunicationData>>();
-            list.add(feasibleProtocol);
-            new FeasibleProtocolOutput(gui, uStructure, list, "Feasible Protocol", " Here is the feasible protocol: ");
+            new FeasibleProtocolOutput(gui, uStructure, feasibleProtocols, "Feasible Protocols", " Here are the feasible protocols: ");
 
             // Dispose of this window
             MakeProtocolFeasiblePrompt.this.dispose();

@@ -58,6 +58,10 @@ public class TransitionData {
 
   }
 
+  @Override public int hashCode() {
+    return ((Long) (initialStateID)).hashCode();
+  }
+
   /**
    * Turn this object into a more meaningful representation as a string.
    * @return string representation
