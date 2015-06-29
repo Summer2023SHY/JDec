@@ -478,7 +478,7 @@ public class UStructure extends Automaton {
       /* Generate powerset of communication protocols */
 
     List<Set<CommunicationData>> protocols = new ArrayList<Set<CommunicationData>>();
-    powerSet(protocols, communications, new HashSet<CommunicationData>(), 0);
+    powerSet(protocols, communications);
 
       /* Generate list of feasible protocols */
 
@@ -517,7 +517,7 @@ public class UStructure extends Automaton {
       /* Generate powerset of communication protocols */
 
     List<Set<CommunicationData>> protocols = new ArrayList<Set<CommunicationData>>();
-    powerSet(protocols, communications, new HashSet<CommunicationData>(), 0);
+    powerSet(protocols, communications);
 
       /* Sort sets by size (so that protocols with fewer communications appear first) */
 
@@ -702,7 +702,7 @@ public class UStructure extends Automaton {
     List<T> copyOfMasterList = new ArrayList<T>(masterList);
     copyOfMasterList.removeAll(requiredElements);
 
-    powerSet(results, copyOfMasterList, new HashSet<T>(requiredElements), 0);
+    powerSetHelper(results, copyOfMasterList, new HashSet<T>(requiredElements), 0);
 
   }
 
@@ -710,10 +710,21 @@ public class UStructure extends Automaton {
    * A generic method to generate the powerset of the given list, which are stored in the list of sets that you give it.
    * @param results         This is a list of sets where all of the sets in the powerset will be stored
    * @param masterList      This is the original list of elements in the set
-   * @param elementsChosen  This maintains the elements chosen so far (when you call this method you should give an empty set)
-   * @param index           The current index in the master list (when you call this method, this parameter should be 0)
    **/
-  private static <T> void powerSet(List<Set<T>> results, List<T> masterList, Set<T> elementsChosen, int index) {
+  private static <T> void powerSet(List<Set<T>> results, List<T> masterList) {
+
+    powerSetHelper(results, masterList, new HashSet<T>(), 0);
+
+  }
+
+  /**
+   * A method used to help generate the powerset.
+   * @param results         This is a list of sets where all of the sets in the powerset will be stored
+   * @param masterList      This is the original list of elements in the set
+   * @param elementsChosen  This maintains the elements chosen so far
+   * @param index           The current index in the master list
+   **/
+  private static <T> void powerSetHelper(List<Set<T>> results, List<T> masterList, Set<T> elementsChosen, int index) {
 
       /* Base case */
 
@@ -735,8 +746,8 @@ public class UStructure extends Automaton {
     includingElement.add(masterList.get(index));
 
     // Recursive calls
-    powerSet(results, masterList, includingElement, index + 1);
-    powerSet(results, masterList, notIncludingElement, index + 1);
+    powerSetHelper(results, masterList, includingElement, index + 1);
+    powerSetHelper(results, masterList, notIncludingElement, index + 1);
 
   }
 
