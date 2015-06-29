@@ -715,14 +715,42 @@ public class TestAutomata {
 
     printTestOutput("FEASIBLE PROTOCOL OPERATIONS: ", 2);
 
-    printTestOutput("Generate all feasible protocols in the automaton generated above by adding communications...", 3);
+    printTestOutput("Generate all feasible protocols in the automaton generated above...", 3);
     List<Set<CommunicationData>> feasibleProtocols = addCommunications.generateAllFeasibleProtocols(addCommunications.getPotentialCommunications());
     printTestCase("Ensuring that there are 8 feasible protocols", new TestResult(feasibleProtocols.size(), 8), counter);
 
-    printTestOutput("Generate smallest feasible protocols in the automaton generated above by adding communications...", 3);
+    List<String> protocolsToString = protocolsToString(addCommunications, feasibleProtocols);
+    printTestCase("Ensuring that protocol #1 is in the list", new TestResult(protocolsToString.contains("1_1_1,<a_a_a>,2_2_2 (SR)\n1_1_1,<b_b_b>,3_3_3 (RS)\n")), counter);
+    printTestCase("Ensuring that protocol #2 is in the list", new TestResult(protocolsToString.contains("1_1_1,<a_a_a>,2_2_2 (SR)\n1_1_1,<b_b_b>,3_3_3 (RS)\n2_2_2,<b_b_b>,4_4_4 (RS)\n")), counter);
+    printTestCase("Ensuring that protocol #3 is in the list", new TestResult(protocolsToString.contains("1_1_1,<a_a_a>,2_2_2 (SR)\n1_1_1,<b_b_b>,3_3_3 (RS)\n3_3_3,<a_a_a>,5_5_5 (SR)\n")), counter);
+    printTestCase("Ensuring that protocol #4 is in the list", new TestResult(protocolsToString.contains("1_1_1,<a_a_a>,2_2_2 (SR)\n1_1_1,<b_b_b>,3_3_3 (RS)\n2_2_2,<b_b_b>,4_4_4 (RS)\n3_3_3,<a_a_a>,5_5_5 (SR)\n")), counter);
+    printTestCase("Ensuring that protocol #5 is in the list", new TestResult(protocolsToString.contains("1_1_1,<b_b_b>,3_3_3 (RS)\n1_1_2,<b_b_b>,3_3_4 (RS)\n2_2_1,<b_b_b>,4_4_3 (RS)\n2_2_2,<b_b_b>,4_4_4 (RS)\n")), counter);
+    printTestCase("Ensuring that protocol #6 is in the list", new TestResult(protocolsToString.contains("1_1_1,<a_a_a>,2_2_2 (SR)\n1_3_1,<a_a_a>,2_5_2 (SR)\n3_1_3,<a_a_a>,5_2_5 (SR)\n3_3_3,<a_a_a>,5_5_5 (SR)\n")), counter);
+    printTestCase("Ensuring that protocol #7 is in the list", new TestResult(protocolsToString.contains("1_1_1,<b_b_b>,3_3_3 (RS)\n1_1_2,<b_b_b>,3_3_4 (RS)\n2_2_1,<b_b_b>,4_4_3 (RS)\n2_2_2,<b_b_b>,4_4_4 (RS)\n3_3_3,<a_a_a>,5_5_5 (SR)\n")), counter);
+    printTestCase("Ensuring that protocol #8 is in the list", new TestResult(protocolsToString.contains("1_1_1,<a_a_a>,2_2_2 (SR)\n1_3_1,<a_a_a>,2_5_2 (SR)\n2_2_2,<b_b_b>,4_4_4 (RS)\n3_1_3,<a_a_a>,5_2_5 (SR)\n3_3_3,<a_a_a>,5_5_5 (SR)\n")), counter);
+
+    printTestOutput("Generate smallest feasible protocols in the automaton generated above...", 3);
     List<Set<CommunicationData>> smallestFeasibleProtocols = addCommunications.generateSmallestFeasibleProtocols(addCommunications.getPotentialCommunications());
     printTestCase("Ensuring that there is 1 smallest feasible protocol", new TestResult(smallestFeasibleProtocols.size(), 1), counter);
-    printTestCase("Ensuring that it has 2 communications", new TestResult(smallestFeasibleProtocols.get(0).size(), 2), counter);
+    printTestCase("Ensuring that the protocol is correct", new TestResult(protocolsToString(addCommunications, smallestFeasibleProtocols).contains("1_1_1,<a_a_a>,2_2_2 (SR)\n1_1_1,<b_b_b>,3_3_3 (RS)\n")), counter);
+    
+    printTestOutput("Try to make a protocol containing 1 communication feasible...", 3);
+    Set<CommunicationData> protocol = feasibleProtocols.get(0);
+    protocol.remove(protocol.iterator().next());
+    feasibleProtocols = addCommunications.makeProtocolFeasible(protocol);
+    printTestCase("Ensuring that there are 6 feasible protocols", new TestResult(feasibleProtocols.size(), 6), counter);
+    printTestCase("Ensuring that protocol #1 is in the list", new TestResult(protocolsToString.contains("1_1_1,<a_a_a>,2_2_2 (SR)\n1_1_1,<b_b_b>,3_3_3 (RS)\n")), counter);
+    printTestCase("Ensuring that protocol #2 is in the list", new TestResult(protocolsToString.contains("1_1_1,<a_a_a>,2_2_2 (SR)\n1_1_1,<b_b_b>,3_3_3 (RS)\n2_2_2,<b_b_b>,4_4_4 (RS)\n")), counter);
+    printTestCase("Ensuring that protocol #3 is in the list", new TestResult(protocolsToString.contains("1_1_1,<a_a_a>,2_2_2 (SR)\n1_1_1,<b_b_b>,3_3_3 (RS)\n3_3_3,<a_a_a>,5_5_5 (SR)\n")), counter);
+    printTestCase("Ensuring that protocol #4 is in the list", new TestResult(protocolsToString.contains("1_1_1,<a_a_a>,2_2_2 (SR)\n1_1_1,<b_b_b>,3_3_3 (RS)\n2_2_2,<b_b_b>,4_4_4 (RS)\n3_3_3,<a_a_a>,5_5_5 (SR)\n")), counter);
+    printTestCase("Ensuring that protocol #5 is in the list", new TestResult(protocolsToString.contains("1_1_1,<b_b_b>,3_3_3 (RS)\n1_1_2,<b_b_b>,3_3_4 (RS)\n2_2_1,<b_b_b>,4_4_3 (RS)\n2_2_2,<b_b_b>,4_4_4 (RS)\n")), counter);
+    printTestCase("Ensuring that protocol #6 is in the list", new TestResult(protocolsToString.contains("1_1_1,<b_b_b>,3_3_3 (RS)\n1_1_2,<b_b_b>,3_3_4 (RS)\n2_2_1,<b_b_b>,4_4_3 (RS)\n2_2_2,<b_b_b>,4_4_4 (RS)\n3_3_3,<a_a_a>,5_5_5 (SR)\n")), counter);
+    
+    printTestOutput("Try to make a protocol containing 7 communications feasible...", 3);
+    protocol = new HashSet<CommunicationData>(addCommunications.getPotentialCommunications());
+    protocol.remove(protocol.iterator().next());
+    feasibleProtocols = addCommunications.makeProtocolFeasible(protocol);
+    printTestCase("Ensuring that there are no feasible protocols", new TestResult(feasibleProtocols.size(), 0), counter);
     
       /* Print summary of this test routine */
 
@@ -809,6 +837,25 @@ public class TestAutomata {
     uStructure.closeFiles();
     
     return new UStructure(uStructure.getHeaderFile(), uStructure.getBodyFile());
+
+  }
+
+  private static List<String> protocolsToString(UStructure uStructure, List<Set<CommunicationData>> protocols) {
+
+    List<String> list = new ArrayList<String>();
+    
+    for (Set<CommunicationData> protocol : protocols) {
+
+      StringBuilder stringBuilder = new StringBuilder();
+
+      for (CommunicationData data : protocol)
+        stringBuilder.append(data.toString(uStructure) + "\n");
+
+      list.add(stringBuilder.toString());
+
+    }
+
+    return list;
 
   }
 

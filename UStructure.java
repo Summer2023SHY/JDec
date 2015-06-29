@@ -576,10 +576,10 @@ public class UStructure extends Automaton {
    **/
   private List<Set<CommunicationData>> makeProtocolFeasible(Set<CommunicationData> requestedProtocol, Automaton invertedAutomaton) {
 
-    /* Generate powerset of communication protocols */
+      /* Generate powerset of communication protocols */
 
     List<Set<CommunicationData>> protocols = new ArrayList<Set<CommunicationData>>();
-    powerSetSubset(protocols, potentialCommunications, new HashSet<CommunicationData>(), 0, requestedProtocol);
+    powerSetSubset(protocols, potentialCommunications, requestedProtocol);
 
       /* Generate list of feasible protocols */
 
@@ -697,12 +697,12 @@ public class UStructure extends Automaton {
 
   }
 
-  private static <T> void powerSetSubset(List<Set<T>> results, List<T> masterList, Set<T> elementsChosen, int index, Set<T> requiredElements) {
+  private static <T> void powerSetSubset(List<Set<T>> results, List<T> masterList, Set<T> requiredElements) {
 
     List<T> copyOfMasterList = new ArrayList<T>(masterList);
     copyOfMasterList.removeAll(requiredElements);
 
-    powerSet(results, copyOfMasterList, elementsChosen, 0);
+    powerSet(results, copyOfMasterList, new HashSet<T>(requiredElements), 0);
 
   }
 
