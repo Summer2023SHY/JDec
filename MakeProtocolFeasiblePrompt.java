@@ -12,7 +12,6 @@ public class MakeProtocolFeasiblePrompt extends JFrame {
   private java.util.List<CommunicationData> potentialCommunications;
   private JCheckBox[] checkBoxes;
 
-
     /** CONSTRUCTOR **/
 
   /**
@@ -59,7 +58,7 @@ public class MakeProtocolFeasiblePrompt extends JFrame {
     }
 
     JScrollPane scrollPane = new JScrollPane(container);
-    scrollPane.setMaximumSize(new Dimension(200, 200));
+    scrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 600));
     add(scrollPane);
 
       /* Add Button */
@@ -67,23 +66,24 @@ public class MakeProtocolFeasiblePrompt extends JFrame {
     JButton button = new JButton("Make Protocol Feasible");
     button.addActionListener(new ActionListener() {
  
-        public void actionPerformed(ActionEvent e) {
-            
-            // Create list of selected communications
-            Set<CommunicationData> protocol = new HashSet<CommunicationData>();
-            for (int i = 0; i < checkBoxes.length; i++)
-              if (checkBoxes[i].isSelected())
-                protocol.add(potentialCommunications.get(i));
-      
-            // Find all feasible protocols which include the chosen communications
-            java.util.List<Set<CommunicationData>> feasibleProtocols = uStructure.makeProtocolFeasible(protocol);
-            
-            // Display results in another window
-            new FeasibleProtocolOutput(gui, uStructure, feasibleProtocols, "Feasible Protocols", " Here are the feasible protocols: ");
+      public void actionPerformed(ActionEvent e) {
+          
+        // Create list of selected communications
+        Set<CommunicationData> protocol = new HashSet<CommunicationData>();
+        for (int i = 0; i < checkBoxes.length; i++)
+          if (checkBoxes[i].isSelected())
+            protocol.add(potentialCommunications.get(i));
+  
+        // Find all feasible protocols which include the chosen communications
+        java.util.List<Set<CommunicationData>> feasibleProtocols = uStructure.makeProtocolFeasible(protocol);
+        
+        // Display results in another window
+        new FeasibleProtocolOutput(gui, uStructure, feasibleProtocols, "Feasible Protocols", " Here are the feasible protocols: ");
 
-            // Dispose of this window
-            MakeProtocolFeasiblePrompt.this.dispose();
-        }
+        // Dispose of this window
+        MakeProtocolFeasiblePrompt.this.dispose();
+
+      }
 
     });
     add(button);

@@ -734,6 +734,13 @@ public class TestAutomata {
     printTestCase("Ensuring that there is 1 smallest feasible protocol", new TestResult(smallestFeasibleProtocols.size(), 1), counter);
     printTestCase("Ensuring that the protocol is correct", new TestResult(protocolsToString(addCommunications, smallestFeasibleProtocols).contains("1_1_1,<a_a_a>,2_2_2 (SR)\n1_1_1,<b_b_b>,3_3_3 (RS)\n")), counter);
     
+    printTestOutput("Generating the pruned automaton for the feasible protocol with 2 communications...", 3);
+    uStructure = addCommunications.applyProtocol(smallestFeasibleProtocols.get(0), null, null);
+    uStructure.generateInputForGUI();
+    printTestCase("Ensuring the events are correct", new TestResult(uStructure.getEventInput(), "<a_a_*>\n<b_*_b>\n<*_b_*>\n<*_*_a>\n<o_o_o>\n<b_b_b>\n<a_a_a>"), counter);
+    printTestCase("Ensuring the states are correct", new TestResult(uStructure.getStateInput(), "@1_1_1\n2_2_2\n2_4_2\n3_3_3\n3_3_5\n4_2_4\n4_4_4\n5_5_3\n5_5_5\n6_6_6\n7_7_7"), counter);
+    printTestCase("Ensuring the transitions are correct", new TestResult(uStructure.getTransitionInput(), "1_1_1,<b_b_b>,3_3_3:POTENTIAL_COMMUNICATION-RS\n1_1_1,<a_a_a>,2_2_2:POTENTIAL_COMMUNICATION-SR\n2_2_2,<b_*_b>,4_2_4\n2_2_2,<*_b_*>,2_4_2\n2_4_2,<b_*_b>,4_4_4\n3_3_3,<a_a_*>,5_5_3\n3_3_3,<*_*_a>,3_3_5\n3_3_5,<a_a_*>,5_5_5\n4_2_4,<*_b_*>,4_4_4\n4_4_4,<o_o_o>,6_6_6\n5_5_3,<*_*_a>,5_5_5\n5_5_5,<o_o_o>,7_7_7"), counter);
+    
     printTestOutput("Try to make a protocol containing 1 communication feasible...", 3);
     Set<CommunicationData> protocol = feasibleProtocols.get(0);
     protocol.remove(protocol.iterator().next());

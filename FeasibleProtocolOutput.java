@@ -58,6 +58,7 @@ public class FeasibleProtocolOutput extends JFrame {
       /* Setup */
 
     setLayout(new BorderLayout());
+    setMaximumSize(new Dimension(500, 500));
 
       /* Add Instructions */
 
