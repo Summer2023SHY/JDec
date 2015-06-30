@@ -76,12 +76,20 @@ public class MakeProtocolFeasiblePrompt extends JFrame {
   
         // Find all feasible protocols which include the chosen communications
         java.util.List<Set<CommunicationData>> feasibleProtocols = uStructure.makeProtocolFeasible(protocol);
-        
-        // Display results in another window
-        new FeasibleProtocolOutput(gui, uStructure, feasibleProtocols, "Feasible Protocols", " Here are the feasible protocols: ");
 
-        // Dispose of this window
-        MakeProtocolFeasiblePrompt.this.dispose();
+        if (feasibleProtocols.size() == 0) {
+
+              JOptionPane.showMessageDialog(null, "The specified protocol could not be made into a feasible protocol by adding communications.", "No Feasible Protocols", JOptionPane.INFORMATION_MESSAGE);
+        
+        } else {
+        
+          // Display results in another window
+          new FeasibleProtocolOutput(gui, uStructure, feasibleProtocols, "Feasible Protocols", " Here are the feasible protocols: ");
+
+          // Dispose of this window
+          MakeProtocolFeasiblePrompt.this.dispose();
+
+        }
 
       }
 

@@ -73,11 +73,19 @@ public class GeneratedAllFeasibleProtocolsPrompt extends JFrame {
             // Print feasible protocols
             java.util.List<Set<CommunicationData>> feasibleProtocols = uStructure.generateAllFeasibleProtocols(chosenCommunications);
 
-            // Display results in another window
-            new FeasibleProtocolOutput(gui, uStructure, feasibleProtocols, "Feasible Protocols", " Here is the list of all feasible protocols: ");
+            if (feasibleProtocols.size() == 0) {
 
-            // Dispose of this window
-            GeneratedAllFeasibleProtocolsPrompt.this.dispose();
+              JOptionPane.showMessageDialog(null, "There were no feasible protocols were found with the specified senders and recievers.", "No Feasible Protocols", JOptionPane.INFORMATION_MESSAGE);
+        
+            } else {
+            
+              // Display results in another window
+              new FeasibleProtocolOutput(gui, uStructure, feasibleProtocols, "Feasible Protocols", " Here is the list of all feasible protocols: ");
+
+              // Dispose of this window
+              GeneratedAllFeasibleProtocolsPrompt.this.dispose();
+
+            }
         }
 
     });
