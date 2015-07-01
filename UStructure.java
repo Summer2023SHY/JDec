@@ -602,8 +602,7 @@ public class UStructure extends Automaton {
    **/
   private boolean isFeasibleProtocol(Set<CommunicationData> protocol) {
 
-    UStructure copy = duplicate(new File("tmp.hdr"), new File("tmp.bdy"));
-    // UStructure copy = duplicate(null, null);
+    UStructure copy = duplicate();
     copy = copy.applyProtocol(protocol, null, null);
 
     if (copy.potentialCommunications.size() != protocol.size())
@@ -734,7 +733,7 @@ public class UStructure extends Automaton {
    **/
   public UStructure applyProtocol(Set<CommunicationData> protocol, File newHeaderFile, File newBodyFile) {
 
-    UStructure uStructure = duplicate(getTemporaryFile(), getTemporaryFile());
+    UStructure uStructure = duplicate();
   
       /* Remove all communications that are not part of the protocol */
 
@@ -1157,6 +1156,10 @@ public class UStructure extends Automaton {
    **/
   public List<CommunicationData> getPotentialCommunications() {
     return potentialCommunications;
+  }
+
+  @Override public UStructure duplicate() {
+    return duplicate(getTemporaryFile(), getTemporaryFile());
   }
 
   @Override public UStructure duplicate(File newHeaderFile, File newBodyFile) {

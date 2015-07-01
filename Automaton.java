@@ -1675,6 +1675,10 @@ public class Automaton {
 
     /** WORKING WITH FILES **/
 
+  public Automaton duplicate() {
+    return duplicate(getTemporaryFile(), getTemporaryFile());
+  }
+
   /**
    * Duplicate this automaton and store it in a different set of files.
    * NOTE: This method is intended to be overridden.
@@ -1698,12 +1702,6 @@ public class Automaton {
    * @return              Whether or not the duplication was successful
    **/
   protected final boolean duplicateHelper(File newHeaderFile, File newBodyFile) {
-
-    // Assign temporary files, if necessary
-    if (newHeaderFile == null)
-      newHeaderFile = getTemporaryFile();
-    if (newBodyFile == null)
-      newBodyFile = getTemporaryFile();
 
     // Copy the header and body files
     try {
