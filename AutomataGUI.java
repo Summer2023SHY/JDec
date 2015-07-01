@@ -408,11 +408,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
         );
         break;
 
-      case NASH_U_STRUCTURE:
+      case CRUSH:
 
         nControllersBeforeUStructure = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
         tab.automaton = AutomatonGenerator.generateFromGUICode(
-          new NashUStructure(tab.headerFile, tab.bodyFile, nControllersBeforeUStructure),
+          new Crush(tab.headerFile, tab.bodyFile, nControllersBeforeUStructure),
           tab.eventInput.getText(),
           tab.stateInput.getText(),
           tab.transitionInput.getText(),
@@ -486,7 +486,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     JMenuBar menuBar = new JMenuBar();
 
-    menuBar.add(createMenu("File", "New Tab->New Automaton,New U-Structure,New Nash U-Structure", "Open", "Save As...[TAB]", "Refresh Tab[TAB]", null, "Clear[TAB]", "Close Tab[TAB]", null, "Export as SVG[AUTOMATON]", null, "Quit"));
+    menuBar.add(createMenu("File", "New Tab->New Automaton,New U-Structure,New Crush", "Open", "Save As...[TAB]", "Refresh Tab[TAB]", null, "Clear[TAB]", "Close Tab[TAB]", null, "Export as SVG[AUTOMATON]", null, "Quit"));
     menuBar.add(createMenu("Standard Operations", "Accessible[AUTOMATON]", "Co-Accessible[AUTOMATON]", "Trim[AUTOMATON]", "Complement[AUTOMATON]", null, "Intersection[BASIC_AUTOMATON]", "Union[BASIC_AUTOMATON]"));
     menuBar.add(createMenu("Special Operations", "Synchronized Composition[BASIC_AUTOMATON]", null, "Add Communications[U_STRUCTURE]", "Feasible Protocols->Generate All[U_STRUCTURE],Make Protocol Feasible[U_STRUCTURE],Find Smallest[U_STRUCTURE]"));
     menuBar.add(createMenu("Quantitative Communication", "Nash", "Pareto"));
@@ -626,9 +626,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
         createTab(true, Automaton.Type.U_STRUCTURE);
         break;
 
-      case "New Nash U-Structure":
+      case "New Crush":
 
-        createTab(true, Automaton.Type.NASH_U_STRUCTURE);
+        createTab(true, Automaton.Type.CRUSH);
         break;
 
       case "Save As...":
@@ -795,7 +795,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         // Create a copy of the current automaton with all communications added and potential communications marked
         createTab(uStructure.addCommunications(headerFile, bodyFile));
-        
+
         break;
 
       case "Generate All":
@@ -1468,9 +1468,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
                + "omitted, then it is assumed that they are observable and controllable for all controllers.<br>"
                + "It is not possible, however, to omit the properties for some controllers, but not all.</html>";
 
-        case U_STRUCTURE: case NASH_U_STRUCTURE:
-          return "<html>1 event vector per line, formatted as <i>&lt;Event1_Event2...></i>.<br>"
-               + "<b><u>EXAMPLE</u></b>: '<i><&lt;FirstEvent_SecondEvent_ThirdEvent></i>' denotes an event vector "
+        case U_STRUCTURE: case CRUSH:
+          return "<html>1 event vector per line, formatted as <i>&lt;Event1,Event2...></i>.<br>"
+               + "<b><u>EXAMPLE</u></b>: '<i><&lt;FirstEvent,SecondEvent,ThirdEvent></i>' denotes an event vector "
                + "containing the 3 events named <b>FirstEvent</b>, <b>SecondEvent</b>, and <b>ThirdEvent</b>.<br></html>";
 
         default:
@@ -1491,7 +1491,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
                + "<b>marked</b>.<br><b><u>NOTE</u></b>: '<i>T</i>' and '<i>F</i>' are case insensitive. If omitted, the default value is "
                + "'<i>T</i>'. There is only allowed to be one initial state.</html>";
 
-        case U_STRUCTURE: case NASH_U_STRUCTURE:
+        case U_STRUCTURE: case CRUSH:
           return "<html>1 state per line, formatted as <i>[@]LABEL</i> (where the '@' symbol denotes that this is the initial state).<br>"
                + "<b><u>EXAMPLE 1</u></b>: <i>'StateName'</i> denotes a state called <b>StateName</b>.<br>"
                + "<b><u>EXAMPLE 2</u></b>: <i>'@StateName'</i> denotes a state called <b>StateName</b> that is the <b>initial state</b><br>"
@@ -1529,7 +1529,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
                + "means that controller 1 is sending the communication to controllers 2 and 3.<br>Appending '-R*S' means that controller 3 is sending the "
                + "communication to controller 1 (where '*' denotes that a controller that doesn't have a role in the communication).</i></html>";
 
-        // case NASH_U_STRUCTURE:
+        // case CRUSH:
           // return "<html>1 transition per line, formatted as <i>INITIAL_STATE,EVENT,TARGET_STATE[:SPECIAL_PROPERTIES]</i>"
           //      + ", which are used in the synchronized composition operation).<br>"
           //      + "<b><u>EXAMPLE</u></b>: <i>'FirstState,Event,SecondState'</i> denotes a transition that goes from "

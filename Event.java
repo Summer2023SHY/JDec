@@ -27,9 +27,9 @@ public class Event implements Comparable<Event> {
 
   /**
    * Events can sometimes be vectors (for example, automata created by synchonrized composition use them).
-   * Example of syntax: "&lt;a_b_d>" actually represents an event vector: {"a", "b", "d"}.
+   * Example of syntax: "&lt;a,b,d>" actually represents an event vector: {"a", "b", "d"}.
    **/
-  public LabelVector vector = null;
+  private LabelVector vector = null;
 
   	/** CONSTRUCTOR **/
 
@@ -92,6 +92,14 @@ public class Event implements Comparable<Event> {
 	public boolean[] isControllable() {
 		return controllable;
 	}
+
+  /**
+   * Get the event vector
+   * @return vector
+   **/
+  public LabelVector getVector() {
+    return vector;
+  }
 
 		/** OVERRIDDEN METHODS **/
 

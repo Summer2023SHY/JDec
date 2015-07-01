@@ -1,26 +1,26 @@
 import java.io.*;
 import java.util.*;
 
-public class NashUStructure extends UStructure {
+public class Crush extends UStructure {
 
   private List<NashCommunicationData> nashCommunications;
-  
+
   /**
-   * Implicit constructor: used to load automaton from file.
+   * Implicit constructor: used to load crush from file.
    * @param headerFile  The file where the header should be stored
    * @param bodyFile    The file where the body should be stored
    **/
-  public NashUStructure(File headerFile, File bodyFile) {
+  public Crush(File headerFile, File bodyFile) {
     super(headerFile, bodyFile);
   }
 
   /**
-   * Implicit constructor: used when creating a new Nash U-Structure.
+   * Implicit constructor: used when creating a new crush structure.
    * @param headerFile                    The file where the header should be stored
    * @param bodyFile                      The file where the body should be stored
    * @param nControllersBeforeUStructure  The number of controllers that were present before the U-Structure was created
    **/
-  public NashUStructure(File headerFile, File bodyFile, int nControllersBeforeUStructure) {
+  public Crush(File headerFile, File bodyFile, int nControllersBeforeUStructure) {
     super(headerFile, bodyFile, nControllersBeforeUStructure);
   }
 
@@ -43,6 +43,6 @@ public class NashUStructure extends UStructure {
     // Update header file
     headerFileNeedsToBeWritten = true;
 
-  }
+  } 
 
 }

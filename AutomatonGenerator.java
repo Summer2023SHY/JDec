@@ -248,8 +248,20 @@ public abstract class AutomatonGenerator<T> {
     
     for (String line : stateInputText.split("\n")) {
 
-      String[] splitLine = line.trim().split(",");
-      String label = trimStateLabel(splitLine[0], Automaton.MAX_LABEL_LENGTH, verbose);
+      // Parse input differently depending on automaton type
+      String label = null;
+      boolean marked;
+      if (automaton.getClass().equals(Automaton.class)) {
+
+        String[] splitLine = line.trim().split(",");
+
+        label = trimStateLabel(splitLine[0], Automaton.MAX_LABEL_LENGTH, verbose);
+        marked = (splitLine.length >= 2 && isTrue(splitLine[1]));
+
+      } else {
+        label = trimStateLabel(line, Automaton.MAX_LABEL_LENGTH, verbose);
+        marked = false;
+      }
 
       // Check to see if this is a duplicate state label
       if (stateMapping.get(label) != null) {
@@ -259,21 +271,23 @@ public abstract class AutomatonGenerator<T> {
       }
 
       // Try to add the state
-      if (splitLine.length >= 1 && label.length() > 0) {
+      if (label.length() > 0) {
 
         boolean isInitialState = (label.charAt(0) == '@');
 
-        // Ensure the user didn't only have a '@' symbols the name of the label (since '@' gets removed, we are left with an empty string)
-        if (isInitialState && label.length() == 1) {
-          if (verbose)
-            System.err.println("ERROR: Could not parse '" + line + "' as a state (state name must be at least 1 character long).");
-          continue;
+        // Ensure the user didn't only have a '@' symbol as the name of the label (since '@' gets removed, we are left with an empty string)
+        if (isInitialState) {
+          
+          if (label.length() == 1) {
+            if (verbose)
+              System.err.println("ERROR: Could not parse '" + line + "' as a state (state name must be at least 1 character long).");
+            continue;
+          }
 
-        }
-
-        // Remove '@' character from the label name
-        if (isInitialState)
+          // Remove '@' character from the label name
           label = label.substring(1);
+        
+        }
 
         // Check for invalid label
         if (!isValidLabel(label)) {
@@ -281,7 +295,7 @@ public abstract class AutomatonGenerator<T> {
           continue;
         }
 
-        long id = automaton.addState(label, splitLine.length >= 2 && isTrue(splitLine[1]), isInitialState);
+        long id = automaton.addState(label, marked, isInitialState);
 
         // Error checking
         if (id == 0) {
@@ -293,15 +307,15 @@ public abstract class AutomatonGenerator<T> {
         // Add state
         stateMapping.put(label, id);
 
-      } else if (line.length() > 0 && verbose)
-        System.err.println("ERROR: Could not parse '" + line + "' as a state.");
+      }
+
     }
     
       /* Events */
 
     for (String line : eventInputText.split("\n")) {
 
-      String[] splitLine = line.trim().split(",");
+      String[] splitLine = splitStringWithVectors(line);
       String label = splitLine[0];
 
       // Check to see if this is a duplicate event label
@@ -369,7 +383,7 @@ public abstract class AutomatonGenerator<T> {
       String[] splitLine = line.trim().split(":");
 
       // Ensure that all 3 required parameters are present
-      String[] firstHalf = splitLine[0].split(",");
+      String[] firstHalf = splitStringWithVectors(splitLine[0]);
       if (firstHalf.length >= 3) {
 
         String initialStateLabel = trimStateLabel(firstHalf[0].trim(), Automaton.MAX_LABEL_LENGTH, verbose);
@@ -536,6 +550,44 @@ public abstract class AutomatonGenerator<T> {
 
   }
 
+  private static String[] splitStringWithVectors(String str) {
+
+    ArrayList<String> list = new ArrayList<String>();
+
+    int start = 0;
+    int insideVector = 0;
+    for (int i = 0; i < str.length(); i++) {
+
+      char ch = str.charAt(i);
+
+      switch (ch) {
+        
+        case '<':
+          insideVector++;
+          break;
+        
+        case '>':
+          insideVector--;
+          break;
+        
+        case ',':
+          if (insideVector == 0) {
+            list.add(str.substring(start, i));
+            start = i + 1;
+          }
+          break;
+
+      }
+
+    }
+
+
+    list.add(str.substring(start));
+
+    return list.toArray(new String[0]);
+
+  }
+
   /**
    * Simple helper method to detect whether the given String is either "T" or "t".
    * @param str   The String to parse
@@ -581,6 +633,7 @@ public abstract class AutomatonGenerator<T> {
     // All characters must be either letters, digits, or one of the allowed special characters
     for (int i = 0; i < label.length(); i++)
       if (!Character.isLetterOrDigit(label.charAt(i))
+          && label.charAt(i) != ','
           && label.charAt(i) != '_'
           && label.charAt(i) != '*'
           && label.charAt(i) != '<'

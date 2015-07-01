@@ -71,12 +71,12 @@ public class State {
 
 	/**
 	 * Write this state to file.
-	 * @param file								The RandomAccessFile we are using to write to
-	 * @param nBytesPerState			The number of bytes used to store each state in the file
-	 * @param labelLength					The amount of characters reserved for the label in each state
-	 * @param nBytesPerEventID		The number of bytes used to store an event ID
-	 * @param nBytesPerStateID		The number of bytes used to store a state ID
-	 * @return whether or not the operation was successful
+	 * @param file						 The RandomAccessFile we are using to write to
+	 * @param nBytesPerState   The number of bytes used to store each state in the file
+	 * @param labelLength			 The amount of characters reserved for the label in each state
+	 * @param nBytesPerEventID The number of bytes used to store an event ID
+	 * @param nBytesPerStateID The number of bytes used to store a state ID
+	 * @return                 Whether or not the operation was successful
 	 **/
 	public boolean writeToFile(RandomAccessFile file, long nBytesPerState, int labelLength, int nBytesPerEventID, int nBytesPerStateID) {
 

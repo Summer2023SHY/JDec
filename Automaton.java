@@ -136,7 +136,7 @@ public class Automaton {
     U_STRUCTURE((byte) 1, UStructure.class),
 
     /** The U-Structure which also has cost and probility information for the communications */
-    NASH_U_STRUCTURE((byte) 2, NashUStructure.class);
+    CRUSH((byte) 2, Crush.class);
 
     // Private variables
     private final byte numericValue;
@@ -1000,7 +1000,7 @@ public class Automaton {
             if (targetID == 0)
               continue outer;
 
-            combinedEventLabel += "_" + e.getLabel();
+            combinedEventLabel += "," + e.getLabel();
             combinedStateLabel += "_" + label;
             listOfTargetIDs.add(targetID);
 
@@ -1016,7 +1016,7 @@ public class Automaton {
 
           // Unobservable events by this controller
           } else {
-            combinedEventLabel += "_*";
+            combinedEventLabel += ",*";
             combinedStateLabel += "_" + listOfStates.get(i + 1).getLabel();
             listOfTargetIDs.add(listOfIDs.get(i + 1));
           }
@@ -1071,11 +1071,11 @@ public class Automaton {
               // The current controller
               if (j == i + 1) {
                 listOfTargetIDs.add(t.getTargetStateID());
-                combinedEventLabel += "_" + t.getEvent().getLabel();
+                combinedEventLabel += "," + t.getEvent().getLabel();
                 combinedStateLabel += "_" + getStateExcludingTransitions(t.getTargetStateID()).getLabel();
               } else {
                 listOfTargetIDs.add(listOfIDs.get(j));
-                combinedEventLabel += "_*";
+                combinedEventLabel += ",*";
                 combinedStateLabel += "_" + listOfStates.get(j).getLabel(); 
               }
 
@@ -1137,7 +1137,7 @@ public class Automaton {
    * Helper method to copy over all special transition data from this automaton to another.
    * NOTE: The data is only copied over if both of the states involved in the transition actually exist.
    * NOTE: This method is intended to be overridden.
-   * @param automaton The automaton which is recieving the special transitions
+   * @param automaton The automaton which is receiving the special transitions
    **/
   protected <T extends Automaton> void copyOverSpecialTransitions(T automaton) {
 

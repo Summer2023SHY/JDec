@@ -13,7 +13,7 @@ public class UStructure extends Automaton {
   private int nControllersBeforeUStructure;
 
   /**
-   * Implicit constructor: used to load automaton from file.
+   * Implicit constructor: used to load the U-Structure from file.
    * @param headerFile  The file where the header should be stored
    * @param bodyFile    The file where the body should be stored
    **/
@@ -42,7 +42,7 @@ public class UStructure extends Automaton {
   }
 
   /**
-   * Implicit constructor: used to load automaton from file or when creating a new U-Structure.
+   * Implicit constructor: used to load the U-Structure from file or when creating a new U-Structure.
    * @param headerFile                    The file where the header should be stored
    * @param bodyFile                      The file where the body should be stored
    * @param nControllersBeforeUStructure  The number of controllers that were present before the U-Structure was created
@@ -63,8 +63,8 @@ public class UStructure extends Automaton {
 	
 	/**
    * Main constructor.
-   * @param headerFile                    The binary file to load the header information of the automaton from (information about events, etc.)
-   * @param bodyFile                      The binary file to load the body information of the automaton from (states and transitions)
+   * @param headerFile                    The binary file to load the header information of the U-Structure from (information about events, etc.)
+   * @param bodyFile                      The binary file to load the body information of the U-Structure from (states and transitions)
    * @param eventCapacity                 The initial event capacity (increases by a factor of 256 when it is exceeded)
    * @param stateCapacity                 The initial state capacity (increases by a factor of 256 when it is exceeded)
    * @param transitionCapacity            The initial maximum number of transitions per state (increases by 1 whenever it is exceeded)
@@ -141,10 +141,10 @@ public class UStructure extends Automaton {
   }
 
   /**
-   * Generate a new automaton, with all communications added (potential communications are marked).
-   * @param newHeaderFile          The header file where the new automaton should be stored
-   * @param newBodyFile            The body file where the new automaton should be stored
-   * @return                       The automaton with the added transitions
+   * Generate a new U-Structure, with all communications added (potential communications are marked).
+   * @param newHeaderFile          The header file where the new U-Structure should be stored
+   * @param newBodyFile            The body file where the new U-Structure should be stored
+   * @return                       The U-Structure with the added transitions
    **/
   public UStructure addCommunications(File newHeaderFile, File newBodyFile) {
     
@@ -153,53 +153,53 @@ public class UStructure extends Automaton {
     // Generate all potential
     Set<LabelVector> leastUpperBounds = new HashSet<LabelVector>();
     for (Event e : events)
-      leastUpperBounds.add(new LabelVector(e.getLabel()));
+      leastUpperBounds.add(e.getVector());
     Set<CommunicationLabelVector> potentialCommunications = findPotentialCommunicationLabels(leastUpperBounds);
     
     // Generate all least upper bounds
     generateLeastUpperBounds(leastUpperBounds);
     
-    UStructure automaton = duplicate(newHeaderFile, newBodyFile);
+    UStructure uStructure = duplicate(newHeaderFile, newBodyFile);
 
       /* Add communications (marking the potential communications) */
 
-    for (long s = 1; s < automaton.getNumberOfStates(); s++) {
+    for (long s = 1; s < uStructure.getNumberOfStates(); s++) {
 
-      State startingState = automaton.getState(s);
+      State startingState = uStructure.getState(s);
 
       // Try each least upper bound
       for (LabelVector vector : leastUpperBounds) {
         
         boolean[] vectorElementsFound = new boolean[vector.getSize()];
-        State destinationState = automaton.findWhereCommunicationLeads(vector, vectorElementsFound, startingState);
+        State destinationState = uStructure.findWhereCommunicationLeads(vector, vectorElementsFound, startingState);
         
         if (destinationState != null) {
 
           // Add event if it doesn't already exist
           int id;
-          Event event = automaton.getEvent(vector.toString());
+          Event event = uStructure.getEvent(vector.toString());
           if (event == null)
-            id = automaton.addEvent(vector.toString(), new boolean[] {true}, new boolean[] {true});
+            id = uStructure.addEvent(vector.toString(), new boolean[] {true}, new boolean[] {true});
           else
             id = event.getID();
 
           // Add the transition (if it doesn't already exist)
-          if (!automaton.transitionExists(startingState.getID(), id, destinationState.getID())) {
+          if (!uStructure.transitionExists(startingState.getID(), id, destinationState.getID())) {
 
             // Add transition
-            automaton.addTransition(startingState.getID(), id, destinationState.getID());
+            uStructure.addTransition(startingState.getID(), id, destinationState.getID());
 
             // There could be more than one potential communication, so we need to mark them all
             boolean found = false;
             for (CommunicationLabelVector data : potentialCommunications)
               if (vector.equals((LabelVector) data)) {
-                automaton.addPotentialCommunication(startingState.getID(), id, destinationState.getID(), data.roles);
+                uStructure.addPotentialCommunication(startingState.getID(), id, destinationState.getID(), data.roles);
                 found = true;
               }
 
             // If there were no potential communications, then it must be a non-potential communication
             if (!found)
-              automaton.addNonPotentialCommunication(startingState.getID(), id, destinationState.getID());
+              uStructure.addNonPotentialCommunication(startingState.getID(), id, destinationState.getID());
     
           }
          
@@ -211,13 +211,13 @@ public class UStructure extends Automaton {
 
       /* Copy over all of the special transitions */
 
-    copyOverSpecialTransitions(automaton);
+    copyOverSpecialTransitions(uStructure);
 
       /* Ensure that the header file has been written to disk */
 
-    automaton.writeHeaderFile();
+    uStructure.writeHeaderFile();
 
-    return automaton;
+    return uStructure;
     
   }
 
@@ -251,9 +251,9 @@ public class UStructure extends Automaton {
       boolean[] copy = (boolean[]) vectorElementsFound.clone();
 
       // Check to see if the event vector of this transition is compatible with what we've found so far
-      for (int i = 0; i < t.getEvent().vector.getSize(); i++) {
+      for (int i = 0; i < t.getEvent().getVector().getSize(); i++) {
 
-        String element = t.getEvent().vector.getLabelAtIndex(i);
+        String element = t.getEvent().getVector().getLabelAtIndex(i);
 
         if (!element.equals("*")) {
 
@@ -294,7 +294,7 @@ public class UStructure extends Automaton {
 
       /* Separate observable and unobservable labels */
 
-    Set<LabelVector> observableLabels = new HashSet<LabelVector>();
+    Set<LabelVector> observableLabels   = new HashSet<LabelVector>();
     Set<LabelVector> unobservableLabels = new HashSet<LabelVector>();
 
     for (LabelVector v : leastUpperBounds) {
@@ -345,17 +345,17 @@ public class UStructure extends Automaton {
           // Append vector element
           String newEventLabel = null;
           if (!label1.equals("*")) {
-            potentialCommunication += "_" + label1;
+            potentialCommunication += "," + label1;
             newEventLabel = label1;
             if (i > 0)
               roles[i - 1] = CommunicationRole.SENDER;
           } else if (!label2.equals("*")) {
-            potentialCommunication += "_" + label2;
+            potentialCommunication += "," + label2;
             newEventLabel = label2;
             if (i > 0)
               roles[i - 1] = CommunicationRole.RECIEVER;
           } else {
-            potentialCommunication += "_*";
+            potentialCommunication += ",*";
             if (i > 0)
               roles[i - 1] = CommunicationRole.NONE;
           }
@@ -444,9 +444,9 @@ public class UStructure extends Automaton {
 
             // Append vector element
             if (label1.equals("*"))
-              leastUpperBound += "_" + label2;
+              leastUpperBound += "," + label2;
             else
-              leastUpperBound += "_" + label1;
+              leastUpperBound += "," + label1;
 
           }
 
@@ -470,7 +470,7 @@ public class UStructure extends Automaton {
 
   /**
    * Checking the feasibility for all possible communication protocols, generate a list of the feasible protocols.
-   * @param communications  The communications to be considered (which should be a subset of the potentialCommunications list of this automaton)
+   * @param communications  The communications to be considered (which should be a subset of the potentialCommunications list of this U-Structure)
    * @return                The feasible protocols, which are sorted by the number of communications that each protocol has (smallest to largest)
    **/
   public List<Set<CommunicationData>> generateAllFeasibleProtocols(List<CommunicationData> communications) {
@@ -509,7 +509,7 @@ public class UStructure extends Automaton {
 
   /**
    * Generate a list of the smallest possible feasible protocols (in terms of the number of communications).
-   * @param communications  The communications to be considered (which should be a subset of the potentialCommunications list of this automaton)
+   * @param communications  The communications to be considered (which should be a subset of the potentialCommunications list of this U-Structure)
    * @return                The feasible protocols
    **/
   public List<Set<CommunicationData>> generateSmallestFeasibleProtocols(List<CommunicationData> communications) {
@@ -557,24 +557,10 @@ public class UStructure extends Automaton {
 
   /**
    * Make the specified protocol feasible (returning it as a new set).
-   * NOTE: This method is overloaded for efficiency purposes (the method accepting an inverted automaton as a parameter is more
-   * efficient if makeProtocolFeasible() is being called multiple times on the same automaton, so there's no need to regenerate
-   * the inverted automaton each time).
    * @param protocol  The protocol that is being made feasible
-   * @return          The list of feasible protocols
+   * @return          The feasible protocol
    **/
-  public List<Set<CommunicationData>> makeProtocolFeasible(Set<CommunicationData> protocol) {
-    return makeProtocolFeasible(protocol, invert());
-  }
-
-  /**
-   * Make the specified protocol feasible (returning it as a new set).
-   * @param protocol            The protocol that is being made feasible
-   * @param invertedAutomaton   An automaton identical to the previous (except all transitions are going the opposite direction)
-   *                            NOTE: There is no need for extra information (such as special transitions) to be in the inverted automaton
-   * @return                    The feasible protocol
-   **/
-  private List<Set<CommunicationData>> makeProtocolFeasible(Set<CommunicationData> requestedProtocol, Automaton invertedAutomaton) {
+  public List<Set<CommunicationData>> makeProtocolFeasible(Set<CommunicationData> requestedProtocol) {
 
       /* Generate powerset of communication protocols */
 
@@ -634,10 +620,10 @@ public class UStructure extends Automaton {
       // Any strict subset of this communication's event vector which is found at an indistinguishable states
       // indicates that there used to be a communication here (before the protocol was applied), but that
       // it should have been part of the protocol, meaning this protocol is not feasible
-      LabelVector eventVector = copy.getEvent(data.eventID).vector;
+      LabelVector eventVector = copy.getEvent(data.eventID).getVector();
       for (Long s : reachableStates)
         for (Transition t : copy.getState(s).getTransitions())
-          if (isStrictSubVector(t.getEvent().vector, eventVector))
+          if (isStrictSubVector(t.getEvent().getVector(), eventVector))
             return false;
 
     }
@@ -664,36 +650,24 @@ public class UStructure extends Automaton {
 
   /**
    * Using recursion, determine which states are reachable through transitions which are unobservable to the sender.
-   * @param automaton           The relevant automaton
-   * @param invertedAutomaton   An automaton identical to the previous (except all transitions are going the opposite direction)
+   * @param uStructure          The relevant U-Structure
+   * @param invertedUStructure  A U-Structure identical to the previous (except all transitions are going the opposite direction)
    *                            NOTE: There is no need for extra information (such as special transitions) to be in the inverted automaton
    * @param reachableStates     The set of reachable states that are being built during this recursive process
    * @param currentStateID      The current state
    * @param vectorIndexOfSender The index in the event vector which corresponds to the sending controller
    **/
-  private static void findReachableStates(Automaton automaton, Automaton invertedAutomaton, Set<Long> reachableStates, long currentStateID, int vectorIndexOfSender) {
+  private static void findReachableStates(UStructure uStructure, UStructure invertedUStructure, Set<Long> reachableStates, long currentStateID, int vectorIndexOfSender) {
 
     reachableStates.add(currentStateID);
 
-    for (Transition t : automaton.getState(currentStateID).getTransitions()) {
+    for (Transition t : uStructure.getState(currentStateID).getTransitions())
+      if (t.getEvent().getVector().isUnobservableToController(vectorIndexOfSender) && !reachableStates.contains(t.getTargetStateID()))
+        findReachableStates(uStructure, invertedUStructure, reachableStates, t.getTargetStateID(), vectorIndexOfSender);
 
-      LabelVector vector = t.getEvent().vector;
-      boolean unobservableToSender = (vector.getLabelAtIndex(0).equals("*") || vector.getLabelAtIndex(vectorIndexOfSender).equals("*"));
-
-      if (unobservableToSender && !reachableStates.contains(t.getTargetStateID()))
-        findReachableStates(automaton, invertedAutomaton, reachableStates, t.getTargetStateID(), vectorIndexOfSender);
-
-    }
-
-    for (Transition t : invertedAutomaton.getState(currentStateID).getTransitions()) {
-
-      LabelVector vector = t.getEvent().vector;
-      boolean unobservableToSender = (vector.getLabelAtIndex(0).equals("*") || vector.getLabelAtIndex(vectorIndexOfSender).equals("*"));
-
-      if (unobservableToSender && !reachableStates.contains(t.getTargetStateID()))
-        findReachableStates(automaton, invertedAutomaton, reachableStates, t.getTargetStateID(), vectorIndexOfSender);
-
-    }
+    for (Transition t : invertedUStructure.getState(currentStateID).getTransitions())
+      if (t.getEvent().getVector().isUnobservableToController(vectorIndexOfSender) && !reachableStates.contains(t.getTargetStateID()))
+        findReachableStates(uStructure, invertedUStructure, reachableStates, t.getTargetStateID(), vectorIndexOfSender);
 
   }
 
@@ -752,11 +726,11 @@ public class UStructure extends Automaton {
   }
 
   /**
-   * Refine this automaton by applying the specified communication protocol, and doing the necessary pruning.
+   * Refine this U-Structure by applying the specified communication protocol, and doing the necessary pruning.
    * @param protocol      The chosen protocol
-   * @param newHeaderFile The header file where the new automaton should be stored
-   * @param newBodyFile   The body file where the new automaton should be stored
-   * @return              The pruned automaton that had the specified protocol applied
+   * @param newHeaderFile The header file where the new U-Structure should be stored
+   * @param newBodyFile   The body file where the new U-Structure should be stored
+   * @return              The pruned U-Structure  that had the specified protocol applied
    **/
   public UStructure applyProtocol(Set<CommunicationData> protocol, File newHeaderFile, File newBodyFile) {
 
@@ -776,9 +750,9 @@ public class UStructure extends Automaton {
       /* Prune (which removes more transitions) */
 
     for (CommunicationData data : protocol)
-      uStructure.prune(protocol, getEvent(data.eventID).vector, data.initialStateID);
+      uStructure.prune(protocol, getEvent(data.eventID).getVector(), data.initialStateID);
 
-      /* Get the accessible part of the automaton */
+      /* Get the accessible part of the U-Structure */
 
     uStructure = uStructure.accessible(newHeaderFile, newBodyFile);
 
@@ -807,7 +781,7 @@ public class UStructure extends Automaton {
   }
 
   /**
-   * Helper method used to prune the automaton.
+   * Helper method used to prune the U-Structure.
    * @param protocol            The chosen protocol (which must be feasible)
    * @param communication       The event vector representing the chosen communication
    * @param vectorElementsFound Indicates which elements of the vector have already been found
@@ -835,9 +809,9 @@ public class UStructure extends Automaton {
       boolean[] copy = (boolean[]) vectorElementsFound.clone();
 
       // Check to see if the event vector of this transition is compatible with what we've found so far
-      for (int i = 0; i < t.getEvent().vector.getSize(); i++) {
+      for (int i = 0; i < t.getEvent().getVector().getSize(); i++) {
 
-        String element = t.getEvent().vector.getLabelAtIndex(i);
+        String element = t.getEvent().getVector().getLabelAtIndex(i);
 
         if (!element.equals("*")) {
 
@@ -863,6 +837,99 @@ public class UStructure extends Automaton {
       pruneHelper(protocol, communication, copy, getState(t.getTargetStateID()), depth + 1);
 
     }
+
+  }
+
+  // We are not using a mapping file, but instead a HashMap, because we assume that the crush will not have billions of states
+  public Crush crush(File newHeaderFile, File newBodyFile, int indexOfController) {
+
+      /* Setup */
+
+    Crush crush = new Crush(newHeaderFile, newBodyFile, nControllersBeforeUStructure);
+
+    boolean isInitialState = true;
+
+    // Maps the combined IDs to the ID of the state in the crush, meaning we do not need to re-number states afterwards
+    HashMap<Long, Long> mappings = new HashMap<Long, Long>();
+    long nextID = 1;
+
+    Stack<Set<Long>> stackOfConnectedIDs = new Stack<Set<Long>>();
+
+    // Find all connecting states
+    Set<Long> statesConnectingToInitial = new TreeSet<Long>();
+    findConnectingStates(statesConnectingToInitial, initialState, indexOfController);
+
+    while (stackOfConnectedIDs.size() > 0) {
+
+      // Get set from stack and generate unique ID
+      Set<Long> setOfIDs = stackOfConnectedIDs.pop();
+      long combinedID = combineIDs(new ArrayList<Long>(setOfIDs), nStates);
+      Long mappedID = mappings.get(combinedID);
+      if (mappedID == null)
+        mappings.put(combinedID, mappedID = nextID++);
+
+      // Skip if this state already exists
+      if (crush.stateExists(mappedID))
+        continue;
+
+      // Get the states and add them to a list
+      List<State> listOfStates = new ArrayList<State>();
+      for (long id : setOfIDs)
+        listOfStates.add(getState(id));
+
+      // Create a label for this state, and determine whether or not this state should be marked
+      String label = "";
+      for (State s : listOfStates)
+        label += s.getLabel();
+      label = label.substring(1);
+
+      // Add new state
+      if (crush.addState(label, false, new ArrayList<Transition>(), isInitialState) != mappedID) {
+        System.err.println("CRITICAL ERROR: Actual ID did not match expected ID. Aborting crush.");
+        return null;
+      }
+
+      isInitialState = false;
+
+      // Loop through event event
+      for (Event e : events) {
+
+        // Generate list of the IDs of all reachable states from the current event
+        Set<Long> reachableStates = new HashSet<Long>();
+        for (State s : listOfStates)
+          for (Transition t : s.getTransitions())
+            if (t.getEvent().equals(e))
+              reachableStates.add(t.getTargetStateID());
+
+        if (reachableStates.size() > 0) {
+          // crush.addTransition();
+        }
+
+      }
+
+     }
+
+      /* Ensure that the header file has been written to disk */
+
+    crush.writeHeaderFile();
+
+    return crush;
+
+  }
+
+  // UNTESTED
+  private void findConnectingStates(Set<Long> set, long id, int indexOfController) {
+
+   // Base case
+   if (set.contains(id))
+     return;
+
+   set.add(id);
+
+   // Find all unobservable events leading from this state, and add the target states to the set
+   for (Transition t : getState(id).getTransitions())
+     if (!t.getEvent().getVector().isUnobservableToController(indexOfController))
+       findConnectingStates(set, t.getTargetStateID(), indexOfController);
 
   }
 
@@ -1200,7 +1267,7 @@ public class UStructure extends Automaton {
   /**
    * A helper method to write a list of special transitions to the header file.
    * NOTE: This could be made more efficient by using one buffer for all communication data. This
-   * is only possible because data.roles.length is supposed to be the same for all data in the list.
+   * is possible because each piece of data in the list is supposed to have the same number of roles.
    * @param list          The list of transition data
    * @throws IOException  If there was problems writing to file
    **/
