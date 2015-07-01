@@ -488,7 +488,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     menuBar.add(createMenu("File", "New Tab->New Automaton,New U-Structure,New Crush", "Open", "Save As...[TAB]", "Refresh Tab[TAB]", null, "Clear[TAB]", "Close Tab[TAB]", null, "Export as SVG[AUTOMATON]", null, "Quit"));
     menuBar.add(createMenu("Standard Operations", "Accessible[AUTOMATON]", "Co-Accessible[AUTOMATON]", "Trim[AUTOMATON]", "Complement[AUTOMATON]", null, "Intersection[BASIC_AUTOMATON]", "Union[BASIC_AUTOMATON]"));
-    menuBar.add(createMenu("Special Operations", "Synchronized Composition[BASIC_AUTOMATON]", null, "Add Communications[U_STRUCTURE]", "Feasible Protocols->Generate All[U_STRUCTURE],Make Protocol Feasible[U_STRUCTURE],Find Smallest[U_STRUCTURE]"));
+    menuBar.add(createMenu("Special Operations", "Synchronized Composition[BASIC_AUTOMATON]", null, "Add Communications[U_STRUCTURE]", "Feasible Protocols->Generate All[U_STRUCTURE],Make Protocol Feasible[U_STRUCTURE],Find Smallest[U_STRUCTURE]", "Crush[U_STRUCTURE]"));
     menuBar.add(createMenu("Quantitative Communication", "Nash", "Pareto"));
     menuBar.add(createMenu("Generate", "Random Automaton"));
 
@@ -785,9 +785,21 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         break;
 
-      case "Add Communications":
+      case "Crush":
 
         UStructure uStructure = ((UStructure) tab.automaton);
+
+        fileName = getTemporaryFileName();
+        headerFile = new File(fileName + ".hdr");
+        bodyFile = new File(fileName + ".bdy");
+
+        // Create new tab with the generated Crush
+        createTab(uStructure.crush(headerFile, bodyFile, 2));
+        break;
+
+      case "Add Communications":
+
+        uStructure = ((UStructure) tab.automaton);
 
         fileName = getTemporaryFileName();
         headerFile = new File(fileName + ".hdr");
@@ -839,7 +851,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
   }
 
-  private void updateComponentsWhichRequireAutomaton() {
+  public void updateComponentsWhichRequireAutomaton() {
     updateComponentsWhichRequireAnyAutomaton();
     updateComponentsWhichRequireBasicAutomaton();
     updateComponentsWhichRequireUStructure();
@@ -1265,41 +1277,6 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     }
 
-    // private Container createSelectAutomatonTypeContainer() {
-
-    //     /* Setup */
-
-    //   Container container = new Container();
-    //   container.setLayout(new FlowLayout());
-
-    //     /* Add instructions */
-
-    //   container.add(new JLabel("Select Automaton Type:"));
-
-    //     /* Create button group */
-
-    //   ButtonGroup buttonGroup = new ButtonGroup();
-
-    //   JRadioButton automatonButton      = new JRadioButton("Automaton");
-    //   JRadioButton uStructureButton     = new JRadioButton("U-Structure");
-    //   JRadioButton nashUStructureButton = new JRadioButton("Nash U-Structure");
-
-    //   buttonGroup.add(automatonButton);
-    //   buttonGroup.add(uStructureButton);
-    //   buttonGroup.add(nashUStructureButton);
-
-    //   automatonButton.setSelected(true);
-
-    //     /* Add button group to container */
-
-    //   container.add(automatonButton);
-    //   container.add(uStructureButton);
-    //   container.add(nashUStructureButton);
-
-    //   return container;
-
-    // }
-
     private Container createInputContainer(Automaton.Type type) {
 
         /* Setup */
@@ -1471,7 +1448,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
         case U_STRUCTURE: case CRUSH:
           return "<html>1 event vector per line, formatted as <i>&lt;Event1,Event2...></i>.<br>"
                + "<b><u>EXAMPLE</u></b>: '<i><&lt;FirstEvent,SecondEvent,ThirdEvent></i>' denotes an event vector "
-               + "containing the 3 events named <b>FirstEvent</b>, <b>SecondEvent</b>, and <b>ThirdEvent</b>.<br></html>";
+               + "containing the 3 events named <b>FirstEvent</b>, <b>SecondEvent</b>, and <b>ThirdEvent</b>.<br><br>"
+               + "<b><u>NOTE</u></b>: Unobservable events for a given controller in an event vector are denoted by an asterisk.</html>";
 
         default:
           return null;
@@ -1491,11 +1469,15 @@ public class AutomataGUI extends JFrame implements ActionListener {
                + "<b>marked</b>.<br><b><u>NOTE</u></b>: '<i>T</i>' and '<i>F</i>' are case insensitive. If omitted, the default value is "
                + "'<i>T</i>'. There is only allowed to be one initial state.</html>";
 
-        case U_STRUCTURE: case CRUSH:
+        case U_STRUCTURE:
           return "<html>1 state per line, formatted as <i>[@]LABEL</i> (where the '@' symbol denotes that this is the initial state).<br>"
                + "<b><u>EXAMPLE 1</u></b>: <i>'StateName'</i> denotes a state called <b>StateName</b>.<br>"
-               + "<b><u>EXAMPLE 2</u></b>: <i>'@StateName'</i> denotes a state called <b>StateName</b> that is the <b>initial state</b><br>"
-               + "<b><u>NOTE</u></b>: Unobservable events in an event vector are denoted by an asterisk.</html>";
+               + "<b><u>EXAMPLE 2</u></b>: <i>'@StateName'</i> denotes a state called <b>StateName</b> that is the <b>initial state</b></html>";
+
+        case CRUSH:
+          return "<html>1 state vector per line, formatted as <i>[@]&lt;State1,State2...></i> (where the '@' symbol denotes that this is the initial state).<br>"
+               + "<b><u>EXAMPLE</u></b>: '<i><&lt;FirstState,SecondState,ThirdState></i>' denotes a state vector containing the three states named <b>FirstState</b>, "
+               + "<b>SecondState</b>, and <b>ThirdState</b>.<br></html>";
 
         default:
           return null;

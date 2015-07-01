@@ -846,63 +846,59 @@ public class UStructure extends Automaton {
       /* Setup */
 
     Crush crush = new Crush(newHeaderFile, newBodyFile, nControllersBeforeUStructure);
-
-    boolean isInitialState = true;
+    for (Event e : events)
+      if (!e.getVector().isUnobservableToController(indexOfController))
+        crush.addEvent(e.getLabel(), e.isObservable(), e.isControllable());
 
     // Maps the combined IDs to the ID of the state in the crush, meaning we do not need to re-number states afterwards
     HashMap<Long, Long> mappings = new HashMap<Long, Long>();
     long nextID = 1;
 
-    Stack<Set<Long>> stackOfConnectedIDs = new Stack<Set<Long>>();
-
     // Find all connecting states
-    Set<Long> statesConnectingToInitial = new TreeSet<Long>();
-    findConnectingStates(statesConnectingToInitial, initialState, indexOfController);
+    Stack<Set<State>> stackOfConnectedStates = new Stack<Set<State>>();
+    Set<State> statesConnectingToInitial = new HashSet<State>();
+    findConnectingStates(statesConnectingToInitial, getState(initialState), indexOfController);
+    stackOfConnectedStates.push(statesConnectingToInitial);
 
-    while (stackOfConnectedIDs.size() > 0) {
+    boolean isInitialState = true;
 
-      // Get set from stack and generate unique ID
-      Set<Long> setOfIDs = stackOfConnectedIDs.pop();
-      long combinedID = combineIDs(new ArrayList<Long>(setOfIDs), nStates);
+    while (stackOfConnectedStates.size() > 0) {
+
+      // Get set from stack and generate unique ID for that collection of states
+      Set<State> setOfStates = stackOfConnectedStates.pop();
+      long combinedID = combinedStateIDs(setOfStates);
       Long mappedID = mappings.get(combinedID);
-      if (mappedID == null)
+      if (mappedID == null) {
         mappings.put(combinedID, mappedID = nextID++);
-
-      // Skip if this state already exists
-      if (crush.stateExists(mappedID))
-        continue;
-
-      // Get the states and add them to a list
-      List<State> listOfStates = new ArrayList<State>();
-      for (long id : setOfIDs)
-        listOfStates.add(getState(id));
-
-      // Create a label for this state, and determine whether or not this state should be marked
-      String label = "";
-      for (State s : listOfStates)
-        label += s.getLabel();
-      label = label.substring(1);
-
-      // Add new state
-      if (crush.addState(label, false, new ArrayList<Transition>(), isInitialState) != mappedID) {
-        System.err.println("CRITICAL ERROR: Actual ID did not match expected ID. Aborting crush.");
-        return null;
+        addStateToCrush(crush, setOfStates, isInitialState, mappedID);
       }
 
       isInitialState = false;
 
       // Loop through event event
-      for (Event e : events) {
+      outer: for (Event e : crush.events) {
 
-        // Generate list of the IDs of all reachable states from the current event
-        Set<Long> reachableStates = new HashSet<Long>();
-        for (State s : listOfStates)
+        // Generate list of all reachable states from the current event
+        Set<State> reachableStates = new HashSet<State>();
+        for (State s : setOfStates)
           for (Transition t : s.getTransitions())
             if (t.getEvent().equals(e))
-              reachableStates.add(t.getTargetStateID());
+              findConnectingStates(reachableStates, getState(t.getTargetStateID()), indexOfController);
 
+        // Add the transition (if applicable)
         if (reachableStates.size() > 0) {
-          // crush.addTransition();
+
+          stackOfConnectedStates.push(reachableStates);
+
+          long combinedTargetID = combinedStateIDs(reachableStates);
+          Long mappedTargetID = mappings.get(combinedTargetID);
+          if (mappedTargetID == null) {
+            mappings.put(combinedTargetID, mappedTargetID = nextID++);
+            addStateToCrush(crush, reachableStates, false, mappedTargetID);
+          }
+          
+          crush.addTransition(mappedID, e.getID(), mappedTargetID);
+
         }
 
       }
@@ -917,19 +913,45 @@ public class UStructure extends Automaton {
 
   }
 
+  private void addStateToCrush(Crush crush, Set<State> setOfStates, boolean isInitialState, long id) {
+
+    // Create a label for this state
+    String label = "";
+    for (State s : setOfStates)
+      label += "," + s.getLabel();
+    label = "<" + label.substring(1) + ">";
+
+    // Add new state
+    crush.addStateAt(label, false, new ArrayList<Transition>(), isInitialState, id);
+
+  }
+
+  private long combinedStateIDs(Set<State> setOfStates) {
+
+    List<Long> listOfIDs = new ArrayList<Long>();
+
+    for (State s : setOfStates)
+      listOfIDs.add(s.getID());
+
+    Collections.sort(listOfIDs);
+
+    return combineIDs(listOfIDs, nStates);
+
+  }
+
   // UNTESTED
-  private void findConnectingStates(Set<Long> set, long id, int indexOfController) {
+  private void findConnectingStates(Set<State> set, State currentState, int indexOfController) {
 
    // Base case
-   if (set.contains(id))
+   if (set.contains(currentState))
      return;
 
-   set.add(id);
+   set.add(currentState);
 
    // Find all unobservable events leading from this state, and add the target states to the set
-   for (Transition t : getState(id).getTransitions())
-     if (!t.getEvent().getVector().isUnobservableToController(indexOfController))
-       findConnectingStates(set, t.getTargetStateID(), indexOfController);
+   for (Transition t : currentState.getTransitions())
+     if (t.getEvent().getVector().isUnobservableToController(indexOfController))
+       findConnectingStates(set, getState(t.getTargetStateID()), indexOfController);
 
   }
 

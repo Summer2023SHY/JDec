@@ -1309,7 +1309,7 @@ public class Automaton {
    * @return      The combined ID
    **/
   public static long combineIDs(List<Long> list, long maxID) {
-
+    
     long combinedID = 0;
 
     for (Long id : list) {

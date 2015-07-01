@@ -711,7 +711,7 @@ public class TestAutomata {
     printTestCase("Ensuring the states are correct", new TestResult(addCommunications.getStateInput(), "@1_1_1\n1_1_2\n1_3_1\n1_3_2\n2_2_1\n2_2_2\n2_4_1\n2_4_2\n2_5_1\n2_5_2\n3_1_3\n3_1_4\n3_1_5\n3_3_3\n3_3_4\n3_3_5\n4_2_3\n4_2_4\n4_2_5\n4_4_3\n4_4_4\n4_4_5\n4_5_3\n4_5_4\n4_5_5\n5_2_3\n5_2_4\n5_2_5\n5_4_3\n5_4_4\n5_4_5\n5_5_3\n5_5_4\n5_5_5\n6_6_6\n6_6_7\n6_7_6\n6_7_7\n7_6_6\n7_6_7\n7_7_6\n7_7_7"), counter);
     printTestCase("Ensuring the transitions are correct", new TestResult(addCommunications.getTransitionInput(), "1_1_1,<a,a,*>,2_2_1\n1_1_1,<b,*,b>,3_1_3\n1_1_1,<*,b,*>,1_3_1\n1_1_1,<*,*,a>,1_1_2\n1_1_1,<*,b,a>,1_3_2:COMMUNICATION\n1_1_1,<b,b,b>,3_3_3:POTENTIAL_COMMUNICATION-RS\n1_1_1,<a,a,a>,2_2_2:POTENTIAL_COMMUNICATION-SR\n1_1_2,<a,a,*>,2_2_2\n1_1_2,<b,*,b>,3_1_4\n1_1_2,<*,b,*>,1_3_2\n1_1_2,<b,b,b>,3_3_4:POTENTIAL_COMMUNICATION-RS\n1_3_1,<a,a,*>,2_5_1\n1_3_1,<b,*,b>,3_3_3\n1_3_1,<*,*,a>,1_3_2\n1_3_1,<a,a,a>,2_5_2:POTENTIAL_COMMUNICATION-SR\n1_3_2,<a,a,*>,2_5_2\n1_3_2,<b,*,b>,3_3_4\n2_2_1,<b,*,b>,4_2_3\n2_2_1,<*,b,*>,2_4_1\n2_2_1,<*,*,a>,2_2_2\n2_2_1,<*,b,a>,2_4_2:COMMUNICATION\n2_2_1,<b,b,b>,4_4_3:POTENTIAL_COMMUNICATION-RS\n2_2_2,<b,*,b>,4_2_4\n2_2_2,<*,b,*>,2_4_2\n2_2_2,<b,b,b>,4_4_4:POTENTIAL_COMMUNICATION-RS\n2_4_1,<b,*,b>,4_4_3\n2_4_1,<*,*,a>,2_4_2\n2_4_2,<b,*,b>,4_4_4\n2_5_1,<b,*,b>,4_5_3\n2_5_1,<*,*,a>,2_5_2\n2_5_2,<b,*,b>,4_5_4\n3_1_3,<a,a,*>,5_2_3\n3_1_3,<*,b,*>,3_3_3\n3_1_3,<*,*,a>,3_1_5\n3_1_3,<*,b,a>,3_3_5:COMMUNICATION\n3_1_3,<a,a,a>,5_2_5:POTENTIAL_COMMUNICATION-SR\n3_1_4,<a,a,*>,5_2_4\n3_1_4,<*,b,*>,3_3_4\n3_1_5,<a,a,*>,5_2_5\n3_1_5,<*,b,*>,3_3_5\n3_3_3,<a,a,*>,5_5_3\n3_3_3,<*,*,a>,3_3_5\n3_3_3,<a,a,a>,5_5_5:POTENTIAL_COMMUNICATION-SR\n3_3_4,<a,a,*>,5_5_4\n3_3_5,<a,a,*>,5_5_5\n4_2_3,<*,b,*>,4_4_3\n4_2_3,<*,*,a>,4_2_5\n4_2_3,<*,b,a>,4_4_5:COMMUNICATION\n4_2_4,<*,b,*>,4_4_4\n4_2_5,<*,b,*>,4_4_5\n4_4_3,<*,*,a>,4_4_5\n4_4_4,<o,o,o>,6_6_6\n4_4_5,<o,o,o>,6_6_7\n4_5_3,<*,*,a>,4_5_5\n4_5_4,<o,o,o>,6_7_6\n4_5_5,<o,o,o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*,b,*>,5_4_3\n5_2_3,<*,*,a>,5_2_5\n5_2_3,<*,b,a>,5_4_5:COMMUNICATION\n5_2_4,<*,b,*>,5_4_4\n5_2_5,<*,b,*>,5_4_5\n5_4_3,<*,*,a>,5_4_5\n5_4_4,<o,o,o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o,o,o>,7_6_7\n5_5_3,<*,*,a>,5_5_5\n5_5_4,<o,o,o>,7_7_6\n5_5_5,<o,o,o>,7_7_7"), counter);
 
-       /* Feasible Protocol Operations Tests */
+      /* Feasible Protocol Operations Tests */
 
     printTestOutput("FEASIBLE PROTOCOL OPERATIONS: ", 2);
 
@@ -742,9 +742,9 @@ public class TestAutomata {
     printTestCase("Ensuring the transitions are correct", new TestResult(uStructure.getTransitionInput(), "1_1_1,<b,b,b>,3_3_3:POTENTIAL_COMMUNICATION-RS\n1_1_1,<a,a,a>,2_2_2:POTENTIAL_COMMUNICATION-SR\n2_2_2,<b,*,b>,4_2_4\n2_2_2,<*,b,*>,2_4_2\n2_4_2,<b,*,b>,4_4_4\n3_3_3,<a,a,*>,5_5_3\n3_3_3,<*,*,a>,3_3_5\n3_3_5,<a,a,*>,5_5_5\n4_2_4,<*,b,*>,4_4_4\n4_4_4,<o,o,o>,6_6_6\n5_5_3,<*,*,a>,5_5_5\n5_5_5,<o,o,o>,7_7_7"), counter);
     
     printTestOutput("Try to make a protocol containing 1 communication feasible...", 3);
-    Set<CommunicationData> protocol = feasibleProtocols.get(0);
-    protocol.remove(protocol.iterator().next());
-    feasibleProtocols = addCommunications.makeProtocolFeasible(protocol);
+    Set<CommunicationData> smallestProtocol = smallestFeasibleProtocols.get(0);
+    smallestProtocol.remove(smallestProtocol.iterator().next());
+    feasibleProtocols = addCommunications.makeProtocolFeasible(smallestProtocol);
     printTestCase("Ensuring that there are 6 feasible protocols", new TestResult(feasibleProtocols.size(), 6), counter);
     printTestCase("Ensuring that protocol #1 is in the list", new TestResult(protocolsToString.contains("1_1_1,<a,a,a>,2_2_2 (SR)\n1_1_1,<b,b,b>,3_3_3 (RS)\n")), counter);
     printTestCase("Ensuring that protocol #2 is in the list", new TestResult(protocolsToString.contains("1_1_1,<a,a,a>,2_2_2 (SR)\n1_1_1,<b,b,b>,3_3_3 (RS)\n2_2_2,<b,b,b>,4_4_4 (RS)\n")), counter);
@@ -754,11 +754,32 @@ public class TestAutomata {
     printTestCase("Ensuring that protocol #6 is in the list", new TestResult(protocolsToString.contains("1_1_1,<b,b,b>,3_3_3 (RS)\n1_1_2,<b,b,b>,3_3_4 (RS)\n2_2_1,<b,b,b>,4_4_3 (RS)\n2_2_2,<b,b,b>,4_4_4 (RS)\n3_3_3,<a,a,a>,5_5_5 (SR)\n")), counter);
     
     printTestOutput("Try to make a protocol containing 7 communications feasible...", 3);
-    protocol = new HashSet<CommunicationData>(addCommunications.getPotentialCommunications());
+    Set<CommunicationData> protocol = new HashSet<CommunicationData>(addCommunications.getPotentialCommunications());
     protocol.remove(protocol.iterator().next());
     feasibleProtocols = addCommunications.makeProtocolFeasible(protocol);
     printTestCase("Ensuring that there are no feasible protocols", new TestResult(feasibleProtocols.size(), 0), counter);
-    
+
+      /* Crush Operation Tests */
+
+    printTestOutput("CRUSH OPERATION: ", 2);
+
+    printTestOutput("Instantiating a U-Structure...", 3);
+    UStructure crushExample = saveAndLoadUStructure(AutomatonGenerator.generateFromGUICode(
+      new UStructure(new File("crushExample.hdr"), new File("crushExample.bdy"), 2),
+      "<a,a,a>\n<b,*,b>\n<*,b,*>\n<o,o,o>", // Events
+      "@1_1_1\n1_3_1\n2_2_2\n2_4_2\n2_5_2\n3_1_3\n3_3_3\n4_2_4\n4_4_4\n4_5_4\n5_2_5\n5_4_5\n5_5_5\n6_6_6\n6_7_6\n7_6_7\n7_7_7", // States
+      "1_1_1,<b,*,b>,3_1_3\n1_1_1,<*,b,*>,1_3_1\n1_1_1,<a,a,a>,2_2_2:POTENTIAL_COMMUNICATION-SR\n1_3_1,<b,*,b>,3_3_3\n1_3_1,<a,a,a>,2_5_2:POTENTIAL_COMMUNICATION-SR\n2_2_2,<b,*,b>,4_2_4\n2_2_2,<*,b,*>,2_4_2\n2_4_2,<b,*,b>,4_4_4\n2_5_2,<b,*,b>,4_5_4\n3_1_3,<*,b,*>,3_3_3\n3_1_3,<a,a,a>,5_2_5:POTENTIAL_COMMUNICATION-SR\n3_3_3,<a,a,a>,5_5_5:POTENTIAL_COMMUNICATION-SR\n4_2_4,<*,b,*>,4_4_4\n4_4_4,<o,o,o>,6_6_6\n4_5_4,<o,o,o>,6_7_6\n5_2_5,<*,b,*>,5_4_5\n5_4_5,<o,o,o>,7_6_7\n5_5_5,<o,o,o>,7_7_7", // Transitions
+      false // We do not want it to be verbose
+    ));
+
+    printTestOutput("Applying crush operation with respect to controller 2...", 3);
+    Crush crush = crushExample.crush(null, null, 2);
+
+    crush.generateInputForGUI();
+    printTestCase("Ensuring the events are correct", new TestResult(crush.getEventInput(), "<b,*,b>\n<o,o,o>\n<a,a,a>"), counter);
+    printTestCase("Ensuring the states are correct", new TestResult(crush.getStateInput(), "@<1_1_1,1_3_1>\n<3_1_3,3_3_3>\n<2_2_2,2_4_2,2_5_2>\n<4_2_4,4_4_4,4_5_4>\n<6_6_6,6_7_6>\n<5_2_5,5_4_5,5_5_5>\n<7_7_7,7_6_7>"), counter);
+    printTestCase("Ensuring the transitions are correct", new TestResult(crush.getTransitionInput(), "<1_1_1,1_3_1>,<b,*,b>,<3_1_3,3_3_3>\n<1_1_1,1_3_1>,<a,a,a>,<2_2_2,2_4_2,2_5_2>\n<3_1_3,3_3_3>,<a,a,a>,<5_2_5,5_4_5,5_5_5>\n<2_2_2,2_4_2,2_5_2>,<b,*,b>,<4_2_4,4_4_4,4_5_4>\n<4_2_4,4_4_4,4_5_4>,<o,o,o>,<6_6_6,6_7_6>\n<5_2_5,5_4_5,5_5_5>,<o,o,o>,<7_7_7,7_6_7>"), counter);
+
       /* Print summary of this test routine */
 
     printTestRoutineSummary(testRoutineName, counter);

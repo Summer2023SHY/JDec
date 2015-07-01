@@ -384,4 +384,12 @@ public class State {
 			+ ")";
 	}
 
+  @Override public int hashCode() {
+    return ((Long) id).hashCode();
+  }
+
+  @Override public boolean equals(Object other) {
+    return id == ((State) other).id;
+  }
+
 }
