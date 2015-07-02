@@ -21,7 +21,7 @@ public class Crush extends PrunedUStructure {
    * @param nControllersBeforeUStructure  The number of controllers that were present before the U-Structure was created
    <!-- * @param indexOfCrushedController      The index of the controller in which the pruned U-Structure was crushed with respect to -->
    **/
-  public Crush(File headerFile, File bodyFile, int nControllersBeforeUStructure/*, int indexOfCrushedController*/) {
+  public Crush(File headerFile, File bodyFile, int nControllersBeforeUStructure /*, int indexOfCrushedController*/) {
     super(headerFile, bodyFile, nControllersBeforeUStructure);
     // this.indexOfCrushedController = indexOfCrushedController;
   } 

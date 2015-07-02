@@ -675,6 +675,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
           break;
 
         index = tabbedPane.getSelectedIndex(); // Index has changed since a new tab was created
+        tab = tabs.get(index);
         tab.canvas.setImage(null);
         tab.updateTabTitle();
 

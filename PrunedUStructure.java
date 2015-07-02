@@ -454,4 +454,19 @@ public class PrunedUStructure extends UStructure {
 
   }
 
+  @Override protected void addAdditionalEdgeProperties(Map<String, String> map) {
+
+    super.addAdditionalEdgeProperties(map);
+
+    if (nashCommunications != null)
+      for (TransitionData t : nashCommunications) {
+        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
+        if (map.containsKey(edge))
+          map.put(edge, map.get(edge) + ",color=blue,fontcolor=blue");
+        else
+          map.put(edge, ",color=blue,fontcolor=blue"); 
+      }
+
+  }
+
 }
