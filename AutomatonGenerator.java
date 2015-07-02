@@ -239,6 +239,8 @@ public abstract class AutomatonGenerator<T> {
    **/
   public static <T extends Automaton> T generateFromGUICode(T automaton, String eventInputText, String stateInputText, String transitionInputText, boolean verbose) {
 
+    Automaton.Type automatonType = automaton.getType();
+
       /* Setup */
 
     HashMap<String, Integer> eventMapping = new HashMap<String, Integer>(); // Maps the events' labels to the events' ID
@@ -251,7 +253,7 @@ public abstract class AutomatonGenerator<T> {
       // Parse input differently depending on automaton type
       String label = null;
       boolean marked;
-      if (automaton.getClass().equals(Automaton.class)) {
+      if (automatonType == Automaton.Type.AUTOMATON) {
 
         String[] splitLine = line.trim().split(",");
 
@@ -406,7 +408,7 @@ public abstract class AutomatonGenerator<T> {
          
           if (automaton.addTransition(initialStateID, eventID, targetStateID)) {
             if (splitLine.length > 1)
-              parseAndAddSpecialTransitions(automaton, splitLine[1], new TransitionData(initialStateID, eventID, targetStateID));
+              parseAndAddSpecialTransitions(automaton, automatonType, splitLine[1], new TransitionData(initialStateID, eventID, targetStateID));
           } else
             System.err.println("ERROR: Could not add '" + line + "' as a transition.");
         }
@@ -425,11 +427,12 @@ public abstract class AutomatonGenerator<T> {
 
   /**
    * Parse a string for special transitions, adding them to the automaton
-   * @param automaton The automaton to add the special transitions to
-   * @param line      The text to parse
-   * @param data      The transition data (IDs of the associated event and states)
+   * @param automaton     The automaton to add the special transitions to
+   * @param auomatonType  The enum value associated with the type of the automaton
+   * @param line          The text to parse
+   * @param data          The transition data (IDs of the associated event and states)
    **/
-  private static <T extends Automaton> void parseAndAddSpecialTransitions(T automaton, String line, TransitionData data) {
+  private static <T extends Automaton> void parseAndAddSpecialTransitions(T automaton, Automaton.Type automatonType, String line, TransitionData data) {
 
     String[] split = line.split(",");
 
@@ -439,7 +442,7 @@ public abstract class AutomatonGenerator<T> {
       str = str.trim();
       
       // Only applies to automata
-      if (automaton.getClass().equals(Automaton.class)) {
+      if (automatonType == Automaton.Type.AUTOMATON) {
 
         if (str.equals("BAD")) {
           automaton.markTransitionAsBad(data.initialStateID, data.eventID, data.targetStateID);
@@ -448,8 +451,8 @@ public abstract class AutomatonGenerator<T> {
 
       }
       
-      // Applies to both U-Structures and Nash U-Structures 
-      if (automaton.getClass().equals(UStructure.class) || automaton.getClass().equals(NashUStructure.class)) {
+      // Applies to U-Structures and pruned U-Structures
+      if (automatonType == Automaton.Type.U_STRUCTURE || automatonType == Automaton.Type.PRUNED_U_STRUCTURE) {
 
         UStructure uStructure = (UStructure) automaton;
 
@@ -463,17 +466,18 @@ public abstract class AutomatonGenerator<T> {
           continue;
         }
     
-        if (str.equals("COMMUNICATION")) {
-          uStructure.addNonPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID);
-          continue;
-        }
 
       }
 
       // Only applies to U-Structures
-      if (automaton.getClass().equals(UStructure.class)) {
+      if (automatonType == Automaton.Type.U_STRUCTURE) {
 
         UStructure uStructure = (UStructure) automaton;
+
+        if (str.equals("COMMUNICATION")) {
+          uStructure.addNonPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID);
+          continue;
+        }
 
         String[] parts = str.split("-");
 
@@ -490,19 +494,23 @@ public abstract class AutomatonGenerator<T> {
 
       }
 
-      // Only applies to Nash U-Structures
-      if (automaton.getClass().equals(NashUStructure.class)) {
+      // Only applies to pruned U-Structures
+      if (automatonType == Automaton.Type.PRUNED_U_STRUCTURE) {
 
-        NashUStructure nashUStructure = (NashUStructure) automaton;
+        PrunedUStructure prunedUStructure = (PrunedUStructure) automaton;
 
         String[] parts = str.split("-");
 
-        if (parts[0].equals("NASH_COMMUNICATION")) {
+        if (parts[0].equals("COMMUNICATION")) {
 
-          try {
+          if (parts.length == 2) {
+            prunedUStructure.addPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID, parseCommunicationRoles(parts[1]));
+            continue;
+          }
 
-            if (parts.length == 4) {
-              nashUStructure.addNashCommunication(
+          if (parts.length == 4) {
+            try {
+              prunedUStructure.addNashCommunication(
                 data.initialStateID,
                 data.eventID,
                 data.targetStateID,
@@ -510,15 +518,15 @@ public abstract class AutomatonGenerator<T> {
                 Integer.valueOf(parts[2]),
                 Double.valueOf(parts[3])
               );
+              continue;
+            } catch (NumberFormatException e) {
+            // Do nothing
             }
 
-          } catch (NumberFormatException e) {
-            // Do nothing
-
-          } finally {
-            System.err.println("ERROR: Could not parse '" + str + "' as as a Nash communication. Please ensure that it is formatted correctly.");
-            continue;
           }
+
+          System.err.println("ERROR: Could not parse '" + line + "' as a communication.");
+          continue;
 
         }
 

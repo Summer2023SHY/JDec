@@ -22,10 +22,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
   private ArrayList<AutomatonTab> tabs = new ArrayList<AutomatonTab>();
   
   // Enabling/disabling components
-  private java.util.List<Component> componentsWhichRequireTab            = new ArrayList<Component>();
-  private java.util.List<Component> componentsWhichRequireAnyAutomaton   = new ArrayList<Component>();
-  private java.util.List<Component> componentsWhichRequireBasicAutomaton = new ArrayList<Component>();
-  private java.util.List<Component> componentsWhichRequireUStructure     = new ArrayList<Component>();
+  private java.util.List<Component> componentsWhichRequireTab              = new ArrayList<Component>();
+  private java.util.List<Component> componentsWhichRequireAnyAutomaton     = new ArrayList<Component>();
+  private java.util.List<Component> componentsWhichRequireBasicAutomaton   = new ArrayList<Component>();
+  private java.util.List<Component> componentsWhichRequireUStructure       = new ArrayList<Component>();
+  private java.util.List<Component> componentsWhichRequirePrunedUStructure = new ArrayList<Component>();
 
   // Miscellaneous
   private int imageSize = 800;
@@ -408,6 +409,18 @@ public class AutomataGUI extends JFrame implements ActionListener {
         );
         break;
 
+      case PRUNED_U_STRUCTURE:
+
+        nControllersBeforeUStructure = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
+        tab.automaton = AutomatonGenerator.generateFromGUICode(
+          new PrunedUStructure(tab.headerFile, tab.bodyFile, nControllersBeforeUStructure),
+          tab.eventInput.getText(),
+          tab.stateInput.getText(),
+          tab.transitionInput.getText(),
+          true
+        );
+        break;
+
       case CRUSH:
 
         nControllersBeforeUStructure = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
@@ -486,9 +499,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     JMenuBar menuBar = new JMenuBar();
 
-    menuBar.add(createMenu("File", "New Tab->New Automaton,New U-Structure,New Crush", "Open", "Save As...[TAB]", "Refresh Tab[TAB]", null, "Clear[TAB]", "Close Tab[TAB]", null, "Export as SVG[AUTOMATON]", null, "Quit"));
+    menuBar.add(createMenu("File", "New Tab->New Automaton,New U-Structure,New Pruned U-Structure,New Crush", "Open", "Save As...[TAB]", "Refresh Tab[TAB]", null, "Clear[TAB]", "Close Tab[TAB]", null, "Export as SVG[AUTOMATON]", null, "Quit"));
     menuBar.add(createMenu("Standard Operations", "Accessible[AUTOMATON]", "Co-Accessible[AUTOMATON]", "Trim[AUTOMATON]", "Complement[AUTOMATON]", null, "Intersection[BASIC_AUTOMATON]", "Union[BASIC_AUTOMATON]"));
-    menuBar.add(createMenu("Special Operations", "Synchronized Composition[BASIC_AUTOMATON]", null, "Add Communications[U_STRUCTURE]", "Feasible Protocols->Generate All[U_STRUCTURE],Make Protocol Feasible[U_STRUCTURE],Find Smallest[U_STRUCTURE]", "Crush[U_STRUCTURE]"));
+    menuBar.add(createMenu("Special Operations", "Synchronized Composition[BASIC_AUTOMATON]", null, "Add Communications[U_STRUCTURE]", "Feasible Protocols->Generate All[U_STRUCTURE],Make Protocol Feasible[U_STRUCTURE],Find Smallest[U_STRUCTURE]", "Crush[PRUNED_U_STRUCTURE]"));
     menuBar.add(createMenu("Quantitative Communication", "Nash", "Pareto"));
     menuBar.add(createMenu("Generate", "Random Automaton"));
 
@@ -562,11 +575,18 @@ public class AutomataGUI extends JFrame implements ActionListener {
       requiresBasicAutomaton = true;
     }
 
-        // Check to see if this menu item requires a U-Structure
+    // Check to see if this menu item requires a U-Structure
     boolean requiresUStructure = false;
     if (str.contains("[U_STRUCTURE]")) {
       str = str.replace("[U_STRUCTURE]", "");
       requiresUStructure = true;
+    }
+
+    // Check to see if this menu item requires a pruned U-Structure
+    boolean requiresPrunedUStructure = false;
+    if (str.contains("[PRUNED_U_STRUCTURE]")) {
+      str = str.replace("[PRUNED_U_STRUCTURE]", "");
+      requiresPrunedUStructure = true;
     }
 
     // Create menu item object
@@ -583,6 +603,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
       componentsWhichRequireBasicAutomaton.add(menuItem);
     if (requiresUStructure)
       componentsWhichRequireUStructure.add(menuItem);
+    if (requiresPrunedUStructure)
+      componentsWhichRequirePrunedUStructure.add(menuItem);
 
   }
 
@@ -624,6 +646,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
       case "New U-Structure":
 
         createTab(true, Automaton.Type.U_STRUCTURE);
+        break;
+
+      case "New Pruned U-Structure":
+
+        createTab(true, Automaton.Type.PRUNED_U_STRUCTURE);
         break;
 
       case "New Crush":
@@ -787,19 +814,19 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       case "Crush":
 
-        UStructure uStructure = ((UStructure) tab.automaton);
+        PrunedUStructure prunedUStructure = ((PrunedUStructure) tab.automaton);
 
         fileName = getTemporaryFileName();
         headerFile = new File(fileName + ".hdr");
         bodyFile = new File(fileName + ".bdy");
 
         // Create new tab with the generated Crush
-        createTab(uStructure.crush(headerFile, bodyFile, 2));
+        createTab(prunedUStructure.crush(headerFile, bodyFile, 2));
         break;
 
       case "Add Communications":
 
-        uStructure = ((UStructure) tab.automaton);
+        UStructure uStructure = ((UStructure) tab.automaton);
 
         fileName = getTemporaryFileName();
         headerFile = new File(fileName + ".hdr");
@@ -855,6 +882,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
     updateComponentsWhichRequireAnyAutomaton();
     updateComponentsWhichRequireBasicAutomaton();
     updateComponentsWhichRequireUStructure();
+    updateComponentsWhichRequirePrunedUStructure();
   }
 
   /* Enable/disable components that require any type automaton */
@@ -883,7 +911,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
     boolean enabled = (
       index >= 0
       && tabs.get(index).automaton != null
-      && tabs.get(index).automaton.getClass().equals(Automaton.class)
+      && tabs.get(index).automaton.getType() == Automaton.Type.AUTOMATON
     );
     
     // Enabled/disable all components in the list
@@ -901,11 +929,29 @@ public class AutomataGUI extends JFrame implements ActionListener {
     boolean enabled = (
       index >= 0
       && tabs.get(index).automaton != null
-      && tabs.get(index).automaton.getClass().equals(UStructure.class)
+      && tabs.get(index).automaton.getType() == Automaton.Type.U_STRUCTURE
     );
     
     // Enabled/disable all components in the list
     for (Component component : componentsWhichRequireUStructure)
+      component.setEnabled(enabled);
+
+  }
+
+    /* Enable/disable components that require a pruned U-Structure */
+  private void updateComponentsWhichRequirePrunedUStructure() {
+
+    int index = tabbedPane.getSelectedIndex();
+
+    // Determine whether the components should be enabled or disabled
+    boolean enabled = (
+      index >= 0
+      && tabs.get(index).automaton != null
+      && tabs.get(index).automaton.getType() == Automaton.Type.PRUNED_U_STRUCTURE
+    );
+    
+    // Enabled/disable all components in the list
+    for (Component component : componentsWhichRequirePrunedUStructure)
       component.setEnabled(enabled);
 
   }
@@ -948,6 +994,14 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       case U_STRUCTURE:
         tab.automaton = new UStructure(tab.headerFile, tab.bodyFile);
+        break;
+
+      case PRUNED_U_STRUCTURE:
+        tab.automaton = new PrunedUStructure(tab.headerFile, tab.bodyFile);
+        break;
+
+      case CRUSH:
+        tab.automaton = new Crush(tab.headerFile, tab.bodyFile);
         break;
 
       default:

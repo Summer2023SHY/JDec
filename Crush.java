@@ -1,12 +1,12 @@
 import java.io.*;
 import java.util.*;
 
-public class Crush extends UStructure {
+public class Crush extends PrunedUStructure {
 
-  private List<NashCommunicationData> nashCommunications;
+  // private int indexOfCrushedController;
 
   /**
-   * Implicit constructor: used to load crush from file.
+   * Implicit constructor: used to load pruned U-Structure from file.
    * @param headerFile  The file where the header should be stored
    * @param bodyFile    The file where the body should be stored
    **/
@@ -15,34 +15,15 @@ public class Crush extends UStructure {
   }
 
   /**
-   * Implicit constructor: used when creating a new crush structure.
+   * Implicit constructor: used when creating a new pruned U-Structure structure.
    * @param headerFile                    The file where the header should be stored
    * @param bodyFile                      The file where the body should be stored
    * @param nControllersBeforeUStructure  The number of controllers that were present before the U-Structure was created
+   <!-- * @param indexOfCrushedController      The index of the controller in which the pruned U-Structure was crushed with respect to -->
    **/
-  public Crush(File headerFile, File bodyFile, int nControllersBeforeUStructure) {
+  public Crush(File headerFile, File bodyFile, int nControllersBeforeUStructure/*, int indexOfCrushedController*/) {
     super(headerFile, bodyFile, nControllersBeforeUStructure);
-  }
-
-  /**
-   * Add a nash communication.
-   * @param initialStateID  The initial state
-   * @param eventID         The event triggering the transition
-   * @param targetStateID   The target state
-   * @param roles           The communication roles associated with each controller
-   * @param cost            The cost of this communication
-   * @param probability     The probability of choosing this communication (a value between 0 and 1, inclusive)
-   **/
-  public void addNashCommunication(long initialStateID, int eventID, long targetStateID, CommunicationRole[] roles, int cost, double probability) {
-
-    if (nashCommunications == null)
-      nashCommunications = new ArrayList<NashCommunicationData>();
-
-    nashCommunications.add(new NashCommunicationData(initialStateID, eventID, targetStateID, roles, cost, probability));
-
-    // Update header file
-    headerFileNeedsToBeWritten = true;
-
+    // this.indexOfCrushedController = indexOfCrushedController;
   } 
 
 }

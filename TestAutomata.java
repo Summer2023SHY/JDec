@@ -739,7 +739,7 @@ public class TestAutomata {
     uStructure.generateInputForGUI();
     printTestCase("Ensuring the events are correct", new TestResult(uStructure.getEventInput(), "<a,a,*>\n<b,*,b>\n<*,b,*>\n<*,*,a>\n<o,o,o>\n<b,b,b>\n<a,a,a>"), counter);
     printTestCase("Ensuring the states are correct", new TestResult(uStructure.getStateInput(), "@1_1_1\n2_2_2\n2_4_2\n3_3_3\n3_3_5\n4_2_4\n4_4_4\n5_5_3\n5_5_5\n6_6_6\n7_7_7"), counter);
-    printTestCase("Ensuring the transitions are correct", new TestResult(uStructure.getTransitionInput(), "1_1_1,<b,b,b>,3_3_3:POTENTIAL_COMMUNICATION-RS\n1_1_1,<a,a,a>,2_2_2:POTENTIAL_COMMUNICATION-SR\n2_2_2,<b,*,b>,4_2_4\n2_2_2,<*,b,*>,2_4_2\n2_4_2,<b,*,b>,4_4_4\n3_3_3,<a,a,*>,5_5_3\n3_3_3,<*,*,a>,3_3_5\n3_3_5,<a,a,*>,5_5_5\n4_2_4,<*,b,*>,4_4_4\n4_4_4,<o,o,o>,6_6_6\n5_5_3,<*,*,a>,5_5_5\n5_5_5,<o,o,o>,7_7_7"), counter);
+    printTestCase("Ensuring the transitions are correct", new TestResult(uStructure.getTransitionInput(), "1_1_1,<b,b,b>,3_3_3:COMMUNICATION-RS\n1_1_1,<a,a,a>,2_2_2:COMMUNICATION-SR\n2_2_2,<b,*,b>,4_2_4\n2_2_2,<*,b,*>,2_4_2\n2_4_2,<b,*,b>,4_4_4\n3_3_3,<a,a,*>,5_5_3\n3_3_3,<*,*,a>,3_3_5\n3_3_5,<a,a,*>,5_5_5\n4_2_4,<*,b,*>,4_4_4\n4_4_4,<o,o,o>,6_6_6\n5_5_3,<*,*,a>,5_5_5\n5_5_5,<o,o,o>,7_7_7"), counter);
     
     printTestOutput("Try to make a protocol containing 1 communication feasible...", 3);
     Set<CommunicationData> smallestProtocol = smallestFeasibleProtocols.get(0);
@@ -764,11 +764,11 @@ public class TestAutomata {
     printTestOutput("CRUSH OPERATION: ", 2);
 
     printTestOutput("Instantiating a U-Structure...", 3);
-    UStructure crushExample = saveAndLoadUStructure(AutomatonGenerator.generateFromGUICode(
-      new UStructure(new File("crushExample.hdr"), new File("crushExample.bdy"), 2),
+    PrunedUStructure crushExample = saveAndLoadPrunedUStructure(AutomatonGenerator.generateFromGUICode(
+      new PrunedUStructure(new File("crushExample.hdr"), new File("crushExample.bdy"), 2),
       "<a,a,a>\n<b,*,b>\n<*,b,*>\n<o,o,o>", // Events
       "@1_1_1\n1_3_1\n2_2_2\n2_4_2\n2_5_2\n3_1_3\n3_3_3\n4_2_4\n4_4_4\n4_5_4\n5_2_5\n5_4_5\n5_5_5\n6_6_6\n6_7_6\n7_6_7\n7_7_7", // States
-      "1_1_1,<b,*,b>,3_1_3\n1_1_1,<*,b,*>,1_3_1\n1_1_1,<a,a,a>,2_2_2:POTENTIAL_COMMUNICATION-SR\n1_3_1,<b,*,b>,3_3_3\n1_3_1,<a,a,a>,2_5_2:POTENTIAL_COMMUNICATION-SR\n2_2_2,<b,*,b>,4_2_4\n2_2_2,<*,b,*>,2_4_2\n2_4_2,<b,*,b>,4_4_4\n2_5_2,<b,*,b>,4_5_4\n3_1_3,<*,b,*>,3_3_3\n3_1_3,<a,a,a>,5_2_5:POTENTIAL_COMMUNICATION-SR\n3_3_3,<a,a,a>,5_5_5:POTENTIAL_COMMUNICATION-SR\n4_2_4,<*,b,*>,4_4_4\n4_4_4,<o,o,o>,6_6_6\n4_5_4,<o,o,o>,6_7_6\n5_2_5,<*,b,*>,5_4_5\n5_4_5,<o,o,o>,7_6_7\n5_5_5,<o,o,o>,7_7_7", // Transitions
+      "1_1_1,<b,*,b>,3_1_3\n1_1_1,<*,b,*>,1_3_1\n1_1_1,<a,a,a>,2_2_2:COMMUNICATION-SR\n1_3_1,<b,*,b>,3_3_3\n1_3_1,<a,a,a>,2_5_2:COMMUNICATION-SR\n2_2_2,<b,*,b>,4_2_4\n2_2_2,<*,b,*>,2_4_2\n2_4_2,<b,*,b>,4_4_4\n2_5_2,<b,*,b>,4_5_4\n3_1_3,<*,b,*>,3_3_3\n3_1_3,<a,a,a>,5_2_5:COMMUNICATION-SR\n3_3_3,<a,a,a>,5_5_5:COMMUNICATION-SR\n4_2_4,<*,b,*>,4_4_4\n4_4_4,<o,o,o>,6_6_6\n4_5_4,<o,o,o>,6_7_6\n5_2_5,<*,b,*>,5_4_5\n5_4_5,<o,o,o>,7_6_7\n5_5_5,<o,o,o>,7_7_7", // Transitions
       false // We do not want it to be verbose
     ));
 
@@ -865,6 +865,14 @@ public class TestAutomata {
     uStructure.closeFiles();
     
     return new UStructure(uStructure.getHeaderFile(), uStructure.getBodyFile());
+
+  }
+
+  private static PrunedUStructure saveAndLoadPrunedUStructure(PrunedUStructure prunedUStructure) {
+    
+    prunedUStructure.closeFiles();
+    
+    return new PrunedUStructure(prunedUStructure.getHeaderFile(), prunedUStructure.getBodyFile());
 
   }
 

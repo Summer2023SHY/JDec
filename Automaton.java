@@ -135,8 +135,11 @@ public class Automaton {
     /** The U-Structure */
     U_STRUCTURE((byte) 1, UStructure.class),
 
-    /** The U-Structure which also has cost and probility information for the communications */
-    CRUSH((byte) 2, Crush.class);
+    /** The pruned U-Structure */
+    PRUNED_U_STRUCTURE((byte) 2, PrunedUStructure.class),
+
+    /** A pruned U-Structure after being 'crushed' with respect to a given controller */
+    CRUSH((byte) 3, Crush.class);
 
     // Private variables
     private final byte numericValue;
@@ -1855,7 +1858,7 @@ public class Automaton {
 
         /* This is where the .hdr content corresponding to the relevant automaton type is written */
 
-      writeExtraStuffToHeader();     
+      writeSpecialTransitionsToHeader();     
 
         /* Indicate that the header file no longer need to be written */
 
@@ -1868,11 +1871,11 @@ public class Automaton {
   }
 
   /**
-   * Write all of the extra stuff to the header, which is relevant to this particular automaton type.
+   * Write all of the special transitions to the header, which is relevant to this particular automaton type.
    * NOTE: This method is intended to be overridden when sub-classing.
    * @throws IOException  If there were any problems writing to file
    **/
-  protected void writeExtraStuffToHeader() throws IOException {
+  protected void writeSpecialTransitionsToHeader() throws IOException {
 
       /* Write a number which indicates how many special transitions are in the file */
 
@@ -1991,7 +1994,7 @@ public class Automaton {
 
         /* This is where the .hdr content corresponding to the relevant automaton type is read */
 
-      readExtraStuffFromHeader();
+      readSpecialTransitionsFromHeader();
 
     } catch (IOException e) {
       e.printStackTrace();
@@ -2000,11 +2003,11 @@ public class Automaton {
   }
 
   /**
-   * Read all of the extra stuff from the header, which is relevant to this particular automaton type.
+   * Read all of the special transitions from the header, which is relevant to this particular automaton type.
    * NOTE: This method is intended to be overridden when sub-classing.
    * @throws IOException  If there were any problems reading from file
    **/
-  protected void readExtraStuffFromHeader() throws IOException {
+  protected void readSpecialTransitionsFromHeader() throws IOException {
 
       /* Read the number which indicates how many special transitions are in the file */
 
@@ -2962,6 +2965,14 @@ public class Automaton {
    **/
   public final File getBodyFile() {
     return bodyFile;
+  }
+
+  /**
+   * Get the enum value associated with this automaton type.
+   * @return  The automaton type
+   **/
+  public final Type getType() {
+    return type;
   }
 
 }
