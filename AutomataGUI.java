@@ -821,8 +821,12 @@ public class AutomataGUI extends JFrame implements ActionListener {
         headerFile = new File(fileName + ".hdr");
         bodyFile = new File(fileName + ".bdy");
 
-        // Create new tab with the generated Crush
-        createTab(prunedUStructure.crush(headerFile, bodyFile, 2));
+        int selectedController = pickController("Which controller would you like to take the crush with respect to?");
+
+        // Create new tab with the generated crush
+        if (selectedController != -1)
+          createTab(prunedUStructure.crush(headerFile, bodyFile, selectedController));
+        
         break;
 
       case "Add Communications":
@@ -1203,6 +1207,44 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     for (int i = 0; i < tabbedPane.getTabCount(); i++)
       if (tabs.get(i).headerFile != null && removeExtension(tabs.get(i).headerFile.getAbsolutePath()).equals(choice))
+        return i;
+
+    return -1;
+
+  }
+
+  /**
+   * Allow the user to select a controller in the current automaton.
+   * @param str         The message to display
+   * @return            The index of the selected controller (or -1 if there was not a controller selected)
+   **/
+  private int pickController(String str) {
+
+    UStructure uStructure = (UStructure) tabs.get(tabbedPane.getSelectedIndex()).automaton;
+
+      /* Create list of options */
+
+    ArrayList<String> optionsList = new ArrayList<String>();
+    for (int i = 1; i <= uStructure.getNumberOfControllersBeforeUStructure(); i++)
+      optionsList.add(String.valueOf(i));
+    String[] options = optionsList.toArray(new String[optionsList.size()]);
+
+      /* Display prompt to user */
+    
+    String choice = (String) JOptionPane.showInputDialog(
+        null,
+        str,
+        "Choose Controller",
+        JOptionPane.PLAIN_MESSAGE,
+        null,
+        options,
+        options[0]
+      );
+
+      /* Return index of chosen controller */
+
+    for (int i = 1; i <= options.length; i++)
+      if (choice.equals(String.valueOf(i)))
         return i;
 
     return -1;
