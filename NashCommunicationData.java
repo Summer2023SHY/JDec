@@ -18,7 +18,7 @@ public class NashCommunicationData extends CommunicationData {
     
     super(initialStateID, eventID, targetStateID, roles);
 
-    this.cost        = cost;
+    this.cost = cost;
 
     // Ensure that probability is a value found in the range [0,1]
     if (probability < 0.0)

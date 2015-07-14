@@ -558,7 +558,12 @@ public abstract class AutomatonGenerator<T> {
 
   }
 
-  private static String[] splitStringWithVectors(String str) {
+  /**
+   * Given a string that may contain vectors, split the string by commas (without breaking vectors).
+   * @param str The string to split
+   * @return    The array of split strings, or null if the number of angled brackets did not match up
+   **/  
+  public static String[] splitStringWithVectors(String str) {
 
     ArrayList<String> list = new ArrayList<String>();
 
@@ -589,10 +594,13 @@ public abstract class AutomatonGenerator<T> {
 
     }
 
+    // Return null if the number of angled brackets did not match up
+    if (insideVector != 0)
+      return null;
 
-    list.add(str.substring(start));
+    list.add(str.substring(start, str.length()));
 
-    return list.toArray(new String[0]);
+    return list.toArray(new String[list.size()]);
 
   }
 

@@ -4,7 +4,7 @@ import java.io.*;
 public class TestAutomata {
 
   // Colored output makes it more readable (doesn't work on all operating systems)
-  // Example: System.out.println("This will be purple: " + PURPLE + "Purple!" + RESET + " normal color");
+  // Example: System.out.println("The following will be purple: " + PURPLE + "Purple!" + RESET + " Normal color");
   public static String RESET = "\u001B[0m";
   public static String RED = "\u001B[31m";
   public static String GREEN = "\u001B[32m";
@@ -112,6 +112,14 @@ public class TestAutomata {
 
     printTestOutput("Separating IDs - separateIDs(): ", 2);
     printTestCase("Ensuring that 279 with a max ID of 7 maps back to {4,2,7}", new TestResult(list, Automaton.separateIDs(279, 7)), counter);
+
+      /* splitStringWithVectors() Tests */
+
+    printTestOutput("Splitting Strings that contain Vectors - splitStringWithVectors(): ", 2);
+    
+    printTestCase("Splitting a string with no vectors", new TestResult(AutomatonGenerator.splitStringWithVectors("One,Two"), new String[]{"One", "Two"}), counter);
+    printTestCase("Splitting a string containing vectors", new TestResult(AutomatonGenerator.splitStringWithVectors("<A,B>,C,<D,E,F>"), new String[]{"<A,B>", "C", "<D,E,F>"}), counter);
+    printTestCase("Splitting a string with mismatched angled brackets (expecting null)", new TestResult(AutomatonGenerator.splitStringWithVectors("<A,B>,C>") == null), counter);
 
       /* Print summary of this test routine */
 
@@ -984,12 +992,16 @@ class TestResult {
 
   public TestResult(String actual, String expected) {
 
-    String[] linesActual = actual.split("\n");
-    String[] linesExpected = expected.split("\n");
-    Arrays.sort(linesActual);
-    Arrays.sort(linesExpected);
+    this(actual.split("\n"), expected.split("\n"));
 
-    passed = Arrays.deepEquals(linesActual, linesExpected);
+  }
+
+  public TestResult(String[] actual, String[] expected) {
+
+    Arrays.sort(actual);
+    Arrays.sort(expected);
+
+    passed = Arrays.deepEquals(actual, expected);
     
     if (!passed) {
 
@@ -998,9 +1010,9 @@ class TestResult {
           /* Find lines that were added */
 
         StringBuilder addedLines = new StringBuilder();
-        List<String> listOfExpectedLines = Arrays.asList((String[]) linesExpected.clone());
+        List<String> listOfExpectedLines = Arrays.asList((String[]) expected.clone());
 
-        for (String str : linesActual) {
+        for (String str : actual) {
           int index = listOfExpectedLines.indexOf(str);
 
           // Not found
@@ -1014,9 +1026,9 @@ class TestResult {
           /* Find lines that were missing */
 
         StringBuilder missingLines = new StringBuilder();
-        List<String> listOfActualLines = Arrays.asList((String[]) linesActual.clone());
+        List<String> listOfActualLines = Arrays.asList((String[]) actual.clone());
 
-        for (String str : linesExpected) {
+        for (String str : expected) {
           int index = listOfActualLines.indexOf(str);
 
           // Not found
