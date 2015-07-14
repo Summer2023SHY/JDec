@@ -1,8 +1,27 @@
+/**
+ * UStructure - Extending Automaton, this class represents an un-pruned U-Structure.
+ *
+ * @author Micah Stairs
+ *
+ * TABLE OF CONTENTS:
+ *  -Instance Variables
+ *  -Constructors
+ *  -Automata Operations
+ *  -Automata Operations Helper Methods
+ *  -GUI Input Code Generation
+ *  -Image Generation
+ *  -Working with Files
+ *  -Mutator Methods
+ *  -Accessor Methods
+ **/
+
 import java.util.*;
 import java.io.*;
 import java.nio.file.*;
 
 public class UStructure extends Automaton {
+
+    /** INSTANCE VARIABLES **/
 
   // Special transitions
   protected List<TransitionData> unconditionalViolations;
@@ -11,6 +30,8 @@ public class UStructure extends Automaton {
   protected List<TransitionData> nonPotentialCommunications;
 
   protected int nControllersBeforeUStructure;
+
+    /** CONSTRUCTORS **/
 
   /**
    * Implicit constructor: used to load the U-Structure from file.
@@ -82,8 +103,9 @@ public class UStructure extends Automaton {
       headerFileNeedsToBeWritten = true;
     }
     
-
 	}
+
+    /** AUTOMATA OPERATIONS **/
 
   @Override public UStructure accessible(File newHeaderFile, File newBodyFile) {
     return accessibleHelper(new UStructure(newHeaderFile, newBodyFile, nControllersBeforeUStructure));
@@ -110,41 +132,15 @@ public class UStructure extends Automaton {
 
   }
 
-  @Override protected <T extends Automaton> void copyOverSpecialTransitions(T automaton) {
-
-    UStructure uStructure = (UStructure) automaton;
-
-    if (unconditionalViolations != null)
-      for (TransitionData data : unconditionalViolations)
-        if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
-          uStructure.addUnconditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
-    
-    if (conditionalViolations != null)  
-      for (TransitionData data : conditionalViolations)
-        if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
-          uStructure.addConditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
-
-    if (potentialCommunications != null)  
-      for (CommunicationData data : potentialCommunications)
-        if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
-          uStructure.addPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID, (CommunicationRole[]) data.roles.clone());
-
-    if (nonPotentialCommunications != null)  
-      for (TransitionData data : nonPotentialCommunications)
-        if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
-          uStructure.addNonPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID);
-
-  }
-
   @Override protected UStructure invert() {
     return invertHelper(new UStructure(null, null, eventCapacity, stateCapacity, transitionCapacity, labelLength, nControllersBeforeUStructure, true));
   }
 
-  /**
+    /**
    * Generate a new U-Structure, with all communications added (potential communications are marked).
-   * @param newHeaderFile          The header file where the new U-Structure should be stored
-   * @param newBodyFile            The body file where the new U-Structure should be stored
-   * @return                       The U-Structure with the added transitions
+   * @param newHeaderFile The header file where the new U-Structure should be stored
+   * @param newBodyFile   The body file where the new U-Structure should be stored
+   * @return              The U-Structure with the added transitions
    **/
   public UStructure addCommunications(File newHeaderFile, File newBodyFile) {
     
@@ -222,6 +218,225 @@ public class UStructure extends Automaton {
   }
 
   /**
+   * Checking the feasibility for all possible communication protocols, generate a list of the feasible protocols.
+   * @param communications  The communications to be considered (which should be a subset of the potentialCommunications list of this U-Structure)
+   * @return                The feasible protocols, which are sorted by the number of communications that each protocol has (smallest to largest)
+   **/
+  public List<Set<CommunicationData>> generateAllFeasibleProtocols(List<CommunicationData> communications) {
+
+      /* Generate powerset of communication protocols */
+
+    List<Set<CommunicationData>> protocols = new ArrayList<Set<CommunicationData>>();
+    powerSet(protocols, communications);
+
+      /* Generate list of feasible protocols */
+
+    List<Set<CommunicationData>> feasibleProtocols = new ArrayList<Set<CommunicationData>>();
+    for (Set<CommunicationData> protocol : protocols) {
+
+      // Ignore the protocol with no communications (doesn't make sense in our context)
+      if (protocol.size() == 0)
+        continue;
+
+      if (isFeasibleProtocol(protocol))
+        feasibleProtocols.add(protocol);
+
+    }
+
+      /* Sort sets by size (so that protocols with fewer communications appear first) */
+
+    Collections.sort(feasibleProtocols, new Comparator<Set<?>>() {
+        @Override public int compare(Set<?> set1, Set<?> set2) {
+          return Integer.valueOf(set1.size()).compareTo(set2.size());
+        }
+      }
+    );
+
+    return feasibleProtocols;
+
+  }
+
+  /**
+   * Generate a list of the smallest possible feasible protocols (in terms of the number of communications).
+   * @param communications  The communications to be considered (which should be a subset of the potentialCommunications list of this U-Structure)
+   * @return                The feasible protocols
+   **/
+  public List<Set<CommunicationData>> generateSmallestFeasibleProtocols(List<CommunicationData> communications) {
+
+      /* Generate powerset of communication protocols */
+
+    List<Set<CommunicationData>> protocols = new ArrayList<Set<CommunicationData>>();
+    powerSet(protocols, communications);
+
+      /* Sort sets by size (so that protocols with fewer communications appear first) */
+
+    Collections.sort(protocols, new Comparator<Set<?>>() {
+        @Override public int compare(Set<?> set1, Set<?> set2) {
+          return Integer.valueOf(set1.size()).compareTo(set2.size());
+        }
+      }
+    );
+
+      /* Generate list of feasible protocols */
+
+    List<Set<CommunicationData>> feasibleProtocols = new ArrayList<Set<CommunicationData>>();
+    int minFeasibleSize = Integer.MAX_VALUE;
+    
+    for (Set<CommunicationData> protocol : protocols) {
+
+      // We only want the smalelst feasible protocols
+      if (protocol.size() > minFeasibleSize)
+        break;
+
+      // Ignore the protocol with no communications (doesn't make sense in our context)
+      if (protocol.size() == 0)
+        continue;
+
+      // Add the protocol to the list if it is feasible
+      if (isFeasibleProtocol(protocol)) {
+        feasibleProtocols.add(protocol);
+        minFeasibleSize = protocol.size();
+      }
+
+    }
+
+    return feasibleProtocols;
+
+  }
+
+  /**
+   * Find all feasible protocols which contain each communication in the requested protocol.
+   * @param requestedProtocol The protocol that is being made feasible
+   * @return                  All feasible protocols
+   **/
+  public List<Set<CommunicationData>> makeProtocolFeasible(Set<CommunicationData> requestedProtocol) {
+
+      /* Generate powerset of communication protocols */
+
+    List<Set<CommunicationData>> protocols = new ArrayList<Set<CommunicationData>>();
+    powerSetSubset(protocols, potentialCommunications, requestedProtocol);
+
+      /* Generate list of feasible protocols */
+
+    List<Set<CommunicationData>> feasibleProtocols = new ArrayList<Set<CommunicationData>>();
+    for (Set<CommunicationData> protocol : protocols) {
+
+      // Ignore the protocol with no communications (doesn't make sense in our context)
+      if (protocol.size() == 0)
+        continue;
+
+      if (isFeasibleProtocol(protocol))
+        feasibleProtocols.add(protocol);
+
+    }
+
+      /* Sort sets by size (so that protocols with fewer communications appear first) */
+
+    Collections.sort(feasibleProtocols, new Comparator<Set<?>>() {
+        @Override public int compare(Set<?> set1, Set<?> set2) {
+          return Integer.valueOf(set1.size()).compareTo(set2.size());
+        }
+      }
+    );
+
+    return feasibleProtocols;
+
+  }
+
+  /**
+   * Refine this U-Structure by applying the specified communication protocol, and doing the necessary pruning.
+   * @param protocol      The chosen protocol
+   * @param newHeaderFile The header file where the new U-Structure should be stored
+   * @param newBodyFile   The body file where the new U-Structure should be stored
+   * @return              The pruned U-Structure  that had the specified protocol applied
+   **/
+  public PrunedUStructure applyProtocol(Set<CommunicationData> protocol, File newHeaderFile, File newBodyFile) {
+
+    PrunedUStructure prunedUStructure = duplicateAsPrunedUStructure(null, null);
+  
+      /* Remove all communications that are not part of the protocol */
+
+    if (nonPotentialCommunications != null)
+      for (TransitionData data : nonPotentialCommunications)
+        prunedUStructure.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
+
+    if (potentialCommunications != null)
+      for (CommunicationData data : potentialCommunications)
+        if (!protocol.contains(data))
+          prunedUStructure.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
+
+      /* Prune (which removes more transitions) */
+
+    for (CommunicationData data : protocol)
+      prunedUStructure.prune(protocol, getEvent(data.eventID).getVector(), data.initialStateID);
+
+      /* Get the accessible part of the U-Structure */
+
+    prunedUStructure = prunedUStructure.accessible(newHeaderFile, newBodyFile);
+
+      /* Remove all inactive events */
+
+    prunedUStructure.removeInactiveEvents();
+
+      /* Write header file */
+
+    prunedUStructure.writeHeaderFile();
+
+    return prunedUStructure;
+
+  }
+
+  /**
+   * Duplicate this U-Structure as a pruned U-Structure.
+   * NOTE: This only works because the pruned U-Structure has identical .bdy and .hdr formats.
+   * @param newHeaderFile The header file where the pruned U-Structure should be stored
+   * @param newBodyFile   The body file where the pruned U-Structure should be stored
+   * @return              The duplicated U-Structure (as a pruned U-Structure)
+   **/
+  public PrunedUStructure duplicateAsPrunedUStructure(File newHeaderFile, File newBodyFile) {
+
+    if (newHeaderFile == null)
+      newHeaderFile = getTemporaryFile();
+
+    if (newBodyFile == null)
+      newBodyFile = getTemporaryFile();
+
+    if (!duplicateHelper(newHeaderFile, newBodyFile))
+      return null;
+
+    return new PrunedUStructure(newHeaderFile, newBodyFile);    
+
+  }
+
+    /** AUTOMATA OPERATION HELPER METHODS **/
+
+  @Override protected <T extends Automaton> void copyOverSpecialTransitions(T automaton) {
+
+    UStructure uStructure = (UStructure) automaton;
+
+    if (unconditionalViolations != null)
+      for (TransitionData data : unconditionalViolations)
+        if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
+          uStructure.addUnconditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
+    
+    if (conditionalViolations != null)  
+      for (TransitionData data : conditionalViolations)
+        if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
+          uStructure.addConditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
+
+    if (potentialCommunications != null)  
+      for (CommunicationData data : potentialCommunications)
+        if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
+          uStructure.addPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID, (CommunicationRole[]) data.roles.clone());
+
+    if (nonPotentialCommunications != null)  
+      for (TransitionData data : nonPotentialCommunications)
+        if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
+          uStructure.addNonPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID);
+
+  }
+
+  /**
    * Using recursion, starting at a given state, determine which state the specified communication leads to (if it exists).
    * @param communication       The event vector representing the communication
    * @param vectorElementsFound Indicates which elements of the vector have been found
@@ -287,8 +502,8 @@ public class UStructure extends Automaton {
 
   /**
    * Given the complete set of least upper bounds (LUBs), return the subset of LUBs which are the event vectors for potential communications.
-   * @param leastUpperBounds        The set of LUBs
-   * @return                        The set of potential communications, including communication roles
+   * @param leastUpperBounds  The set of LUBs
+   * @return                  The set of potential communications, including communication roles
    **/
   private Set<CommunicationLabelVector> findPotentialCommunicationLabels(Set<LabelVector> leastUpperBounds) {
 
@@ -469,132 +684,6 @@ public class UStructure extends Automaton {
   }
 
   /**
-   * Checking the feasibility for all possible communication protocols, generate a list of the feasible protocols.
-   * @param communications  The communications to be considered (which should be a subset of the potentialCommunications list of this U-Structure)
-   * @return                The feasible protocols, which are sorted by the number of communications that each protocol has (smallest to largest)
-   **/
-  public List<Set<CommunicationData>> generateAllFeasibleProtocols(List<CommunicationData> communications) {
-
-      /* Generate powerset of communication protocols */
-
-    List<Set<CommunicationData>> protocols = new ArrayList<Set<CommunicationData>>();
-    powerSet(protocols, communications);
-
-      /* Generate list of feasible protocols */
-
-    List<Set<CommunicationData>> feasibleProtocols = new ArrayList<Set<CommunicationData>>();
-    for (Set<CommunicationData> protocol : protocols) {
-
-      // Ignore the protocol with no communications (doesn't make sense in our context)
-      if (protocol.size() == 0)
-        continue;
-
-      if (isFeasibleProtocol(protocol))
-        feasibleProtocols.add(protocol);
-
-    }
-
-      /* Sort sets by size (so that protocols with fewer communications appear first) */
-
-    Collections.sort(feasibleProtocols, new Comparator<Set<?>>() {
-        @Override public int compare(Set<?> set1, Set<?> set2) {
-          return Integer.valueOf(set1.size()).compareTo(set2.size());
-        }
-      }
-    );
-
-    return feasibleProtocols;
-
-  }
-
-  /**
-   * Generate a list of the smallest possible feasible protocols (in terms of the number of communications).
-   * @param communications  The communications to be considered (which should be a subset of the potentialCommunications list of this U-Structure)
-   * @return                The feasible protocols
-   **/
-  public List<Set<CommunicationData>> generateSmallestFeasibleProtocols(List<CommunicationData> communications) {
-
-      /* Generate powerset of communication protocols */
-
-    List<Set<CommunicationData>> protocols = new ArrayList<Set<CommunicationData>>();
-    powerSet(protocols, communications);
-
-      /* Sort sets by size (so that protocols with fewer communications appear first) */
-
-    Collections.sort(protocols, new Comparator<Set<?>>() {
-        @Override public int compare(Set<?> set1, Set<?> set2) {
-          return Integer.valueOf(set1.size()).compareTo(set2.size());
-        }
-      }
-    );
-
-      /* Generate list of feasible protocols */
-
-    List<Set<CommunicationData>> feasibleProtocols = new ArrayList<Set<CommunicationData>>();
-    int minFeasibleSize = Integer.MAX_VALUE;
-    
-    for (Set<CommunicationData> protocol : protocols) {
-
-      // We only want the smalelst feasible protocols
-      if (protocol.size() > minFeasibleSize)
-        break;
-
-      // Ignore the protocol with no communications (doesn't make sense in our context)
-      if (protocol.size() == 0)
-        continue;
-
-      // Add the protocol to the list if it is feasible
-      if (isFeasibleProtocol(protocol)) {
-        feasibleProtocols.add(protocol);
-        minFeasibleSize = protocol.size();
-      }
-
-    }
-
-    return feasibleProtocols;
-
-  }
-
-  /**
-   * Make the specified protocol feasible (returning it as a new set).
-   * @param protocol  The protocol that is being made feasible
-   * @return          The feasible protocol
-   **/
-  public List<Set<CommunicationData>> makeProtocolFeasible(Set<CommunicationData> requestedProtocol) {
-
-      /* Generate powerset of communication protocols */
-
-    List<Set<CommunicationData>> protocols = new ArrayList<Set<CommunicationData>>();
-    powerSetSubset(protocols, potentialCommunications, requestedProtocol);
-
-      /* Generate list of feasible protocols */
-
-    List<Set<CommunicationData>> feasibleProtocols = new ArrayList<Set<CommunicationData>>();
-    for (Set<CommunicationData> protocol : protocols) {
-
-      // Ignore the protocol with no communications (doesn't make sense in our context)
-      if (protocol.size() == 0)
-        continue;
-
-      if (isFeasibleProtocol(protocol))
-        feasibleProtocols.add(protocol);
-
-    }
-
-      /* Sort sets by size (so that protocols with fewer communications appear first) */
-
-    Collections.sort(feasibleProtocols, new Comparator<Set<?>>() {
-        @Override public int compare(Set<?> set1, Set<?> set2) {
-          return Integer.valueOf(set1.size()).compareTo(set2.size());
-        }
-      }
-    );
-
-    return feasibleProtocols;
-
-  }
-
-  /**
    * Check to see if the specified protocol is feasible.
    * NOTE: This method works under the assumption that the protocol has at least one communication.
    * @param protocol  The protocol that is being checked for feasibility
@@ -631,11 +720,19 @@ public class UStructure extends Automaton {
 
   }
 
+  /**
+   * Check to see whether the first vector is a strict sub-vector of the second vector.
+   * @param v1  The first vector
+   * @param v2  The second vector
+   * @return    Whether or not the first vector is a strict sub-vector of the second
+   **/
   private boolean isStrictSubVector(LabelVector v1, LabelVector v2) {
 
+    // If the vectors are equal or the sizes are different, then it cannot be a strict sub-vector
     if (v1.equals(v2) || v1.getSize() != v2.getSize())
       return false;
 
+    // Compare each pair of elements, ensuring that it's a strict sub-vector
     for (int i = 0; i < v1.getSize(); i++) {
       String label1 = v1.getLabelAtIndex(i);
       String label2 = v2.getLabelAtIndex(i);
@@ -670,6 +767,12 @@ public class UStructure extends Automaton {
 
   }
 
+  /**
+   * Generate a list of all possible sets in the powerset which contain the required elements.
+   * @param results           This is a list of sets where all of the sets in the powerset will be stored
+   * @param masterList        This is the original list of elements in the set
+   * @param requiredElements  This is the set of elements which must be included in each generated set
+   **/
   private static <T> void powerSetSubset(List<Set<T>> results, List<T> masterList, Set<T> requiredElements) {
 
     List<T> copyOfMasterList = new ArrayList<T>(masterList);
@@ -681,8 +784,8 @@ public class UStructure extends Automaton {
 
   /**
    * A generic method to generate the powerset of the given list, which are stored in the list of sets that you give it.
-   * @param results         This is a list of sets where all of the sets in the powerset will be stored
-   * @param masterList      This is the original list of elements in the set
+   * @param results     This is a list of sets where all of the sets in the powerset will be stored
+   * @param masterList  This is the original list of elements in the set
    **/
   private static <T> void powerSet(List<Set<T>> results, List<T> masterList) {
 
@@ -724,48 +827,221 @@ public class UStructure extends Automaton {
 
   }
 
-  /**
-   * Refine this U-Structure by applying the specified communication protocol, and doing the necessary pruning.
-   * @param protocol      The chosen protocol
-   * @param newHeaderFile The header file where the new U-Structure should be stored
-   * @param newBodyFile   The body file where the new U-Structure should be stored
-   * @return              The pruned U-Structure  that had the specified protocol applied
-   **/
-  public PrunedUStructure applyProtocol(Set<CommunicationData> protocol, File newHeaderFile, File newBodyFile) {
+  @Override protected void renumberStatesInAllTransitionData(RandomAccessFile mappingRAFile) throws IOException {
 
-    PrunedUStructure prunedUStructure = duplicateAsPrunedUStructure(null, null);
-  
-      /* Remove all communications that are not part of the protocol */
-
-    if (nonPotentialCommunications != null)
-      for (TransitionData data : nonPotentialCommunications)
-        prunedUStructure.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
-
-    if (potentialCommunications != null)
-      for (CommunicationData data : potentialCommunications)
-        if (!protocol.contains(data))
-          prunedUStructure.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
-
-      /* Prune (which removes more transitions) */
-
-    for (CommunicationData data : protocol)
-      prunedUStructure.prune(protocol, getEvent(data.eventID).getVector(), data.initialStateID);
-
-      /* Get the accessible part of the U-Structure */
-
-    prunedUStructure = prunedUStructure.accessible(newHeaderFile, newBodyFile);
-
-      /* Remove all inactive events */
-
-    prunedUStructure.removeInactiveEvents();
-
-      /* Write header file */
-
-    prunedUStructure.writeHeaderFile();
-
-    return prunedUStructure;
+    renumberStatesInTransitionData(mappingRAFile, unconditionalViolations);
+    renumberStatesInTransitionData(mappingRAFile, conditionalViolations);
+    renumberStatesInTransitionData(mappingRAFile, potentialCommunications);
+    renumberStatesInTransitionData(mappingRAFile, nonPotentialCommunications);
 
   }
+
+    /** IMAGE GENERATION **/
+
+  @Override protected void addAdditionalEdgeProperties(Map<String, String> map) {
+
+    if (unconditionalViolations != null)
+      for (TransitionData t : unconditionalViolations) {
+        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
+        if (map.containsKey(edge))
+          map.put(edge, map.get(edge) + ",color=red");
+        else
+          map.put(edge, ",color=red"); 
+      }
+
+    if (conditionalViolations != null)
+      for (TransitionData t : conditionalViolations) {
+        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
+        if (map.containsKey(edge))
+          map.put(edge, map.get(edge) + ",color=green3");
+        else
+          map.put(edge, ",color=green3"); 
+      }
+
+    if (potentialCommunications != null)
+      for (TransitionData t : potentialCommunications) {
+        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
+        if (map.containsKey(edge))
+          map.put(edge, map.get(edge) + ",color=blue,fontcolor=blue");
+        else
+          map.put(edge, ",color=blue,fontcolor=blue"); 
+      }
+
+  }
+
+    /** GUI INPUT CODE GENERATION **/
+
+  @Override protected String getInputCodeForSpecialTransitions(TransitionData transitionData) {
+
+    String str = "";
+
+    if (unconditionalViolations != null && unconditionalViolations.contains(transitionData))
+      str += ",UNCONDITIONAL_VIOLATION";
+    
+    if (conditionalViolations != null && conditionalViolations.contains(transitionData))
+      str += ",CONDITIONAL_VIOLATION";
+    
+    // Search entire list since there may be more than one potential communication
+    if (potentialCommunications != null) {
+      String identifier = (type == Type.U_STRUCTURE ? ",POTENTIAL_COMMUNICATION-" : ",COMMUNICATION-");
+      for (CommunicationData communicationData : potentialCommunications) {
+        if (transitionData.equals(communicationData)) {
+          str += identifier;
+          for (CommunicationRole role : communicationData.roles)
+            str += role.getCharacter();
+        }
+      }
+    }
+
+    if (nonPotentialCommunications != null && nonPotentialCommunications.contains(transitionData))
+      str += ",COMMUNICATION";
+
+    return str;
+
+  }
+
+    /** WORKING WITH FILES **/
+
+  @Override public UStructure duplicate() {
+    return duplicate(getTemporaryFile(), getTemporaryFile());
+  }
+
+  @Override public UStructure duplicate(File newHeaderFile, File newBodyFile) {
+
+    if (!duplicateHelper(newHeaderFile, newBodyFile))
+      return null;
+
+    return new UStructure(newHeaderFile, newBodyFile);
+
+  }
+
+  @Override protected void writeSpecialTransitionsToHeader() throws IOException {
+
+      /* Write numbers to indicate how many special transitions are in the file */
+
+    byte[] buffer = new byte[20];
+    ByteManipulator.writeLongAsBytes(buffer, 0,  nControllersBeforeUStructure, 4);
+    ByteManipulator.writeLongAsBytes(buffer, 4,  (unconditionalViolations    == null ? 0 : unconditionalViolations.size()), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 8,  (conditionalViolations      == null ? 0 : conditionalViolations.size()), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 12, (potentialCommunications    == null ? 0 : potentialCommunications.size()), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 16, (nonPotentialCommunications == null ? 0 : nonPotentialCommunications.size()), 4);
+    headerRAFile.write(buffer);
+
+      /* Write special transitions to the .hdr file */
+
+    writeTransitionDataToHeader(unconditionalViolations);
+    writeTransitionDataToHeader(conditionalViolations);
+    writeCommunicationDataToHeader(potentialCommunications);
+    writeTransitionDataToHeader(nonPotentialCommunications);  
+
+  }
+
+  /**
+   * A helper method to write a list of communications to the header file.
+   * NOTE: This could be made more efficient by using one buffer for all communication data. This
+   * is possible because each piece of data in the list is supposed to have the same number of roles.
+   * @param list          The list of communication data
+   * @throws IOException  If there was problems writing to file
+   **/
+  private void writeCommunicationDataToHeader(List<CommunicationData> list) throws IOException {
+
+    if (list == null)
+      return;
+
+    for (CommunicationData data : list) {
+
+      byte[] buffer = new byte[20 + data.roles.length];
+      int index = 0;
+
+      ByteManipulator.writeLongAsBytes(buffer, index, data.initialStateID, 8);
+      index += 8;
+
+      ByteManipulator.writeLongAsBytes(buffer, index, data.eventID, 4);
+      index += 4;
+
+      ByteManipulator.writeLongAsBytes(buffer, index, data.targetStateID, 8);
+      index += 8;
+
+      for (CommunicationRole role : data.roles)
+        buffer[index++] = role.getNumericValue();
+      
+      headerRAFile.write(buffer);
+
+    }
+
+  }
+
+  @Override protected void readSpecialTransitionsFromHeader() throws IOException {
+
+      /* Read the number which indicates how many special transitions are in the file */
+
+    byte[] buffer = new byte[20];
+    headerRAFile.read(buffer);
+
+    nControllersBeforeUStructure    = (int) ByteManipulator.readBytesAsLong(buffer, 0,  4);
+    int nUnconditionalViolations    = (int) ByteManipulator.readBytesAsLong(buffer, 4,  4);
+    int nConditionalViolations      = (int) ByteManipulator.readBytesAsLong(buffer, 8,  4);
+    int nPotentialCommunications    = (int) ByteManipulator.readBytesAsLong(buffer, 12, 4);
+    int nNonPotentialCommunications = (int) ByteManipulator.readBytesAsLong(buffer, 16, 4);
+
+      /* Read in special transitions from the .hdr file */
+    
+    if (nUnconditionalViolations > 0) {
+      unconditionalViolations = new ArrayList<TransitionData>();
+      readTransitionDataFromHeader(nUnconditionalViolations, unconditionalViolations);
+    }
+    
+    if (nConditionalViolations > 0) {
+      conditionalViolations = new ArrayList<TransitionData>();
+      readTransitionDataFromHeader(nConditionalViolations, conditionalViolations);
+    }
+    
+    if (nPotentialCommunications > 0) {
+      potentialCommunications = new ArrayList<CommunicationData>();
+      readCommunicationDataFromHeader(nPotentialCommunications, potentialCommunications);
+    }
+
+    if (nNonPotentialCommunications > 0) {
+      nonPotentialCommunications = new ArrayList<TransitionData>();
+      readTransitionDataFromHeader(nNonPotentialCommunications, nonPotentialCommunications);
+    }
+
+  }
+
+  /**
+   * A helper method to read a list of communication transitions from the header file.
+   * @param nCommunications The number of communications that need to be read
+   * @param list            The list of communication data
+   * @throws IOException    If there was problems reading from file
+   **/
+  private void readCommunicationDataFromHeader(int nCommunications, List<CommunicationData> list) throws IOException {
+
+    byte[] buffer = new byte[nCommunications * (20 + nControllersBeforeUStructure)];
+    headerRAFile.read(buffer);
+    int index = 0;
+
+    for (int i = 0; i < nCommunications; i++) {
+
+      long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
+      index += 8;
+      
+      int eventID = (int) ByteManipulator.readBytesAsLong(buffer, index, 4);
+      index += 4;
+      
+      long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
+      index += 8;
+
+      CommunicationRole[] roles = new CommunicationRole[nControllersBeforeUStructure];
+      for (int j = 0; j < roles.length; j++)
+        roles[j] = CommunicationRole.getRole(buffer[index++]);
+      
+      list.add(new CommunicationData(initialStateID, eventID, targetStateID, roles));
+    
+    }
+
+  }
+
+    /** MUTATOR METHODS **/
 
   /**
    * Remove a special transition, given its transition data.
@@ -860,6 +1136,8 @@ public class UStructure extends Automaton {
 
   }
 
+    /** ACCESSOR METHODS **/
+
   /**
    * Get the list of potential communications.
    * @return  The potential communications
@@ -868,231 +1146,10 @@ public class UStructure extends Automaton {
     return potentialCommunications;
   }
 
-  @Override public UStructure duplicate() {
-    return duplicate(getTemporaryFile(), getTemporaryFile());
-  }
-
-  @Override public UStructure duplicate(File newHeaderFile, File newBodyFile) {
-
-    if (!duplicateHelper(newHeaderFile, newBodyFile))
-      return null;
-
-    return new UStructure(newHeaderFile, newBodyFile);
-
-  }
-
-  // This only works because the pruned U-Structure has identical .bdy and .hdr formats.
-  // Untested
-  public PrunedUStructure duplicateAsPrunedUStructure(File newHeaderFile, File newBodyFile) {
-
-    if (newHeaderFile == null)
-      newHeaderFile = getTemporaryFile();
-
-    if (newBodyFile == null)
-      newBodyFile = getTemporaryFile();
-
-    if (!duplicateHelper(newHeaderFile, newBodyFile))
-      return null;
-
-    return new PrunedUStructure(newHeaderFile, newBodyFile);    
-
-  }
-
-  @Override protected String getInputCodeForSpecialTransitions(TransitionData transitionData) {
-
-    String str = "";
-
-    if (unconditionalViolations != null && unconditionalViolations.contains(transitionData))
-      str += ",UNCONDITIONAL_VIOLATION";
-    
-    if (conditionalViolations != null && conditionalViolations.contains(transitionData))
-      str += ",CONDITIONAL_VIOLATION";
-    
-    // Search entire list since there may be more than one potential communication
-    if (potentialCommunications != null) {
-      String identifier = (type == Type.U_STRUCTURE ? ",POTENTIAL_COMMUNICATION-" : ",COMMUNICATION-");
-      for (CommunicationData communicationData : potentialCommunications) {
-        if (transitionData.equals(communicationData)) {
-          str += identifier;
-          for (CommunicationRole role : communicationData.roles)
-            str += role.getCharacter();
-        }
-      }
-    }
-
-    if (nonPotentialCommunications != null && nonPotentialCommunications.contains(transitionData))
-      str += ",COMMUNICATION";
-
-    return str;
-
-  }
-
-  @Override protected void readSpecialTransitionsFromHeader() throws IOException {
-
-      /* Read the number which indicates how many special transitions are in the file */
-
-    byte[] buffer = new byte[20];
-    headerRAFile.read(buffer);
-
-    nControllersBeforeUStructure    = (int) ByteManipulator.readBytesAsLong(buffer, 0,  4);
-    int nUnconditionalViolations    = (int) ByteManipulator.readBytesAsLong(buffer, 4,  4);
-    int nConditionalViolations      = (int) ByteManipulator.readBytesAsLong(buffer, 8,  4);
-    int nPotentialCommunications    = (int) ByteManipulator.readBytesAsLong(buffer, 12, 4);
-    int nNonPotentialCommunications = (int) ByteManipulator.readBytesAsLong(buffer, 16, 4);
-
-      /* Read in special transitions from the .hdr file */
-    
-    if (nUnconditionalViolations > 0) {
-      unconditionalViolations = new ArrayList<TransitionData>();
-      readTransitionDataFromHeader(nUnconditionalViolations, unconditionalViolations);
-    }
-    
-    if (nConditionalViolations > 0) {
-      conditionalViolations = new ArrayList<TransitionData>();
-      readTransitionDataFromHeader(nConditionalViolations, conditionalViolations);
-    }
-    
-    if (nPotentialCommunications > 0) {
-      potentialCommunications = new ArrayList<CommunicationData>();
-      readCommunicationDataFromHeader(nPotentialCommunications, potentialCommunications);
-    }
-
-    if (nNonPotentialCommunications > 0) {
-      nonPotentialCommunications = new ArrayList<TransitionData>();
-      readTransitionDataFromHeader(nNonPotentialCommunications, nonPotentialCommunications);
-    }
-
-  }
-
   /**
-   * A helper method to read a list of communication transitions from the header file.
-   * @param nCommunications The number of communications that need to be read
-   * @param list            The list of communication data
-   * @throws IOException    If there was problems reading from file
+   * Get the number of controller that were present before the U-Structure was created.
+   * @return  The number of controllers before the U-Structure
    **/
-  private void readCommunicationDataFromHeader(int nCommunications, List<CommunicationData> list) throws IOException {
-
-    byte[] buffer = new byte[nCommunications * (20 + nControllersBeforeUStructure)];
-    headerRAFile.read(buffer);
-    int index = 0;
-
-    for (int i = 0; i < nCommunications; i++) {
-
-      long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-      index += 8;
-      
-      int eventID = (int) ByteManipulator.readBytesAsLong(buffer, index, 4);
-      index += 4;
-      
-      long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-      index += 8;
-
-      CommunicationRole[] roles = new CommunicationRole[nControllersBeforeUStructure];
-      for (int j = 0; j < roles.length; j++)
-        roles[j] = CommunicationRole.getRole(buffer[index++]);
-      
-      list.add(new CommunicationData(initialStateID, eventID, targetStateID, roles));
-    
-    }
-
-  }
-
-  @Override protected void writeSpecialTransitionsToHeader() throws IOException {
-
-      /* Write numbers to indicate how many special transitions are in the file */
-
-    byte[] buffer = new byte[20];
-    ByteManipulator.writeLongAsBytes(buffer, 0,  nControllersBeforeUStructure, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 4,  (unconditionalViolations    == null ? 0 : unconditionalViolations.size()), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 8,  (conditionalViolations      == null ? 0 : conditionalViolations.size()), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 12, (potentialCommunications    == null ? 0 : potentialCommunications.size()), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 16, (nonPotentialCommunications == null ? 0 : nonPotentialCommunications.size()), 4);
-    headerRAFile.write(buffer);
-
-      /* Write special transitions to the .hdr file */
-
-    writeTransitionDataToHeader(unconditionalViolations);
-    writeTransitionDataToHeader(conditionalViolations);
-    writeCommunicationDataToHeader(potentialCommunications);
-    writeTransitionDataToHeader(nonPotentialCommunications);  
-
-  }
-
-  /**
-   * A helper method to write a list of communications to the header file.
-   * NOTE: This could be made more efficient by using one buffer for all communication data. This
-   * is possible because each piece of data in the list is supposed to have the same number of roles.
-   * @param list          The list of communication data
-   * @throws IOException  If there was problems writing to file
-   **/
-  private void writeCommunicationDataToHeader(List<CommunicationData> list) throws IOException {
-
-    if (list == null)
-      return;
-
-    for (CommunicationData data : list) {
-
-      byte[] buffer = new byte[20 + data.roles.length];
-      int index = 0;
-
-      ByteManipulator.writeLongAsBytes(buffer, index, data.initialStateID, 8);
-      index += 8;
-
-      ByteManipulator.writeLongAsBytes(buffer, index, data.eventID, 4);
-      index += 4;
-
-      ByteManipulator.writeLongAsBytes(buffer, index, data.targetStateID, 8);
-      index += 8;
-
-      for (CommunicationRole role : data.roles)
-        buffer[index++] = role.getNumericValue();
-      
-      headerRAFile.write(buffer);
-
-    }
-
-  }
-
-  @Override protected void addAdditionalEdgeProperties(Map<String, String> map) {
-
-    if (unconditionalViolations != null)
-      for (TransitionData t : unconditionalViolations) {
-        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-        if (map.containsKey(edge))
-          map.put(edge, map.get(edge) + ",color=red");
-        else
-          map.put(edge, ",color=red"); 
-      }
-
-    if (conditionalViolations != null)
-      for (TransitionData t : conditionalViolations) {
-        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-        if (map.containsKey(edge))
-          map.put(edge, map.get(edge) + ",color=green3");
-        else
-          map.put(edge, ",color=green3"); 
-      }
-
-    if (potentialCommunications != null)
-      for (TransitionData t : potentialCommunications) {
-        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-        if (map.containsKey(edge))
-          map.put(edge, map.get(edge) + ",color=blue,fontcolor=blue");
-        else
-          map.put(edge, ",color=blue,fontcolor=blue"); 
-      }
-
-  }
-
-  @Override protected void renumberStatesInAllTransitionData(RandomAccessFile mappingRAFile) throws IOException {
-
-    renumberStatesInTransitionData(mappingRAFile, unconditionalViolations);
-    renumberStatesInTransitionData(mappingRAFile, conditionalViolations);
-    renumberStatesInTransitionData(mappingRAFile, potentialCommunications);
-    renumberStatesInTransitionData(mappingRAFile, nonPotentialCommunications);
-
-  }
-
   public int getNumberOfControllersBeforeUStructure() {
     return nControllersBeforeUStructure;
   }

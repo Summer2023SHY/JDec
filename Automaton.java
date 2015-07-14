@@ -6,10 +6,9 @@
  * @author Micah Stairs
  *
  * TABLE OF CONTENTS:
- *  -Public Class Constants
- *  -Protected Class Constants
- *  -Protected Class Variables
- *  -Protected Instance Variables
+ *  -Class Constants
+ *  -Class Variables
+ *  -Instance Variables
  *  -Enums
  *  -Constructors
  *  -Automata Operations
@@ -64,20 +63,20 @@ public class Automaton {
   /** The maximum number of controllers in an automaton. */
   public static final int MAX_NUMBER_OF_CONTROLLERS = 10;
 
-    /** PROTECTED CLASS CONSTANTS **/
+  /** This is the fixed amount of space needed to hold the main variables in the .hdr file, which apply to all automaton types. */
+  private static final int HEADER_SIZE = 45; 
 
-  private static final int HEADER_SIZE = 45; // This is the fixed amount of space needed to hold the main variables in the .hdr file, which apply to all automaton types
-
+  /** This is the directory used to hold all temporary files. */
   protected static final File TEMPORARY_DIRECTORY = new File("Automaton_Temporary_Files");
 
-    /** PROTECTED CLASS VARIABLES **/
+    /** CLASS VARIABLES **/
 
   protected static int temporaryFileIndex = 1;
 
-    /** PROTECTED INSTANCE VARIABLES **/
+    /** INSTANCE VARIABLES **/
 
   // Events
-  protected Set<Event> events = new TreeSet<Event>(); // Due to Event's compareTo and equals implementations, a TreeSet cannot not guarantee that it is actually a set (considering changing this to an ArrayList)
+  protected Set<Event> events = new TreeSet<Event>(); // Due to Event's compareTo and equals implementations, a TreeSet cannot not guarantee that it is actually a set (I am considering changing this to an ArrayList)
 
   // Special transitions
   private List<TransitionData> badTransitions;
@@ -1678,6 +1677,10 @@ public class Automaton {
 
     /** WORKING WITH FILES **/
 
+  /**
+   * Duplicate this automaton, storing them in temporary files.
+   * NOTE: This method is intended to be overridden.
+   **/
   public Automaton duplicate() {
     return duplicate(getTemporaryFile(), getTemporaryFile());
   }
