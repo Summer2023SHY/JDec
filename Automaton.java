@@ -31,7 +31,7 @@ import javax.swing.*;
 
 public class Automaton {
 
-    /** PUBLIC CLASS CONSTANTS **/
+    /* PUBLIC CLASS CONSTANTS */
 
   /** The number of events that an automaton can hold by default. */
   public static final int DEFAULT_EVENT_CAPACITY = 255;
@@ -69,11 +69,11 @@ public class Automaton {
   /** This is the directory used to hold all temporary files. */
   protected static final File TEMPORARY_DIRECTORY = new File("Automaton_Temporary_Files");
 
-    /** CLASS VARIABLES **/
+    /* CLASS VARIABLES */
 
   protected static int temporaryFileIndex = 1;
 
-    /** INSTANCE VARIABLES **/
+    /* INSTANCE VARIABLES */
 
   // Events
   protected Set<Event> events = new TreeSet<Event>(); // Due to Event's compareTo and equals implementations, a TreeSet cannot not guarantee that it is actually a set (I am considering changing this to an ArrayList)
@@ -112,7 +112,7 @@ public class Automaton {
   protected StringBuilder stateInputBuilder;
   protected StringBuilder transitionInputBuilder;
 
-    /** ENUMS **/
+    /* ENUMS */
 
   /** Image of automaton can be formatted as either .png or .svg. */
   public static enum OutputMode {
@@ -214,7 +214,7 @@ public class Automaton {
 
   }
 
-    /** CONSTRUCTORS **/
+    /* CONSTRUCTORS */
 
   /**
    * Default constructor: create empty automaton with default capacity using temporary files.
@@ -1344,7 +1344,7 @@ public class Automaton {
 
   }
 
-    /** IMAGE GENERATION **/
+    /* IMAGE GENERATION */
 
   /**
    * Output this automaton in a format that is readable by GraphViz, then export as requested.
@@ -1526,7 +1526,7 @@ public class Automaton {
 
   }
 
-    /** GUI INPUT CODE GENERATION **/
+    /* GUI INPUT CODE GENERATION */
 
   /**
    * Generates GUI input code from this automaton (which is useful when loading automaton from file in the GUI).
@@ -1675,7 +1675,7 @@ public class Automaton {
 
   }
 
-    /** WORKING WITH FILES **/
+    /* WORKING WITH FILES */
 
   /**
    * Duplicate this automaton, storing them in temporary files.
@@ -2191,7 +2191,7 @@ public class Automaton {
 
   }
 
-    /** MISCELLANEOUS **/
+    /* MISCELLANEOUS */
 
   /**
    * Calculate the amount of space required to store a state, given the specified conditions.
@@ -2296,7 +2296,7 @@ public class Automaton {
 
   }
 
-    /** MUTATOR METHODS **/
+    /* MUTATOR METHODS */
 
   /**
    * Adds a transition based the label of the event (instead the ID).
@@ -2762,7 +2762,7 @@ public class Automaton {
 
   }
 
-    /** ACCESSOR METHODS **/
+    /* ACCESSOR METHODS */
 
   /**
    * Check to see if a transition exists.

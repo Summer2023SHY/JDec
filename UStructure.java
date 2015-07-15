@@ -21,7 +21,7 @@ import java.nio.file.*;
 
 public class UStructure extends Automaton {
 
-    /** INSTANCE VARIABLES **/
+    /* INSTANCE VARIABLES */
 
   // Special transitions
   protected List<TransitionData> unconditionalViolations;
@@ -31,7 +31,7 @@ public class UStructure extends Automaton {
 
   protected int nControllersBeforeUStructure;
 
-    /** CONSTRUCTORS **/
+    /* CONSTRUCTORS */
 
   /**
    * Implicit constructor: used to load the U-Structure from file.
@@ -105,7 +105,7 @@ public class UStructure extends Automaton {
     
 	}
 
-    /** AUTOMATA OPERATIONS **/
+    /* AUTOMATA OPERATIONS */
 
   @Override public UStructure accessible(File newHeaderFile, File newBodyFile) {
     return accessibleHelper(new UStructure(newHeaderFile, newBodyFile, nControllersBeforeUStructure));
@@ -408,7 +408,7 @@ public class UStructure extends Automaton {
 
   }
 
-    /** AUTOMATA OPERATION HELPER METHODS **/
+    /* AUTOMATA OPERATION HELPER METHODS */
 
   @Override protected <T extends Automaton> void copyOverSpecialTransitions(T automaton) {
 
@@ -836,7 +836,7 @@ public class UStructure extends Automaton {
 
   }
 
-    /** IMAGE GENERATION **/
+    /* IMAGE GENERATION */
 
   @Override protected void addAdditionalEdgeProperties(Map<String, String> map) {
 
@@ -869,7 +869,7 @@ public class UStructure extends Automaton {
 
   }
 
-    /** GUI INPUT CODE GENERATION **/
+    /* GUI INPUT CODE GENERATION */
 
   @Override protected String getInputCodeForSpecialTransitions(TransitionData transitionData) {
 
@@ -900,7 +900,7 @@ public class UStructure extends Automaton {
 
   }
 
-    /** WORKING WITH FILES **/
+    /* WORKING WITH FILES */
 
   @Override public UStructure duplicate() {
     return duplicate(getTemporaryFile(), getTemporaryFile());
@@ -1041,7 +1041,7 @@ public class UStructure extends Automaton {
 
   }
 
-    /** MUTATOR METHODS **/
+    /* MUTATOR METHODS */
 
   /**
    * Remove a special transition, given its transition data.
@@ -1136,7 +1136,7 @@ public class UStructure extends Automaton {
 
   }
 
-    /** ACCESSOR METHODS **/
+    /* ACCESSOR METHODS */
 
   /**
    * Get the list of potential communications.
