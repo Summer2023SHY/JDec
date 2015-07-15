@@ -1032,7 +1032,6 @@ public class AutomataGUI extends JFrame implements ActionListener {
    * Opens up a JFileChooser for the user to choose a file from their file system.
    * @param title   The title to put in the file chooser dialog box
    * @param index   The index of the tab we're selecting a file for (-1 indicates that a new tab will be created for it)
-   * @param newTab  Whether or not a new tab should be created for the selected file
    * @return        The file, or null if the user did not choose anything
    **/
   private File selectFile(String title, int index) {

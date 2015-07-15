@@ -1493,6 +1493,11 @@ public class Automaton {
 
   }
 
+  /**
+   * Add any additional edge properties applicable to this automaton type, which is used in the DOT output.
+   * EXAMPLE: This is used to color potential communications blue.
+   * @param map The mapping from edges to additional properties
+   **/
   protected void addAdditionalEdgeProperties(Map<String, String> map) {
 
     if (badTransitions != null)

@@ -123,8 +123,8 @@ public class PrunedUStructure extends UStructure {
   /**
    * Take the crush with repect to a particular controller.
    * NOTE: A HashMap is used instead of a mapping file, under the assumption that a crush will not contain billions of states.
-   * @param headerFile        The file where the header should be stored
-   * @param bodyFile          The file where the body should be stored
+   * @param newHeaderFile     The file where the header should be stored
+   * @param newBodyFile       The file where the body should be stored
    * @param indexOfController The index of the controller in which the crush is being taken with respect to
    * @return                  The crush
    **/

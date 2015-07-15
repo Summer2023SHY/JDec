@@ -83,8 +83,8 @@ class LabelVector {
 
 	/**
 	 * Check for equality by comparing labels.
-	 * @param obj  The label vector to compare this one to
-	 * @return     Whether or not the label vectors are equal
+	 * @param other	The label vector to compare this one to
+	 * @return     	Whether or not the label vectors are equal
 	 **/
 	@Override public boolean equals(Object other) {
 		return label.equals(((LabelVector) other).label);

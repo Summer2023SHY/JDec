@@ -6,7 +6,7 @@
  * @author Micah Stairs
  * 
  * TABLE OF CONTENTS:
- *  -Public Instance Variable
+ *  -Instance Variable
  *  -Constructor
  *  -Overridden Method
  **/
@@ -15,11 +15,11 @@ import java.util.*;
 
 class CommunicationLabelVector extends LabelVector {
 
-    /** PUBLIC INSTANCE VARIABLE **/
+    /* INSTANCE VARIABLE */
 
   public CommunicationRole[] roles;
 
-    /** CONSTRUCTOR **/
+    /* CONSTRUCTOR */
 
   /**
    * Construct a CommunicationLabelVector object, given it's label and each controller's communication roles.
@@ -34,12 +34,12 @@ class CommunicationLabelVector extends LabelVector {
 
   }
 
-    /** OVERRIDDEN METHOD **/
+    /* OVERRIDDEN METHOD */
 
   /**
    * Check for equality by comparing labels and roles.
-   * @param obj The communication label vector to compare this one to
-   * @return whether or not the communication label vectors are equal
+   * @param other The communication label vector to compare this one to
+   * @return      Whether or not the communication label vectors are equal
    **/
   @Override public boolean equals(Object other) {
     return super.equals(other) && Arrays.deepEquals(roles, ((CommunicationLabelVector) other).roles);

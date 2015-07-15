@@ -428,7 +428,7 @@ public abstract class AutomatonGenerator<T> {
   /**
    * Parse a string for special transitions, adding them to the automaton
    * @param automaton     The automaton to add the special transitions to
-   * @param auomatonType  The enum value associated with the type of the automaton
+   * @param automatonType The enum value associated with the type of the automaton
    * @param line          The text to parse
    * @param data          The transition data (IDs of the associated event and states)
    **/
