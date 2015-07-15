@@ -405,6 +405,11 @@ public class PrunedUStructure extends UStructure {
    **/
   private void readNashCommunicationDataFromHeader(int nCommunications, List<NashCommunicationData> list) throws IOException {
 
+    if (nCommunications > 100) {
+      System.out.println("HMM... looks pretty big! Let's skip it..");
+      return;
+    }
+
     byte[] buffer = new byte[nCommunications * (32 + nControllersBeforeUStructure)];
     headerRAFile.read(buffer);
     int index = 0;
@@ -489,6 +494,7 @@ public class PrunedUStructure extends UStructure {
     renumberEventsInTransitionData(mapping, conditionalViolations);
     renumberEventsInTransitionData(mapping, potentialCommunications);
     renumberEventsInTransitionData(mapping, nonPotentialCommunications);
+    renumberEventsInTransitionData(mapping, nashCommunications);
 
       /* Indicate that the header file needs to be updated */
     

@@ -99,10 +99,10 @@ public class Automaton {
   protected long nBytesPerState;
 
   // File variables
-  protected String headerFileName;
-  protected String bodyFileName;
-  protected File headerFile;
-  protected File bodyFile;
+  protected final String headerFileName;
+  protected final String bodyFileName;
+  protected final File headerFile;
+  protected final File bodyFile;
   protected RandomAccessFile headerRAFile; // Contains basic information about automaton, needed in order to read the bodyFile, as well as the events
   protected RandomAccessFile bodyRAFile; // List each state in the automaton, with the transitions
   protected boolean headerFileNeedsToBeWritten;
@@ -1728,6 +1728,9 @@ public class Automaton {
    **/
   protected final boolean duplicateHelper(File newHeaderFile, File newBodyFile) {
 
+    // Ensure that the header file is up-to-date
+    writeHeaderFile();
+
     // Copy the header and body files
     try {
     
@@ -1885,6 +1888,10 @@ public class Automaton {
         /* Indicate that the header file no longer need to be written */
 
       headerFileNeedsToBeWritten = false;
+
+        /* Trim the file so that there is no garbage at the end (removing events, for example, shortens the .hdr file) */
+
+      headerRAFile.setLength(headerRAFile.getFilePointer());
 
     } catch (IOException e) {
       e.printStackTrace();

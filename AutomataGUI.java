@@ -304,7 +304,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
   }
 
   /**
-   * Saved the current directory to file (so that the current directory is maintained even after the program has been closed).
+   * Saves the current directory to file (so that the current directory is maintained even after the program has been closed).
    **/
   private void saveCurrentDirectory() {
 

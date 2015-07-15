@@ -352,8 +352,10 @@ public class UStructure extends Automaton {
    **/
   public PrunedUStructure applyProtocol(Set<CommunicationData> protocol, File newHeaderFile, File newBodyFile) {
 
+    System.out.println(getHeaderFile().toPath());
     PrunedUStructure prunedUStructure = duplicateAsPrunedUStructure(null, null);
-  
+    System.out.println(prunedUStructure.getHeaderFile().toPath());
+    
       /* Remove all communications that are not part of the protocol */
 
     if (nonPotentialCommunications != null)
@@ -403,6 +405,15 @@ public class UStructure extends Automaton {
 
     if (!duplicateHelper(newHeaderFile, newBodyFile))
       return null;
+
+    // Change the first byte (which indicates the automaton type)
+    try {
+      RandomAccessFile raFile = new RandomAccessFile(newHeaderFile, "rw");
+      raFile.writeByte((byte) Type.PRUNED_U_STRUCTURE.getNumericValue());
+    } catch (IOException e) {
+      e.printStackTrace();
+      return null;
+    }
 
     return new PrunedUStructure(newHeaderFile, newBodyFile);    
 
@@ -932,7 +943,7 @@ public class UStructure extends Automaton {
     writeTransitionDataToHeader(unconditionalViolations);
     writeTransitionDataToHeader(conditionalViolations);
     writeCommunicationDataToHeader(potentialCommunications);
-    writeTransitionDataToHeader(nonPotentialCommunications);  
+    writeTransitionDataToHeader(nonPotentialCommunications);
 
   }
 
