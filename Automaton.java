@@ -1534,16 +1534,22 @@ public class Automaton {
     /* GUI INPUT CODE GENERATION */
 
   /**
-   * Generates GUI input code from this automaton (which is useful when loading automaton from file in the GUI).
+   * Generates all GUI input code (which is useful when loading automaton from file in the GUI).
    * NOTE: Further calls to getEventInput(), getStateInput(), and/or getTransitionInput() are needed to actually get the generated input code.
    **/
   public void generateInputForGUI() {
 
-    eventInputBuilder = new StringBuilder();
-    stateInputBuilder = new StringBuilder();
-    transitionInputBuilder = new StringBuilder();
+    generateEventInputForGUI();
+    generateStateAndTransitionInputForGUI();
 
-      /* Generate event input */
+  }
+
+  /**
+   * Generates the GUI input code for the events.
+   **/
+  private void generateEventInputForGUI() {
+
+    eventInputBuilder = new StringBuilder();
 
     int counter = 0;
 
@@ -1573,8 +1579,16 @@ public class Automaton {
 
     }
 
-      /* Generate state and transition input */
+  }
 
+  /**
+   * Generates the GUI input code for the events.
+   **/
+  private void generateStateAndTransitionInputForGUI() {
+
+    stateInputBuilder = new StringBuilder();
+    transitionInputBuilder = new StringBuilder();
+    
     boolean firstTransitionInStringBuilder = true;
 
     for (long s = 1; s <= nStates; s++) {

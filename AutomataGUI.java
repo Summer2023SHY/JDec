@@ -502,7 +502,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
     menuBar.add(createMenu("File", "New Tab->New Automaton,New U-Structure,New Pruned U-Structure,New Crush", "Open", "Save As...[TAB]", "Refresh Tab[TAB]", null, "Clear[TAB]", "Close Tab[TAB]", null, "Export as SVG[AUTOMATON]", null, "Quit"));
     menuBar.add(createMenu("Standard Operations", "Accessible[AUTOMATON]", "Co-Accessible[AUTOMATON]", "Trim[AUTOMATON]", "Complement[AUTOMATON]", null, "Intersection[BASIC_AUTOMATON]", "Union[BASIC_AUTOMATON]"));
     menuBar.add(createMenu("Special Operations", "Synchronized Composition[BASIC_AUTOMATON]", null, "Add Communications[U_STRUCTURE]", "Feasible Protocols->Generate All[U_STRUCTURE],Make Protocol Feasible[U_STRUCTURE],Find Smallest[U_STRUCTURE]", "Crush[PRUNED_U_STRUCTURE]"));
-    menuBar.add(createMenu("Quantitative Communication", "Nash", "Pareto"));
+    menuBar.add(createMenu("Quantitative Communication", "Nash[U_STRUCTURE]", "Pareto"));
     menuBar.add(createMenu("Generate", "Random Automaton"));
 
     this.setJMenuBar(menuBar);
@@ -870,6 +870,16 @@ public class AutomataGUI extends JFrame implements ActionListener {
           JOptionPane.showMessageDialog(null, "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.", "Operation Failed", JOptionPane.ERROR_MESSAGE);
         else
           new FeasibleProtocolOutput(this, uStructure, uStructure.generateSmallestFeasibleProtocols(uStructure.getPotentialCommunications()), "Smallest Feasible Protocols", " Protocol(s) with the fewest number of communications: ");
+        break;
+
+      case "Nash":
+
+        uStructure = ((UStructure) tab.automaton);
+
+        if (uStructure.getPotentialCommunications().size() == 0)
+          JOptionPane.showMessageDialog(null, "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.", "Operation Failed", JOptionPane.ERROR_MESSAGE);
+        //else
+
         break;
 
       case "Random Automaton":
@@ -1243,7 +1253,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
       /* Return index of chosen controller */
 
     for (int i = 1; i <= options.length; i++)
-      if (choice.equals(String.valueOf(i)))
+      if (choice != null && choice.equals(String.valueOf(i)))
         return i;
 
     return -1;

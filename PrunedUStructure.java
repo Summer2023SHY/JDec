@@ -162,15 +162,26 @@ public class PrunedUStructure extends UStructure {
 
       isInitialState = false;
 
-      // Loop through event event
+      // Loop through each event
       outer: for (Event e : crush.events) {
+
+        boolean hasUnconditionalViolation = false;
+        boolean hasConditionalViolation = false;
 
         // Generate list of all reachable states from the current event
         Set<State> reachableStates = new HashSet<State>();
         for (State s : setOfStates)
           for (Transition t : s.getTransitions())
-            if (t.getEvent().equals(e))
+            if (t.getEvent().equals(e)) {
               findConnectingStates(reachableStates, getState(t.getTargetStateID()), indexOfController);
+                
+              // Check for violations
+              TransitionData data = new TransitionData(s.getID(), t.getEvent().getID(), t.getTargetStateID());
+              if (unconditionalViolations != null && unconditionalViolations.contains(data))
+                hasUnconditionalViolation = true;
+              if (conditionalViolations != null && conditionalViolations.contains(data))
+                hasConditionalViolation = true;
+            }
 
         // Add the transition (if applicable)
         if (reachableStates.size() > 0) {
@@ -185,6 +196,11 @@ public class PrunedUStructure extends UStructure {
           }
           
           crush.addTransition(mappedID, e.getID(), mappedTargetID);
+
+          if (hasUnconditionalViolation)
+            crush.addUnconditionalViolation(mappedID, e.getID(), mappedTargetID);
+          if (hasConditionalViolation)
+            crush.addConditionalViolation(mappedID, e.getID(), mappedTargetID);
 
         }
 
@@ -311,6 +327,7 @@ public class PrunedUStructure extends UStructure {
       /* Write a number to indicate how many nash communications are in the file */
 
     byte[] buffer = new byte[4];
+
     ByteManipulator.writeLongAsBytes(buffer, 0, (nashCommunications == null ? 0 : nashCommunications.size()), 4);
     headerRAFile.write(buffer);
 
@@ -367,7 +384,7 @@ public class PrunedUStructure extends UStructure {
 
       /* Read the number which indicates how many nash communications are in the file */
 
-    byte[] buffer = new byte[20];
+    byte[] buffer = new byte[4];
     headerRAFile.read(buffer);
     int nNashCommunications = (int) ByteManipulator.readBytesAsLong(buffer, 0, 4);
 
