@@ -165,23 +165,12 @@ public class PrunedUStructure extends UStructure {
       // Loop through each event
       outer: for (Event e : crush.events) {
 
-        boolean hasUnconditionalViolation = false;
-        boolean hasConditionalViolation = false;
-
         // Generate list of all reachable states from the current event
         Set<State> reachableStates = new HashSet<State>();
         for (State s : setOfStates)
           for (Transition t : s.getTransitions())
-            if (t.getEvent().equals(e)) {
+            if (t.getEvent().equals(e))
               findConnectingStates(reachableStates, getState(t.getTargetStateID()), indexOfController);
-                
-              // Check for violations
-              TransitionData data = new TransitionData(s.getID(), t.getEvent().getID(), t.getTargetStateID());
-              if (unconditionalViolations != null && unconditionalViolations.contains(data))
-                hasUnconditionalViolation = true;
-              if (conditionalViolations != null && conditionalViolations.contains(data))
-                hasConditionalViolation = true;
-            }
 
         // Add the transition (if applicable)
         if (reachableStates.size() > 0) {
@@ -196,11 +185,6 @@ public class PrunedUStructure extends UStructure {
           }
           
           crush.addTransition(mappedID, e.getID(), mappedTargetID);
-
-          if (hasUnconditionalViolation)
-            crush.addUnconditionalViolation(mappedID, e.getID(), mappedTargetID);
-          if (hasConditionalViolation)
-            crush.addConditionalViolation(mappedID, e.getID(), mappedTargetID);
 
         }
 
@@ -351,6 +335,8 @@ public class PrunedUStructure extends UStructure {
 
     for (NashCommunicationData data : list) {
 
+      System.out.println("W:" + data.roles.length);
+
       byte[] buffer = new byte[32 + data.roles.length];
       int index = 0;
 
@@ -404,11 +390,6 @@ public class PrunedUStructure extends UStructure {
    * @throws IOException    If there was problems reading from file
    **/
   private void readNashCommunicationDataFromHeader(int nCommunications, List<NashCommunicationData> list) throws IOException {
-
-    if (nCommunications > 100) {
-      System.out.println("HMM... looks pretty big! Let's skip it..");
-      return;
-    }
 
     byte[] buffer = new byte[nCommunications * (32 + nControllersBeforeUStructure)];
     headerRAFile.read(buffer);
@@ -544,6 +525,9 @@ public class PrunedUStructure extends UStructure {
     if (list != null)
       for (TransitionData data : list)
         data.eventID = mapping.get((Integer) data.eventID);
+
+    // Update header file
+    headerFileNeedsToBeWritten = true;
 
   }
 

@@ -348,13 +348,11 @@ public class UStructure extends Automaton {
    * @param protocol      The chosen protocol
    * @param newHeaderFile The header file where the new U-Structure should be stored
    * @param newBodyFile   The body file where the new U-Structure should be stored
-   * @return              The pruned U-Structure  that had the specified protocol applied
+   * @return              The pruned U-Structure that had the specified protocol applied
    **/
   public PrunedUStructure applyProtocol(Set<CommunicationData> protocol, File newHeaderFile, File newBodyFile) {
 
-    System.out.println(getHeaderFile().toPath());
     PrunedUStructure prunedUStructure = duplicateAsPrunedUStructure(null, null);
-    System.out.println(prunedUStructure.getHeaderFile().toPath());
     
       /* Remove all communications that are not part of the protocol */
 

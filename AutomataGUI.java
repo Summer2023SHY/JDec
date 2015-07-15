@@ -109,7 +109,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         boolean unSavedInformation = false;
         for (int i = 0; i < tabbedPane.getTabCount(); i++)
-          if (!tabs.get(i).isSaved())
+          if (!tabs.get(i).hasUnsavedInformation())
             unSavedInformation = true;
         
         if (!unSavedInformation)
@@ -117,20 +117,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
           /* Prompt user to save */
 
-        String buttons[] = { "Yes", "No" };
-        
-        int promptResult = JOptionPane.showOptionDialog(
-          null,
-          "Are you sure you want to exit? Any unsaved information will be lost.",
-          "Unsaved Information",
-          JOptionPane.DEFAULT_OPTION,
-          JOptionPane.WARNING_MESSAGE,
-          null,
-          buttons,
-          buttons[1]
-        );
-        
-        if (promptResult == JOptionPane.YES_OPTION)
+        if (askForConfirmation("Are you sure you want to exit? Any unsaved information will be lost.", "Unsaved Information"))
           System.exit(0);
 
       }
@@ -216,24 +203,17 @@ public class AutomataGUI extends JFrame implements ActionListener {
       /* Check for unsaved information */
 
     AutomatonTab tab = tabs.get(index);
-    if (!tab.isSaved()) {
+    if (tab.hasUnsavedInformation()) {
 
-      // Prompt user to save
-      String buttons[] = { "Yes", "No"};
-      
-      int promptResult = JOptionPane.showOptionDialog(
-        null,
-        "Are you sure you want to close this tab? " + (tab.usingTemporaryFiles() ? "This automaton is only being saved temporarily. To save this automaton permanently, ensure that you have generated the automaton, then select 'Save As...' from the 'File' menu." : "Any un-generated GUI input code will be lost."),
-        "Unsaved Information",
-        JOptionPane.DEFAULT_OPTION,
-        JOptionPane.WARNING_MESSAGE,
-        null,
-        buttons,
-        buttons[1]
-      );
+      // Create message to display in pop-up
+      String message = "Are you sure you want to close this tab? ";
+      if (tab.usingTemporaryFiles())
+        message += "This automaton is only being saved temporarily. To save this automaton\npermanently, ensure that you have generated the automaton, then select 'Save As...' from the 'File' menu.";
+      else
+        message += "Any un-generated GUI input code will be lost.";
 
-      // Abort closing the tab if the user did not click 'Yes'
-      if (promptResult != JOptionPane.YES_OPTION)
+      // Confirm that the user wants to proceed
+      if (!askForConfirmation(message, "Unsaved Information"))
         return;
 
     }
@@ -663,7 +643,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
         // Prompt user to save Automaton to the specified file
         if (saveFile("Choose .hdr File") != null) {
           tab.updateTabTitle();
-          tab.automaton.duplicate(tab.headerFile, tab.bodyFile);
+          if (tab.automaton != null)
+            tab.automaton = tab.automaton.duplicate(tab.headerFile, tab.bodyFile);
         }
           
         break;
@@ -832,6 +813,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
       case "Add Communications":
 
         UStructure uStructure = ((UStructure) tab.automaton);
+
+        // Display warning message, and abort the operation if requested
+        if (uStructure.getPotentialCommunications().size() > 0 || uStructure.getPotentialCommunications().size() > 0)
+          if (!askForConfirmation("This U-Structure appears to already have had communications added. Are you sure you want to proceed? WARNING: This may result in duplicate communications.", "Communications Already Exist"))  
+            break;
 
         fileName = getTemporaryFileName();
         headerFile = new File(fileName + ".hdr");
@@ -1260,6 +1246,26 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
   }
 
+  private boolean askForConfirmation(String message, String title) {
+
+    String buttons[] = { "Yes", "No" };
+    
+    int promptResult = JOptionPane.showOptionDialog(
+      null,
+      message,
+      title,
+      JOptionPane.DEFAULT_OPTION,
+      JOptionPane.WARNING_MESSAGE,
+      null,
+      buttons,
+      buttons[1]
+    );
+
+    return promptResult == 0;
+  
+  }
+
+
   /**
    * Removes the last 4 characters of the string, which is used to trim either '.hdr' or '.bdy' off the end.
    * @param str The string to be trimmed
@@ -1410,6 +1416,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
       c.weighty = 0.0;
       c.gridx   = 1;
       c.gridy   = 0;
+      controllerInput.addChangeListener(new ChangeListener() {
+        @Override public void stateChanged(ChangeEvent e) {
+          setSaved(false);
+        }
+      });
       container.add(controllerInput, c);
 
         /* Event Input */
@@ -1685,10 +1696,35 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       automaton.generateInputForGUI();
 
-      controllerInput.setValue(automaton.getNumberOfControllers());
+      controllerInput.setValue(
+        type == Automaton.Type.AUTOMATON ?
+        automaton.getNumberOfControllers() :
+        ((UStructure) automaton).getNumberOfControllersBeforeUStructure()
+      );
       eventInput.setText(automaton.getEventInput());
       stateInput.setText(automaton.getStateInput());
       transitionInput.setText(automaton.getTransitionInput());
+
+    }
+
+    // Includes information subject to loss due to temporary files
+    // The only un-generated code this won't account for is if there was input code, then it was all cleared
+    public boolean hasUnsavedInformation() {
+
+      // If there is nothing in the input boxes, then obviously there is no unsaved information
+      if (eventInput.getText().equals("") && stateInput.getText().equals("") && transitionInput.getText().equals(""))
+        return false;
+
+      // If there is ungenerated GUI input code, then there is unsaved information
+      if (!saved)
+        return true;
+
+      // Temporary files are considered "unsaved"
+      if (usingTemporaryFiles())
+        return true;
+
+      // Otherwise, there is no unsaved information
+      return false;
 
     }
 
