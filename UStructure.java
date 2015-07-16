@@ -1300,7 +1300,7 @@ public class UStructure extends Automaton {
 
   /**
    * Check to see if this U-Structure contains violations.
-   * @return Whether or not it has one or more violations
+   * @return Whether or not there are one or more violations
    **/
   public boolean hasViolations() {
     return unconditionalViolations.size() > 0 || conditionalViolations.size() > 0;
@@ -1308,7 +1308,7 @@ public class UStructure extends Automaton {
 
   /**
    * Get the list of potential communications.
-   * @return  The potential communications
+   * @return The potential communications
    **/
   public List<CommunicationData> getPotentialCommunications() {
     return potentialCommunications;
@@ -1324,7 +1324,7 @@ public class UStructure extends Automaton {
 
   /**
    * Get the number of controller that were present before the U-Structure was created.
-   * @return  The number of controllers before the U-Structure
+   * @return The number of controllers before the U-Structure
    **/
   public int getNumberOfControllersBeforeUStructure() {
     return nControllersBeforeUStructure;

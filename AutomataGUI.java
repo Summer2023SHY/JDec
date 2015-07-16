@@ -1324,13 +1324,12 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       super.paintComponent(graphics);
 
-      int horizontalPadding = Math.max(0, (getWidth()  - imageSize) / 2);
-      int verticalPadding   = Math.max(0, (getHeight() - imageSize) / 2);
-
         /* Draw blank canvas */
       
       if (image == null) {
 
+        int horizontalPadding = Math.max(0, (getWidth()  - imageSize) / 2);
+        int verticalPadding   = Math.max(0, (getHeight() - imageSize) / 2);
         graphics.setColor(Color.LIGHT_GRAY);
         graphics.fillRect(horizontalPadding, verticalPadding, imageSize, imageSize);
 
@@ -1338,7 +1337,12 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       } else {
 
-        graphics.drawImage(image, horizontalPadding, verticalPadding, getWidth(), getHeight(), null);
+        double ratio = Math.max((double)image.getWidth()/(double)getWidth(), (double)image.getHeight()/(double)getHeight());
+        int width = (int) (image.getWidth() / ratio);
+        int height = (int) (image.getHeight()/ratio);
+        int horizontalPadding = Math.max(0, (getWidth()  - width)  / 2);
+        int verticalPadding   = Math.max(0, (getHeight() - height) / 2);
+        graphics.drawImage(image, horizontalPadding, verticalPadding, width, height, null);
 
       }
 
