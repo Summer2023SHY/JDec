@@ -106,6 +106,18 @@ public class UStructure extends Automaton {
     
 	}
 
+  @Override protected void initializeLists() {
+
+    super.initializeLists();
+
+    unconditionalViolations = new ArrayList<TransitionData>();
+    conditionalViolations = new ArrayList<TransitionData>();
+    potentialCommunications = new ArrayList<CommunicationData>();
+    nonPotentialCommunications = new ArrayList<TransitionData>();
+    nashCommunications = new ArrayList<NashCommunicationData>();
+  
+  }
+
     /* AUTOMATA OPERATIONS */
 
   @Override public UStructure accessible(File newHeaderFile, File newBodyFile) {
@@ -358,14 +370,12 @@ public class UStructure extends Automaton {
     
       /* Remove all communications that are not part of the protocol */
 
-    if (nonPotentialCommunications != null)
-      for (TransitionData data : nonPotentialCommunications)
-        prunedUStructure.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
+    for (TransitionData data : nonPotentialCommunications)
+      prunedUStructure.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
 
-    if (potentialCommunications != null)
-      for (CommunicationData data : potentialCommunications)
-        if (!protocol.contains(data))
-          prunedUStructure.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
+    for (CommunicationData data : potentialCommunications)
+      if (!protocol.contains(data))
+        prunedUStructure.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
 
       /* Prune (which removes more transitions) */
 
@@ -475,25 +485,21 @@ public class UStructure extends Automaton {
 
     UStructure uStructure = (UStructure) automaton;
 
-    if (unconditionalViolations != null)
-      for (TransitionData data : unconditionalViolations)
-        if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
-          uStructure.addUnconditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
+    for (TransitionData data : unconditionalViolations)
+      if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
+        uStructure.addUnconditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
     
-    if (conditionalViolations != null)  
-      for (TransitionData data : conditionalViolations)
-        if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
-          uStructure.addConditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
+    for (TransitionData data : conditionalViolations)
+      if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
+        uStructure.addConditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
 
-    if (potentialCommunications != null)  
-      for (CommunicationData data : potentialCommunications)
-        if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
-          uStructure.addPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID, (CommunicationRole[]) data.roles.clone());
+    for (CommunicationData data : potentialCommunications)
+      if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
+        uStructure.addPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID, (CommunicationRole[]) data.roles.clone());
 
-    if (nonPotentialCommunications != null)  
-      for (TransitionData data : nonPotentialCommunications)
-        if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
-          uStructure.addNonPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID);
+    for (TransitionData data : nonPotentialCommunications)
+      if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
+        uStructure.addNonPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID);
 
   }
 
@@ -757,12 +763,9 @@ public class UStructure extends Automaton {
     copy = copy.applyProtocol(protocol, null, null);
 
     // If it must also solve the control problem, but there are still violations, then return false
-    if (mustAlsoSolveControlProblem) {
-      if (copy.conditionalViolations != null && copy.conditionalViolations.size() > 0)
+    if (mustAlsoSolveControlProblem)
+      if (copy.conditionalViolations.size() > 0 || copy.unconditionalViolations.size() > 0)
         return false;
-      if (copy.unconditionalViolations != null && copy.unconditionalViolations.size() > 0)
-        return false;
-    }
 
     // If there was a change in the number of communications after pruning, then it is clearly not feasible
     if (copy.potentialCommunications.size() != protocol.size())
@@ -911,41 +914,37 @@ public class UStructure extends Automaton {
 
   @Override protected void addAdditionalEdgeProperties(Map<String, String> map) {
 
-    if (unconditionalViolations != null)
-      for (TransitionData t : unconditionalViolations) {
-        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-        if (map.containsKey(edge))
-          map.put(edge, map.get(edge) + ",color=red");
-        else
-          map.put(edge, ",color=red"); 
-      }
+    for (TransitionData t : unconditionalViolations) {
+      String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
+      if (map.containsKey(edge))
+        map.put(edge, map.get(edge) + ",color=red");
+      else
+        map.put(edge, ",color=red"); 
+    }
 
-    if (conditionalViolations != null)
-      for (TransitionData t : conditionalViolations) {
-        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-        if (map.containsKey(edge))
-          map.put(edge, map.get(edge) + ",color=green3");
-        else
-          map.put(edge, ",color=green3"); 
-      }
+    for (TransitionData t : conditionalViolations) {
+      String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
+      if (map.containsKey(edge))
+        map.put(edge, map.get(edge) + ",color=green3");
+      else
+        map.put(edge, ",color=green3"); 
+    }
 
-    if (potentialCommunications != null)
-      for (TransitionData t : potentialCommunications) {
-        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-        if (map.containsKey(edge))
-          map.put(edge, map.get(edge) + ",color=blue,fontcolor=blue");
-        else
-          map.put(edge, ",color=blue,fontcolor=blue"); 
-      }
+    for (TransitionData t : potentialCommunications) {
+      String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
+      if (map.containsKey(edge))
+        map.put(edge, map.get(edge) + ",color=blue,fontcolor=blue");
+      else
+        map.put(edge, ",color=blue,fontcolor=blue"); 
+    }
 
-    if (nashCommunications != null)
-      for (TransitionData t : nashCommunications) {
-        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-        if (map.containsKey(edge))
-          map.put(edge, map.get(edge) + ",color=blue,fontcolor=blue");
-        else
-          map.put(edge, ",color=blue,fontcolor=blue"); 
-      }
+    for (TransitionData t : nashCommunications) {
+      String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
+      if (map.containsKey(edge))
+        map.put(edge, map.get(edge) + ",color=blue,fontcolor=blue");
+      else
+        map.put(edge, ",color=blue,fontcolor=blue"); 
+    }
 
   }
 
@@ -955,37 +954,31 @@ public class UStructure extends Automaton {
 
     String str = "";
 
-    if (unconditionalViolations != null && unconditionalViolations.contains(transitionData))
+    if (unconditionalViolations.contains(transitionData))
       str += ",UNCONDITIONAL_VIOLATION";
     
-    if (conditionalViolations != null && conditionalViolations.contains(transitionData))
+    if (conditionalViolations.contains(transitionData))
       str += ",CONDITIONAL_VIOLATION";
     
     // Search entire list since there may be more than one potential communication
-    if (potentialCommunications != null) {
-      String identifier = (type == Type.U_STRUCTURE ? ",POTENTIAL_COMMUNICATION-" : ",COMMUNICATION-");
-      for (CommunicationData communicationData : potentialCommunications) {
-        if (transitionData.equals(communicationData)) {
-          str += identifier;
-          for (CommunicationRole role : communicationData.roles)
-            str += role.getCharacter();
-        }
+    String identifier = (type == Type.U_STRUCTURE ? ",POTENTIAL_COMMUNICATION-" : ",COMMUNICATION-");
+    for (CommunicationData communicationData : potentialCommunications)
+      if (transitionData.equals(communicationData)) {
+        str += identifier;
+        for (CommunicationRole role : communicationData.roles)
+          str += role.getCharacter();
       }
-    }
 
-    if (nonPotentialCommunications != null && nonPotentialCommunications.contains(transitionData))
+    if (nonPotentialCommunications.contains(transitionData))
       str += ",COMMUNICATION";
 
     // Search entire list since there may be more than one nash communication
-    if (nashCommunications != null) {
-      for (NashCommunicationData communicationData : nashCommunications) {
-        if (transitionData.equals(communicationData)) {
-          str += ",NASH_COMMUNICATION";
-          for (CommunicationRole role : communicationData.roles)
-            str += role.getCharacter();
-        }
+    for (NashCommunicationData communicationData : nashCommunications)
+      if (transitionData.equals(communicationData)) {
+        str += ",NASH_COMMUNICATION";
+        for (CommunicationRole role : communicationData.roles)
+          str += role.getCharacter();
       }
-    }
 
     return str;
 
@@ -1011,12 +1004,12 @@ public class UStructure extends Automaton {
       /* Write numbers to indicate how many special transitions are in the file */
 
     byte[] buffer = new byte[24];
-    ByteManipulator.writeLongAsBytes(buffer, 0,  nControllersBeforeUStructure, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 4,  (unconditionalViolations    == null ? 0 : unconditionalViolations.size()), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 8,  (conditionalViolations      == null ? 0 : conditionalViolations.size()), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 12, (potentialCommunications    == null ? 0 : potentialCommunications.size()), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 16, (nonPotentialCommunications == null ? 0 : nonPotentialCommunications.size()), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 20, (nashCommunications         == null ? 0 : nashCommunications.size()), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 0,  nControllersBeforeUStructure,      4);
+    ByteManipulator.writeLongAsBytes(buffer, 4,  unconditionalViolations.size(),    4);
+    ByteManipulator.writeLongAsBytes(buffer, 8,  conditionalViolations.size(),      4);
+    ByteManipulator.writeLongAsBytes(buffer, 12, potentialCommunications.size(),    4);
+    ByteManipulator.writeLongAsBytes(buffer, 16, nonPotentialCommunications.size(), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 20, nashCommunications.size(),         4);
     headerRAFile.write(buffer);
 
       /* Write special transitions to the .hdr file */
@@ -1037,9 +1030,6 @@ public class UStructure extends Automaton {
    * @throws IOException  If there was problems writing to file
    **/
   private void writeCommunicationDataToHeader(List<CommunicationData> list) throws IOException {
-
-    if (list == null)
-      return;
 
     for (CommunicationData data : list) {
 
@@ -1073,12 +1063,8 @@ public class UStructure extends Automaton {
    **/
   private void writeNashCommunicationDataToHeader(List<NashCommunicationData> list) throws IOException {
 
-    if (list == null)
-      return;
 
     for (NashCommunicationData data : list) {
-
-      System.out.println("W:" + data.roles.length);
 
       byte[] buffer = new byte[32 + data.roles.length];
       int index = 0;
@@ -1230,17 +1216,14 @@ public class UStructure extends Automaton {
    **/
   @Override protected void removeTransitionData(TransitionData data) {
     
-    if (unconditionalViolations != null)
-      unconditionalViolations.remove(data);
+    unconditionalViolations.remove(data);
 
-    if (conditionalViolations != null)
-      conditionalViolations.remove(data);
+    conditionalViolations.remove(data);
     
-    if (potentialCommunications != null)
-      while (potentialCommunications.remove(data)); // Multiple potential communications could exist for the same transition (more than one potential sender)
+    // Multiple potential communications could exist for the same transition (this happens when there are more than one potential sender)
+    while (potentialCommunications.remove(data));
     
-    if (nonPotentialCommunications != null)
-      nonPotentialCommunications.remove(data);
+    nonPotentialCommunications.remove(data);
 
   }
 
@@ -1252,12 +1235,7 @@ public class UStructure extends Automaton {
    **/
   public void addUnconditionalViolation(long initialStateID, int eventID, long targetStateID) {
 
-    if (unconditionalViolations == null)
-      unconditionalViolations = new ArrayList<TransitionData>();
-
     unconditionalViolations.add(new TransitionData(initialStateID, eventID, targetStateID));
-
-    // Update header file
     headerFileNeedsToBeWritten = true;
 
   }
@@ -1270,12 +1248,7 @@ public class UStructure extends Automaton {
    **/
   public void addConditionalViolation(long initialStateID, int eventID, long targetStateID) {
 
-    if (conditionalViolations == null)
-      conditionalViolations = new ArrayList<TransitionData>();
-
     conditionalViolations.add(new TransitionData(initialStateID, eventID, targetStateID));
-
-    // Update header file
     headerFileNeedsToBeWritten = true;
 
   }
@@ -1289,12 +1262,7 @@ public class UStructure extends Automaton {
    **/
   public void addPotentialCommunication(long initialStateID, int eventID, long targetStateID, CommunicationRole[] communicationRoles) {
 
-    if (potentialCommunications == null)
-      potentialCommunications = new ArrayList<CommunicationData>();
-
     potentialCommunications.add(new CommunicationData(initialStateID, eventID, targetStateID, communicationRoles));
-
-    // Update header file
     headerFileNeedsToBeWritten = true;
 
   }
@@ -1307,12 +1275,7 @@ public class UStructure extends Automaton {
    **/
   public void addNonPotentialCommunication(long initialStateID, int eventID, long targetStateID) {
 
-    if (nonPotentialCommunications == null)
-      nonPotentialCommunications = new ArrayList<TransitionData>();
-
     nonPotentialCommunications.add(new TransitionData(initialStateID, eventID, targetStateID));
-
-    // Update header file
     headerFileNeedsToBeWritten = true;
 
   }
@@ -1328,12 +1291,7 @@ public class UStructure extends Automaton {
    **/
   public void addNashCommunication(long initialStateID, int eventID, long targetStateID, CommunicationRole[] roles, int cost, double probability) {
 
-    if (nashCommunications == null)
-      nashCommunications = new ArrayList<NashCommunicationData>();
-
     nashCommunications.add(new NashCommunicationData(initialStateID, eventID, targetStateID, roles, cost, probability));
-
-    // Update header file
     headerFileNeedsToBeWritten = true;
 
   }

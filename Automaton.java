@@ -296,6 +296,12 @@ public class Automaton {
    **/
   public Automaton(File headerFile, File bodyFile, int eventCapacity, long stateCapacity, int transitionCapacity, int labelLength, int nControllers, boolean clearFiles) {
 
+      /* Initialize lists, so that there are no NullPointerExceptions */
+
+    initializeLists();
+
+      /* Store variables */
+
     this.headerFile     = (headerFile == null ? getTemporaryFile() : headerFile);
     this.bodyFile       = (bodyFile   == null ? getTemporaryFile() : bodyFile);
     this.headerFileName = this.headerFile.getAbsolutePath();
@@ -325,6 +331,17 @@ public class Automaton {
     type = Type.getType(this.getClass());
     headerFileNeedsToBeWritten = true;
 
+  }
+
+  /**
+   * Used to initialize all lists in order to prevent the possibility of NullPointerExceptions.
+   * NOTE: This method must be called at the beginning of the constuctor of Automaton. This method is intended to
+   * be overridden by sub-classes, however, any sub-classes of Automaton do not need to explicitly call it.
+   **/
+  protected void initializeLists() {
+
+    badTransitions = new ArrayList<TransitionData>();
+  
   }
 
     /** AUTOMATA OPERATIONS **/
@@ -975,7 +992,7 @@ public class Automaton {
         String combinedStateLabel = getStateExcludingTransitions(t1.getTargetStateID()).getLabel();
 
         // If this is the system has a bad transition, then it is an unconditional violation by default until we've found a controller that prevents it
-        boolean isBadTransition = (badTransitions != null && badTransitions.contains(new TransitionData(listOfStates.get(0).getID(), e.getID(), t1.getTargetStateID())));
+        boolean isBadTransition = badTransitions.contains(new TransitionData(listOfStates.get(0).getID(), e.getID(), t1.getTargetStateID()));
         boolean isUnconditionalViolation = isBadTransition;
 
         // A conditional violation can only occur when an event is controllable by at least 2 controllers, and the system must have a good transition
@@ -1008,12 +1025,12 @@ public class Automaton {
 
             // Check to see if this controller can prevent an unconditional violation
             if (isUnconditionalViolation && e.isControllable()[i])
-              if (badTransitions != null && badTransitions.contains(new TransitionData(listOfStates.get(i + 1).getID(), e.getID(), targetID)))
+              if (badTransitions.contains(new TransitionData(listOfStates.get(i + 1).getID(), e.getID(), targetID)))
                 isUnconditionalViolation = false;
 
             // Check to see if this controller can prevent a conditional violation
             if (isConditionalViolation && e.isControllable()[i])
-              if (badTransitions == null || !badTransitions.contains(new TransitionData(listOfStates.get(i + 1).getID(), e.getID(), targetID)))
+              if (!badTransitions.contains(new TransitionData(listOfStates.get(i + 1).getID(), e.getID(), targetID)))
                 isConditionalViolation = false;
 
           // Unobservable events by this controller
@@ -1143,10 +1160,9 @@ public class Automaton {
    **/
   protected <T extends Automaton> void copyOverSpecialTransitions(T automaton) {
 
-    if (badTransitions != null)
-      for (TransitionData data : badTransitions)
-        if (automaton.stateExists(data.initialStateID) && automaton.stateExists(data.targetStateID))
-          automaton.markTransitionAsBad(data.initialStateID, data.eventID, data.targetStateID);
+    for (TransitionData data : badTransitions)
+      if (automaton.stateExists(data.initialStateID) && automaton.stateExists(data.targetStateID))
+        automaton.markTransitionAsBad(data.initialStateID, data.eventID, data.targetStateID);
 
   }
 
@@ -1266,9 +1282,6 @@ public class Automaton {
    * @throws IOException  If there was problems reading from file
    **/
   protected final void renumberStatesInTransitionData(RandomAccessFile mappingRAFile, List<? extends TransitionData> list) throws IOException {
-
-    if (list == null)
-      return;
 
     byte[] buffer = new byte[nBytesPerStateID];
 
@@ -1500,15 +1513,14 @@ public class Automaton {
    **/
   protected void addAdditionalEdgeProperties(Map<String, String> map) {
 
-    if (badTransitions != null)
-      for (TransitionData t : badTransitions) {
-        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-        if (map.containsKey(edge))
-          map.put(edge, map.get(edge) + ",style=dotted");
-        else
-          map.put(edge, ",style=dotted"); 
-      }
-
+    for (TransitionData t : badTransitions) {
+      String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
+      if (map.containsKey(edge))
+        map.put(edge, map.get(edge) + ",style=dotted");
+      else
+        map.put(edge, ",style=dotted"); 
+    }
+    
   }
 
   /**
@@ -1648,7 +1660,7 @@ public class Automaton {
    * NOTE: This method is intended to be overridden when subclassing **/
   protected String getInputCodeForSpecialTransitions(TransitionData data) {
 
-    return (badTransitions != null && badTransitions.contains(data)) ? ",BAD" : "";
+    return (badTransitions.contains(data)) ? ",BAD" : "";
 
   }
 
@@ -1909,7 +1921,7 @@ public class Automaton {
       /* Write a number which indicates how many special transitions are in the file */
 
     byte[] buffer = new byte[4];
-    ByteManipulator.writeLongAsBytes(buffer, 0, (badTransitions == null ? 0 : badTransitions.size()), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 0, badTransitions.size(), 4);
     headerRAFile.write(buffer);
 
       /* Write special transitions to the .hdr file */
@@ -1924,11 +1936,6 @@ public class Automaton {
    * @throws IOException  If there were any problems writing to file
    **/
   protected void writeTransitionDataToHeader(List<TransitionData> list) throws IOException {
-
-      /* Ensure that the list actually exists before continuing */
-
-    if (list == null)
-      return;
 
       /* Setup */
 
@@ -2046,10 +2053,8 @@ public class Automaton {
 
       /* Read in special transitions from the .hdr file */
     
-    if (nBadTransitions > 0) {
-      badTransitions = new ArrayList<TransitionData>();
+    if (nBadTransitions > 0)
       readTransitionDataFromHeader(nBadTransitions, badTransitions);
-    }
 
   }
 
@@ -2440,13 +2445,13 @@ public class Automaton {
   }
 
   /**
-   * Remove a special transition, given its transition data.
+   * Remove any special transition information attached to a particular transition.
+   * NOTE: This method is intended to be overridden.
    * @param data  The transition data associated with the special transitions to be removed
    **/
   protected void removeTransitionData(TransitionData data) {
 
-    if (badTransitions != null)
-      badTransitions.remove(data);
+    badTransitions.remove(data);
 
   }
 
@@ -2778,9 +2783,6 @@ public class Automaton {
    **/
   public void markTransitionAsBad(long initialStateID, int eventID, long targetStateID) {
 
-    if (badTransitions == null)
-      badTransitions = new ArrayList<TransitionData>();
-
     badTransitions.add(new TransitionData(initialStateID, eventID, targetStateID));
 
     // Update header file
@@ -2818,9 +2820,6 @@ public class Automaton {
    * @return                 Whether or not the transition is bad
    **/
   public boolean isBadTransition(long initialStateID, int eventID, long targetStateID) {
-
-    if (badTransitions == null)
-      return false;
     
     TransitionData transitionData = new TransitionData(initialStateID, eventID, targetStateID);
 

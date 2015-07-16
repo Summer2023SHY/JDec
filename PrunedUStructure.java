@@ -335,8 +335,6 @@ public class PrunedUStructure extends UStructure {
       if (e.getID() == id) {
         
         iterator.remove();
-
-        // Indicate that the header file needs to be updated
         headerFileNeedsToBeWritten = true;
 
         return true;
@@ -356,11 +354,9 @@ public class PrunedUStructure extends UStructure {
    **/
   private void renumberEventsInTransitionData(Map<Integer, Integer> mapping, List<? extends TransitionData> list) {
 
-    if (list != null)
-      for (TransitionData data : list)
-        data.eventID = mapping.get((Integer) data.eventID);
+    for (TransitionData data : list)
+      data.eventID = mapping.get((Integer) data.eventID);
 
-    // Update header file
     headerFileNeedsToBeWritten = true;
 
   }
