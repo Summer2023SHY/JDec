@@ -109,7 +109,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         boolean unSavedInformation = false;
         for (int i = 0; i < tabbedPane.getTabCount(); i++)
-          if (!tabs.get(i).hasUnsavedInformation())
+          if (tabs.get(i).hasUnsavedInformation())
             unSavedInformation = true;
         
         if (!unSavedInformation)

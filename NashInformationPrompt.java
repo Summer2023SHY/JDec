@@ -91,7 +91,15 @@ public class NashInformationPrompt extends JFrame {
         return component;
       }
 
+      // Make it so that the first column cannot be edited
+      @Override public boolean isCellEditable(int row, int column) {
+        return column != 0;
+      }
+
     };
+
+    table.setCellSelectionEnabled(true);
+    table.getTableHeader().setReorderingAllowed(false);
 
     JScrollPane scrollPane = new JScrollPane(table);
     scrollPane.setMaximumSize(new Dimension(500, 500));

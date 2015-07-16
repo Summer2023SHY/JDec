@@ -2214,7 +2214,7 @@ public class Automaton {
           System.err.println("ERROR: Could not create empty temporary file.");
           e.printStackTrace();
         }
-        
+        // System.out.println("DEBUG: " + file.getAbsolutePath());        
         return file;
       }
 
