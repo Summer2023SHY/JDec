@@ -3,16 +3,15 @@ import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
 
 public class NashInformationPrompt extends JFrame {
 
-    /** PRIVATE INSTANCE VARIABLES **/
+    /* INSTANCE VARIABLES */
 
   private AutomataGUI gui;
   private UStructure uStructure;
 
-    /** CONSTRUCTOR **/
+    /* CONSTRUCTOR */
 
   /**
    * Construct a NashInformationPrompt object.
@@ -32,7 +31,7 @@ public class NashInformationPrompt extends JFrame {
 
   }
 
-    /** METHODS **/
+    /* METHODS */
 
   /**
    * Add all of the components to the window.
@@ -54,34 +53,30 @@ public class NashInformationPrompt extends JFrame {
     final int N_COLUMNS = 3;
     java.util.List<CommunicationData> potentialCommunications = uStructure.getPotentialCommunications();
     java.util.List<NashCommunicationData> nashCommunications = uStructure.getNashCommunications();
-    int nPotentialCommunications = (potentialCommunications == null ? 0 : potentialCommunications.size()); 
-    int nNashCommunications = (nashCommunications == null ? 0 : nashCommunications.size());
-    Object[][] tableData = new Object[nPotentialCommunications + nNashCommunications][N_COLUMNS];
+    Object[][] tableData = new Object[potentialCommunications.size() + nashCommunications.size()][N_COLUMNS];
     int index = 0;
 
-    if (potentialCommunications != null)
-      for (CommunicationData data : potentialCommunications) {
+    for (CommunicationData data : potentialCommunications) {
 
-        Object[] row = new Object[N_COLUMNS];
-        row[0] = data.toString(uStructure);
-        row[1] = "1";
-        row[2] = "0.1"; // TO-DO: Calculate default value
+      Object[] row = new Object[N_COLUMNS];
+      row[0] = data.toString(uStructure);
+      row[1] = "1";
+      row[2] = "0.1"; // TO-DO: Calculate default value
 
-        tableData[index++] = row;
+      tableData[index++] = row;
 
-      }
+    }
 
-    if (nashCommunications != null)
-      for (NashCommunicationData data : nashCommunications) {
+    for (NashCommunicationData data : nashCommunications) {
 
-        Object[] row = new Object[N_COLUMNS];
-        row[0] = data.toString(uStructure);
-        row[1] = data.cost;
-        row[2] = data.probability;
+      Object[] row = new Object[N_COLUMNS];
+      row[0] = data.toString(uStructure);
+      row[1] = data.cost;
+      row[2] = data.probability;
 
-        tableData[index++] = row;
+      tableData[index++] = row;
 
-      }
+    }
 
     String[] columnNames = new String[] {"Communication", "Cost", "Probability"};
 
