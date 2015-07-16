@@ -1299,6 +1299,14 @@ public class UStructure extends Automaton {
     /* ACCESSOR METHODS */
 
   /**
+   * Check to see if this U-Structure contains violations.
+   * @return Whether or not it has one or more violations
+   **/
+  public boolean hasViolations() {
+    return unconditionalViolations.size() > 0 || conditionalViolations.size() > 0;
+  }
+
+  /**
    * Get the list of potential communications.
    * @return  The potential communications
    **/

@@ -70,17 +70,8 @@ public class CommunicationData extends TransitionData {
     /** OVERRIDDEN METHODS **/
 
   @Override public boolean equals(Object obj) {
-
-    // This method won't work if the object is an instance of TransitionData
-    // if (obj.getClass().equals(TransitionData.class))
-    //   super.equals(obj);
-
-    CommunicationData other = (CommunicationData) obj;
-
-    return initialStateID == other.initialStateID
-      && eventID == other.eventID
-      && targetStateID == other.targetStateID
-      && Arrays.deepEquals(roles, other.roles);
+    
+    return super.equals(obj) && Arrays.deepEquals(roles, ((CommunicationData) obj).roles);
 
   }
 

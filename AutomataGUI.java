@@ -798,6 +798,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         PrunedUStructure prunedUStructure = ((PrunedUStructure) tab.automaton);
 
+        if (prunedUStructure.hasViolations()) {
+          JOptionPane.showMessageDialog(null, "The chosen protocol evidently did not satisfy the control problem\nsince the pruned U-Structure contained one or more violations.", "Crush Operation Aborted", JOptionPane.ERROR_MESSAGE);
+          break;
+        }
+
         fileName = getTemporaryFileName();
         headerFile = new File(fileName + ".hdr");
         bodyFile = new File(fileName + ".bdy");
