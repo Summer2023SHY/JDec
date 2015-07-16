@@ -30,7 +30,7 @@ public class FeasibleProtocolOutput extends JFrame {
   /**
    * Construct a FeasibleProtocolOutput object.
    * @param gui               A reference to the GUI which will be recieving requests for new tabs
-   * @param uStructure        The uStructure that is being worked with
+   * @param uStructure        The U-Structure that is being worked with
    * @param feasibleProtocols The list of protocols that are feasible
    * @param title             The title of the popup box
    * @param message           The text for the label to be displayed at the top of the screen

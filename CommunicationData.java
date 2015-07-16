@@ -5,15 +5,17 @@
  * @author Micah Stairs
  *
  * TABLE OF CONTENTS:
- *  -Public Instance Variable
+ *  -Instance Variable
  *  -Constructor
  *  -Accessor Method
- *  -Overridden Method
+ *  -Overridden Methods
  **/
+
+import java.util.*;
 
 public class CommunicationData extends TransitionData {
 
-    /** PUBLIC INSTANCE VARIABLE **/
+    /** INSTANCE VARIABLE **/
 
   /** Holds the role for each of the controllers (sender, reciever, or none) */
   public CommunicationRole[] roles;
@@ -50,7 +52,7 @@ public class CommunicationData extends TransitionData {
     /** ACCESSOR METHOD **/
 
   /**
-   * Return the index of the sending controller.
+   * Return the index (0-based) of the sending controller.
    * NOTE:  There is only ever one sender. In cases where more than one sender
    *        is required, they can be split into multiple communications.
    * @return the index of the sender, or -1 if there is no sender
@@ -65,13 +67,23 @@ public class CommunicationData extends TransitionData {
 
   }
 
-    /** OVERRIDDEN METHOD **/
+    /** OVERRIDDEN METHODS **/
 
-  /**
-   * Given the source automaton, provide even more information when represented as a string.
-   * @param automaton The automaton where this communication data came from
-   * @return string representation
-   **/
+  @Override public boolean equals(Object obj) {
+
+    // This method won't work if the object is an instance of TransitionData
+    // if (obj.getClass().equals(TransitionData.class))
+    //   super.equals(obj);
+
+    CommunicationData other = (CommunicationData) obj;
+
+    return initialStateID == other.initialStateID
+      && eventID == other.eventID
+      && targetStateID == other.targetStateID
+      && Arrays.deepEquals(roles, other.roles);
+
+  }
+
   @Override public String toString(Automaton automaton) {
 
     String str = " (";

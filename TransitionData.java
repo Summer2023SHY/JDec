@@ -43,11 +43,6 @@ public class TransitionData {
 
     /** OVERRIDDEN METHODS **/
 
-  /**
-   * Check for equality by comparing properties.
-   * @param obj The object to compare this one to
-   * @return whether or not the transitions are equal
-   **/
   @Override public boolean equals(Object obj) {
 
     TransitionData other = (TransitionData) obj;
@@ -62,10 +57,6 @@ public class TransitionData {
     return ((Long) (initialStateID)).hashCode();
   }
 
-  /**
-   * Turn this object into a more meaningful representation as a string.
-   * @return string representation
-   **/
   @Override public String toString() {
     return String.format("(%d,%d,%d)", initialStateID, eventID, targetStateID);
   }

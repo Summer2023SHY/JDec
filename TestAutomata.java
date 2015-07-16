@@ -724,7 +724,7 @@ public class TestAutomata {
     printTestOutput("FEASIBLE PROTOCOL OPERATIONS: ", 2);
 
     printTestOutput("Generate all feasible protocols in the automaton generated above...", 3);
-    List<Set<CommunicationData>> feasibleProtocols = addCommunications.generateAllFeasibleProtocols(addCommunications.getPotentialCommunications());
+    List<Set<CommunicationData>> feasibleProtocols = addCommunications.generateAllFeasibleProtocols(addCommunications.getPotentialCommunications(), false);
     printTestCase("Ensuring that there are 8 feasible protocols", new TestResult(feasibleProtocols.size(), 8), counter);
 
     List<String> protocolsToString = protocolsToString(addCommunications, feasibleProtocols);

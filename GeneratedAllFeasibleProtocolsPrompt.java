@@ -71,7 +71,7 @@ public class GeneratedAllFeasibleProtocolsPrompt extends JFrame {
             }
 
             // Print feasible protocols
-            java.util.List<Set<CommunicationData>> feasibleProtocols = uStructure.generateAllFeasibleProtocols(chosenCommunications);
+            java.util.List<Set<CommunicationData>> feasibleProtocols = uStructure.generateAllFeasibleProtocols(chosenCommunications, false);
 
             if (feasibleProtocols.size() == 0) {
 

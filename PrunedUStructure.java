@@ -4,13 +4,9 @@
  * @author Micah Stairs
  *
  * TABLE OF CONTENTS:
- *  -Instance Variables
  *  -Constructors
  *  -Automata Operations
  *  -Automata Operations Helper Methods
- *  -GUI Input Code Generation
- *  -Image Generation
- *  -Working with Files
  *  -Mutator Methods
  **/
 
@@ -18,10 +14,6 @@ import java.io.*;
 import java.util.*;
 
 public class PrunedUStructure extends UStructure {
-
-    /* INSTANCE VARIABLES */
-
-  private List<NashCommunicationData> nashCommunications;
 
     /* CONSTRUCTORS */
 
@@ -264,164 +256,6 @@ public class PrunedUStructure extends UStructure {
 
   }
 
-      /* IMAGE GENERATION */
-
-  @Override protected void addAdditionalEdgeProperties(Map<String, String> map) {
-
-    super.addAdditionalEdgeProperties(map);
-
-    if (nashCommunications != null)
-      for (TransitionData t : nashCommunications) {
-        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-        if (map.containsKey(edge))
-          map.put(edge, map.get(edge) + ",color=blue,fontcolor=blue");
-        else
-          map.put(edge, ",color=blue,fontcolor=blue"); 
-      }
-
-  }
-
-    /* GUI INPUT CODE GENERATION */
-
-  @Override protected String getInputCodeForSpecialTransitions(TransitionData transitionData) {
-
-    String str = "";
-
-    // Search entire list since there may be more than one nash communication
-    if (nashCommunications != null) {
-      for (NashCommunicationData communicationData : nashCommunications) {
-        if (transitionData.equals(communicationData)) {
-          str += ",NASH_COMMUNICATION";
-          for (CommunicationRole role : communicationData.roles)
-            str += role.getCharacter();
-        }
-      }
-    }
-
-    return super.getInputCodeForSpecialTransitions(transitionData) + str;
-
-  }
-
-    /* WORKING WITH FILES */
-
-  @Override protected void writeSpecialTransitionsToHeader() throws IOException {
-
-    super.writeSpecialTransitionsToHeader();
-
-      /* Write a number to indicate how many nash communications are in the file */
-
-    byte[] buffer = new byte[4];
-
-    ByteManipulator.writeLongAsBytes(buffer, 0, (nashCommunications == null ? 0 : nashCommunications.size()), 4);
-    headerRAFile.write(buffer);
-
-      /* Write nash communications to the .hdr file */
-
-    writeNashCommunicationDataToHeader(nashCommunications);
-
-  }
-
-  /**
-   * A helper method to write a list of communications to the header file.
-   * NOTE: This could be made more efficient by using one buffer for all communication data. This
-   * is possible because each piece of data in the list is supposed to have the same number of roles.
-   * @param list          The list of nash communication data
-   * @throws IOException  If there was problems writing to file
-   **/
-  private void writeNashCommunicationDataToHeader(List<NashCommunicationData> list) throws IOException {
-
-    if (list == null)
-      return;
-
-    for (NashCommunicationData data : list) {
-
-      System.out.println("W:" + data.roles.length);
-
-      byte[] buffer = new byte[32 + data.roles.length];
-      int index = 0;
-
-      ByteManipulator.writeLongAsBytes(buffer, index, data.initialStateID, 8);
-      index += 8;
-
-      ByteManipulator.writeLongAsBytes(buffer, index, data.eventID, 4);
-      index += 4;
-
-      ByteManipulator.writeLongAsBytes(buffer, index, data.targetStateID, 8);
-      index += 8;
-
-      ByteManipulator.writeLongAsBytes(buffer, index, data.cost, 4);
-      index += 4;
-
-      ByteManipulator.writeLongAsBytes(buffer, index, Double.doubleToLongBits(data.probability), 8);
-      index += 8;
-
-      for (CommunicationRole role : data.roles)
-        buffer[index++] = role.getNumericValue();
-      
-      headerRAFile.write(buffer);
-
-    }
-
-  }
-
-  @Override protected void readSpecialTransitionsFromHeader() throws IOException {
-
-    super.readSpecialTransitionsFromHeader();
-
-      /* Read the number which indicates how many nash communications are in the file */
-
-    byte[] buffer = new byte[4];
-    headerRAFile.read(buffer);
-    int nNashCommunications = (int) ByteManipulator.readBytesAsLong(buffer, 0, 4);
-
-      /* Read in nash communications from the .hdr file */
-
-    if (nNashCommunications > 0) {
-      nashCommunications = new ArrayList<NashCommunicationData>();
-      readNashCommunicationDataFromHeader(nNashCommunications, nashCommunications);
-    }
-
-  }
-
-  /**
-   * A helper method to read a list of nash communication transitions from the header file.
-   * @param nCommunications The number of communications that need to be read
-   * @param list            The list of nash communication data
-   * @throws IOException    If there was problems reading from file
-   **/
-  private void readNashCommunicationDataFromHeader(int nCommunications, List<NashCommunicationData> list) throws IOException {
-
-    byte[] buffer = new byte[nCommunications * (32 + nControllersBeforeUStructure)];
-    headerRAFile.read(buffer);
-    int index = 0;
-
-    for (int i = 0; i < nCommunications; i++) {
-
-      long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-      index += 8;
-      
-      int eventID = (int) ByteManipulator.readBytesAsLong(buffer, index, 4);
-      index += 4;
-      
-      long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-      index += 8;
-
-      int cost = (int) ByteManipulator.readBytesAsLong(buffer, index, 4);
-      index += 4;
-
-      double probability = Double.longBitsToDouble(ByteManipulator.readBytesAsLong(buffer, index, 8));
-      index += 8;
-
-      CommunicationRole[] roles = new CommunicationRole[nControllersBeforeUStructure];
-      for (int j = 0; j < roles.length; j++)
-        roles[j] = CommunicationRole.getRole(buffer[index++]);
-      
-      list.add(new NashCommunicationData(initialStateID, eventID, targetStateID, roles, cost, probability));
-    
-    }
-
-  }
-
     /* MUTATOR METHODS */
 
   /**
@@ -525,27 +359,6 @@ public class PrunedUStructure extends UStructure {
     if (list != null)
       for (TransitionData data : list)
         data.eventID = mapping.get((Integer) data.eventID);
-
-    // Update header file
-    headerFileNeedsToBeWritten = true;
-
-  }
-
-  /**
-   * Add a nash communication.
-   * @param initialStateID  The initial state
-   * @param eventID         The event triggering the transition
-   * @param targetStateID   The target state
-   * @param roles           The communication roles associated with each controller
-   * @param cost            The cost of this communication
-   * @param probability     The probability of choosing this communication (a value between 0 and 1, inclusive)
-   **/
-  public void addNashCommunication(long initialStateID, int eventID, long targetStateID, CommunicationRole[] roles, int cost, double probability) {
-
-    if (nashCommunications == null)
-      nashCommunications = new ArrayList<NashCommunicationData>();
-
-    nashCommunications.add(new NashCommunicationData(initialStateID, eventID, targetStateID, roles, cost, probability));
 
     // Update header file
     headerFileNeedsToBeWritten = true;

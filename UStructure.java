@@ -28,6 +28,7 @@ public class UStructure extends Automaton {
   protected List<TransitionData> conditionalViolations;
   protected List<CommunicationData> potentialCommunications;
   protected List<TransitionData> nonPotentialCommunications;
+  protected List<NashCommunicationData> nashCommunications;
 
   protected int nControllersBeforeUStructure;
 
@@ -219,26 +220,27 @@ public class UStructure extends Automaton {
 
   /**
    * Checking the feasibility for all possible communication protocols, generate a list of the feasible protocols.
-   * @param communications  The communications to be considered (which should be a subset of the potentialCommunications list of this U-Structure)
-   * @return                The feasible protocols, which are sorted by the number of communications that each protocol has (smallest to largest)
+   * @param communications  The communications to be considered
+   *                        NOTE: These should be a subset of the potentialCommunications list of this U-Structure
+   * @return                The feasible protocols, sorted smallest to largest
    **/
-  public List<Set<CommunicationData>> generateAllFeasibleProtocols(List<CommunicationData> communications) {
+  public <T extends CommunicationData> List<Set<T>> generateAllFeasibleProtocols(List<T> communications, boolean mustAlsoSolveControlProblem) {
 
       /* Generate powerset of communication protocols */
 
-    List<Set<CommunicationData>> protocols = new ArrayList<Set<CommunicationData>>();
+    List<Set<T>> protocols = new ArrayList<Set<T>>();
     powerSet(protocols, communications);
 
       /* Generate list of feasible protocols */
 
-    List<Set<CommunicationData>> feasibleProtocols = new ArrayList<Set<CommunicationData>>();
-    for (Set<CommunicationData> protocol : protocols) {
+    List<Set<T>> feasibleProtocols = new ArrayList<Set<T>>();
+    for (Set<T> protocol : protocols) {
 
       // Ignore the protocol with no communications (doesn't make sense in our context)
       if (protocol.size() == 0)
         continue;
 
-      if (isFeasibleProtocol(protocol))
+      if (isFeasibleProtocol(new HashSet<CommunicationData>(protocol), mustAlsoSolveControlProblem))
         feasibleProtocols.add(protocol);
 
     }
@@ -293,7 +295,7 @@ public class UStructure extends Automaton {
         continue;
 
       // Add the protocol to the list if it is feasible
-      if (isFeasibleProtocol(protocol)) {
+      if (isFeasibleProtocol(protocol, false)) {
         feasibleProtocols.add(protocol);
         minFeasibleSize = protocol.size();
       }
@@ -325,7 +327,7 @@ public class UStructure extends Automaton {
       if (protocol.size() == 0)
         continue;
 
-      if (isFeasibleProtocol(protocol))
+      if (isFeasibleProtocol(protocol, false))
         feasibleProtocols.add(protocol);
 
     }
@@ -414,6 +416,56 @@ public class UStructure extends Automaton {
     }
 
     return new PrunedUStructure(newHeaderFile, newBodyFile);    
+
+  }
+
+  public void nash() {
+
+      /* Generate protocol vectors */
+
+    // Generate the list of all feasible protocols that also solve the control problem
+    List<Set<NashCommunicationData>> feasibleProtocols = generateAllFeasibleProtocols(nashCommunications, true);
+
+    // Split each protocol into 2 parts (by sending controller)
+    List<ProtocolVector> protocolVectors = new ArrayList<ProtocolVector>();
+    for (Set<NashCommunicationData> protocol : feasibleProtocols)
+      protocolVectors.add(new ProtocolVector(protocol, nControllersBeforeUStructure));
+
+      /* Sort protocol vectors */
+
+    Collections.sort(protocolVectors, new Comparator<ProtocolVector>() {
+      @Override public int compare(ProtocolVector v1, ProtocolVector v2) {
+
+        // Sort by difference in size
+        int diff1 = Math.abs(v1.getCommunications(0).length - v1.getCommunications(1).length);
+        int diff2 = Math.abs(v2.getCommunications(0).length - v2.getCommunications(1).length);
+        if (diff1 != diff2)
+          return Integer.valueOf(diff1).compareTo(diff2);
+      
+        // In the event of a tie, place smaller protocols first
+        int sum1 = v1.getCommunications(0).length + v1.getCommunications(1).length;
+        int sum2 = v2.getCommunications(0).length + v2.getCommunications(1).length;
+        return Integer.valueOf(sum1).compareTo(sum2);
+      
+      }
+    });
+
+      /* Find compatible protocol vectors */
+
+    // NOTE: This is used to keep track of whether 2 given protocol vectors have the same set of communications at a given index
+    boolean[][][] isCompatible = new boolean[2][protocolVectors.size()][protocolVectors.size()];
+
+    for (int i = 0; i < 2; i++)
+      for (int j = 0; j < protocolVectors.size(); j++)
+        for (int k = 0; k < protocolVectors.size(); k++) {
+
+          ProtocolVector v1 = protocolVectors.get(j); 
+          ProtocolVector v2 = protocolVectors.get(k);
+
+          // This works under the assumption that communications will be ordered the same in both arrays if they have the same elements
+          isCompatible[i][j][k] = Arrays.deepEquals(v1.getCommunications(i), v2.getCommunications(i));
+
+        }
 
   }
 
@@ -695,14 +747,24 @@ public class UStructure extends Automaton {
   /**
    * Check to see if the specified protocol is feasible.
    * NOTE: This method works under the assumption that the protocol has at least one communication.
-   * @param protocol  The protocol that is being checked for feasibility
-   * @return          Whether or not the protocol is feasible
+   * @param protocol                    The protocol that is being checked for feasibility
+   * @param mustAlsoSolveControlProblem Whether or not the protocol must solve the control problem (meaning there are no violations after pruning)
+   * @return                            Whether or not the protocol is feasible
    **/
-  private boolean isFeasibleProtocol(Set<CommunicationData> protocol) {
+  private boolean isFeasibleProtocol(Set<CommunicationData> protocol, boolean mustAlsoSolveControlProblem) {
 
     UStructure copy = duplicate();
     copy = copy.applyProtocol(protocol, null, null);
 
+    // If it must also solve the control problem, but there are still violations, then return false
+    if (mustAlsoSolveControlProblem) {
+      if (copy.conditionalViolations != null && copy.conditionalViolations.size() > 0)
+        return false;
+      if (copy.unconditionalViolations != null && copy.unconditionalViolations.size() > 0)
+        return false;
+    }
+
+    // If there was a change in the number of communications after pruning, then it is clearly not feasible
     if (copy.potentialCommunications.size() != protocol.size())
       return false;
 
@@ -876,6 +938,15 @@ public class UStructure extends Automaton {
           map.put(edge, ",color=blue,fontcolor=blue"); 
       }
 
+    if (nashCommunications != null)
+      for (TransitionData t : nashCommunications) {
+        String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
+        if (map.containsKey(edge))
+          map.put(edge, map.get(edge) + ",color=blue,fontcolor=blue");
+        else
+          map.put(edge, ",color=blue,fontcolor=blue"); 
+      }
+
   }
 
     /* GUI INPUT CODE GENERATION */
@@ -905,6 +976,17 @@ public class UStructure extends Automaton {
     if (nonPotentialCommunications != null && nonPotentialCommunications.contains(transitionData))
       str += ",COMMUNICATION";
 
+    // Search entire list since there may be more than one nash communication
+    if (nashCommunications != null) {
+      for (NashCommunicationData communicationData : nashCommunications) {
+        if (transitionData.equals(communicationData)) {
+          str += ",NASH_COMMUNICATION";
+          for (CommunicationRole role : communicationData.roles)
+            str += role.getCharacter();
+        }
+      }
+    }
+
     return str;
 
   }
@@ -928,12 +1010,13 @@ public class UStructure extends Automaton {
 
       /* Write numbers to indicate how many special transitions are in the file */
 
-    byte[] buffer = new byte[20];
+    byte[] buffer = new byte[24];
     ByteManipulator.writeLongAsBytes(buffer, 0,  nControllersBeforeUStructure, 4);
     ByteManipulator.writeLongAsBytes(buffer, 4,  (unconditionalViolations    == null ? 0 : unconditionalViolations.size()), 4);
     ByteManipulator.writeLongAsBytes(buffer, 8,  (conditionalViolations      == null ? 0 : conditionalViolations.size()), 4);
     ByteManipulator.writeLongAsBytes(buffer, 12, (potentialCommunications    == null ? 0 : potentialCommunications.size()), 4);
     ByteManipulator.writeLongAsBytes(buffer, 16, (nonPotentialCommunications == null ? 0 : nonPotentialCommunications.size()), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 20, (nashCommunications         == null ? 0 : nashCommunications.size()), 4);
     headerRAFile.write(buffer);
 
       /* Write special transitions to the .hdr file */
@@ -942,6 +1025,7 @@ public class UStructure extends Automaton {
     writeTransitionDataToHeader(conditionalViolations);
     writeCommunicationDataToHeader(potentialCommunications);
     writeTransitionDataToHeader(nonPotentialCommunications);
+    writeNashCommunicationDataToHeader(nashCommunications);
 
   }
 
@@ -980,11 +1064,54 @@ public class UStructure extends Automaton {
 
   }
 
+  /**
+   * A helper method to write a list of communications to the header file.
+   * NOTE: This could be made more efficient by using one buffer for all communication data. This
+   * is possible because each piece of data in the list is supposed to have the same number of roles.
+   * @param list          The list of nash communication data
+   * @throws IOException  If there was problems writing to file
+   **/
+  private void writeNashCommunicationDataToHeader(List<NashCommunicationData> list) throws IOException {
+
+    if (list == null)
+      return;
+
+    for (NashCommunicationData data : list) {
+
+      System.out.println("W:" + data.roles.length);
+
+      byte[] buffer = new byte[32 + data.roles.length];
+      int index = 0;
+
+      ByteManipulator.writeLongAsBytes(buffer, index, data.initialStateID, 8);
+      index += 8;
+
+      ByteManipulator.writeLongAsBytes(buffer, index, data.eventID, 4);
+      index += 4;
+
+      ByteManipulator.writeLongAsBytes(buffer, index, data.targetStateID, 8);
+      index += 8;
+
+      ByteManipulator.writeLongAsBytes(buffer, index, data.cost, 4);
+      index += 4;
+
+      ByteManipulator.writeLongAsBytes(buffer, index, Double.doubleToLongBits(data.probability), 8);
+      index += 8;
+
+      for (CommunicationRole role : data.roles)
+        buffer[index++] = role.getNumericValue();
+      
+      headerRAFile.write(buffer);
+
+    }
+
+  }
+
   @Override protected void readSpecialTransitionsFromHeader() throws IOException {
 
       /* Read the number which indicates how many special transitions are in the file */
 
-    byte[] buffer = new byte[20];
+    byte[] buffer = new byte[24];
     headerRAFile.read(buffer);
 
     nControllersBeforeUStructure    = (int) ByteManipulator.readBytesAsLong(buffer, 0,  4);
@@ -992,6 +1119,7 @@ public class UStructure extends Automaton {
     int nConditionalViolations      = (int) ByteManipulator.readBytesAsLong(buffer, 8,  4);
     int nPotentialCommunications    = (int) ByteManipulator.readBytesAsLong(buffer, 12, 4);
     int nNonPotentialCommunications = (int) ByteManipulator.readBytesAsLong(buffer, 16, 4);
+    int nNashCommunications         = (int) ByteManipulator.readBytesAsLong(buffer, 20, 4);
 
       /* Read in special transitions from the .hdr file */
     
@@ -1013,6 +1141,11 @@ public class UStructure extends Automaton {
     if (nNonPotentialCommunications > 0) {
       nonPotentialCommunications = new ArrayList<TransitionData>();
       readTransitionDataFromHeader(nNonPotentialCommunications, nonPotentialCommunications);
+    }
+
+    if (nNashCommunications > 0) {
+      nashCommunications = new ArrayList<NashCommunicationData>();
+      readNashCommunicationDataFromHeader(nNashCommunications, nashCommunications);
     }
 
   }
@@ -1045,6 +1178,45 @@ public class UStructure extends Automaton {
         roles[j] = CommunicationRole.getRole(buffer[index++]);
       
       list.add(new CommunicationData(initialStateID, eventID, targetStateID, roles));
+    
+    }
+
+  }
+
+  /**
+   * A helper method to read a list of nash communication transitions from the header file.
+   * @param nCommunications The number of communications that need to be read
+   * @param list            The list of nash communication data
+   * @throws IOException    If there was problems reading from file
+   **/
+  private void readNashCommunicationDataFromHeader(int nCommunications, List<NashCommunicationData> list) throws IOException {
+
+    byte[] buffer = new byte[nCommunications * (32 + nControllersBeforeUStructure)];
+    headerRAFile.read(buffer);
+    int index = 0;
+
+    for (int i = 0; i < nCommunications; i++) {
+
+      long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
+      index += 8;
+      
+      int eventID = (int) ByteManipulator.readBytesAsLong(buffer, index, 4);
+      index += 4;
+      
+      long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
+      index += 8;
+
+      int cost = (int) ByteManipulator.readBytesAsLong(buffer, index, 4);
+      index += 4;
+
+      double probability = Double.longBitsToDouble(ByteManipulator.readBytesAsLong(buffer, index, 8));
+      index += 8;
+
+      CommunicationRole[] roles = new CommunicationRole[nControllersBeforeUStructure];
+      for (int j = 0; j < roles.length; j++)
+        roles[j] = CommunicationRole.getRole(buffer[index++]);
+      
+      list.add(new NashCommunicationData(initialStateID, eventID, targetStateID, roles, cost, probability));
     
     }
 
@@ -1145,6 +1317,27 @@ public class UStructure extends Automaton {
 
   }
 
+  /**
+   * Add a nash communication.
+   * @param initialStateID  The initial state
+   * @param eventID         The event triggering the transition
+   * @param targetStateID   The target state
+   * @param roles           The communication roles associated with each controller
+   * @param cost            The cost of this communication
+   * @param probability     The probability of choosing this communication (a value between 0 and 1, inclusive)
+   **/
+  public void addNashCommunication(long initialStateID, int eventID, long targetStateID, CommunicationRole[] roles, int cost, double probability) {
+
+    if (nashCommunications == null)
+      nashCommunications = new ArrayList<NashCommunicationData>();
+
+    nashCommunications.add(new NashCommunicationData(initialStateID, eventID, targetStateID, roles, cost, probability));
+
+    // Update header file
+    headerFileNeedsToBeWritten = true;
+
+  }
+
     /* ACCESSOR METHODS */
 
   /**
@@ -1153,6 +1346,14 @@ public class UStructure extends Automaton {
    **/
   public List<CommunicationData> getPotentialCommunications() {
     return potentialCommunications;
+  }
+
+  /**
+   * Get the list of Nash communications.
+   * @return  The Nash communications
+   **/
+  public List<NashCommunicationData> getNashCommunications() {
+    return nashCommunications;
   }
 
   /**
