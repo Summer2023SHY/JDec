@@ -78,9 +78,47 @@ public class NashInformationPrompt extends JFrame {
 
     }
 
-    String[] columnNames = new String[] {"Communication", "Cost", "Probability"};
+    String[] columnNames = new String[] {"Communication", "Cost (Integer)", "Probability (Double)"};
 
-    JTable table = new JTable(tableData, columnNames) {
+    TableModel tableModel = new DefaultTableModel(tableData, columnNames) {
+
+      // Automatially adjust entered values to reflect how they are being interpreted
+      @Override public void setValueAt(Object value, int row, int column) {
+
+
+        // Format the costs as integers
+        if (column == 1) {
+          try {
+          
+            int intValue = Double.valueOf((String) value).intValue();
+            value = String.valueOf(Math.max(0, intValue));
+
+          } catch (NumberFormatException e) { }
+
+        // Format the probabilities as doubles in the [0,1] range
+        } else if (column == 2) {
+
+          try {
+          
+            double doubleValue = Double.valueOf((String) value);
+            if (doubleValue < 0)
+              value = "0.0";
+            else if (doubleValue > 1)
+              value = "1.0";
+            else
+              value = String.valueOf(doubleValue);
+
+          } catch (NumberFormatException e) { }
+
+        }
+
+        super.setValueAt(value, row, column);
+
+      }
+
+    };
+
+    JTable table = new JTable(tableModel) {
       
       // Make sure columns are wide enough to display all of the text
       @Override public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
@@ -100,6 +138,8 @@ public class NashInformationPrompt extends JFrame {
 
     table.setCellSelectionEnabled(true);
     table.getTableHeader().setReorderingAllowed(false);
+    table.getColumnModel().getColumn(1).setCellRenderer(new CostCellRenderer());
+    table.getColumnModel().getColumn(2).setCellRenderer(new ProbabilityCellRenderer());
 
     JScrollPane scrollPane = new JScrollPane(table);
     scrollPane.setMaximumSize(new Dimension(500, 500));
@@ -131,4 +171,58 @@ public class NashInformationPrompt extends JFrame {
 
   }
     
+}
+
+class CostCellRenderer extends DefaultTableCellRenderer {
+
+  @Override public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+    
+    Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+    try {
+
+      Double.valueOf((String) value).intValue();
+    
+      if (isSelected)
+        component.setBackground(javax.swing.UIManager.getColor("Table.selectionBackground"));
+      else if (hasFocus)
+        component.setBackground(javax.swing.UIManager.getColor("Table.focusCellBackground"));
+      else
+        component.setBackground(javax.swing.UIManager.getColor("Table.background"));  
+    
+    } catch (NumberFormatException e) {
+      component.setBackground(Color.RED);
+    }
+
+    return component;
+  
+  }
+
+}
+
+class ProbabilityCellRenderer extends DefaultTableCellRenderer {
+
+  @Override public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+    
+    Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+    try {
+
+      Double.valueOf((String) value);
+    
+      if (isSelected)
+        component.setBackground(javax.swing.UIManager.getColor("Table.selectionBackground"));
+      else if (hasFocus)
+        component.setBackground(javax.swing.UIManager.getColor("Table.focusCellBackground"));
+      else
+        component.setBackground(javax.swing.UIManager.getColor("Table.background"));  
+    
+    } catch (NumberFormatException e) {
+      component.setBackground(Color.RED);
+    }
+
+    return component;
+  
+  }
+
 }
