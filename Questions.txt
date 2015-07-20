@@ -1,0 +1,69 @@
+HOURS:
+Monday, July 20: 9:28 - 
+
+
+QUESTIONS:
+
+  -Are there any small examples using 3 controllers that do not blow up very large and are easily verifiable? (I'm looking for a good test case)
+  -For the observer automaton, if at least one state is marked, does that mean that the entire group of states will be marked in the observer (Figure 2.22 on pg. 89)?
+
+JAVADOC:
+    -Many things!
+
+SHORT-TERM:
+  
+  -when nash is selected, prompt user to fill in missing probability and cost values (create defaults for them), then:
+    1) generate new GUI transition input code then re-generate U-Structure
+    or 2) Clear any previous potential communications and nash communications, re-add all nash communications, then re-generate GUI transition input code
+  -add check to ensure that probabilities add up to 1.0
+  -sum/max the costs?????????? Take the crushes to figure out..........
+  -test case for isFeasible() with mustAlsoSolveControlProblem=true
+  -update all tooltips / make sure the correct special transitions are being parsed right for each automaton type
+  -Add AutomataGUI constants for pop-up widths and heights
+  -"If there are no solutions without violations, then the user should be told at the outset that their system does not satisfy observability." - Ricker (regarding Nash)
+
+  -add more tests for crush (include one which contains loops!)
+  -currently regenerating uStructures when clicking "Generate Automaton" button (but they were already generated before when testing for feasibility, so we should store them)
+  -In parsing U-Structure GUI input, add validation check for event vectors?
+  -in pruned u-structure, we still have blue transitions called "Potential Communications".. does this make sense?
+  -add buttons to mark special transitions in GUI?
+  -parse GUI input differently depending on the type
+  -warning message when saving in GUI to overwrite files??
+  -option to manually load GUI input code for large automata (alternatively, we could have a screen with automaton stats and list of events, basically everything that is in the header file)
+  -What about if multiple AutomataGUI processes are being run at the same time?? Create temporary folder based on PID (NOTE: PID can't easily be found)
+  -add export special transitions to file
+    checkboxes for the following:
+    -add export conditional violations to txt file
+    -add export unconditional violations to txt file
+    -add export potential communications to txt file
+  -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol
+  -export to multiple formats at once (and then when user hits exports, let them choose where this file gets copied to)!
+  -loading bars when loading automaton
+  -Add tests to runAutomatonCapacityTestRoutine that check how capacity expanding works
+  -add export to png (maybe others?)
+  -Add addCommunications test for 3 controllers!!
+  -Add test case for accessible, one more test case for union (because I'm not 100% confident in the sets of Events working as expected)
+  -In Automaton::addState(), there is the potential for 3 calls to recreateBinaryFile. This should be combined into one call.
+  -Allow GUI to resize nicely (and things to be sized automatically better, including pop-ups)
+
+  POTENTIAL:
+  -message if no initial state is defined (abort generation of automaton), then we can remove some error-checking in the automaton class (NOTE: This affects a lot of our test cases..)
+  -Allow modifications to automaton without regenerating the entire thing (example: adding a state or a transition)
+  -Creating observer automaton (p.89) (WIP)
+  -Allow user to specify layout mode
+  -Zoom feature in image (generate larger image)
+  -complement test case (where dump state does not need to be created)
+  -Projection operation
+
+
+
+
+
+
+
+
+
+
+
+
+
