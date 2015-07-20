@@ -69,6 +69,9 @@ public class Automaton {
   /** This is the directory used to hold all temporary files. */
   protected static final File TEMPORARY_DIRECTORY = new File("Automaton_Temporary_Files");
 
+  /** This is the filename of the file where the DOT output is being placed during image generation */
+  protected static final String DOT_OUTPUT_FILE_NAME = "out.tmp";
+
     /* CLASS VARIABLES */
 
   protected static int temporaryFileIndex = 1;
@@ -1463,7 +1466,7 @@ public class Automaton {
     try {
 
       // Write DOT language to file
-      PrintStream out = new PrintStream(new FileOutputStream("out.tmp"));
+      PrintStream out = new PrintStream(new FileOutputStream(DOT_OUTPUT_FILE_NAME));
       out.print(str.toString());
 
       // Produce PNG from DOT language
@@ -1474,7 +1477,7 @@ public class Automaton {
           (nStates > 100) ? "neato": "dot",
           "-Goverlap=scale",
           "-Tsvg",
-          "out.tmp",
+          DOT_OUTPUT_FILE_NAME,
           "-o",
           outputFileName
         ).start();
@@ -1482,7 +1485,7 @@ public class Automaton {
         process = new ProcessBuilder(
           (nStates > 100) ? "neato": "dot",
           "-Tpng",
-          "out.tmp",
+          DOT_OUTPUT_FILE_NAME,
           "-o",
           outputFileName
         ).start();
@@ -1494,6 +1497,7 @@ public class Automaton {
       }
 
     } catch (IOException e) {
+      e.printStackTrace();
       throw new MissingDependencyException();
 
     } catch (InterruptedException e) {
