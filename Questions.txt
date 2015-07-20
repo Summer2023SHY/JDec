@@ -1,6 +1,5 @@
 HOURS:
-Monday, July 20: 9:28 - 
-
+Monday, July 20: 3 hours, 6:54 -  
 
 QUESTIONS:
 
@@ -12,11 +11,10 @@ JAVADOC:
 
 SHORT-TERM:
   
-  -when nash is selected, prompt user to fill in missing probability and cost values (create defaults for them), then:
-    1) generate new GUI transition input code then re-generate U-Structure
-    or 2) Clear any previous potential communications and nash communications, re-add all nash communications, then re-generate GUI transition input code
-  -add check to ensure that probabilities add up to 1.0
+  -Nash probability values : feature to automatically distribute? cases where default doesn't add up to 1?)
+  - Nash next button -> Trigger the next part of the procedure
   -sum/max the costs?????????? Take the crushes to figure out..........
+  -Give the user the ability to resize certain parts of the screen (in particular the middle divider)
   -test case for isFeasible() with mustAlsoSolveControlProblem=true
   -update all tooltips / make sure the correct special transitions are being parsed right for each automaton type
   -Add AutomataGUI constants for pop-up widths and heights

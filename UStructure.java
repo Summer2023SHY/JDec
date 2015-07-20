@@ -975,9 +975,11 @@ public class UStructure extends Automaton {
     // Search entire list since there may be more than one nash communication
     for (NashCommunicationData communicationData : nashCommunications)
       if (transitionData.equals(communicationData)) {
-        str += ",NASH_COMMUNICATION";
+        str += ",NASH_COMMUNICATION-";
         for (CommunicationRole role : communicationData.roles)
           str += role.getCharacter();
+        str += "-" + communicationData.cost;
+        str += "-" + communicationData.probability;
       }
 
     return str;
@@ -1268,6 +1270,14 @@ public class UStructure extends Automaton {
   }
 
   /**
+   * Clears the list of potential communications.
+   **/
+  public void removeAllPotentialCommunications() {
+    potentialCommunications.clear();
+    headerFileNeedsToBeWritten = true;
+  }
+
+  /**
    * Add a non-potential communication (which are the communications that were added for mathmatical completeness but are not actually potential communications).
    * @param initialStateID   The initial state
    * @param eventID          The event triggering the transition
@@ -1294,6 +1304,14 @@ public class UStructure extends Automaton {
     nashCommunications.add(new NashCommunicationData(initialStateID, eventID, targetStateID, roles, cost, probability));
     headerFileNeedsToBeWritten = true;
 
+  }
+
+  /**
+   * Clears the list of nash communications.
+   **/
+  public void removeAllNashCommunications() {
+    nashCommunications.clear();
+    headerFileNeedsToBeWritten = true;
   }
 
     /* ACCESSOR METHODS */

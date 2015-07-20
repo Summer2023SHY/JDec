@@ -508,9 +508,24 @@ public abstract class AutomatonGenerator<T> {
             continue;
           }
 
+          System.err.println("ERROR: Could not parse '" + line + "' as a communication.");
+          continue;
+
+        }
+
+      }
+
+      // Applies to U-Structures, pruned U-Structures, and Crushes
+      if (automatonType == Automaton.Type.U_STRUCTURE || automatonType == Automaton.Type.PRUNED_U_STRUCTURE || automatonType == Automaton.Type.CRUSH) {
+
+        String[] parts = str.split("-");
+
+        if (parts[0].equals("NASH_COMMUNICATION")) {
+
           if (parts.length == 4) {
             try {
-              prunedUStructure.addNashCommunication(
+              UStructure uStructure = (UStructure) automaton;
+              uStructure.addNashCommunication(
                 data.initialStateID,
                 data.eventID,
                 data.targetStateID,
@@ -524,9 +539,6 @@ public abstract class AutomatonGenerator<T> {
             }
 
           }
-
-          System.err.println("ERROR: Could not parse '" + line + "' as a communication.");
-          continue;
 
         }
 

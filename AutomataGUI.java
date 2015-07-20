@@ -870,7 +870,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         if (uStructure.getPotentialCommunications().size() == 0)
           JOptionPane.showMessageDialog(null, "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.", "Operation Failed", JOptionPane.ERROR_MESSAGE);
         else
-          new NashInformationPrompt(this, uStructure, "Cost and Probability", "Specify costs and probabilities for each communication.");
+          new NashInformationPrompt(this, tab, "Cost and Probability Values", "Specify costs and probabilities for each communication.");
         break;
 
       case "Random Automaton":
@@ -1351,9 +1351,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
    } // Canvas class
 
   /**
-   * Private class to maintain all GUI information about a single automaton.
+   * Class to maintain all GUI information about a single automaton.
    **/
-  private class AutomatonTab extends Container {
+  class AutomatonTab extends Container {
 
       /* Public instance variables */
 
