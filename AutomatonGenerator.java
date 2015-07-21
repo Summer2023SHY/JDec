@@ -474,8 +474,8 @@ public abstract class AutomatonGenerator<T> {
 
         UStructure uStructure = (UStructure) automaton;
 
-        if (str.equals("COMMUNICATION")) {
-          uStructure.addNonPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID);
+        if (str.equals("INVALID_COMMUNICATION")) {
+          uStructure.addInvalidCommunication(data.initialStateID, data.eventID, data.targetStateID);
           continue;
         }
 

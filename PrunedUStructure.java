@@ -308,7 +308,7 @@ public class PrunedUStructure extends UStructure {
     renumberEventsInTransitionData(mapping, unconditionalViolations);
     renumberEventsInTransitionData(mapping, conditionalViolations);
     renumberEventsInTransitionData(mapping, potentialCommunications);
-    renumberEventsInTransitionData(mapping, nonPotentialCommunications);
+    renumberEventsInTransitionData(mapping, invalidCommunications);
     renumberEventsInTransitionData(mapping, nashCommunications);
 
       /* Indicate that the header file needs to be updated */

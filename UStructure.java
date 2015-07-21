@@ -27,7 +27,7 @@ public class UStructure extends Automaton {
   protected List<TransitionData> unconditionalViolations;
   protected List<TransitionData> conditionalViolations;
   protected List<CommunicationData> potentialCommunications;
-  protected List<TransitionData> nonPotentialCommunications;
+  protected List<TransitionData> invalidCommunications;
   protected List<NashCommunicationData> nashCommunications;
 
   protected int nControllersBeforeUStructure;
@@ -111,10 +111,10 @@ public class UStructure extends Automaton {
     super.initializeLists();
 
     unconditionalViolations = new ArrayList<TransitionData>();
-    conditionalViolations = new ArrayList<TransitionData>();
+    conditionalViolations   = new ArrayList<TransitionData>();
     potentialCommunications = new ArrayList<CommunicationData>();
-    nonPotentialCommunications = new ArrayList<TransitionData>();
-    nashCommunications = new ArrayList<NashCommunicationData>();
+    invalidCommunications   = new ArrayList<TransitionData>();
+    nashCommunications      = new ArrayList<NashCommunicationData>();
   
   }
 
@@ -206,9 +206,9 @@ public class UStructure extends Automaton {
                 found = true;
               }
 
-            // If there were no potential communications, then it must be a non-potential communication
+            // If there were no potential communications, then it must be a invalid communication
             if (!found)
-              uStructure.addNonPotentialCommunication(startingState.getID(), id, destinationState.getID());
+              uStructure.addInvalidCommunication(startingState.getID(), id, destinationState.getID());
     
           }
          
@@ -370,7 +370,7 @@ public class UStructure extends Automaton {
     
       /* Remove all communications that are not part of the protocol */
 
-    for (TransitionData data : nonPotentialCommunications)
+    for (TransitionData data : invalidCommunications)
       prunedUStructure.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
 
     for (CommunicationData data : potentialCommunications)
@@ -497,9 +497,9 @@ public class UStructure extends Automaton {
       if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
         uStructure.addPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID, (CommunicationRole[]) data.roles.clone());
 
-    for (TransitionData data : nonPotentialCommunications)
+    for (TransitionData data : invalidCommunications)
       if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
-        uStructure.addNonPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID);
+        uStructure.addInvalidCommunication(data.initialStateID, data.eventID, data.targetStateID);
 
   }
 
@@ -906,7 +906,7 @@ public class UStructure extends Automaton {
     renumberStatesInTransitionData(mappingRAFile, unconditionalViolations);
     renumberStatesInTransitionData(mappingRAFile, conditionalViolations);
     renumberStatesInTransitionData(mappingRAFile, potentialCommunications);
-    renumberStatesInTransitionData(mappingRAFile, nonPotentialCommunications);
+    renumberStatesInTransitionData(mappingRAFile, invalidCommunications);
 
   }
 
@@ -969,8 +969,8 @@ public class UStructure extends Automaton {
           str += role.getCharacter();
       }
 
-    if (nonPotentialCommunications.contains(transitionData))
-      str += ",COMMUNICATION";
+    if (invalidCommunications.contains(transitionData))
+      str += ",INVALID_COMMUNICATION";
 
     // Search entire list since there may be more than one nash communication
     for (NashCommunicationData communicationData : nashCommunications)
@@ -1010,7 +1010,7 @@ public class UStructure extends Automaton {
     ByteManipulator.writeLongAsBytes(buffer, 4,  unconditionalViolations.size(),    4);
     ByteManipulator.writeLongAsBytes(buffer, 8,  conditionalViolations.size(),      4);
     ByteManipulator.writeLongAsBytes(buffer, 12, potentialCommunications.size(),    4);
-    ByteManipulator.writeLongAsBytes(buffer, 16, nonPotentialCommunications.size(), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 16, invalidCommunications.size(), 4);
     ByteManipulator.writeLongAsBytes(buffer, 20, nashCommunications.size(),         4);
     headerRAFile.write(buffer);
 
@@ -1019,7 +1019,7 @@ public class UStructure extends Automaton {
     writeTransitionDataToHeader(unconditionalViolations);
     writeTransitionDataToHeader(conditionalViolations);
     writeCommunicationDataToHeader(potentialCommunications);
-    writeTransitionDataToHeader(nonPotentialCommunications);
+    writeTransitionDataToHeader(invalidCommunications);
     writeNashCommunicationDataToHeader(nashCommunications);
 
   }
@@ -1106,7 +1106,7 @@ public class UStructure extends Automaton {
     int nUnconditionalViolations    = (int) ByteManipulator.readBytesAsLong(buffer, 4,  4);
     int nConditionalViolations      = (int) ByteManipulator.readBytesAsLong(buffer, 8,  4);
     int nPotentialCommunications    = (int) ByteManipulator.readBytesAsLong(buffer, 12, 4);
-    int nNonPotentialCommunications = (int) ByteManipulator.readBytesAsLong(buffer, 16, 4);
+    int nInvalidCommunications = (int) ByteManipulator.readBytesAsLong(buffer, 16, 4);
     int nNashCommunications         = (int) ByteManipulator.readBytesAsLong(buffer, 20, 4);
 
       /* Read in special transitions from the .hdr file */
@@ -1126,9 +1126,9 @@ public class UStructure extends Automaton {
       readCommunicationDataFromHeader(nPotentialCommunications, potentialCommunications);
     }
 
-    if (nNonPotentialCommunications > 0) {
-      nonPotentialCommunications = new ArrayList<TransitionData>();
-      readTransitionDataFromHeader(nNonPotentialCommunications, nonPotentialCommunications);
+    if (nInvalidCommunications > 0) {
+      invalidCommunications = new ArrayList<TransitionData>();
+      readTransitionDataFromHeader(nInvalidCommunications, invalidCommunications);
     }
 
     if (nNashCommunications > 0) {
@@ -1225,7 +1225,7 @@ public class UStructure extends Automaton {
     // Multiple potential communications could exist for the same transition (this happens when there are more than one potential sender)
     while (potentialCommunications.remove(data));
     
-    nonPotentialCommunications.remove(data);
+    invalidCommunications.remove(data);
 
   }
 
@@ -1278,14 +1278,14 @@ public class UStructure extends Automaton {
   }
 
   /**
-   * Add a non-potential communication (which are the communications that were added for mathmatical completeness but are not actually potential communications).
+   * Add an invalid communication (which are the communications that were added for mathmatical completeness but are not actually potential communications).
    * @param initialStateID   The initial state
    * @param eventID          The event triggering the transition
    * @param targetStateID    The target state
    **/
-  public void addNonPotentialCommunication(long initialStateID, int eventID, long targetStateID) {
+  public void addInvalidCommunication(long initialStateID, int eventID, long targetStateID) {
 
-    nonPotentialCommunications.add(new TransitionData(initialStateID, eventID, targetStateID));
+    invalidCommunications.add(new TransitionData(initialStateID, eventID, targetStateID));
     headerFileNeedsToBeWritten = true;
 
   }

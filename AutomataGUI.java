@@ -1571,10 +1571,10 @@ public class AutomataGUI extends JFrame implements ActionListener {
                + "omitted, then it is assumed that they are observable and controllable for all controllers.<br>"
                + "It is not possible, however, to omit the properties for some controllers, but not all.</html>";
 
-        case U_STRUCTURE: case CRUSH:
+        case U_STRUCTURE: case PRUNED_U_STRUCTURE: case CRUSH:
           return "<html>1 event vector per line, formatted as <i>&lt;Event1,Event2...></i>.<br>"
                + "<b><u>EXAMPLE</u></b>: '<i><&lt;FirstEvent,SecondEvent,ThirdEvent></i>' denotes an event vector "
-               + "containing the 3 events named <b>FirstEvent</b>, <b>SecondEvent</b>, and <b>ThirdEvent</b>.<br><br>"
+               + "containing the 3 events named <b>FirstEvent</b>, <b>SecondEvent</b>, and <b>ThirdEvent</b>.<br>"
                + "<b><u>NOTE</u></b>: Unobservable events for a given controller in an event vector are denoted by an asterisk.</html>";
 
         default:
@@ -1595,7 +1595,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
                + "<b>marked</b>.<br><b><u>NOTE</u></b>: '<i>T</i>' and '<i>F</i>' are case insensitive. If omitted, the default value is "
                + "'<i>T</i>'. There is only allowed to be one initial state.</html>";
 
-        case U_STRUCTURE:
+        case U_STRUCTURE: case PRUNED_U_STRUCTURE:
           return "<html>1 state per line, formatted as <i>[@]LABEL</i> (where the '@' symbol denotes that this is the initial state).<br>"
                + "<b><u>EXAMPLE 1</u></b>: <i>'StateName'</i> denotes a state called <b>StateName</b>.<br>"
                + "<b><u>EXAMPLE 2</u></b>: <i>'@StateName'</i> denotes a state called <b>StateName</b> that is the <b>initial state</b></html>";
@@ -1630,10 +1630,21 @@ public class AutomataGUI extends JFrame implements ActionListener {
                + "the state <b>'FirstState'</b> to the state <b>'SecondState'</b> by the event vector called <b>'Event'</b>.<br>"
                + "<b><u>NOTE</u></b>: <i>SPECIAL_PROPERTIES</i> can be added to a transition by appending ':NAME_OF_PROPERTY'. "
                + "Additional properties are separated by commas.<br><b>Names of special properties in a U-Structure:</b>: "
-               + "<i>'UNCONDITIONAL_VIOLATION'</i>, <i>'CONDITIONAL_VIOLATION'</i>, <i>'COMMUNICATION*'</i>, and <i>'POTENTIAL_COMMUNICATION**'</i>.<br>"
-               + "<i>*'COMMUNICATION' is used to mark all of the communications which are not potential communications, but have been added "
-               + "to the U-Structure for mathematical completion.</i><br>"
+               + "<i>'UNCONDITIONAL_VIOLATION'</i>, <i>'CONDITIONAL_VIOLATION'</i>, <i>'INVALID_COMMUNICATION'*</i>, and <i>'POTENTIAL_COMMUNICATION'**</i>.<br>"
+               + "<i>*'INVALID_COMMUNICATION' is used to mark a communication which has been added to the U-Structure for mathematical completion.</i><br>"
                + "<i>**'POTENTIAL_COMMUNICATION' must have the communication roles appended to it. For example, appending '-SRR' (where the dash is simply a separator) "
+               + "means that controller 1 is sending the communication to controllers 2 and 3.<br>Appending '-R*S' means that controller 3 is sending the "
+               + "communication to controller 1 (where '*' denotes that a controller that doesn't have a role in the communication).</i></html>";
+
+        case PRUNED_U_STRUCTURE:
+          return "<html>1 transition per line, formatted as <i>INITIAL_STATE,EVENT,TARGET_STATE[:SPECIAL_PROPERTIES]</i>"
+               + ", which are used in the synchronized composition operation).<br>"
+               + "<b><u>EXAMPLE</u></b>: <i>'FirstState,Event,SecondState'</i> denotes a transition that goes from "
+               + "the state <b>'FirstState'</b> to the state <b>'SecondState'</b> by the event vector called <b>'Event'</b>.<br>"
+               + "<b><u>NOTE</u></b>: <i>SPECIAL_PROPERTIES</i> can be added to a transition by appending ':NAME_OF_PROPERTY'. "
+               + "Additional properties are separated by commas.<br><b>Names of special properties in a U-Structure:</b>: "
+               + "<i>'UNCONDITIONAL_VIOLATION'</i>, <i>'CONDITIONAL_VIOLATION'</i>, <i>'COMMUNICATION'*</i>.<br>"
+               + "<i>*'COMMUNICATION' must have the communication roles appended to it. For example, appending '-SRR' (where the dash is simply a separator) "
                + "means that controller 1 is sending the communication to controllers 2 and 3.<br>Appending '-R*S' means that controller 3 is sending the "
                + "communication to controller 1 (where '*' denotes that a controller that doesn't have a role in the communication).</i></html>";
 

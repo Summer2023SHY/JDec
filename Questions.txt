@@ -1,7 +1,10 @@
 HOURS:
-Monday, July 20: 3 hours, 6:54 -  
+Monday, July 20: 5 hours
+Tuesday, July 21: 7:27 - 
 
 QUESTIONS:
+
+  -When taking the crush.. are communications supposed to be copied over? If so, I need to implement this.
 
   -Are there any small examples using 3 controllers that do not blow up very large and are easily verifiable? (I'm looking for a good test case)
   -For the observer automaton, if at least one state is marked, does that mean that the entire group of states will be marked in the observer (Figure 2.22 on pg. 89)?
@@ -16,7 +19,8 @@ SHORT-TERM:
   -sum/max the costs?????????? Take the crushes to figure out..........
   -Give the user the ability to resize certain parts of the screen (in particular the middle divider)
   -test case for isFeasible() with mustAlsoSolveControlProblem=true
-  -update all tooltips / make sure the correct special transitions are being parsed right for each automaton type
+  -Update GUI tooltips for the crush after I recieve a response to my question about copying communications over to the crush
+  -Make sure the correct special transitions are being parsed right for each automaton type
   -Add AutomataGUI constants for pop-up widths and heights
   -"If there are no solutions without violations, then the user should be told at the outset that their system does not satisfy observability." - Ricker (regarding Nash)
 
