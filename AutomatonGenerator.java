@@ -16,7 +16,7 @@ import java.awt.*;
 
 public abstract class AutomatonGenerator<T> {
 
-    /** RANDOM AUTOMATON GENERATION (AND ASSOCIATED HELPER METHODS) **/
+    /* RANDOM AUTOMATON GENERATION (AND ASSOCIATED HELPER METHODS) */
 
   /**
    * Generate a random automaton with the specified properties.
@@ -226,7 +226,7 @@ public abstract class AutomatonGenerator<T> {
 
   }
 
-    /** AUTOMATON GENERATION FROM GUI INPUT CODE (AND ASSOCIATED HELPER METHODS) **/
+    /* AUTOMATON GENERATION FROM GUI INPUT CODE (AND ASSOCIATED HELPER METHODS) */
 
   /**
    * Generate an automaton using the given GUI input code.
@@ -426,7 +426,7 @@ public abstract class AutomatonGenerator<T> {
   }
 
   /**
-   * Parse a string for special transitions, adding them to the automaton
+   * Parse a string for special transitions, adding them to the automaton.
    * @param automaton     The automaton to add the special transitions to
    * @param automatonType The enum value associated with the type of the automaton
    * @param line          The text to parse

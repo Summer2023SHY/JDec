@@ -1,16 +1,15 @@
 HOURS:
 Monday, July 20: 5 hours
-Tuesday, July 21: 7:27 - 
+Tuesday, July 21: 2 hours
+Wednesday, July 22: 6:48 - 
 
 QUESTIONS:
 
+  - Talk through the final steps of Nash to make sure I properly understand it..
   -When taking the crush.. are communications supposed to be copied over? If so, I need to implement this.
 
   -Are there any small examples using 3 controllers that do not blow up very large and are easily verifiable? (I'm looking for a good test case)
   -For the observer automaton, if at least one state is marked, does that mean that the entire group of states will be marked in the observer (Figure 2.22 on pg. 89)?
-
-JAVADOC:
-    -Many things!
 
 SHORT-TERM:
   
@@ -29,7 +28,7 @@ SHORT-TERM:
   -currently regenerating uStructures when clicking "Generate Automaton" button (but they were already generated before when testing for feasibility, so we should store them)
   -In parsing U-Structure GUI input, add validation check for event vectors?
   -in pruned u-structure, we still have blue transitions called "Potential Communications".. does this make sense?
-  -add buttons to mark special transitions in GUI?
+  -add buttons to mark special transitions in GUI? (menu options would work great for this! With checkboxes)
   -parse GUI input differently depending on the type
   -warning message when saving in GUI to overwrite files??
   -option to manually load GUI input code for large automata (alternatively, we could have a screen with automaton stats and list of events, basically everything that is in the header file)
@@ -52,7 +51,7 @@ SHORT-TERM:
   POTENTIAL:
   -message if no initial state is defined (abort generation of automaton), then we can remove some error-checking in the automaton class (NOTE: This affects a lot of our test cases..)
   -Allow modifications to automaton without regenerating the entire thing (example: adding a state or a transition)
-  -Creating observer automaton (p.89) (WIP)
+  -Creating observer automaton (p.89) (WIP in GitHub history)
   -Allow user to specify layout mode
   -Zoom feature in image (generate larger image)
   -complement test case (where dump state does not need to be created)

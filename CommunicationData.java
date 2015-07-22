@@ -15,12 +15,12 @@ import java.util.*;
 
 public class CommunicationData extends TransitionData {
 
-    /** INSTANCE VARIABLE **/
+    /* INSTANCE VARIABLE */
 
   /** Holds the role for each of the controllers (sender, reciever, or none) */
   public CommunicationRole[] roles;
 
-    /** CONSTRUCTOR **/
+    /* CONSTRUCTOR */
 
   /**
    * Construct a CommunicationData object, which can be used to represent a communication (including the sending and recieving roles).
@@ -49,13 +49,13 @@ public class CommunicationData extends TransitionData {
 
   }
 
-    /** ACCESSOR METHOD **/
+    /* ACCESSOR METHOD */
 
   /**
    * Return the index (0-based) of the sending controller.
    * NOTE:  There is only ever one sender. In cases where more than one sender
    *        is required, they can be split into multiple communications.
-   * @return the index of the sender, or -1 if there is no sender
+   * @return  The index of the sender, or -1 if there is no sender
    **/
   public int getIndexOfSender() {
 
@@ -67,10 +67,10 @@ public class CommunicationData extends TransitionData {
 
   }
 
-    /** OVERRIDDEN METHODS **/
+    /* OVERRIDDEN METHODS */
 
   @Override public boolean equals(Object obj) {
-    
+
     return super.equals(obj) && Arrays.deepEquals(roles, ((CommunicationData) obj).roles);
 
   }

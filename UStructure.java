@@ -436,6 +436,10 @@ public class UStructure extends Automaton {
     // Generate the list of all feasible protocols that also solve the control problem
     List<Set<NashCommunicationData>> feasibleProtocols = generateAllFeasibleProtocols(nashCommunications, true);
 
+    if (feasibleProtocols.size() == 0) {
+      // The user should be told that their system does not satisfy observability (throw error?)
+    }
+
     // Split each protocol into 2 parts (by sending controller)
     List<ProtocolVector> protocolVectors = new ArrayList<ProtocolVector>();
     for (Set<NashCommunicationData> protocol : feasibleProtocols)
@@ -465,17 +469,41 @@ public class UStructure extends Automaton {
     // NOTE: This is used to keep track of whether 2 given protocol vectors have the same set of communications at a given index
     boolean[][][] isCompatible = new boolean[2][protocolVectors.size()][protocolVectors.size()];
 
+    // NOTE: This has been optimized, taking advantage of the fact that the grid is symmetric across the last two dimensions of the 3D array 
     for (int i = 0; i < 2; i++)
       for (int j = 0; j < protocolVectors.size(); j++)
-        for (int k = 0; k < protocolVectors.size(); k++) {
+        for (int k = j; k < protocolVectors.size(); k++) {
 
           ProtocolVector v1 = protocolVectors.get(j); 
           ProtocolVector v2 = protocolVectors.get(k);
 
           // This works under the assumption that communications will be ordered the same in both arrays if they have the same elements
-          isCompatible[i][j][k] = Arrays.deepEquals(v1.getCommunications(i), v2.getCommunications(i));
+          isCompatible[i][j][k] = isCompatible[i][k][j] = Arrays.deepEquals(v1.getCommunications(i), v2.getCommunications(i));
 
         }
+
+      /* Look for a Nash equilibrium */
+
+    for (int i = 0; i < protocolVectors.size(); i++) {
+
+      for (int j = 0; j < protocolVectors.size(); j++) {
+        
+        // No need to compare it with itself
+        if (j == i)
+          continue;
+
+        // Try both indexes of the vector
+        for (int k = 0; k < 2; k++) {
+          
+          if (isCompatible[k][i][j]) {
+            // if (sum of )
+          }
+
+        }
+
+      }
+
+    }
 
   }
 

@@ -1290,7 +1290,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     private BufferedImage image;
 
-    public Canvas () {
+    public Canvas() {
 
       setBackground(Color.LIGHT_GRAY);
       setVisible(true);
@@ -1299,7 +1299,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     /**
      * Update the image in the canvas.
-     * @param image The new image to be displayed in the canvas.
+     * @param image The new image to be displayed in the canvas
      **/
     public void setImage(BufferedImage image) {
 
@@ -1312,11 +1312,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
      * Returns the dimensions that the canvas should be.
      * @return  The preferred dimension
      **/
-    @Override public Dimension getPreferredSize() {
+    // @Override public Dimension getPreferredSize() {
 
-      return new Dimension(imageSize, imageSize);
+    //   return new Dimension(imageSize, imageSize);
     
-    }
+    // }
 
     /**
      * Updates the canvas, drawing the image (or blank canvas) in the center.
@@ -1340,9 +1340,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       } else {
 
-        double ratio = Math.max((double)image.getWidth()/(double)getWidth(), (double)image.getHeight()/(double)getHeight());
+        double ratio = Math.max((double) image.getWidth() / (double) getWidth(), (double) image.getHeight() / (double) getHeight());
         int width = (int) (image.getWidth() / ratio);
-        int height = (int) (image.getHeight()/ratio);
+        int height = (int) (image.getHeight() / ratio);
         int horizontalPadding = Math.max(0, (getWidth()  - width)  / 2);
         int verticalPadding   = Math.max(0, (getHeight() - height) / 2);
         graphics.drawImage(image, horizontalPadding, verticalPadding, width, height, null);
