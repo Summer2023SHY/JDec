@@ -14,6 +14,7 @@ JAVADOC:
 
 SHORT-TERM:
   
+  -fix divider issue
   -Nash probability values : feature to automatically distribute? cases where default doesn't add up to 1?)
   - Nash next button -> Trigger the next part of the procedure
   -sum/max the costs?????????? Take the crushes to figure out..........

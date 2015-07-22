@@ -6,6 +6,7 @@ import java.util.*;
 import java.awt.image.*;
 import java.io.*;
 import javax.swing.filechooser.*;
+import java.beans.*;
 
 public class AutomataGUI extends JFrame implements ActionListener {
 
@@ -1291,6 +1292,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     public Canvas () {
 
+      setBackground(Color.LIGHT_GRAY);
       setVisible(true);
 
     }
@@ -1328,10 +1330,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
       
       if (image == null) {
 
-        int horizontalPadding = Math.max(0, (getWidth()  - imageSize) / 2);
-        int verticalPadding   = Math.max(0, (getHeight() - imageSize) / 2);
-        graphics.setColor(Color.LIGHT_GRAY);
-        graphics.fillRect(horizontalPadding, verticalPadding, imageSize, imageSize);
+        // int horizontalPadding = Math.max(0, (getWidth()  - imageSize) / 2);
+        // int verticalPadding   = Math.max(0, (getHeight() - imageSize) / 2);
+        // graphics.setColor(Color.LIGHT_GRAY);
+        // graphics.fillRect(horizontalPadding, verticalPadding, imageSize, imageSize);
+        // graphics.fillRect(0, 0, getWidth(), getHeight());
 
         /* Draw image */
 
@@ -1348,7 +1351,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     }
 
-   } // Canvas class
+  } // Canvas class
 
   /**
    * Class to maintain all GUI information about a single automaton.
@@ -1390,11 +1393,26 @@ public class AutomataGUI extends JFrame implements ActionListener {
       // Container upperContainer = createSelectAutomatonTypeContainer();
       add(new JLabel("Automaton type: " + type.toString(), SwingConstants.CENTER), BorderLayout.NORTH);
 
-      Container lowerContainer = new Container();
-      lowerContainer.setLayout(new GridLayout(1, 2));
-      lowerContainer.add(createInputContainer(type));
-      lowerContainer.add(canvas = new Canvas());
-      add(lowerContainer, BorderLayout.CENTER);
+      // Container lowerContainer = new Container();
+      // lowerContainer.setLayout(new GridLayout(1, 2));
+      // lowerContainer.add(createInputContainer(type));
+      // lowerContainer.add(canvas = new Canvas());
+      // add(lowerContainer, BorderLayout.CENTER);
+
+      // Create containers
+      Container inputContainer = createInputContainer(type);
+      canvas = new Canvas();
+
+      // Create a split pane with the two scroll panes in it
+      final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, inputContainer, canvas);
+      splitPane.setOneTouchExpandable(true);
+      splitPane.setDividerLocation(getWidth() / 2);
+      add(splitPane, BorderLayout.CENTER);
+
+      // // Ensure the divider does not get moved to the left side of the screen when the content changes in either of the containers
+      // int location = splitPane.getDividerLocation();
+      // RepaintManager.currentManager(splitPane).validateInvalidComponents();
+      // splitPane.setDividerLocation(location);
 
     }
 
