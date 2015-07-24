@@ -3,12 +3,16 @@ import java.util.*;
 public class ProtocolVector {
 
 	private NashCommunicationData[][] communications;
-  private double[] totalValue;
+  private double[] value;
+  private double totalValue;
+  private Set<NashCommunicationData> protocol;
 		
 	public ProtocolVector(Set<NashCommunicationData> protocol, int nControllers) {
 
+    this.protocol = protocol;
+
     communications = new NashCommunicationData[nControllers][];
-		totalValue = new double[nControllers];
+		value = new double[nControllers];
 
 		for (int i = 0; i < nControllers; i++) {
 
@@ -17,14 +21,24 @@ public class ProtocolVector {
 			for (NashCommunicationData data : protocol)
 				if (data.getIndexOfSender() == i) {
 					list.add(data);
-          totalValue[i] += (data.probability * (double) data.cost);
+          value[i] += (data.probability * (double) data.cost);
         }
+
+      totalValue += value[i];
 
 			communications[i] = list.toArray(new NashCommunicationData[list.size()]);
 
 		}
 
 	}
+
+  /**
+   * Retrieve the original protocol (before it was vectorized).
+   * @return  The protocol
+   **/
+  public Set<NashCommunicationData> getOriginalProtocol() {
+    return protocol;
+  }
 
   /**
    * Retrieve the array of all communications associated with a specified sending controller.
@@ -41,7 +55,15 @@ public class ProtocolVector {
    * @return      The total value, where value is the product of cost and probability
    **/
   public double getValue(int index) {
-    return totalValue[index];
+    return value[index];
+  }
+
+  /**
+   * Get the total value of all communications in the protocol.
+   * @return  The total value, where value is the product of cost and probability
+   **/
+  public double getValue() {
+    return totalValue;
   }
 
 	/**

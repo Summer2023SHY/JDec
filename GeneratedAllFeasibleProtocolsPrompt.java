@@ -56,7 +56,8 @@ public class GeneratedAllFeasibleProtocolsPrompt extends JFrame {
       
             // Generate list of communications which are still allowed based on which boxes the user selected
             java.util.List<CommunicationData> chosenCommunications = new ArrayList<CommunicationData>();
-            outer: for (CommunicationData data : uStructure.getPotentialCommunications()) {
+
+            outer: for (CommunicationData data : uStructure.getPotentialAndNashCommunications()) {
               
               int sender = data.getIndexOfSender();
 

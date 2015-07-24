@@ -11,6 +11,7 @@ public class NashInformationPrompt extends JFrame {
   private AutomataGUI gui;
   private AutomataGUI.AutomatonTab tab;
   private UStructure uStructure;
+  private boolean pressedNext = false;
 
     /* CONSTRUCTOR */
 
@@ -165,10 +166,14 @@ public class NashInformationPrompt extends JFrame {
 
       /* Add Next Button */
 
-    JButton button = new JButton("Next");
+    final JButton button = new JButton("Next");
     button.addActionListener(new ActionListener() {
    
         public void actionPerformed(ActionEvent event) {
+
+          // Don't allow the user to press this button more than once after they've entered valid input
+          if (pressedNext)
+            return;
 
           // Ensure that the user is not editing a cell (which means the typed value is not yet saved to the table)
           CellEditor cellEditor = table.getCellEditor();
@@ -196,6 +201,9 @@ public class NashInformationPrompt extends JFrame {
             return;
           }
 
+          button.setEnabled(false);
+          pressedNext = true;
+
           // Remove all pre-existing potential communications and Nash communications
           uStructure.removeAllPotentialCommunications();
           uStructure.removeAllNashCommunications();
@@ -214,6 +222,15 @@ public class NashInformationPrompt extends JFrame {
 
           // Re-generate and load the GUI input code
           tab.refreshGUI();
+
+          // Find Nash equilibria and display results in another window
+          try {
+            new NashEquilibriaOutput(gui, uStructure, uStructure.nash(), "Nash Equilibria", " Here is the list of all Nash equilibria: ");
+          } catch (DoesNotSatisfyObservabilityException e) {
+            JOptionPane.showMessageDialog(null, "The system does not satisfy observability, which means that it does not solve the control problem. The Nash operation was aborted.", "Operation Failed", JOptionPane.ERROR_MESSAGE);
+          }
+          // Dispose of this window
+          NashInformationPrompt.this.dispose();
 
         }
 

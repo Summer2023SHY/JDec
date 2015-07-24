@@ -9,7 +9,7 @@ public class MakeProtocolFeasiblePrompt extends JFrame {
 
   private AutomataGUI gui;
   private UStructure uStructure;
-  private java.util.List<CommunicationData> potentialCommunications;
+  private java.util.List<CommunicationData> communications;
   private JCheckBox[] checkBoxes;
 
     /** CONSTRUCTOR **/
@@ -23,7 +23,7 @@ public class MakeProtocolFeasiblePrompt extends JFrame {
 
     this.gui = gui;
     this.uStructure = uStructure;
-    potentialCommunications = uStructure.getPotentialCommunications();
+    communications = uStructure.getPotentialAndNashCommunications();
 
     addComponents();
 
@@ -50,10 +50,10 @@ public class MakeProtocolFeasiblePrompt extends JFrame {
 
     Container container = new Container();
     container.setLayout(new BoxLayout(container, BoxLayout.PAGE_AXIS));
-    checkBoxes = new JCheckBox[potentialCommunications.size()];
+    checkBoxes = new JCheckBox[communications.size()];
 
-    for (int i = 0; i < potentialCommunications.size(); i++) {
-      checkBoxes[i] = new JCheckBox(potentialCommunications.get(i).toString(uStructure));
+    for (int i = 0; i < communications.size(); i++) {
+      checkBoxes[i] = new JCheckBox(communications.get(i).toString(uStructure));
       container.add(checkBoxes[i]);
     }
 
@@ -72,7 +72,7 @@ public class MakeProtocolFeasiblePrompt extends JFrame {
         Set<CommunicationData> protocol = new HashSet<CommunicationData>();
         for (int i = 0; i < checkBoxes.length; i++)
           if (checkBoxes[i].isSelected())
-            protocol.add(potentialCommunications.get(i));
+            protocol.add(communications.get(i));
   
         // Find all feasible protocols which include the chosen communications
         java.util.List<Set<CommunicationData>> feasibleProtocols = uStructure.makeProtocolFeasible(protocol);

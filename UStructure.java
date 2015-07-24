@@ -124,10 +124,6 @@ public class UStructure extends Automaton {
     return accessibleHelper(new UStructure(newHeaderFile, newBodyFile, nControllersBeforeUStructure));
   }
 
-  @Override public UStructure coaccessible(File newHeaderFile, File newBodyFile) {
-    return coaccessibleHelper(new UStructure(newHeaderFile, newBodyFile, nControllersBeforeUStructure), invert());
-  }
-
   @Override public UStructure complement(File newHeaderFile, File newBodyFile) {
 
     UStructure uStructure = new UStructure(
@@ -367,13 +363,13 @@ public class UStructure extends Automaton {
   public PrunedUStructure applyProtocol(Set<CommunicationData> protocol, File newHeaderFile, File newBodyFile) {
 
     PrunedUStructure prunedUStructure = duplicateAsPrunedUStructure(null, null);
-    
+
       /* Remove all communications that are not part of the protocol */
 
     for (TransitionData data : invalidCommunications)
       prunedUStructure.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
 
-    for (CommunicationData data : potentialCommunications)
+    for (CommunicationData data : getPotentialAndNashCommunications())
       if (!protocol.contains(data))
         prunedUStructure.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
 
@@ -381,7 +377,7 @@ public class UStructure extends Automaton {
 
     for (CommunicationData data : protocol)
       prunedUStructure.prune(protocol, getEvent(data.eventID).getVector(), data.initialStateID);
-
+    
       /* Get the accessible part of the U-Structure */
 
     prunedUStructure = prunedUStructure.accessible(newHeaderFile, newBodyFile);
@@ -393,7 +389,7 @@ public class UStructure extends Automaton {
       /* Write header file */
 
     prunedUStructure.writeHeaderFile();
-
+    
     return prunedUStructure;
 
   }
@@ -429,16 +425,17 @@ public class UStructure extends Automaton {
 
   }
 
-  public void nash() {
+  /** NOT YET COMMENTED!!! **/
+  public List<Set<NashCommunicationData>> nash() throws DoesNotSatisfyObservabilityException {
 
       /* Generate protocol vectors */
 
     // Generate the list of all feasible protocols that also solve the control problem
     List<Set<NashCommunicationData>> feasibleProtocols = generateAllFeasibleProtocols(nashCommunications, true);
 
-    if (feasibleProtocols.size() == 0) {
-      // The user should be told that their system does not satisfy observability (throw error?)
-    }
+    // Throw error if the system does not satisfy observability
+    if (feasibleProtocols.size() == 0)
+      throw new DoesNotSatisfyObservabilityException();
 
     // Split each protocol into 2 parts (by sending controller)
     List<ProtocolVector> protocolVectors = new ArrayList<ProtocolVector>();
@@ -484,7 +481,11 @@ public class UStructure extends Automaton {
 
       /* Look for a Nash equilibrium */
 
-    for (int i = 0; i < protocolVectors.size(); i++) {
+    List<Set<NashCommunicationData>> nashEquilibriaProtocols = new ArrayList<Set<NashCommunicationData>>();
+
+    outer: for (int i = 0; i < protocolVectors.size(); i++) {
+      
+      ProtocolVector protocol1 = protocolVectors.get(i);
 
       for (int j = 0; j < protocolVectors.size(); j++) {
         
@@ -492,18 +493,20 @@ public class UStructure extends Automaton {
         if (j == i)
           continue;
 
-        // Try both indexes of the vector
-        for (int k = 0; k < 2; k++) {
-          
-          if (isCompatible[k][i][j]) {
-            // if (sum of )
-          }
+        ProtocolVector protocol2 = protocolVectors.get(j);
 
-        }
+        // We've found a contradiction if there is a cheaper protocol that is compatible
+        if (protocol2.getValue() < protocol1.getValue() && (isCompatible[0][i][j] || isCompatible[1][i][j]))
+            continue outer;
 
-      }
+      } // for j
 
-    }
+      // If we've gotten this far, then we have a Nash equilibrium
+      nashEquilibriaProtocols.add(protocol1.getOriginalProtocol());
+
+    } // for i
+
+    return nashEquilibriaProtocols;
 
   }
 
@@ -524,6 +527,10 @@ public class UStructure extends Automaton {
     for (CommunicationData data : potentialCommunications)
       if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
         uStructure.addPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID, (CommunicationRole[]) data.roles.clone());
+
+    for (NashCommunicationData data : nashCommunications)
+      if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
+        uStructure.addNashCommunication(data.initialStateID, data.eventID, data.targetStateID, (CommunicationRole[]) data.roles.clone(), data.cost, data.probability);
 
     for (TransitionData data : invalidCommunications)
       if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
@@ -796,12 +803,12 @@ public class UStructure extends Automaton {
         return false;
 
     // If there was a change in the number of communications after pruning, then it is clearly not feasible
-    if (copy.potentialCommunications.size() != protocol.size())
+    if (copy.getSizeOfPotentialAndNashCommunications() != protocol.size())
       return false;
 
     UStructure invertedUStructure = copy.invert();
 
-    for (CommunicationData data : copy.potentialCommunications) {
+    for (CommunicationData data : copy.getPotentialAndNashCommunications()) {
       
       // Find indistinguishable states
       Set<Long> reachableStates = new HashSet<Long>();
@@ -934,6 +941,7 @@ public class UStructure extends Automaton {
     renumberStatesInTransitionData(mappingRAFile, unconditionalViolations);
     renumberStatesInTransitionData(mappingRAFile, conditionalViolations);
     renumberStatesInTransitionData(mappingRAFile, potentialCommunications);
+    renumberStatesInTransitionData(mappingRAFile, nashCommunications);
     renumberStatesInTransitionData(mappingRAFile, invalidCommunications);
 
   }
@@ -1252,6 +1260,9 @@ public class UStructure extends Automaton {
     
     // Multiple potential communications could exist for the same transition (this happens when there are more than one potential sender)
     while (potentialCommunications.remove(data));
+
+    // Multiple Nash communications could exist for the same transition (this happens when there are more than one potential sender)
+    while (nashCommunications.remove(data));
     
     invalidCommunications.remove(data);
 
@@ -1366,6 +1377,30 @@ public class UStructure extends Automaton {
    **/
   public List<NashCommunicationData> getNashCommunications() {
     return nashCommunications;
+  }
+
+  /**
+   * Get the size of the union of the list of potential communications and Nash communications.
+   * NOTE: This method gets the size without actually creating a union of the two sets.
+   * @return  The combined size of the potential communications and Nash communications
+   **/
+  public int getSizeOfPotentialAndNashCommunications() {
+    return potentialCommunications.size() + nashCommunications.size();
+  }
+
+  /**
+   * Get the union of the list of potential communications and Nash communications.
+   * NOTE: This method generates a new list each time it is called.
+   * @return  The potential communications and Nash communications
+   **/
+  public List<CommunicationData> getPotentialAndNashCommunications() {
+
+    List<CommunicationData> communications = new ArrayList<CommunicationData>();
+    communications.addAll(potentialCommunications);
+    communications.addAll(nashCommunications);
+
+    return communications;
+  
   }
 
   /**

@@ -481,7 +481,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
     JMenuBar menuBar = new JMenuBar();
 
     menuBar.add(createMenu("File", "New Tab->New Automaton,New U-Structure,New Pruned U-Structure,New Crush", "Open", "Save As...[TAB]", "Refresh Tab[TAB]", null, "Clear[TAB]", "Close Tab[TAB]", null, "Export as SVG[AUTOMATON]", null, "Quit"));
-    menuBar.add(createMenu("Standard Operations", "Accessible[AUTOMATON]", "Co-Accessible[AUTOMATON]", "Trim[AUTOMATON]", "Complement[AUTOMATON]", null, "Intersection[BASIC_AUTOMATON]", "Union[BASIC_AUTOMATON]"));
+    menuBar.add(createMenu("Standard Operations", "Accessible[AUTOMATON]", "Co-Accessible[BASIC_AUTOMATON]", "Trim[BASIC_AUTOMATON]", "Complement[AUTOMATON]", null, "Intersection[BASIC_AUTOMATON]", "Union[BASIC_AUTOMATON]"));
     menuBar.add(createMenu("Special Operations", "Synchronized Composition[BASIC_AUTOMATON]", null, "Add Communications[U_STRUCTURE]", "Feasible Protocols->Generate All[U_STRUCTURE],Make Protocol Feasible[U_STRUCTURE],Find Smallest[U_STRUCTURE]", "Crush[PRUNED_U_STRUCTURE]"));
     menuBar.add(createMenu("Quantitative Communication", "Nash[U_STRUCTURE]", "Pareto"));
     menuBar.add(createMenu("Generate", "Random Automaton"));
@@ -821,7 +821,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         UStructure uStructure = ((UStructure) tab.automaton);
 
         // Display warning message, and abort the operation if requested
-        if (uStructure.getPotentialCommunications().size() > 0 || uStructure.getPotentialCommunications().size() > 0)
+        if (uStructure.getSizeOfPotentialAndNashCommunications() > 0)
           if (!askForConfirmation("This U-Structure appears to already have had communications added. Are you sure you want to proceed? WARNING: This may result in duplicate communications.", "Communications Already Exist"))  
             break;
 
@@ -838,7 +838,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         uStructure = ((UStructure) tab.automaton);
 
-        if (uStructure.getPotentialCommunications().size() == 0)
+        if (uStructure.getSizeOfPotentialAndNashCommunications() == 0)
           JOptionPane.showMessageDialog(null, "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.", "Operation Failed", JOptionPane.ERROR_MESSAGE);
         else
           new GeneratedAllFeasibleProtocolsPrompt(this, uStructure);
@@ -848,7 +848,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         uStructure = ((UStructure) tab.automaton);
 
-        if (uStructure.getPotentialCommunications().size() == 0)
+        if (uStructure.getSizeOfPotentialAndNashCommunications() == 0)
           JOptionPane.showMessageDialog(null, "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.", "Operation Failed", JOptionPane.ERROR_MESSAGE);
         else
           new MakeProtocolFeasiblePrompt(this, uStructure);
@@ -858,17 +858,17 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         uStructure = ((UStructure) tab.automaton);
 
-        if (uStructure.getPotentialCommunications().size() == 0)
+        if (uStructure.getSizeOfPotentialAndNashCommunications() == 0)
           JOptionPane.showMessageDialog(null, "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.", "Operation Failed", JOptionPane.ERROR_MESSAGE);
         else
-          new FeasibleProtocolOutput(this, uStructure, uStructure.generateSmallestFeasibleProtocols(uStructure.getPotentialCommunications()), "Smallest Feasible Protocols", " Protocol(s) with the fewest number of communications: ");
+          new FeasibleProtocolOutput(this, uStructure, uStructure.generateSmallestFeasibleProtocols(uStructure.getPotentialAndNashCommunications()), "Smallest Feasible Protocols", " Protocol(s) with the fewest number of communications: ");
         break;
 
       case "Nash":
 
         uStructure = ((UStructure) tab.automaton);
 
-        if (uStructure.getPotentialCommunications().size() == 0)
+        if (uStructure.getSizeOfPotentialAndNashCommunications() == 0)
           JOptionPane.showMessageDialog(null, "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.", "Operation Failed", JOptionPane.ERROR_MESSAGE);
         else
           new NashInformationPrompt(this, tab, "Cost and Probability Values", "Specify costs and probabilities for each communication.");
@@ -990,6 +990,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
   // Load automaton from file, filling the input fields with its data
   private void refresh(int index) {
 
+    ProgressBarPopup progressBarPopup = new ProgressBarPopup("Loading...", 3);
+
     AutomatonTab tab = tabs.get(index);
 
     // Instantiate automaton
@@ -1017,7 +1019,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     }
 
+    progressBarPopup.updateProgressBar(1);
+
     tab.refreshGUI();
+
+    progressBarPopup.updateProgressBar(1);
 
     // Generate an image (unless it's quite large)
     if (tab.automaton.getNumberOfStates() <= 100) {
@@ -1026,7 +1032,13 @@ public class AutomataGUI extends JFrame implements ActionListener {
     } else
       tab.generateImageButton.setEnabled(true);
 
+    tab.splitPane.setDividerLocation(tab.getWidth() / 2);
+
     tab.setSaved(true);
+
+    progressBarPopup.updateProgressBar(1);
+
+    progressBarPopup.dispose();
 
   }
 
@@ -1341,14 +1353,14 @@ public class AutomataGUI extends JFrame implements ActionListener {
       } else {
 
         double ratio = Math.max((double) image.getWidth() / (double) getWidth(), (double) image.getHeight() / (double) getHeight());
-        int width = (int) (image.getWidth() / ratio);
+        int width  = (int) (image.getWidth()  / ratio);
         int height = (int) (image.getHeight() / ratio);
         int horizontalPadding = Math.max(0, (getWidth()  - width)  / 2);
         int verticalPadding   = Math.max(0, (getHeight() - height) / 2);
         graphics.drawImage(image, horizontalPadding, verticalPadding, width, height, null);
 
       }
-
+      
     }
 
   } // Canvas class
@@ -1360,26 +1372,27 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       /* Public instance variables */
 
-    public JTextPane eventInput      = null;
-    public JTextPane stateInput      = null;
-    public JTextPane transitionInput = null;
-    public JSpinner controllerInput  = null;
+    public JTextPane eventInput;
+    public JTextPane stateInput;
+    public JTextPane transitionInput;
+    public JSpinner controllerInput;
 
     public Canvas canvas = null;
 
-    public File headerFile = null;
-    public File bodyFile   = null;
-
-    public Automaton automaton = null;
-
-    private boolean saved = true;
+    public File headerFile;
+    public File bodyFile;
+    public Automaton automaton;
 
     public int index;
 
-    public JButton generateAutomatonButton = null;
-    public JButton generateImageButton     = null;
+    public JButton generateAutomatonButton;
+    public JButton generateImageButton;
 
     public Automaton.Type type;
+
+    public JSplitPane splitPane;
+    
+    private boolean saved = true;
 
       /* Constructor */
 
@@ -1404,10 +1417,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
       canvas = new Canvas();
 
       // Create a split pane with the two scroll panes in it
-      final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, inputContainer, canvas);
+      splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, inputContainer, canvas);
       splitPane.setOneTouchExpandable(true);
-      splitPane.setDividerLocation(getWidth() / 2);
       add(splitPane, BorderLayout.CENTER);
+      // System.out.println(getWidth());
+      // splitPane.setDividerLocation(getWidth() / 2);
 
       // // Ensure the divider does not get moved to the left side of the screen when the content changes in either of the containers
       // int location = splitPane.getDividerLocation();
