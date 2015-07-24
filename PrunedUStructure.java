@@ -159,10 +159,27 @@ public class PrunedUStructure extends UStructure {
 
         // Generate list of all reachable states from the current event
         Set<State> reachableStates = new HashSet<State>();
+        Set<CommunicationData> potentialCommunicationsToBeCopied = new HashSet<CommunicationData>();
         for (State s : setOfStates)
           for (Transition t : s.getTransitions())
-            if (t.getEvent().equals(e))
+            if (t.getEvent().equals(e)) {
+
+              // Find reachable states
               findConnectingStates(reachableStates, getState(t.getTargetStateID()), indexOfController);
+
+              // Check to see if there are any potential communications that need to be copied over
+              TransitionData transitionData = new TransitionData(s.getID(), t.getEvent().getID(), t.getTargetStateID());
+              for (CommunicationData communication : potentialCommunications)
+                if (transitionData.equals(communication)) {
+                  potentialCommunicationsToBeCopied.add(new CommunicationData(
+                    0, // The 0's are just placeholders (we only care about the roles)
+                    0, 
+                    0,
+                    (CommunicationRole[]) communication.roles.clone()
+                  ));
+                }
+            
+            }
 
         // Add the transition (if applicable)
         if (reachableStates.size() > 0) {
@@ -178,6 +195,10 @@ public class PrunedUStructure extends UStructure {
           
           crush.addTransition(mappedID, e.getID(), mappedTargetID);
 
+          // Add potential communications (NOTE: Only the information about the roles is useful)
+          for (CommunicationData communication : potentialCommunicationsToBeCopied)
+            crush.addPotentialCommunication(mappedID, e.getID(), mappedTargetID, communication.roles);
+      
         }
 
       }

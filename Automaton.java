@@ -995,7 +995,7 @@ public class Automaton {
         String combinedStateLabel = getStateExcludingTransitions(t1.getTargetStateID()).getLabel();
 
         // If this is the system has a bad transition, then it is an unconditional violation by default until we've found a controller that prevents it
-        boolean isBadTransition = badTransitions.contains(new TransitionData(listOfStates.get(0).getID(), e.getID(), t1.getTargetStateID()));
+        boolean isBadTransition = isBadTransition(listOfStates.get(0).getID(), e.getID(), t1.getTargetStateID());
         boolean isUnconditionalViolation = isBadTransition;
 
         // A conditional violation can only occur when an event is controllable by at least 2 controllers, and the system must have a good transition

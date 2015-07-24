@@ -3,34 +3,33 @@ Monday, July 20: 5 hours
 Tuesday, July 21: 2 hours
 Wednesday, July 22: 1 hour
 Thursday, July 23: 6 hours
-Friday, July 24: 7:31 - (expected: 10 hours)
+Friday, July 24: 1 hour, 8:51 - (expected: 10 hours)
 
 QUESTIONS:
 
+  -where do we need to make notes about cyclic vs. acyclic??
   -Are there any small examples using 3 controllers that do not blow up very large and are easily verifiable? (I'm looking for a good test case)
   -For the observer automaton, if at least one state is marked, does that mean that the entire group of states will be marked in the observer (Figure 2.22 on pg. 89)?
 
 SHORT-TERM:
   
+  FINISH NASH THIS WEEKEND:
+  -Copy communications over when taking the crush (needs to be implemented)
+  -unit/sum/max the costs?????????? Take the crushes to figure out.......... sum and max
+  -Add test case for system does not satisfy observability in Nash algorithm (exception handling)
+  -Update GUI tooltips for the crush after I recieve a response to my question about copying communications over to the crush
+  
+  -Ensure that I'm not making the following mistake anywhere: letting two automata share a reference to the same piece of CommunicationData for example.. If one automaton changed it, then it would mess up the other one
   -Add options to generate random automaton:
     observable - build U-structure, ensure there are not any violations
     controllable - there cannot be a bad transition that has an event that is uncontrollable by all controllers
-
-  Pareto: http://commons.apache.org/proper/commons-math/userguide/linear.html
-  -Copy communications over when taking the crush (needs to be implemented)
-  -isFeasibleProtocol - mustAlsoSolveControlProblem doesn't seem to work..
-  -Finish nash algorithm and output
-  -fix divider issue
   -finish loading bars when loading automaton
+  -Pareto: http://commons.apache.org/proper/commons-math/userguide/linear.html
+  -fix divider issue
   -Nash probability values : feature to automatically distribute? cases where default doesn't add up to 1?)
-  -Nash next button -> Trigger the next part of the procedure
-  -unit/sum/max the costs?????????? Take the crushes to figure out.......... sum and max
   -test case for isFeasible() with mustAlsoSolveControlProblem=true
-  -Update GUI tooltips for the crush after I recieve a response to my question about copying communications over to the crush
   -Make sure the correct special transitions are being parsed right for each automaton type
   -Add AutomataGUI constants for pop-up widths and heights
-  -"If there are no solutions without violations, then the user should be told at the outset that their system does not satisfy observability." - Ricker (regarding Nash)
-
   -add more tests for crush (include one which contains loops!)
   -currently regenerating uStructures when clicking "Generate Automaton" button (but they were already generated before when testing for feasibility, so we should store them)
   -In parsing U-Structure GUI input, add validation check for event vectors?
