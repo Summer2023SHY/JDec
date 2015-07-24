@@ -1360,7 +1360,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         graphics.drawImage(image, horizontalPadding, verticalPadding, width, height, null);
 
       }
-      
+
     }
 
   } // Canvas class
@@ -1680,16 +1680,14 @@ public class AutomataGUI extends JFrame implements ActionListener {
                + "means that controller 1 is sending the communication to controllers 2 and 3.<br>Appending '-R*S' means that controller 3 is sending the "
                + "communication to controller 1 (where '*' denotes that a controller that doesn't have a role in the communication).</i></html>";
 
-        // case CRUSH:
-          // return "<html>1 transition per line, formatted as <i>INITIAL_STATE,EVENT,TARGET_STATE[:SPECIAL_PROPERTIES]</i>"
-          //      + ", which are used in the synchronized composition operation).<br>"
-          //      + "<b><u>EXAMPLE</u></b>: <i>'FirstState,Event,SecondState'</i> denotes a transition that goes from "
-          //      + "the state <b>'FirstState'</b> to the state <b>'SecondState'</b> by the event vector called <b>'Event'</b>.<br>"
-          //      + "<b><u>NOTE</u></b>: <i>SPECIAL_PROPERTIES</i> can be added to a transition by appending ':NAME_OF_PROPERTY'. "
-          //      + "Additional properties are separated by commas.<br><b>Names of special properties in a U-Structure:</b>: "
-          //      + "<i>'UNCONDITIONAL_VIOLATION'</i>, <i>'CONDITIONAL_VIOLATION'</i>, <i>'COMMUNICATION*'</i>, and <i>'POTENTIAL_COMMUNICATION'</i>.<br>"
-          //      + "<i>*'COMMUNICATION' is used to mark all of the communications which are not potential communications, but have been added "
-          //      + "to the U-Structure for mathematical completion.</i></html>";
+        case CRUSH:
+          return "<html>1 transition per line, formatted as <i>INITIAL_STATE,EVENT,TARGET_STATE[:SPECIAL_PROPERTIES]</i>"
+               + ", which are used in the synchronized composition operation).<br>"
+               + "<b><u>EXAMPLE</u></b>: <i>'FirstState,Event,SecondState'</i> denotes a transition that goes from "
+               + "the state <b>'FirstState'</b> to the state <b>'SecondState'</b> by the event vector called <b>'Event'</b>.<br>"
+               + "<b><u>NOTE</u></b>: <i>SPECIAL_PROPERTIES</i> can be added to a transition by appending ':NAME_OF_PROPERTY'. "
+               + "Additional properties are separated by commas.<br><b>Names of special properties in a U-Structure:</b>: "
+               + "<i>'COMMUNICATION'</i>.<br></html>";
 
         default:
           return null;
