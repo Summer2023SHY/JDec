@@ -30,10 +30,15 @@ public class NashCommunicationData extends CommunicationData {
 
   }
 
-  // @Override public String toString(Automaton automaton) {
+  /**
+   * Represent this piece of Nash communication data in the form of a string.
+   * @param automaton The relevant automaton
+   * @return          The string representation
+   **/
+  public String toNashString(Automaton automaton) {
 
-  //   return super.toString(automaton) + "," + cost + "," + probability;
+    return super.toString(automaton) + "," + cost + "," + probability;
 
-  // }
+  }
 
 }

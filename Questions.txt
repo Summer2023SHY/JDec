@@ -16,7 +16,6 @@ SHORT-TERM:
   FINISH NASH THIS WEEKEND:
   -unit/sum/max the costs?????????? Take the crushes to figure out.......... sum and max
   -Add test case for system does not satisfy observability in Nash algorithm (exception handling)
-  -Add Nash test case (for the example we used on Thursday with 3 equilibria)
 
   -Ensure that I'm not making the following mistake anywhere: letting two automata share a reference to the same piece of CommunicationData for example.. If one automaton changed it, then it would mess up the other one
   -Add options to generate random automaton:
@@ -49,7 +48,6 @@ SHORT-TERM:
   -Add addCommunications test for 3 controllers!!
   -Add test case for accessible, one more test case for union (because I'm not 100% confident in the sets of Events working as expected)
   -In Automaton::addState(), there is the potential for 3 calls to recreateBinaryFile. This should be combined into one call.
-  -Allow GUI to resize nicely (and things to be sized automatically better, including pop-ups)
 
   POTENTIAL:
   -co-acessible warning message if there are no marked states
