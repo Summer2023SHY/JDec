@@ -125,7 +125,7 @@ public class PrunedUStructure extends UStructure {
    * @param combiningCostsMethod  The method used to combine communication costs
    * @return                      The crush
    **/
-  public Crush crush(File newHeaderFile, File newBodyFile, int indexOfController, Map<NashCommunicationData, Long> combinedCostsMappings, Crush.CombiningCosts combiningCostsMethod) {
+  public Crush crush(File newHeaderFile, File newBodyFile, int indexOfController, Map<NashCommunicationData, Integer> combinedCostsMappings, Crush.CombiningCosts combiningCostsMethod) {
 
     if (potentialCommunications.size() > 0)
       System.err.println("WARNING: " + potentialCommunications.size() + " communications were ignored. Only Nash communications are considered in the Crush operation.");
@@ -245,7 +245,7 @@ public class PrunedUStructure extends UStructure {
             // Store the mappings in between communications and combined costs, if requested (for example, this is used in the Nash operation)
             if (combinedCostsMappings != null)
               for (NashCommunicationData communication : set)
-                combinedCostsMappings.put(communication, (long) totalCost);
+                combinedCostsMappings.put(communication, totalCost);
 
             // Add the communication to the Crush
             crush.addNashCommunication(mappedID, e.getID(), mappedTargetID, roles, totalCost, totalProbability);

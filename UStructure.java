@@ -888,7 +888,7 @@ public class UStructure extends Automaton {
    *                              NOTE: Unless unit costs are used, then new NashCommunicationData objects
    *                                    will be created (since those objects could be referenced in other
    *                                    protocols, and we do not want to interfere with them)
-   * @param combiningCostsMethod  The method in which communication are being combined
+   * @param combiningCostsMethod  The method in which the communications are being combined
    **/
   private void combineCommunicationCosts(Set<NashCommunicationData> feasibleProtocol, Crush.CombiningCosts combiningCostsMethod) {
 
@@ -905,15 +905,27 @@ public class UStructure extends Automaton {
       crushNeedsToBeGenerated[communication.getIndexOfSender()] = true;
 
     // Generate the neccessary Crushes, storing only the communication cost mappings
-    List<Map<NashCommunicationData, Long>> costMappingsByCrush = new ArrayList<Map<NashCommunicationData, Long>>();
+    List<Map<NashCommunicationData, Integer>> costMappingsByCrush = new ArrayList<Map<NashCommunicationData, Integer>>();
     for (int i = 0; i < nControllersBeforeUStructure; i++)
       if (crushNeedsToBeGenerated[i]) {
-        Map<NashCommunicationData, Long> costMapping = new HashMap<NashCommunicationData, Long>();
+        Map<NashCommunicationData, Integer> costMapping = new HashMap<NashCommunicationData, Integer>();
         prunedUStructure.crush(null, null, i + 1, costMapping, combiningCostsMethod);
       } else
         costMappingsByCrush.add(null);
 
-    // Adjust the costs accordingly (creating new NashCommuniationData objects) -- separate list?????????
+    // Clear set of communications (since we are creating new NashCommuniationData objects)
+    Set<NashCommunicationData> originalCommunicationData = new HashSet<NashCommunicationData>(feasibleProtocol);
+    feasibleProtocol.clear();
+
+    // Adjust the costs according to the mappings, re-adding the new objects to the set
+    for (NashCommunicationData communication : originalCommunicationData) {
+
+      Map<NashCommunicationData, Integer> costMapping = costMappingsByCrush.get(communication.getIndexOfSender());
+
+      int newCost = costMapping.get(communication);
+      feasibleProtocol.add(new NashCommunicationData(communication.initialStateID, communication.eventID, communication.targetStateID, communication.roles, newCost, communication.probability));
+
+    }
 
   }
 
