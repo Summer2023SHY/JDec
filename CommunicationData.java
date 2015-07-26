@@ -5,7 +5,7 @@
  * @author Micah Stairs
  *
  * TABLE OF CONTENTS:
- *  -Instance Variable
+ *  -Instance Variables
  *  -Constructor
  *  -Accessor Method
  *  -Overridden Methods
@@ -15,10 +15,12 @@ import java.util.*;
 
 public class CommunicationData extends TransitionData {
 
-    /* INSTANCE VARIABLE */
+    /* INSTANCE VARIABLES */
 
   /** Holds the role for each of the controllers (sender, reciever, or none) */
   public CommunicationRole[] roles;
+
+  private int indexOfSender = -1;
 
     /* CONSTRUCTOR */
 
@@ -34,37 +36,36 @@ public class CommunicationData extends TransitionData {
     super(initialStateID, eventID, targetStateID);
     this.roles = roles;
 
-      /* Print error message to the console if there is not exactly one sender */
+      /* Store the index of the sender */
 
     int nSenders = 0;
 
-    for (CommunicationRole role : roles)
-      if (role == CommunicationRole.SENDER)
+    for (int i = 0; i < roles.length; i++)
+      if (roles[i] == CommunicationRole.SENDER) {
+        indexOfSender = i;
         nSenders++;
+      }
 
-    if (nSenders != 1) {
-      Thread.dumpStack();
+      /* Print error message to the console if there is not exactly one sender */
+
+    if (nSenders != 1)
       System.err.println("ERROR: A communication must contain exactly one sender. " + nSenders + " senders were found.");
-    }
-
+      
   }
 
     /* ACCESSOR METHOD */
 
   /**
    * Return the index (0-based) of the sending controller.
-   * NOTE:  There is only ever one sender. In cases where more than one sender
-   *        is required, they can be split into multiple communications.
-   * @return  The index of the sender, or -1 if there is no sender
+   * NOTE:  There can only be one sender in a CommunicationData object. In cases where more than
+   *        one sender is required, they can be split into multiple communications.
+   * @return  The index of the sender, or -1 if there is no sender (which is prohibited by the
+   *          constructor anyway)
    **/
   public int getIndexOfSender() {
-
-    for (int i = 0; i < roles.length; i++)
-      if (roles[i] == CommunicationRole.SENDER)
-        return i;
-
-    return -1;
-
+  
+    return indexOfSender;
+  
   }
 
     /* OVERRIDDEN METHODS */

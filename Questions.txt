@@ -1,9 +1,38 @@
 HOURS:
-Monday, July 20: 5 hours
-Tuesday, July 21: 2 hours
-Wednesday, July 22: 1 hour
-Thursday, July 23: 6 hours
-Friday, July 24: 1 hour, 8:51 - (expected: 10 hours)
+Sunday, July 26: 32, 4:55 -  minutes
+
+JAVADOC TO-DO LIST:
+
+  AutomataGUI.java
+  Automaton.java
+  AutomatonGenerator.java
+  ByteManipulator.java
+  CommunicationData.java
+  CommunicationLabelVector.java
+  CommunicationRole.java
+  Crush.java
+  DoesNotSatisfyObservabilityException.java
+  Event.java
+  FeasibleProtocolOutput.java
+  GeneratedAllFeasibleProtocolsPrompt.java
+  IncompatibleAutomataException.java
+  LabelVector.java
+  MakeProtocolFeasiblePrompt.java
+  MissingDependencyException.java
+  MissingOrCorruptBodyFileException.java
+  NashCommunicationData.java
+  NashEquilibriaOutput.java
+  NashInformationPrompt.java
+  ProgressBarPopup.java
+  ProtocolVector.java
+  PrunedUStructure.java
+  RandomAutomatonPrompt.java
+  State.java
+  TestAutomata.java
+  TooltipComponent.java
+  Transition.java
+  TransitionData.java
+  UStructure.java
 
 QUESTIONS:
 
@@ -12,17 +41,46 @@ QUESTIONS:
   -For the observer automaton, if at least one state is marked, does that mean that the entire group of states will be marked in the observer (Figure 2.22 on pg. 89)?
 
 SHORT-TERM:
-  
-  FINISH NASH THIS WEEKEND:
-  -unit/sum/max the costs?????????? Take the crushes to figure out.......... sum and max
-  -Add test case for system does not satisfy observability in Nash algorithm (exception handling)
 
+  -cost combining test cases from Dr. Ricker (test the sum as well!):
+        Example 1
+      Suppose that the communication protocol is the one where there are 4 <a_a_a> labels and nothing else:
+
+      Sender = controller 1, Receiver = controller 2
+      111->222 (cost = 1)
+      131->252 (cost = 5)
+      313->525 (cost = 5)
+      333->555 (cost = 1)
+
+      These 4 transitions happen to be indistinguishable from each other wrt this particular communication protocol. Thus, they form a single communication transition in the crush. As such, the cost, if we are taking the average, is (1+5+5+1)/4 = 3.  If we are taking the max, then the cost of this single transition in the crush is max(1,5,5,1) = 5.
+
+      Example 2
+      Suppose that the communication protocol is the one where we have the following communication protocol:
+
+      Sender = controller 1, Receiver = controller 2
+      111-> 222 (cost = 10)
+      333-> 555 (cost = 4)
+
+      None of these transitions are indistinguishable from the other for controller 1, so in the crush, each will form a unique communication transition with the costs noted above, i.e., the average (10/1) and (4/1), respectively, and max (max(10)=10, max(4)=4) are the same as the original costs.
+
+      Sender = controller 2, Receiver = controller 1
+      111->333
+      222->444
+
+      Same argument for when sender is controller 2.
+  
+  -make the user pick costs and probabilities before taking Crush
+  -unit/sum/max the costs?????????? Take the crushes to figure out.......... sum and max
+  -when taking crush, ask whether to take max or sum of costs
+  -Add test case for system does not satisfy observability in Nash algorithm (exception handling)
+  -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol
+  -tooltips -> Nash communications
+  -Add test case for making sure both protential and nash communications are copied into the crush as potential communications, and make sure that communications actually get "combined" (not making duplicates)
   -Ensure that I'm not making the following mistake anywhere: letting two automata share a reference to the same piece of CommunicationData for example.. If one automaton changed it, then it would mess up the other one
   -Add options to generate random automaton:
     observable - build U-structure, ensure there are not any violations
     controllable - there cannot be a bad transition that has an event that is uncontrollable by all controllers
   -finish loading bars when loading automaton
-  -Pareto: http://commons.apache.org/proper/commons-math/userguide/linear.html
   -fix divider issue
   -Nash probability values : feature to automatically distribute? cases where default doesn't add up to 1?)
   -test case for isFeasible() with mustAlsoSolveControlProblem=true
@@ -35,13 +93,11 @@ SHORT-TERM:
   -parse GUI input differently depending on the type
   -warning message when saving in GUI to overwrite files??
   -option to manually load GUI input code for large automata (alternatively, we could have a screen with automaton stats and list of events, basically everything that is in the header file)
-  -What about if multiple AutomataGUI processes are being run at the same time?? Create temporary folder based on PID (NOTE: PID can't easily be found)
-  -add export special transitions to file
+  -add export special transitions to file (or clipboard!)
     checkboxes for the following:
     -add export conditional violations to txt file
     -add export unconditional violations to txt file
     -add export potential communications to txt file
-  -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol
   -export to multiple formats at once (and then when user hits exports, let them choose where this file gets copied to)!
   -Add tests to runAutomatonCapacityTestRoutine that check how capacity expanding works
   -add export to png (maybe others?)
@@ -58,3 +114,4 @@ SHORT-TERM:
   -Zoom feature in image (generate larger image)
   -complement test case (where dump state does not need to be created)
   -Projection operation
+  -What about if multiple AutomataGUI processes are being run at the same time?? Create temporary folder based on PID (NOTE: PID can't easily be found)

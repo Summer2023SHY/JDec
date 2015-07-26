@@ -1,22 +1,38 @@
-import javax.swing.*;
-import javax.swing.event.*;
+/**
+ * AutomataGUI - This class is a graphical user interface for building and manipulating automata.
+ *               NOTE: There should only ever be one instance of this class running at one time.
+ *
+ * @author Micah Stairs
+ *
+ * TABLE OF CONTENTS:
+ *  -Class Constants
+ *  -Instance Variables
+ *  -Main Method
+ *  -Constructor
+ *  -Setup Methods
+ *  -Actions
+ *  -Enabling/Disabling Components
+ *  -Prompts
+ **/
+
 import java.awt.*;
 import java.awt.event.*;
-import java.util.*;
 import java.awt.image.*;
 import java.io.*;
+import java.util.*;
+import javax.swing.*;
+import javax.swing.event.*;
 import javax.swing.filechooser.*;
-import java.beans.*;
 
 public class AutomataGUI extends JFrame implements ActionListener {
 
-    /** CLASS CONSTANTS **/
+    /* CLASS CONSTANTS */
 
   private static final String GUI_DATA_FILE_NAME = "gui.data";
   private static final File TEMPORARY_DIRECTORY = new File("AutomataGUI_Temporary_Files");
-  private int temporaryFileIndex = 1;
+  private static final int imageSize = 800; // 
 
-    /** Private instance variables **/
+    /* INSTANCE VARIABLES */
 
   // Tabs
   private JTabbedPane tabbedPane;
@@ -30,17 +46,21 @@ public class AutomataGUI extends JFrame implements ActionListener {
   private java.util.List<Component> componentsWhichRequirePrunedUStructure = new ArrayList<Component>();
 
   // Miscellaneous
-  private int imageSize = 800;
   private File currentDirectory = null;
+  private int temporaryFileIndex = 1;
 
-    /** MAIN METHOD **/
-  
+    /* MAIN METHOD */
+
+  /**
+   * Create an instance of this application, setting it to use the Mac's screen menu bar.
+   * @param args  Any arguments are simply ignored
+   **/  
   public static void main(String[] args) {
     System.setProperty("apple.laf.useScreenMenuBar", "true");
     new AutomataGUI();
   }
 
-    /** CONSTRUCTOR **/
+    /* CONSTRUCTOR */
 
   /**
    * Construct and display the GUI.
@@ -78,400 +98,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
   }
 
-  /**
-   * Make a new thread that monitors when the program quits, deleting all temporary files.
-   **/
-  private static void cleanupBeforeProgramQuits() {
-  
-    // The code within this will execute when the program exits for good
-    Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() { 
-      @Override public void run() {
-
-        for (String file : TEMPORARY_DIRECTORY.list())
-          new File(TEMPORARY_DIRECTORY, file).delete();
-
-        TEMPORARY_DIRECTORY.delete();
-
-      }
-    }));
-  }
-
-  /**
-   * Prompt the user to save files before exiting.
-   **/
-  private void promptBeforeExit() {
-  
-    this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-    
-    addWindowListener(new WindowAdapter() {
-      @Override public void windowClosing(WindowEvent event) { 
-
-          /* Check for unsaved information */
-
-        boolean unSavedInformation = false;
-        for (int i = 0; i < tabbedPane.getTabCount(); i++)
-          if (tabs.get(i).hasUnsavedInformation())
-            unSavedInformation = true;
-        
-        if (!unSavedInformation)
-          System.exit(0);
-
-          /* Prompt user to save */
-
-        if (askForConfirmation("Are you sure you want to exit? Any unsaved information will be lost.", "Unsaved Information"))
-          System.exit(0);
-
-      }
-    });
-
-  }
-
-  // Excluding the extension
-  public String getTemporaryFileName() {
-    return TEMPORARY_DIRECTORY.getAbsolutePath() + "/untitled" + temporaryFileIndex++;
-  }
-
-  /**
-   * Create an empty tab.
-   * @param assignTemporaryFiles  Whether or not temporary files should be assigned to the tab
-   **/
-  private void createTab(boolean assignTemporaryFiles, Automaton.Type type) {
-
-      /* Add tab */
-
-    int index = tabbedPane.getTabCount();
-
-    AutomatonTab tab = new AutomatonTab(index, type);
-    tabs.add(tab);
-
-    tabbedPane.addTab(null, null, tab, "");
-    tabbedPane.setSelectedIndex(index);
-
-    if (assignTemporaryFiles) {
-      String fileName = getTemporaryFileName();
-      tab.headerFile = new File(fileName + ".hdr");
-      tab.bodyFile = new File(fileName + ".bdy");
-      tab.updateTabTitle();
-    }
-
-      /* Re-activate appropriate components if this is the first tab */
-
-    if (tabs.size() == 1)
-      for (Component component : componentsWhichRequireTab)
-        component.setEnabled(true);
-
-  }
-
-  /**
-   * Create a tab, and load in an automaton.
-   * @param automaton   The automaton object
-   **/
-  public void createTab(Automaton automaton) {
-
-      /* Create new tab */
-
-    createTab(false, Automaton.Type.getType(automaton.getClass()));
-    int newIndex = tabbedPane.getTabCount() - 1;
-
-      /* Set tab values */
-
-    AutomatonTab tab = tabs.get(newIndex);
-    tab.headerFile   = automaton.getHeaderFile();
-    tab.bodyFile     = automaton.getBodyFile();
-    tab.automaton    = automaton;
-    tab.refreshGUI();
-    tab.setSaved(true);
-
-      /* Generate an image (unless it's quite large) */
-
-    if (tab.automaton.getNumberOfStates() <= 100) {
-      generateImage();
-      tab.generateImageButton.setEnabled(false);
-    } else
-      tab.generateImageButton.setEnabled(true);
-
-  }
-
-  /**
-   * Close the current tab, displaying a warning message if the current tab is unsaved.
-   **/
-  private void closeCurrentTab() {
-
-      /* Get index of the currently selected tab */
-
-    int index = tabbedPane.getSelectedIndex();
-
-      /* Check for unsaved information */
-
-    AutomatonTab tab = tabs.get(index);
-    if (tab.hasUnsavedInformation()) {
-
-      // Create message to display in pop-up
-      String message = "Are you sure you want to close this tab? ";
-      if (tab.usingTemporaryFiles())
-        message += "This automaton is only being saved temporarily. To save this automaton\npermanently, ensure that you have generated the automaton, then select 'Save As...' from the 'File' menu.";
-      else
-        message += "Any un-generated GUI input code will be lost.";
-
-      // Confirm that the user wants to proceed
-      if (!askForConfirmation(message, "Unsaved Information"))
-        return;
-
-    }
-
-      /* Remove tab */
-
-    tabbedPane.remove(index);
-    tabs.remove(index);
-
-      /* Re-number tabs */
-
-    for (int i = 0; i < tabs.size(); i++)
-      tabs.get(i).index = i;
-
-      /* De-activate appropriate components if there are no tabs left */
-
-    if (tabs.size() == 0)
-      for (Component component : componentsWhichRequireTab)
-        component.setEnabled(false);
-    
-  }
-
-  /**
-   * Set some default GUI Properties.
-   **/
-  private void setGUIproperties() {
-
-      /* Pack things in nicely */
-
-    // pack();
-    setExtendedState(JFrame.MAXIMIZED_BOTH);
-    
-      /* Ensure our application will be closed when the user presses the "X" */
-
-    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    // setResizable(false);
-
-      /* Sets screen location in the center of the screen (only works after calling pack) */
-
-    setLocationRelativeTo(null);
-
-      /* Update title */
-
-    setTitle("Automata Manipulator");
-
-      /* Show screen */
-
-    setVisible(true);
-
-  }
-
-  /**
-   * Load the current directory from file (so that the current directory is maintained even after the program has been closed).
-   **/
-  private void loadCurrentDirectory() {
-
-    try {
-
-      Scanner sc = new Scanner(new File(GUI_DATA_FILE_NAME));
-
-      if (sc.hasNextLine())
-        currentDirectory = new File(sc.nextLine());
-
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
-  }
-
-  /**
-   * Saves the current directory to file (so that the current directory is maintained even after the program has been closed).
-   **/
-  private void saveCurrentDirectory() {
-
-    if (currentDirectory != null) {
-
-      try {
-
-        PrintWriter writer = new PrintWriter(new FileWriter(GUI_DATA_FILE_NAME, false));
-        writer.println(currentDirectory.getPath());
-        writer.close();
-
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-
-    }
-
-  }
-
-  /**
-   * Export an image of the graph to file.
-   **/
-  private void export() {
-
-    int index = tabbedPane.getSelectedIndex();
-
-    AutomatonTab tab = tabs.get(index);
-
-    // Create automaton from input code
-    int nControllers = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
-    Automaton automaton = AutomatonGenerator.generateFromGUICode(
-        new Automaton(tab.headerFile, tab.bodyFile, nControllers),
-        tab.eventInput.getText(),
-        tab.stateInput.getText(),
-        tab.transitionInput.getText(),
-        true
-      );
-    tab.automaton = automaton;
-    tab.setSaved(true);
-
-    // Set the image blank if there were no states entered
-    if (automaton == null)
-      tab.canvas.setImage(null);
-
-    // Try to create graph image
-    else {
-
-      try {
-        
-        String fileName = tab.headerFile.getName();
-        String destinationFileName = currentDirectory + "/" + removeExtension(fileName) + ".svg";
-
-        if (automaton.generateImage(imageSize, Automaton.OutputMode.SVG, destinationFileName))
-          JOptionPane.showMessageDialog(null, "The image of the graph has been exported to '" + destinationFileName + "'.", "Export Complete", JOptionPane.INFORMATION_MESSAGE);
-        else
-          JOptionPane.showMessageDialog(null, "Something went wrong while generating and exporting the image of the graph.", "Export Failed", JOptionPane.ERROR_MESSAGE);
-      
-      } catch (MissingDependencyException e) {
-        JOptionPane.showMessageDialog(null, "Please ensure that GraphViz is installed, with its directory added to the PATH environment variable.", "Missing Dependency", JOptionPane.ERROR_MESSAGE);
-    
-      } catch (MissingOrCorruptBodyFileException e) {
-        JOptionPane.showMessageDialog(null, "Please ensure that the .bdy file associated with this automaton is not corrupt or missing.", "Corrupt or Missing File", JOptionPane.ERROR_MESSAGE);
-      }
-
-    }
-
-  }
-
-  /**
-   * Generate an automaton using the entered GUI input code.
-   **/
-  private void generateAutomatonButtonPressed() {
-
-    // Get the current tab
-    int index = tabbedPane.getSelectedIndex();
-    AutomatonTab tab = tabs.get(index);
-
-    // Create automaton from input code
-    switch (tab.type) {
-
-      case AUTOMATON:
-
-        int nControllers = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
-        tab.automaton = AutomatonGenerator.generateFromGUICode(
-          new Automaton(tab.headerFile, tab.bodyFile, nControllers),
-          tab.eventInput.getText(),
-          tab.stateInput.getText(),
-          tab.transitionInput.getText(),
-          true
-        );
-        break;
-
-      case U_STRUCTURE:
-
-        int nControllersBeforeUStructure = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
-        tab.automaton = AutomatonGenerator.generateFromGUICode(
-          new UStructure(tab.headerFile, tab.bodyFile, nControllersBeforeUStructure),
-          tab.eventInput.getText(),
-          tab.stateInput.getText(),
-          tab.transitionInput.getText(),
-          true
-        );
-        break;
-
-      case PRUNED_U_STRUCTURE:
-
-        nControllersBeforeUStructure = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
-        tab.automaton = AutomatonGenerator.generateFromGUICode(
-          new PrunedUStructure(tab.headerFile, tab.bodyFile, nControllersBeforeUStructure),
-          tab.eventInput.getText(),
-          tab.stateInput.getText(),
-          tab.transitionInput.getText(),
-          true
-        );
-        break;
-
-      case CRUSH:
-
-        nControllersBeforeUStructure = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
-        tab.automaton = AutomatonGenerator.generateFromGUICode(
-          new Crush(tab.headerFile, tab.bodyFile, nControllersBeforeUStructure),
-          tab.eventInput.getText(),
-          tab.stateInput.getText(),
-          tab.transitionInput.getText(),
-          true
-        );
-        break;
-
-      default:
-
-        // NOTE: The following error should never appear to the user, and it indicates a bug in the program
-        JOptionPane.showMessageDialog(null, "Unable to generate automaton from GUI input code due to unrecognized automaton type.", "Crucial Error", JOptionPane.ERROR_MESSAGE);
-        return;
-
-    }
-    tab.setSaved(true);
-
-    // Generate an image (unless it's quite large)
-    if (tab.automaton.getNumberOfStates() <= 100) {
-      generateImage();
-      tab.generateImageButton.setEnabled(false);
-    } else
-      tab.generateImageButton.setEnabled(true);
-
-    // Refresh GUI
-    updateComponentsWhichRequireAutomaton(); 
-
-  }
-
-  /**
-   * Generate an image of the graph, displaying it on the screen.
-   **/
-  private void generateImage() {
-
-    // Get the current tab
-    AutomatonTab tab = tabs.get(tabbedPane.getSelectedIndex());
-
-    // Create destination file name
-    String destinationFileName = "untitled.png";
-    if (tab.headerFile != null) {
-      String fileName = tab.headerFile.getName();
-      destinationFileName = currentDirectory + "/" + removeExtension(fileName) + ".png";
-    }
-
-    try {
-
-      // Set the image blank if there were no states entered
-      if (tab.automaton == null)
-        tab.canvas.setImage(null);
-
-      // Try to create graph image, displaying it on the screen
-      else if (tab.automaton.generateImage(imageSize, Automaton.OutputMode.PNG, destinationFileName))
-        tab.canvas.setImage(tab.automaton.loadImageFromFile(destinationFileName));
-
-      // Display error message
-      else
-        JOptionPane.showMessageDialog(null, "Something went wrong while trying to generate and display the image. NOTE: It may be the case that you do not have X11 installed.", "Error", JOptionPane.ERROR_MESSAGE);
-    
-    } catch (MissingDependencyException e) {
-      JOptionPane.showMessageDialog(null, "Please ensure that GraphViz is installed, with its directory added to the PATH environment variable.", "Missing Dependency", JOptionPane.ERROR_MESSAGE);
-    
-    } catch (MissingOrCorruptBodyFileException e) {
-      JOptionPane.showMessageDialog(null, "Please ensure that the .bdy file associated with this automaton is not corrupt or missing.", "Corrupt or Missing File", JOptionPane.ERROR_MESSAGE);
-    }
-
-  }
+    /* SETUP METHODS */
 
   /**
    * Adds the menu system to the application.
@@ -480,11 +107,51 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     JMenuBar menuBar = new JMenuBar();
 
-    menuBar.add(createMenu("File", "New Tab->New Automaton,New U-Structure,New Pruned U-Structure,New Crush", "Open", "Save As...[TAB]", "Refresh Tab[TAB]", null, "Clear[TAB]", "Close Tab[TAB]", null, "Export as SVG[AUTOMATON]", null, "Quit"));
-    menuBar.add(createMenu("Standard Operations", "Accessible[AUTOMATON]", "Co-Accessible[BASIC_AUTOMATON]", "Trim[BASIC_AUTOMATON]", "Complement[AUTOMATON]", null, "Intersection[BASIC_AUTOMATON]", "Union[BASIC_AUTOMATON]"));
-    menuBar.add(createMenu("Special Operations", "Synchronized Composition[BASIC_AUTOMATON]", null, "Add Communications[U_STRUCTURE]", "Feasible Protocols->Generate All[U_STRUCTURE],Make Protocol Feasible[U_STRUCTURE],Find Smallest[U_STRUCTURE]", "Crush[PRUNED_U_STRUCTURE]"));
-    menuBar.add(createMenu("Quantitative Communication", "Nash[U_STRUCTURE]", "Pareto"));
-    menuBar.add(createMenu("Generate", "Random Automaton"));
+    // File menu
+    menuBar.add(createMenu("File",
+      "New Tab->New Automaton,New U-Structure,New Pruned U-Structure,New Crush",
+      "Open",
+      "Save As...[TAB]",
+      "Refresh Tab[TAB]",
+      null,
+      "Clear[TAB]",
+      "Close Tab[TAB]",
+      null,
+      "Export as SVG[AUTOMATON]",
+      null,
+      "Quit"
+    ));
+
+    // Standard operations menu
+    menuBar.add(createMenu("Standard Operations",
+      "Accessible[AUTOMATON]",
+      "Co-Accessible[BASIC_AUTOMATON]",
+      "Trim[BASIC_AUTOMATON]",
+      "Complement[AUTOMATON]",
+      null,
+      "Intersection[BASIC_AUTOMATON]",
+      "Union[BASIC_AUTOMATON]"
+    ));
+
+    // Special operations menu
+    menuBar.add(createMenu("Special Operations",
+      "Synchronized Composition[BASIC_AUTOMATON]",
+      null,
+      "Add Communications[U_STRUCTURE]",
+      "Feasible Protocols->Generate All[U_STRUCTURE],Make Protocol Feasible[U_STRUCTURE],Find Smallest[U_STRUCTURE]",
+      "Crush[PRUNED_U_STRUCTURE]"
+    ));
+
+    // Quantitative communication menu
+    menuBar.add(createMenu("Quantitative Communication",
+      "Nash[U_STRUCTURE]",
+      "Pareto"
+    ));
+    
+    // Generate menu
+    menuBar.add(createMenu("Generate",
+      "Random Automaton"
+    ));
 
     this.setJMenuBar(menuBar);
 
@@ -536,39 +203,29 @@ public class AutomataGUI extends JFrame implements ActionListener {
   private void addMenuItem(JMenu menu, String str) {
 
     // Check to see if this menu item requires a tab
-    boolean requiresTab = false;
-    if (str.contains("[TAB]")) {
+    boolean requiresTab = str.contains("[TAB]");
+    if (requiresTab)
       str = str.replace("[TAB]", "");
-      requiresTab = true;
-    }
 
     // Check to see if this menu item requires any type of automaton
-    boolean requiresAnyAutomaton = false;
-    if (str.contains("[AUTOMATON]")) {
+    boolean requiresAnyAutomaton = str.contains("[AUTOMATON]");
+    if (requiresAnyAutomaton)
       str = str.replace("[AUTOMATON]", "");
-      requiresAnyAutomaton = true;
-    }
 
     // Check to see if this menu item requires a basic automaton (so not a U-Structure)
-    boolean requiresBasicAutomaton = false;
-    if (str.contains("[BASIC_AUTOMATON]")) {
+    boolean requiresBasicAutomaton = str.contains("[BASIC_AUTOMATON]");
+    if (requiresBasicAutomaton)
       str = str.replace("[BASIC_AUTOMATON]", "");
-      requiresBasicAutomaton = true;
-    }
 
     // Check to see if this menu item requires a U-Structure
-    boolean requiresUStructure = false;
-    if (str.contains("[U_STRUCTURE]")) {
+    boolean requiresUStructure = str.contains("[U_STRUCTURE]");
+    if (requiresUStructure)
       str = str.replace("[U_STRUCTURE]", "");
-      requiresUStructure = true;
-    }
 
     // Check to see if this menu item requires a pruned U-Structure
-    boolean requiresPrunedUStructure = false;
-    if (str.contains("[PRUNED_U_STRUCTURE]")) {
+    boolean requiresPrunedUStructure = str.contains("[PRUNED_U_STRUCTURE]");
+    if (requiresPrunedUStructure)
       str = str.replace("[PRUNED_U_STRUCTURE]", "");
-      requiresPrunedUStructure = true;
-    }
 
     // Create menu item object
     JMenuItem menuItem = new JMenuItem(str);
@@ -588,6 +245,75 @@ public class AutomataGUI extends JFrame implements ActionListener {
       componentsWhichRequirePrunedUStructure.add(menuItem);
 
   }
+
+  /**
+   * Make a new thread that monitors when the program quits, deleting all temporary files.
+   **/
+  private static void cleanupBeforeProgramQuits() {
+  
+    // The code within this will execute when the program exits for good
+    Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() { 
+      @Override public void run() {
+
+        for (String file : TEMPORARY_DIRECTORY.list())
+          new File(TEMPORARY_DIRECTORY, file).delete();
+
+        TEMPORARY_DIRECTORY.delete();
+
+      }
+    }));
+  }
+
+  /**
+   * Prompt the user to save files before exiting.
+   **/
+  private void promptBeforeExit() {
+  
+    this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+    
+    addWindowListener(new WindowAdapter() {
+      @Override public void windowClosing(WindowEvent event) { 
+
+          /* Check for unsaved information */
+
+        boolean unSavedInformation = false;
+        for (int i = 0; i < tabbedPane.getTabCount(); i++)
+          if (tabs.get(i).hasUnsavedInformation())
+            unSavedInformation = true;
+        
+        if (!unSavedInformation)
+          System.exit(0);
+
+          /* Prompt user to save */
+
+        if (askForConfirmation("Are you sure you want to exit? Any unsaved information will be lost.", "Unsaved Information"))
+          System.exit(0);
+
+      }
+    });
+
+  }
+
+  /**
+   * Set some default GUI Properties.
+   **/
+  private void setGUIproperties() {
+
+    // Make the application use the entire screen by default
+    setExtendedState(JFrame.MAXIMIZED_BOTH);
+    
+    // Ensure our application will be closed when the user presses the "X"
+    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+    // Update title
+    setTitle("Automata Manipulator");
+
+    // Show screen
+    setVisible(true);
+
+  }
+
+    /* ACTIONS */
 
   /**
    * This method handles all of the actions triggered when the user interacts with the main menu.
@@ -812,7 +538,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         // Create new tab with the generated crush
         if (selectedController != -1)
-          createTab(prunedUStructure.crush(headerFile, bodyFile, selectedController));
+          createTab(prunedUStructure.crush(headerFile, bodyFile, selectedController, null, Crush.CombiningCosts.SUM));
         
         break;
 
@@ -885,81 +611,282 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
   }
 
-  public void updateComponentsWhichRequireAutomaton() {
-    updateComponentsWhichRequireAnyAutomaton();
-    updateComponentsWhichRequireBasicAutomaton();
-    updateComponentsWhichRequireUStructure();
-    updateComponentsWhichRequirePrunedUStructure();
-  }
+  /**
+   * Create an empty tab.
+   * @param assignTemporaryFiles  Whether or not temporary files should be assigned to the tab
+   **/
+  private void createTab(boolean assignTemporaryFiles, Automaton.Type type) {
 
-  /* Enable/disable components that require any type automaton */
-  private void updateComponentsWhichRequireAnyAutomaton() {
+      /* Add tab */
 
-    int index = tabbedPane.getSelectedIndex();
+    int index = tabbedPane.getTabCount();
 
-    // Determine whether the components should be enabled or disabled
-    boolean enabled = (
-      index >= 0
-      && tabs.get(index).automaton != null
-    );
+    AutomatonTab tab = new AutomatonTab(index, type);
+    tabs.add(tab);
+
+    tabbedPane.addTab(null, null, tab, "");
+    tabbedPane.setSelectedIndex(index);
+
+    if (assignTemporaryFiles) {
+      String fileName = getTemporaryFileName();
+      tab.headerFile = new File(fileName + ".hdr");
+      tab.bodyFile = new File(fileName + ".bdy");
+      tab.updateTabTitle();
+    }
+
+      /* Re-activate appropriate components if this is the first tab */
+
+    if (tabs.size() == 1)
+      for (Component component : componentsWhichRequireTab)
+        component.setEnabled(true);
+
+      /* Refresh components which require a specific type of automaton */
     
-    // Enabled/disable all components in the list
-    for (Component component : componentsWhichRequireAnyAutomaton)
-      component.setEnabled(enabled);
-
-  }
-
-  /* Enable/disable components that require a basic automaton */
-  private void updateComponentsWhichRequireBasicAutomaton() {
-
-    int index = tabbedPane.getSelectedIndex();
-
-    // Determine whether the components should be enabled or disabled
-    boolean enabled = (
-      index >= 0
-      && tabs.get(index).automaton != null
-      && tabs.get(index).automaton.getType() == Automaton.Type.AUTOMATON
-    );
-    
-    // Enabled/disable all components in the list
-    for (Component component : componentsWhichRequireBasicAutomaton)
-      component.setEnabled(enabled);
+    updateComponentsWhichRequireAutomaton();
 
   }
 
-  /* Enable/disable components that require a U-Structure */
-  private void updateComponentsWhichRequireUStructure() {
+  /**
+   * Create a tab, and load in an automaton.
+   * @param automaton   The automaton object
+   **/
+  public void createTab(Automaton automaton) {
 
-    int index = tabbedPane.getSelectedIndex();
+      /* Create new tab */
 
-    // Determine whether the components should be enabled or disabled
-    boolean enabled = (
-      index >= 0
-      && tabs.get(index).automaton != null
-      && tabs.get(index).automaton.getType() == Automaton.Type.U_STRUCTURE
-    );
-    
-    // Enabled/disable all components in the list
-    for (Component component : componentsWhichRequireUStructure)
-      component.setEnabled(enabled);
+    createTab(false, Automaton.Type.getType(automaton.getClass()));
+    int newIndex = tabbedPane.getTabCount() - 1;
+
+      /* Set tab values */
+
+    AutomatonTab tab = tabs.get(newIndex);
+    tab.headerFile   = automaton.getHeaderFile();
+    tab.bodyFile     = automaton.getBodyFile();
+    tab.automaton    = automaton;
+    tab.refreshGUI();
+    tab.setSaved(true);
+
+      /* Generate an image (unless it's quite large) */
+
+    if (tab.automaton.getNumberOfStates() <= 100) {
+      generateImage();
+      tab.generateImageButton.setEnabled(false);
+    } else
+      tab.generateImageButton.setEnabled(true);
 
   }
 
-    /* Enable/disable components that require a pruned U-Structure */
-  private void updateComponentsWhichRequirePrunedUStructure() {
+  /**
+   * Close the current tab, displaying a warning message if the current tab is unsaved.
+   **/
+  private void closeCurrentTab() {
+
+      /* Get index of the currently selected tab */
 
     int index = tabbedPane.getSelectedIndex();
 
-    // Determine whether the components should be enabled or disabled
-    boolean enabled = (
-      index >= 0
-      && tabs.get(index).automaton != null
-      && tabs.get(index).automaton.getType() == Automaton.Type.PRUNED_U_STRUCTURE
-    );
+      /* Check for unsaved information */
+
+    AutomatonTab tab = tabs.get(index);
+    if (tab.hasUnsavedInformation()) {
+
+      // Create message to display in pop-up
+      String message = "Are you sure you want to close this tab? ";
+      if (tab.usingTemporaryFiles())
+        message += "This automaton is only being saved temporarily. To save this automaton\npermanently, ensure that you have generated the automaton, then select 'Save As...' from the 'File' menu.";
+      else
+        message += "Any un-generated GUI input code will be lost.";
+
+      // Confirm that the user wants to proceed
+      if (!askForConfirmation(message, "Unsaved Information"))
+        return;
+
+    }
+
+      /* Remove tab */
+
+    tabbedPane.remove(index);
+    tabs.remove(index);
+
+      /* Re-number tabs */
+
+    for (int i = 0; i < tabs.size(); i++)
+      tabs.get(i).index = i;
+
+      /* De-activate appropriate components if there are no tabs left */
+
+    if (tabs.size() == 0)
+      for (Component component : componentsWhichRequireTab)
+        component.setEnabled(false);
     
-    // Enabled/disable all components in the list
-    for (Component component : componentsWhichRequirePrunedUStructure)
-      component.setEnabled(enabled);
+  }
+
+
+  /**
+   * Export an image of the graph to file.
+   **/
+  private void export() {
+
+    int index = tabbedPane.getSelectedIndex();
+
+    AutomatonTab tab = tabs.get(index);
+
+    // Create automaton from input code
+    int nControllers = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
+    Automaton automaton = AutomatonGenerator.generateFromGUICode(
+        new Automaton(tab.headerFile, tab.bodyFile, nControllers),
+        tab.eventInput.getText(),
+        tab.stateInput.getText(),
+        tab.transitionInput.getText(),
+        true
+      );
+    tab.automaton = automaton;
+    tab.setSaved(true);
+
+    // Set the image blank if there were no states entered
+    if (automaton == null)
+      tab.canvas.setImage(null);
+
+    // Try to create graph image
+    else {
+
+      try {
+        
+        String fileName = tab.headerFile.getName();
+        String destinationFileName = currentDirectory + "/" + removeExtension(fileName) + ".svg";
+
+        if (automaton.generateImage(imageSize, Automaton.OutputMode.SVG, destinationFileName))
+          JOptionPane.showMessageDialog(null, "The image of the graph has been exported to '" + destinationFileName + "'.", "Export Complete", JOptionPane.INFORMATION_MESSAGE);
+        else
+          JOptionPane.showMessageDialog(null, "Something went wrong while generating and exporting the image of the graph.", "Export Failed", JOptionPane.ERROR_MESSAGE);
+      
+      } catch (MissingDependencyException e) {
+        JOptionPane.showMessageDialog(null, "Please ensure that GraphViz is installed, with its directory added to the PATH environment variable.", "Missing Dependency", JOptionPane.ERROR_MESSAGE);
+    
+      } catch (MissingOrCorruptBodyFileException e) {
+        JOptionPane.showMessageDialog(null, "Please ensure that the .bdy file associated with this automaton is not corrupt or missing.", "Corrupt or Missing File", JOptionPane.ERROR_MESSAGE);
+      }
+
+    }
+
+  }
+
+  /**
+   * Generate an automaton using the entered GUI input code.
+   **/
+  private void generateAutomatonButtonPressed() {
+
+    // Get the current tab
+    int index = tabbedPane.getSelectedIndex();
+    AutomatonTab tab = tabs.get(index);
+
+    // Create automaton from input code
+    switch (tab.type) {
+
+      case AUTOMATON:
+
+        int nControllers = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
+        tab.automaton = AutomatonGenerator.generateFromGUICode(
+          new Automaton(tab.headerFile, tab.bodyFile, nControllers),
+          tab.eventInput.getText(),
+          tab.stateInput.getText(),
+          tab.transitionInput.getText(),
+          true
+        );
+        break;
+
+      case U_STRUCTURE:
+
+        int nControllersBeforeUStructure = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
+        tab.automaton = AutomatonGenerator.generateFromGUICode(
+          new UStructure(tab.headerFile, tab.bodyFile, nControllersBeforeUStructure),
+          tab.eventInput.getText(),
+          tab.stateInput.getText(),
+          tab.transitionInput.getText(),
+          true
+        );
+        break;
+
+      case PRUNED_U_STRUCTURE:
+
+        nControllersBeforeUStructure = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
+        tab.automaton = AutomatonGenerator.generateFromGUICode(
+          new PrunedUStructure(tab.headerFile, tab.bodyFile, nControllersBeforeUStructure),
+          tab.eventInput.getText(),
+          tab.stateInput.getText(),
+          tab.transitionInput.getText(),
+          true
+        );
+        break;
+
+      case CRUSH:
+
+        nControllersBeforeUStructure = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
+        tab.automaton = AutomatonGenerator.generateFromGUICode(
+          new Crush(tab.headerFile, tab.bodyFile, nControllersBeforeUStructure),
+          tab.eventInput.getText(),
+          tab.stateInput.getText(),
+          tab.transitionInput.getText(),
+          true
+        );
+        break;
+
+      default:
+
+        // NOTE: The following error should never appear to the user, and it indicates a bug in the program
+        JOptionPane.showMessageDialog(null, "Unable to generate automaton from GUI input code due to unrecognized automaton type.", "Crucial Error", JOptionPane.ERROR_MESSAGE);
+        return;
+
+    }
+    tab.setSaved(true);
+
+    // Generate an image (unless it's quite large)
+    if (tab.automaton.getNumberOfStates() <= 100) {
+      generateImage();
+      tab.generateImageButton.setEnabled(false);
+    } else
+      tab.generateImageButton.setEnabled(true);
+
+    // Refresh GUI
+    updateComponentsWhichRequireAutomaton(); 
+
+  }
+
+  /**
+   * Generate an image of the graph, displaying it on the screen.
+   **/
+  private void generateImage() {
+
+    // Get the current tab
+    AutomatonTab tab = tabs.get(tabbedPane.getSelectedIndex());
+
+    // Create destination file name
+    String destinationFileName = "untitled.png";
+    if (tab.headerFile != null) {
+      String fileName = tab.headerFile.getName();
+      destinationFileName = currentDirectory + "/" + removeExtension(fileName) + ".png";
+    }
+
+    try {
+
+      // Set the image blank if there were no states entered
+      if (tab.automaton == null)
+        tab.canvas.setImage(null);
+
+      // Try to create graph image, displaying it on the screen
+      else if (tab.automaton.generateImage(imageSize, Automaton.OutputMode.PNG, destinationFileName))
+        tab.canvas.setImage(tab.automaton.loadImageFromFile(destinationFileName));
+
+      // Display error message
+      else
+        JOptionPane.showMessageDialog(null, "Something went wrong while trying to generate and display the image. NOTE: It may be the case that you do not have X11 installed.", "Error", JOptionPane.ERROR_MESSAGE);
+    
+    } catch (MissingDependencyException e) {
+      JOptionPane.showMessageDialog(null, "Please ensure that GraphViz is installed, with its directory added to the PATH environment variable.", "Missing Dependency", JOptionPane.ERROR_MESSAGE);
+    
+    } catch (MissingOrCorruptBodyFileException e) {
+      JOptionPane.showMessageDialog(null, "Please ensure that the .bdy file associated with this automaton is not corrupt or missing.", "Corrupt or Missing File", JOptionPane.ERROR_MESSAGE);
+    }
 
   }
 
@@ -980,14 +907,17 @@ public class AutomataGUI extends JFrame implements ActionListener {
       nBadTransitions,
       progressBar
     );
-    createTab(automaton);
 
-    // Refresh GUI
-    updateComponentsWhichRequireAutomaton();
+    // Place the generated automaton in a new tab
+    createTab(automaton);
 
   }
 
-  // Load automaton from file, filling the input fields with its data
+  /**
+   * Load automaton from file, filling the input fields with its data.
+   * NOTE: A loading bar is displayed to keep track of the progress.
+   * @param index The tab's index
+   **/
   private void refresh(int index) {
 
     ProgressBarPopup progressBarPopup = new ProgressBarPopup("Loading...", 3);
@@ -1041,6 +971,97 @@ public class AutomataGUI extends JFrame implements ActionListener {
     progressBarPopup.dispose();
 
   }
+
+    /* ENABLING/DISABLING COMPONENTS */
+
+  /**
+   * Update the components in the menu bar that require a specific type of automaton, by
+   * enabling/disabling them as appropriate.
+   **/
+  public void updateComponentsWhichRequireAutomaton() {
+    updateComponentsWhichRequireAnyAutomaton();
+    updateComponentsWhichRequireBasicAutomaton();
+    updateComponentsWhichRequireUStructure();
+    updateComponentsWhichRequirePrunedUStructure();
+  }
+
+  /**
+   * Enable/disable components that require any type automaton.
+   **/
+  private void updateComponentsWhichRequireAnyAutomaton() {
+
+    int index = tabbedPane.getSelectedIndex();
+
+    // Determine whether the components should be enabled or disabled
+    boolean enabled = (
+      index >= 0
+      && tabs.get(index).automaton != null
+    );
+    
+    // Enabled/disable all components in the list
+    for (Component component : componentsWhichRequireAnyAutomaton)
+      component.setEnabled(enabled);
+
+  }
+
+  /**
+   * Enable/disable components that require a basic automaton.
+   **/
+  private void updateComponentsWhichRequireBasicAutomaton() {
+
+    int index = tabbedPane.getSelectedIndex();
+
+    // Determine whether the components should be enabled or disabled
+    boolean enabled = (
+      index >= 0
+      && tabs.get(index).type == Automaton.Type.AUTOMATON
+    );
+    
+    // Enabled/disable all components in the list
+    for (Component component : componentsWhichRequireBasicAutomaton)
+      component.setEnabled(enabled);
+
+  }
+
+  /**
+   * Enable/disable components that require a U-Structure.
+   **/
+  private void updateComponentsWhichRequireUStructure() {
+
+    int index = tabbedPane.getSelectedIndex();
+
+    // Determine whether the components should be enabled or disabled
+    boolean enabled = (
+      index >= 0
+      && tabs.get(index).type == Automaton.Type.U_STRUCTURE
+    );
+    
+    // Enabled/disable all components in the list
+    for (Component component : componentsWhichRequireUStructure)
+      component.setEnabled(enabled);
+
+  }
+
+  /**
+   * Enable/disable components that require a pruned U-Structure.
+   **/
+  private void updateComponentsWhichRequirePrunedUStructure() {
+
+    int index = tabbedPane.getSelectedIndex();
+
+    // Determine whether the components should be enabled or disabled
+    boolean enabled = (
+      index >= 0
+      && tabs.get(index).type == Automaton.Type.PRUNED_U_STRUCTURE
+    );
+    
+    // Enabled/disable all components in the list
+    for (Component component : componentsWhichRequirePrunedUStructure)
+      component.setEnabled(enabled);
+
+  }
+
+    /* PROMPTS */
 
   /** 
    * Opens up a JFileChooser for the user to choose a file from their file system.
@@ -1107,9 +1128,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
   }
 
   /**
-   * Prompts the user to name and specify the filename they wish to save the data.
+   * Prompts the user to name and specify the filename that they wish to save the data to.
    * @param title The title to give the window
-   * @return the file
+   * @return      The .hdr file to save the data to
    **/
   private File saveFile(String title) {
 
@@ -1228,8 +1249,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
   /**
    * Allow the user to select a controller in the current automaton.
-   * @param str         The message to display
-   * @return            The index of the selected controller (or -1 if there was not a controller selected)
+   * @param str The message to display
+   * @return    The index of the selected controller (or -1 if there was not a controller selected)
    **/
   private int pickController(String str) {
 
@@ -1264,6 +1285,12 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
   }
 
+  /**
+   * Given a title and a message, ask the user for confirmation, returning the result.
+   * @param message The message to display in the dialog box
+   * @param message The title to display on the dialog box
+   * @return        True if the user selected "Yes", false if the user selected "No"
+   **/
   private boolean askForConfirmation(String message, String title) {
 
     String buttons[] = { "Yes", "No" };
@@ -1283,6 +1310,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
   
   }
 
+    /* HELPER METHODS */
 
   /**
    * Removes the last 4 characters of the string, which is used to trim either '.hdr' or '.bdy' off the end.
@@ -1290,10 +1318,60 @@ public class AutomataGUI extends JFrame implements ActionListener {
    * @return    The trimmed string
    **/
   private String removeExtension(String str) {
-
-    return str.substring(0, str.length() - 4);
-  
+    return str.substring(0, str.length() - 4);  
   }
+
+  /**
+   * Get a temporary filename (prefixed by 'untitled') which is stored in the temporary directory.
+   * @return  The temporary filename, which does not contain an extension (since it will be used for
+   *          both the .bdy and .hdr files)
+   **/
+  public String getTemporaryFileName() {
+    return TEMPORARY_DIRECTORY.getAbsolutePath() + "/untitled" + temporaryFileIndex++;
+  }
+
+  /**
+   * Load the current directory from file (so that the current directory is maintained even after the
+   * program has been closed).
+   **/
+  private void loadCurrentDirectory() {
+
+    try {
+
+      Scanner sc = new Scanner(new File(GUI_DATA_FILE_NAME));
+
+      if (sc.hasNextLine())
+        currentDirectory = new File(sc.nextLine());
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+  }
+
+  /**
+   * Saves the current directory to file (so that the current directory is maintained even after the
+   * program has been closed).
+   **/
+  private void saveCurrentDirectory() {
+
+    if (currentDirectory != null) {
+
+      try {
+
+        PrintWriter writer = new PrintWriter(new FileWriter(GUI_DATA_FILE_NAME, false));
+        writer.println(currentDirectory.getPath());
+        writer.close();
+
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+
+    }
+
+  }
+
+    /* INNER CLASSES */
 
   /**
    * Private class to maintain a canvas on which a BufferedImage can be drawn.
@@ -1302,6 +1380,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     private BufferedImage image;
 
+    /**
+     * Construct and display a canvas, initially with a grey background.
+     **/
     public Canvas() {
 
       setBackground(Color.LIGHT_GRAY);
@@ -1311,7 +1392,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     /**
      * Update the image in the canvas.
-     * @param image The new image to be displayed in the canvas
+     * @param image The new image to be displayed in the canvas (null indicates no image)
      **/
     public void setImage(BufferedImage image) {
 
@@ -1321,16 +1402,6 @@ public class AutomataGUI extends JFrame implements ActionListener {
     }
 
     /**
-     * Returns the dimensions that the canvas should be.
-     * @return  The preferred dimension
-     **/
-    // @Override public Dimension getPreferredSize() {
-
-    //   return new Dimension(imageSize, imageSize);
-    
-    // }
-
-    /**
      * Updates the canvas, drawing the image (or blank canvas) in the center.
      * @param graphics Graphics object
      **/
@@ -1338,19 +1409,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       super.paintComponent(graphics);
 
-        /* Draw blank canvas */
-      
-      if (image == null) {
-
-        // int horizontalPadding = Math.max(0, (getWidth()  - imageSize) / 2);
-        // int verticalPadding   = Math.max(0, (getHeight() - imageSize) / 2);
-        // graphics.setColor(Color.LIGHT_GRAY);
-        // graphics.fillRect(horizontalPadding, verticalPadding, imageSize, imageSize);
-        // graphics.fillRect(0, 0, getWidth(), getHeight());
-
         /* Draw image */
-
-      } else {
+      
+      if (image != null) {
 
         double ratio = Math.max((double) image.getWidth() / (double) getWidth(), (double) image.getHeight() / (double) getHeight());
         int width  = (int) (image.getWidth()  / ratio);
@@ -1366,32 +1427,32 @@ public class AutomataGUI extends JFrame implements ActionListener {
   } // Canvas class
 
   /**
-   * Class to maintain all GUI information about a single automaton.
+   * Class used to maintain a tab inside the AutomataGUI object.
+   * NOTE: Since this is an inner class (and since there are a lot of instance variables), I chose to
+   * keep most variables public, as opposed to have a multitude of getters and setters.
    **/
   class AutomatonTab extends Container {
 
-      /* Public instance variables */
+      /* Instance variables */
 
+    // GUI elements
+    public JSplitPane splitPane;
     public JTextPane eventInput;
     public JTextPane stateInput;
     public JTextPane transitionInput;
     public JSpinner controllerInput;
-
-    public Canvas canvas = null;
-
-    public File headerFile;
-    public File bodyFile;
-    public Automaton automaton;
-
-    public int index;
-
     public JButton generateAutomatonButton;
     public JButton generateImageButton;
+    public Canvas canvas = null;
 
+    // Automaton properties
+    public Automaton automaton;
+    public File headerFile;
+    public File bodyFile;
     public Automaton.Type type;
 
-    public JSplitPane splitPane;
-    
+    // Tab properties
+    public int index;
     private boolean saved = true;
 
       /* Constructor */

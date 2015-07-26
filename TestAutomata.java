@@ -781,7 +781,7 @@ public class TestAutomata {
     ));
 
     printTestOutput("Applying crush operation with respect to controller 2...", 3);
-    Crush crush = crushExample.crush(null, null, 2);
+    Crush crush = crushExample.crush(null, null, 2, null, Crush.CombiningCosts.SUM);
 
     crush.generateInputForGUI();
     printTestCase("Ensuring the events are correct", new TestResult(crush.getEventInput(), "<b,*,b>\n<o,o,o>\n<a,a,a>"), counter);
@@ -802,7 +802,7 @@ public class TestAutomata {
 
     try {
 
-      List<Set<NashCommunicationData>> nashEquilibria = nashExample.nash();
+      List<Set<NashCommunicationData>> nashEquilibria = nashExample.nash(Crush.CombiningCosts.UNIT);
       printTestCase("Ensuring that there are 3 Nash equilibria", new TestResult(nashEquilibria.size(), 3), counter);
 
       List<String> equilibriaToString = equilibriaToString(nashExample, nashEquilibria);

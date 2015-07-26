@@ -101,7 +101,6 @@ public class FeasibleProtocolOutput extends JFrame {
           File bodyFile = new File(fileName + ".bdy");
           Automaton generatedAutomaton = uStructure.applyProtocol(protocol, headerFile, bodyFile);
           gui.createTab(generatedAutomaton);
-          gui.updateComponentsWhichRequireAutomaton();
         }
 
       });

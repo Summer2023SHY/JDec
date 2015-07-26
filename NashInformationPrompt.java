@@ -225,7 +225,7 @@ public class NashInformationPrompt extends JFrame {
 
           // Find Nash equilibria and display results in another window
           try {
-            new NashEquilibriaOutput(gui, uStructure, uStructure.nash(), "Nash Equilibria", " Here is the list of all Nash equilibria: ");
+            new NashEquilibriaOutput(gui, uStructure, uStructure.nash(Crush.CombiningCosts.UNIT), "Nash Equilibria", " Here is the list of all Nash equilibria: ");
           } catch (DoesNotSatisfyObservabilityException e) {
             JOptionPane.showMessageDialog(null, "The system does not satisfy observability, which means that it does not solve the control problem. The Nash operation was aborted.", "Operation Failed", JOptionPane.ERROR_MESSAGE);
           }

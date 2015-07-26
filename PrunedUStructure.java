@@ -18,7 +18,7 @@ public class PrunedUStructure extends UStructure {
     /* CONSTRUCTORS */
 
   /**
-   * Implicit constructor: used to load crush from file.
+   * Implicit constructor: used to load pruned U-Structure from file.
    * @param headerFile  The file where the header should be stored
    * @param bodyFile    The file where the body should be stored
    **/
@@ -27,7 +27,7 @@ public class PrunedUStructure extends UStructure {
   }
 
   /**
-   * Implicit constructor: used when creating a new crush structure.
+   * Implicit constructor: used when creating a new pruned U-Structure structure.
    * @param headerFile                    The file where the header should be stored
    * @param bodyFile                      The file where the body should be stored
    * @param nControllersBeforeUStructure  The number of controllers that were present before the U-Structure was created
@@ -48,7 +48,7 @@ public class PrunedUStructure extends UStructure {
    * @param communication   The event vector representing the chosen communication
    * @param initialStateID  The ID of the state where the pruning begins at
    **/
-  public void prune(Set<CommunicationData> protocol, LabelVector communication, long initialStateID) {
+  public <T extends CommunicationData> void prune(Set<T> protocol, LabelVector communication, long initialStateID) {
     pruneHelper(protocol, communication, new boolean[communication.getSize()], getState(initialStateID), 0);
   }
 
@@ -60,7 +60,7 @@ public class PrunedUStructure extends UStructure {
    * @param currentState        The state that we are currently on
    * @param depth               The current depth of the recursion (first iteration has a depth of 0)
    **/
-  private void pruneHelper(Set<CommunicationData> protocol, LabelVector communication, boolean[] vectorElementsFound, State currentState, int depth) {
+  private <T extends CommunicationData> void pruneHelper(Set<T> protocol, LabelVector communication, boolean[] vectorElementsFound, State currentState, int depth) {
 
       /* Base case */
 
@@ -74,7 +74,7 @@ public class PrunedUStructure extends UStructure {
 
       // We do not want to prune any of the chosen communications
       if (depth == 0)
-        for (CommunicationData data : protocol)
+        for (T data : protocol)
           if (currentState.getID() == data.initialStateID && t.getEvent().getID() == data.eventID && t.getTargetStateID() == data.targetStateID)
             continue outer;
 
@@ -113,14 +113,22 @@ public class PrunedUStructure extends UStructure {
   }
 
   /**
-   * Take the crush with repect to a particular controller.
-   * NOTE: A HashMap is used instead of a mapping file, under the assumption that a crush will not contain billions of states.
-   * @param newHeaderFile     The file where the header should be stored
-   * @param newBodyFile       The file where the body should be stored
-   * @param indexOfController The index of the controller in which the crush is being taken with respect to
-   * @return                  The crush
+   * Take the crush with respect to a particular controller.
+   * NOTE: A HashMap is used instead of a mapping file to map the IDs, under the assumption that
+   *       a crush will not contain billions of states.
+   * NOTE: All communications in the pruned U-Structure should be Nash communications.
+   * @param newHeaderFile         The file where the header should be stored
+   * @param newBodyFile           The file where the body should be stored
+   * @param indexOfController     The index of the controller in which the crush is taken with respect to (1-based)
+   * @param combinedCostsMappings Passed in as an empty map, this method maps the original Nash communications
+   *                              with the combined costs (if null, then a HashMap will simply not be populated)
+   * @param combiningCostsMethod  The method used to combine communication costs
+   * @return                      The crush
    **/
-  public Crush crush(File newHeaderFile, File newBodyFile, int indexOfController) {
+  public Crush crush(File newHeaderFile, File newBodyFile, int indexOfController, Map<NashCommunicationData, Long> combinedCostsMappings, Crush.CombiningCosts combiningCostsMethod) {
+
+    if (potentialCommunications.size() > 0)
+      System.err.println("WARNING: " + potentialCommunications.size() + " communications were ignored. Only Nash communications are considered in the Crush operation.");
 
       /* Setup */
 
@@ -141,6 +149,8 @@ public class PrunedUStructure extends UStructure {
 
     boolean isInitialState = true;
 
+      /* Build Crush */
+
     while (stackOfConnectedStates.size() > 0) {
 
       // Get set from stack and generate unique ID for that collection of states
@@ -159,7 +169,7 @@ public class PrunedUStructure extends UStructure {
 
         // Generate list of all reachable states from the current event
         Set<State> reachableStates = new HashSet<State>();
-        Set<CommunicationData> potentialCommunicationsToBeCopied = new HashSet<CommunicationData>();
+        Map<Long, Set<NashCommunicationData>> communicationsToBeCopied = new HashMap<Long, Set<NashCommunicationData>>(); // Separated into lists by target state ID (which indicates which ones are combined)
         for (State s : setOfStates)
           for (Transition t : s.getTransitions())
             if (t.getEvent().equals(e)) {
@@ -167,16 +177,14 @@ public class PrunedUStructure extends UStructure {
               // Find reachable states
               findConnectingStates(reachableStates, getState(t.getTargetStateID()), indexOfController);
 
-              // Check to see if there are any potential communications that need to be copied over
+              // Check to see if there are any potential or Nash communications that need to be copied over
               TransitionData transitionData = new TransitionData(s.getID(), t.getEvent().getID(), t.getTargetStateID());
-              for (CommunicationData communication : potentialCommunications)
+              for (NashCommunicationData communication : getNashCommunications())
                 if (transitionData.equals(communication)) {
-                  potentialCommunicationsToBeCopied.add(new CommunicationData(
-                    0, // The 0's are just placeholders (we only care about the roles)
-                    0, 
-                    0,
-                    (CommunicationRole[]) communication.roles.clone()
-                  ));
+                  Set<NashCommunicationData> set = communicationsToBeCopied.get(t.getTargetStateID());
+                  if (set == null)
+                    set = new HashSet<NashCommunicationData>();
+                  set.add(communication);
                 }
             
             }
@@ -195,15 +203,60 @@ public class PrunedUStructure extends UStructure {
           
           crush.addTransition(mappedID, e.getID(), mappedTargetID);
 
-          // Add potential communications (NOTE: Only the information about the roles is useful)
-          for (CommunicationData communication : potentialCommunicationsToBeCopied)
-            crush.addPotentialCommunication(mappedID, e.getID(), mappedTargetID, communication.roles);
-      
+          // Add Nash communications
+          for (Set<NashCommunicationData> set : communicationsToBeCopied.values()) {
+
+            // Combine the communication costs as specified, and combine the probabilities as a sum
+            CommunicationRole[] roles = null;
+            int totalCost = 0;
+            double totalProbability = 0.0;
+            for (NashCommunicationData communication : set) {
+
+              if (roles == null)
+                roles = (CommunicationRole[]) communication.roles.clone();
+
+              totalProbability += communication.probability;
+            
+              switch (combiningCostsMethod) {
+
+                case SUM: case AVERAGE:
+                  totalCost += communication.cost;
+                  // Prevent overflow by simply capping at Integer.MAX_VALUE
+                  // (NOTE: This only works under the assumption that all costs are non-negative)
+                  if (totalCost < 0)
+                    totalCost = Integer.MAX_VALUE;
+                  break;
+
+                case MAX:
+                  totalCost = Math.max(totalCost, communication.cost);
+                  break;
+
+                default:
+                  System.err.println("ERROR: Could not combine communication costs as requested.");
+                  break;
+              }
+
+            }
+
+            // Take the average of the total cost, if specified
+            if (combiningCostsMethod == Crush.CombiningCosts.AVERAGE)
+              totalCost /= (double) nControllersBeforeUStructure;
+
+            // Store the mappings in between communications and combined costs, if requested (for example, this is used in the Nash operation)
+            if (combinedCostsMappings != null)
+              for (NashCommunicationData communication : set)
+                combinedCostsMappings.put(communication, (long) totalCost);
+
+            // Add the communication to the Crush
+            crush.addNashCommunication(mappedID, e.getID(), mappedTargetID, roles, totalCost, totalProbability);
+          
+          }
+
         }
 
-      }
+      } // outer for
 
-     }
+    } // while 
 
       /* Ensure that the header file has been written to disk */
 

@@ -3,6 +3,9 @@
  *             gives the potential to work with very large automata, since the entire automaton does not need
  *             to be stored in memory.
  *
+ *             NOTE: The static method clearTemporaryFiles() should be run on a regular basis when using this class (typically
+ *                   done when launching your GUI or after running a test routine).
+ *
  * @author Micah Stairs
  *
  * TABLE OF CONTENTS:
@@ -25,9 +28,7 @@ import java.util.*;
 import java.io.*;
 import java.nio.file.*;
 import java.awt.image.*;
-import java.net.*;
 import javax.imageio.*;
-import javax.swing.*;
 
 public class Automaton {
 
@@ -69,8 +70,8 @@ public class Automaton {
   /** This is the directory used to hold all temporary files. */
   protected static final File TEMPORARY_DIRECTORY = new File("Automaton_Temporary_Files");
 
-  /** This is the filename of the file where the DOT output is being placed during image generation */
-  protected static final String DOT_OUTPUT_FILE_NAME = "out.tmp";
+  /** This is the location of the file where the DOT output is being placed during image generation */
+  protected static final String DOT_OUTPUT_FILE_NAME = TEMPORARY_DIRECTORY + "/out.tmp";
 
     /* CLASS VARIABLES */
 

@@ -17,7 +17,6 @@
 
 import java.util.*;
 import java.io.*;
-import java.nio.file.*;
 
 public class UStructure extends Automaton {
 
@@ -360,7 +359,7 @@ public class UStructure extends Automaton {
    * @param newBodyFile   The body file where the new U-Structure should be stored
    * @return              The pruned U-Structure that had the specified protocol applied
    **/
-  public PrunedUStructure applyProtocol(Set<CommunicationData> protocol, File newHeaderFile, File newBodyFile) {
+  public <T extends CommunicationData> PrunedUStructure applyProtocol(Set<T> protocol, File newHeaderFile, File newBodyFile) {
 
     PrunedUStructure prunedUStructure = duplicateAsPrunedUStructure(null, null);
 
@@ -426,7 +425,7 @@ public class UStructure extends Automaton {
   }
 
   /** NOT YET COMMENTED!!! **/
-  public List<Set<NashCommunicationData>> nash() throws DoesNotSatisfyObservabilityException {
+  public List<Set<NashCommunicationData>> nash(Crush.CombiningCosts combiningCostsMethod) throws DoesNotSatisfyObservabilityException {
 
       /* Generate protocol vectors */
 
@@ -436,6 +435,11 @@ public class UStructure extends Automaton {
     // Throw error if the system does not satisfy observability
     if (feasibleProtocols.size() == 0)
       throw new DoesNotSatisfyObservabilityException();
+
+    // Combine costs as requested (NOTE: Unless unit costs were specified, each protocol will now
+    // contain references to different NashCommunicationData objects)
+    for (Set<NashCommunicationData> feasibleProtocol : feasibleProtocols)
+      combineCommunicationCosts(feasibleProtocol, combiningCostsMethod);
 
     // Split each protocol into 2 parts (by sending controller)
     List<ProtocolVector> protocolVectors = new ArrayList<ProtocolVector>();
@@ -877,6 +881,43 @@ public class UStructure extends Automaton {
   }
 
   /**
+   * For a given feasible protocol (that solves the control problem), combine communication costs using
+   * the specified technique.
+   * NOTE: Most methods will need to apply the protocol, then generate 1 or more Crush structures.
+   * @param feasibleProtocol      The list of Nash communications in which costs will be combined
+   *                              NOTE: Unless unit costs are used, then new NashCommunicationData objects
+   *                                    will be created (since those objects could be referenced in other
+   *                                    protocols, and we do not want to interfere with them)
+   * @param combiningCostsMethod  The method in which communication are being combined
+   **/
+  private void combineCommunicationCosts(Set<NashCommunicationData> feasibleProtocol, Crush.CombiningCosts combiningCostsMethod) {
+
+    // No costs need to be combined if we're using unit costs
+    if (combiningCostsMethod == Crush.CombiningCosts.UNIT)
+      return;
+
+    // Generated the pruned U-Structure by applying the protocol
+    PrunedUStructure prunedUStructure = applyProtocol(feasibleProtocol, null, null);
+    
+    // Determine which Crushes will need to be generated (we need to generate 1 or more)
+    boolean[] crushNeedsToBeGenerated = new boolean[nControllersBeforeUStructure];
+    for (NashCommunicationData communication : feasibleProtocol)
+      crushNeedsToBeGenerated[communication.getIndexOfSender()] = true;
+
+    // Generate the neccessary Crushes, storing only the communication cost mappings
+    List<Map<NashCommunicationData, Long>> costMappingsByCrush = new ArrayList<Map<NashCommunicationData, Long>>();
+    for (int i = 0; i < nControllersBeforeUStructure; i++)
+      if (crushNeedsToBeGenerated[i]) {
+        Map<NashCommunicationData, Long> costMapping = new HashMap<NashCommunicationData, Long>();
+        prunedUStructure.crush(null, null, i + 1, costMapping, combiningCostsMethod);
+      } else
+        costMappingsByCrush.add(null);
+
+    // Adjust the costs accordingly (creating new NashCommuniationData objects) -- separate list?????????
+
+  }
+
+  /**
    * Generate a list of all possible sets in the powerset which contain the required elements.
    * @param results           This is a list of sets where all of the sets in the powerset will be stored
    * @param masterList        This is the original list of elements in the set
@@ -1046,7 +1087,7 @@ public class UStructure extends Automaton {
     ByteManipulator.writeLongAsBytes(buffer, 4,  unconditionalViolations.size(),    4);
     ByteManipulator.writeLongAsBytes(buffer, 8,  conditionalViolations.size(),      4);
     ByteManipulator.writeLongAsBytes(buffer, 12, potentialCommunications.size(),    4);
-    ByteManipulator.writeLongAsBytes(buffer, 16, invalidCommunications.size(), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 16, invalidCommunications.size(),      4);
     ByteManipulator.writeLongAsBytes(buffer, 20, nashCommunications.size(),         4);
     headerRAFile.write(buffer);
 
@@ -1142,7 +1183,7 @@ public class UStructure extends Automaton {
     int nUnconditionalViolations    = (int) ByteManipulator.readBytesAsLong(buffer, 4,  4);
     int nConditionalViolations      = (int) ByteManipulator.readBytesAsLong(buffer, 8,  4);
     int nPotentialCommunications    = (int) ByteManipulator.readBytesAsLong(buffer, 12, 4);
-    int nInvalidCommunications = (int) ByteManipulator.readBytesAsLong(buffer, 16, 4);
+    int nInvalidCommunications      = (int) ByteManipulator.readBytesAsLong(buffer, 16, 4);
     int nNashCommunications         = (int) ByteManipulator.readBytesAsLong(buffer, 20, 4);
 
       /* Read in special transitions from the .hdr file */
