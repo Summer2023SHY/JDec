@@ -1,14 +1,13 @@
 /**
- * Event - This simple class represents an event in an automaton. It supports both centralized and decentralized control, which
- *				 means that it can have observability and controllability properties for each controller. It also has support for
- *				 events that have labels formatted as vectors.
- *
- * NOTE: Current ID system allows for 255 unique events with 0 representing null, but we will make this flexible later to allow for more events.
+ * Event - This simple class represents an event in an automaton. It supports both centralized and
+ *         decentralized control, which means that it can have observability and controllability
+ *         properties for each controller. It also has support for events that have labels formatted
+ *         as vectors.
  *
  * @author Micah Stairs
  *
  * TABLE OF CONTENTS:
- *	-Private Instance Variables
+ *	-Instance Variables
  *	-Constructor
  *  -Mutator Method
  *	-Accessor Methods
@@ -19,7 +18,7 @@ import java.util.*;
 
 public class Event implements Comparable<Event> {
     
-  	/** PRIVATE INSTANCE VARIABLES **/
+  	/* INSTANCE VARIABLES */
 
   private String label;
   private int id;
@@ -27,16 +26,18 @@ public class Event implements Comparable<Event> {
 
   /**
    * Events can sometimes be vectors (for example, automata created by synchonrized composition use them).
-   * Example of syntax: "&lt;a,b,d>" actually represents an event vector: {"a", "b", "d"}.
+   * Example of syntax: "&lt;a,b,d>" actually represents an event vector: {"a", "b", "d"}. This instance
+   * variable holds a reference to the vectorized event label.
    **/
   private LabelVector vector = null;
 
-  	/** CONSTRUCTOR **/
+  	/* CONSTRUCTOR */
 
   /**
    * Construct a new event with the specified properties.
-   * @param label			The name of the state
-   * @param observable	Whether or not the event can be observed
+   * @param label			    The name of the event
+   * @param id            The ID of the event
+   * @param observable    Whether or not the event can be observed
    * @param controllable	Whether or not the event can be controlled
    **/
 	public Event(String label, int id, boolean[] observable, boolean[] controllable) {
@@ -49,29 +50,29 @@ public class Event implements Comparable<Event> {
 
 	}
 
-    /** MUTATOR METHOD **/
+    /* MUTATOR METHOD */
 
   /**
-   * Set the ID number of the event
+   * Set the event's ID number.
    * @param id  The new ID for the event
    **/
   public void setID(int id) {
     this.id = id;
   }
 
-		/** ACCESSOR METHODS **/
+		/* ACCESSOR METHODS */
 
 	/**
-	 * Get the label of the event
- 	 * @return label
+	 * Get the label of the event.
+ 	 * @return  The event's label
 	 **/
 	public String getLabel() {
 		return label;
 	}
 
 	/**
-	 * Get the ID number of the event
- 	 * @return id
+	 * Get the ID number of the event.
+ 	 * @return  The ID
 	 **/
 	public int getID() {
 		return id;
@@ -79,7 +80,7 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Get the observability property of the event for each controller.
- 	 * @return whether or not the event is observable
+ 	 * @return  Whether or not the event is observable
 	 **/
 	public boolean[] isObservable() {
 		return observable;
@@ -87,15 +88,15 @@ public class Event implements Comparable<Event> {
 
 	/**
 	 * Get the controllability property of the event for each controller.
- 	 * @return whether or not the event is controllable
+ 	 * @return  Whether or not the event is controllable
 	 **/
 	public boolean[] isControllable() {
 		return controllable;
 	}
 
   /**
-   * Get the event vector
-   * @return vector
+   * Get the event vector.
+   * @return  The event vector
    **/
   public LabelVector getVector() {
     return vector;
@@ -103,30 +104,16 @@ public class Event implements Comparable<Event> {
 
 		/** OVERRIDDEN METHODS **/
 
-	/**
-	 * Returns a hash code for this event, based on the hash code of it's label (which is a string).
-	 * @return a hash code value for this object
-	 **/
 	@Override public int hashCode() {
 		return label.hashCode();
 	}
 
-	/**
-	 * Returns a value from the set {-1, 0, 1} to represent the comparison of two events (based on ID, which is an integer).
-	 * @param other	The other event that we're comparing this one to
-	 * @return -1 if this event comes before, 0 if the events are equal, 1 if this event comes after
-	 **/
 	@Override public int compareTo(Event other) {
 
 		return (new Integer(id)).compareTo(other.id);
 
 	}
 
-	/**
-	 * Check for equality by comparing labels.
-	 * @param obj  The event to compare this one to
-	 * @return whether or not the events are equal
-	 **/
 	@Override public boolean equals(Object obj) {
 
 		Event other = (Event) obj;
@@ -135,10 +122,6 @@ public class Event implements Comparable<Event> {
 
 	}
 
-	/**
-	 * Turn this object into a more meaningful representation as a string.
-	 * @return string representation
-	 **/
 	@Override public String toString() {
 
 		return "("

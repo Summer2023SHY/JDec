@@ -1,10 +1,11 @@
 /**
- * LabelVector - This class is used to take a string and vectorize it into its components using some basic syntax.
+ * LabelVector - This class is used to take a string and vectorize it into its components using some
+ *					     basic syntax.
  *
  * @author Micah Stairs
  *
  * TABLE OF CONTENTS:
- *	-Private Instance Variables
+ *	-Instance Variables
  *	-Constructor
  *	-Accessor Methods
  *	-Overridden Methods
@@ -12,16 +13,17 @@
 
 class LabelVector {
 
-		/* PRIVATE INSTANCE VARIABLES */
+		/* INSTANCE VARIABLES */
 
 	private String label; 
 	private String[] vector = null;
 
-		/** CONSTRUCTOR **/
+		/* CONSTRUCTOR */
 
 	/**
 	 * Construct a LabelVector object, which takes a string and splits it into its vector components.
-	 * @param label	The label to be vectorized (syntax: "&lt;first,second,third>" vectorizes into {"first", "second", "third"})
+	 * @param label	The label to be vectorized (syntax: "&lt;first,second,third>" vectorizes into {"first",
+   * "second", "third"})
 	 **/
 	public LabelVector(String label) {
 
@@ -33,7 +35,7 @@ class LabelVector {
 
 	}
 
-		/** ACCESSOR METHODS **/
+		/* ACCESSOR METHODS */
 
   /**
    * Check to see if this label vector is unobservable to the specified controller.
@@ -71,29 +73,16 @@ class LabelVector {
 		
 	}
 
-		/** OVERRIDDEN METHODS **/
+		/* OVERRIDDEN METHODS */
 
-	/**
-	 * Returns a hash code for this event vector, based on the hash code of it's label (which is a string).
-	 * @return A hash code value for this object
-	 **/
 	@Override public int hashCode() {
 		return label.hashCode();
 	}
 
-	/**
-	 * Check for equality by comparing labels.
-	 * @param other	The label vector to compare this one to
-	 * @return     	Whether or not the label vectors are equal
-	 **/
 	@Override public boolean equals(Object other) {
 		return label.equals(((LabelVector) other).label);
 	}
 
-	/**
-	 * Turn this label vector into a more meaningful representation as a string.
-	 * @return The string representation
-	 **/
 	@Override public String toString() {
 		return label;
 	}
