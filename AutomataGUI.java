@@ -13,6 +13,8 @@
  *  -Actions
  *  -Enabling/Disabling Components
  *  -Prompts
+ *  -Helper Methods
+ *  -Inner Classes
  **/
 
 import java.awt.*;
@@ -30,7 +32,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
   private static final String GUI_DATA_FILE_NAME = "gui.data";
   private static final File TEMPORARY_DIRECTORY = new File("AutomataGUI_Temporary_Files");
-  private static final int imageSize = 800; // 
+  private static final int imageSize = 800; // This is used to indicate how large to generate the .PNG image
 
     /* INSTANCE VARIABLES */
 
@@ -161,7 +163,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
    * Helper method to help make the code look cleaner for menu creation.
    * @param menuTitle The title of the menu
    * @param strings   The list of menu items (where null is recognized as a separator)
-   * @return the created menu
+   * @return          The created menu
    **/
   private JMenu createMenu(String menuTitle, String... strings) {
 
@@ -1507,15 +1509,16 @@ public class AutomataGUI extends JFrame implements ActionListener {
       container.setLayout(new GridBagLayout());
       GridBagConstraints c = new GridBagConstraints();
       c.fill = GridBagConstraints.HORIZONTAL;
+      c.gridwidth = 1;
 
         /* Controller Input */
 
-      c.gridwidth = 1;
-
+      // Controller input label
       JLabel controllerInputLabel = new JLabel( (type == Automaton.Type.AUTOMATON ? "# Controllers:" : "# Controllers Before U-Structure:") );
       c.ipady = 0; c.weightx = 0.5; c.weighty = 0.0; c.gridx = 0; c.gridy = 0;
       container.add(controllerInputLabel, c);
 
+      // Controller input spinner
       controllerInput = new JSpinner(new SpinnerNumberModel(1, 1, Automaton.MAX_NUMBER_OF_CONTROLLERS, 1));
       controllerInput.addChangeListener(new ChangeListener() {
         @Override public void stateChanged(ChangeEvent e) {
@@ -1527,8 +1530,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         /* Event Input */
 
+      // Event input label
       c.ipady = 0; c.weightx = 0.5; c.weighty = 0.0; c.gridx = 0; c.gridy = 1;
       container.add(new TooltipComponent(new JLabel("Enter events:"), getEventInstructions(type)), c);
+      
+      // Event input box
       eventInput = new JTextPane();
       eventInput.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
       eventInput.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
@@ -1543,8 +1549,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
         /* State Input */
 
+      // State input label
       c.ipady = 0; c.weightx = 0.5; c.weighty = 0.0; c.gridx = 1; c.gridy = 1;
       container.add(new TooltipComponent(new JLabel("Enter states:"), getStateInstructions(type)), c);
+      
+      // State input box
       stateInput = new JTextPane();
       stateInput.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
       stateInput.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
@@ -1561,8 +1570,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       c.gridwidth = 2;
 
+      // Transition input label
       c.ipady = 0; c.weightx = 1.0; c.weighty = 0.0; c.gridx = 0; c.gridy = 3;
       container.add(new TooltipComponent(new JLabel("Enter transitions:"), getTransitionInstructions(type)), c);
+      
+      // Transition input box
       transitionInput = new JTextPane();
       transitionInput.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
       transitionInput.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
@@ -1575,7 +1587,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
       c.ipady = 200; c.weightx = 0.5; c.weighty = 1.0; c.gridx = 0; c.gridy = 4;
       container.add(transitionInputScrollPane, c);
 
-        /* Generate automaton button */
+        /* Generate Automaton Button */
 
       generateAutomatonButton = new JButton("Generate Automaton From GUI Code");
       generateAutomatonButton.setFocusable(false);
@@ -1585,16 +1597,14 @@ public class AutomataGUI extends JFrame implements ActionListener {
           + "The means that your automaton is not saved until you have generated it.</html>"
       );
       generateAutomatonButton.addActionListener(new ActionListener() {
-   
         public void actionPerformed(ActionEvent e) {
           generateAutomatonButtonPressed();
         }
-
       });
       c.ipady = 0; c.weightx = 0.5; c.weighty = 1.0; c.gridx = 0; c.gridy = 5;
       container.add(generateAutomatonButton, c);
 
-        /* Generate image button */
+        /* Generate Image Button */
 
       generateImageButton = new JButton("Generate Image");
       generateImageButton.setFocusable(false);
@@ -1603,12 +1613,10 @@ public class AutomataGUI extends JFrame implements ActionListener {
         + "<b><u>NOTE</u></b>: This process can take a long time for large automata (exporting as an .SVG file is usually better in this case anyway).</html>"
       );
       generateImageButton.addActionListener(new ActionListener() {
-   
         public void actionPerformed(ActionEvent e) {
           generateImage();
           generateImageButton.setEnabled(false);
         }
-
       });
       c.ipady = 0; c.weightx = 0.5; c.weighty = 1.0; c.gridx = 0; c.gridy = 6;
       container.add(generateImageButton, c);
@@ -1617,6 +1625,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     }
 
+    /**
+     * A helper method used to retrieve the instructions for the event input box based on the Automaton type.
+     * @param type  The Automaton type in which the instructions should be relevant for
+     * @return      The event input box instructions, in the form of a string
+     **/
     private String getEventInstructions(Automaton.Type type) {
 
       switch (type) {
@@ -1645,6 +1658,12 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     }
 
+
+    /**
+     * A helper method used to retrieve the instructions for the state input box based on the Automaton type.
+     * @param type  The Automaton type in which the instructions should be relevant for
+     * @return      The state input box instructions, in the form of a string
+     **/
     private String getStateInstructions(Automaton.Type type) {
 
       switch (type) {
@@ -1673,6 +1692,12 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     }
 
+
+    /**
+     * A helper method used to retrieve the instructions for the transition input box based on the Automaton type.
+     * @param type  The Automaton type in which the instructions should be relevant for
+     * @return      The transition input box instructions, in the form of a string
+     **/
     private String getTransitionInstructions(Automaton.Type type) {
 
       switch (type) {
@@ -1725,18 +1750,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     }
 
-    private void updateTabTitle() {
-
-      String title = removeExtension(headerFile.getName());
-
-      // Temporary files are always considered unsaved, since the directory is wiped upon closing of the program
-      if (!saved || usingTemporaryFiles())
-        title += "*";
-
-      tabbedPane.setTitleAt(index, title);
-
-    }
-
+    /**
+     * Add a DocumentListener to the specified text pane, which will set this tab's saved status
+     * to false whenever the input in the text pane changes.
+     * @param textPane  The text pane to monitor for changes
+     **/
     private void watchForChanges(JTextPane textPane) {
 
       textPane.getDocument().addDocumentListener(new DocumentListener() {
@@ -1756,6 +1774,24 @@ public class AutomataGUI extends JFrame implements ActionListener {
       });  
     }
 
+    /**
+     * Update this tab's title, based on the filename and the saved status.
+     **/
+    private void updateTabTitle() {
+
+      String title = removeExtension(headerFile.getName());
+
+      // Temporary files are always considered unsaved, since the directory is wiped upon closing of the program
+      if (!saved || usingTemporaryFiles())
+        title += "*";
+
+      tabbedPane.setTitleAt(index, title);
+
+    }
+
+    /**
+     * Update the saved status, making the necessary updates to the tab's GUI.
+     **/
     public void setSaved(boolean newSavedStatus) {
 
       if (newSavedStatus != saved) {
@@ -1767,10 +1803,19 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     }
 
+    /**
+     * Check to see if this tab is saved.
+     * @return  Whether or not this tab is presently saved
+     **/
     public boolean isSaved() {
       return saved;
     }
 
+    /**
+     * Refresh the GUI by re-generating the GUI input code.
+     * NOTE: This method is quite expensive, as it requires the entire automaton to be turned in
+     *       a form representable by strings.
+     **/
     public void refreshGUI() {
 
       automaton.generateInputForGUI();
@@ -1786,8 +1831,12 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     }
 
-    // Includes information subject to loss due to temporary files
-    // The only un-generated code this won't account for is if there was input code, then it was all cleared
+    /**
+     * Check to see if this tab has any unsaved information (which includes information subject to
+     * loss due to temporary files). The only un-generated code this won't account for is if there
+     * was input code, then it was all cleared.
+     * @return  Whether or not this tab has any unsaved information
+     **/
     public boolean hasUnsavedInformation() {
 
       // If there is nothing in the input boxes, then obviously there is no unsaved information
@@ -1807,6 +1856,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     }
 
+    /**
+     * Check to see if this tab is using temporary files.
+     * NOTE: This method assumes that both the .hdr and .bdy file are found in the same directory.
+     * @return
+     **/
     public boolean usingTemporaryFiles() {
 
       return headerFile.getParentFile().getAbsolutePath().equals(TEMPORARY_DIRECTORY.getAbsolutePath());
