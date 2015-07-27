@@ -1,3 +1,13 @@
+/**
+ * Crush - Extending PrunedUStructure, this class represents a Crush structure.
+ *
+ * @author Micah Stairs
+ *
+ * TABLE OF CONTENTS:
+ *  -Enum
+ *  -Constructors
+ **/
+
 import java.io.*;
 
 public class Crush extends PrunedUStructure {
@@ -26,7 +36,7 @@ public class Crush extends PrunedUStructure {
 
   }
 
-    /* CONSTRUCTOR */
+    /* CONSTRUCTORS */
 
   /**
    * Implicit constructor: used to load Crush from file.

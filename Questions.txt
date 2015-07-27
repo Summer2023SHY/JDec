@@ -1,18 +1,18 @@
 HOURS:
 Sunday, July 26: 1 hour
-Monday, July 27: 15 minutes
+Monday, July 27: 1 hour 5 minutes
 
 JAVADOC TO-DO LIST:
 
-  AutomataGUI.java
-  Automaton.java
-  AutomatonGenerator.java
-  ByteManipulator.java
-  CommunicationData.java
-  CommunicationLabelVector.java
-  CommunicationRole.java
-  Crush.java
-  DoesNotSatisfyObservabilityException.java
+  AutomataGUI.java - DONE
+  Automaton.java - DONE
+  AutomatonGenerator.java - DONE
+  ByteManipulator.java - DONE
+  CommunicationData.java - DONE
+  CommunicationLabelVector.java - DONE
+  CommunicationRole.java - DONE
+  Crush.java - DONE
+  DoesNotSatisfyObservabilityException.java - DONE
   Event.java
   FeasibleProtocolOutput.java
   GeneratedAllFeasibleProtocolsPrompt.java
@@ -71,8 +71,7 @@ SHORT-TERM:
       Same argument for when sender is controller 2.
   
   -make the user pick costs and probabilities before taking Crush
-  -unit/sum/max the costs?????????? Take the crushes to figure out.......... sum and max
-  -when taking crush, ask whether to take max or sum of costs
+  -when taking crush, ask whether to take max, sum, or avg of costs
   -Add test case for system does not satisfy observability in Nash algorithm (exception handling)
   -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol
   -tooltips -> Nash communications

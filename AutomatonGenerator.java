@@ -9,10 +9,10 @@
  *  -Automaton Generation from GUI Input Code (and associated helper methods)
  **/
 
-import java.util.*;
-import java.io.*;
-import javax.swing.*;
 import java.awt.*;
+import java.io.*;
+import java.util.*;
+import javax.swing.*;
 
 public abstract class AutomatonGenerator<T> {
 
@@ -178,10 +178,11 @@ public abstract class AutomatonGenerator<T> {
 
     String label = "";
 
-    // It's easier if they are 0-based, not 1-based
+    // It's easier to calculate if they are 0-based, not 1-based
     id--;
     maxID--;
 
+    // Build the label character by character
     while (maxID > 0) {
       label = (char) ((id % 26) + 97) + label;
       id /= 26;
@@ -193,7 +194,7 @@ public abstract class AutomatonGenerator<T> {
   }
 
   /**
-   * Generate random long value in the given range (inclusive).
+   * Generate arandom long value in the specified range (inclusive).
    * @param min Minimum value
    * @param max Maximum value
    * @return    The randomly generated long value
@@ -205,7 +206,7 @@ public abstract class AutomatonGenerator<T> {
   }
 
   /**
-   * Generate random integer value in the given range (inclusive).
+   * Generate a random integer value in the specified range (inclusive).
    * @param min Minimum value
    * @param max Maximum value
    * @return    The randomly generated integer value       
@@ -217,7 +218,7 @@ public abstract class AutomatonGenerator<T> {
   }
 
   /**
-   * Generate random boolean.
+   * Generate a random boolean value.
    * @return  The randomly generated boolean value
    **/
   private static boolean generateBoolean() {
@@ -618,8 +619,8 @@ public abstract class AutomatonGenerator<T> {
 
   /**
    * Simple helper method to detect whether the given String is either "T" or "t".
-   * @param str   The String to parse
-   * @return      Whether or not the String represents "TRUE" 
+   * @param str The String to parse
+   * @return    Whether or not the String represents "TRUE" 
    **/
   public static boolean isTrue(String str) {
       return str.toUpperCase().equals("T");
@@ -627,8 +628,8 @@ public abstract class AutomatonGenerator<T> {
 
   /**
    * Simple helper method to transform a series of T's and F's into a boolean array.
-   * @param str   The String to parse
-   * @return      An array containing a boolean value for each character
+   * @param str The String to parse
+   * @return    An array containing a boolean value for each character
    **/
   public static boolean[] isTrueArray(String str) {
 

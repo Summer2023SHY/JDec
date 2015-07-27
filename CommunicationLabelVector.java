@@ -29,7 +29,6 @@ class CommunicationLabelVector extends LabelVector {
   public CommunicationLabelVector(String label, CommunicationRole[] roles) {
 
     super(label);
-
     this.roles = roles;
 
   }

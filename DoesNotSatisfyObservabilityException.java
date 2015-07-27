@@ -1,11 +1,9 @@
-public class DoesNotSatisfyObservabilityException extends Exception {
+/**
+ * DoesNotSatisfyObservabilityException - This exception is thrown by the Nash algorithm when the system
+ *										                    does not satisfy observability, meaning that there are no feasible
+ *                                        protocols that satisfy the control problem.
+ *
+ * @author Micah Stairs
+ **/
 
-  public DoesNotSatisfyObservabilityException() {
-    super();
-  }
-
-  public DoesNotSatisfyObservabilityException(String message) {
-    super(message);
-  }
-  
-}
+public class DoesNotSatisfyObservabilityException extends Exception { }

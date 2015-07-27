@@ -57,8 +57,8 @@ public class CommunicationData extends TransitionData {
 
   /**
    * Return the index (0-based) of the sending controller.
-   * NOTE:  There can only be one sender in a CommunicationData object. In cases where more than
-   *        one sender is required, they can be split into multiple communications.
+   * NOTE: There can only be one sender in a CommunicationData object. In cases where more than
+   *       one sender is required, they can be split into multiple communications.
    * @return  The index of the sender, or -1 if there is no sender (which is prohibited by the
    *          constructor anyway)
    **/
