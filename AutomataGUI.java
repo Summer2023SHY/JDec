@@ -1457,6 +1457,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       /* Constructor */
 
+    /**
+     * Construct an AutomatonTab, given it's index, and the type of automaton it will contain.
+     * @param index The index of this tab
+     * @param type  The type of the automaton this tab will hold
+     **/
     public AutomatonTab(int index, Automaton.Type type) {
 
       this.index = index;
@@ -1491,6 +1496,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     }
 
+    /**
+     * Build the container that holds all of the input boxes.
+     **/
     private Container createInputContainer(Automaton.Type type) {
 
         /* Setup */
@@ -1505,33 +1513,21 @@ public class AutomataGUI extends JFrame implements ActionListener {
       c.gridwidth = 1;
 
       JLabel controllerInputLabel = new JLabel( (type == Automaton.Type.AUTOMATON ? "# Controllers:" : "# Controllers Before U-Structure:") );
-      c.ipady   = 0;
-      c.weightx = 0.5;
-      c.weighty = 0.0;
-      c.gridx   = 0;
-      c.gridy   = 0;
+      c.ipady = 0; c.weightx = 0.5; c.weighty = 0.0; c.gridx = 0; c.gridy = 0;
       container.add(controllerInputLabel, c);
 
       controllerInput = new JSpinner(new SpinnerNumberModel(1, 1, Automaton.MAX_NUMBER_OF_CONTROLLERS, 1));
-      c.ipady   = 0;
-      c.weightx = 0.5;
-      c.weighty = 0.0;
-      c.gridx   = 1;
-      c.gridy   = 0;
       controllerInput.addChangeListener(new ChangeListener() {
         @Override public void stateChanged(ChangeEvent e) {
           setSaved(false);
         }
       });
+      c.ipady = 0; c.weightx = 0.5; c.weighty = 0.0; c.gridx = 1; c.gridy = 0;
       container.add(controllerInput, c);
 
         /* Event Input */
 
-      c.ipady   = 0;
-      c.weightx = 0.5;
-      c.weighty = 0.0;
-      c.gridx   = 0;
-      c.gridy   = 1;
+      c.ipady = 0; c.weightx = 0.5; c.weighty = 0.0; c.gridx = 0; c.gridy = 1;
       container.add(new TooltipComponent(new JLabel("Enter events:"), getEventInstructions(type)), c);
       eventInput = new JTextPane();
       eventInput.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
@@ -1542,20 +1538,12 @@ public class AutomataGUI extends JFrame implements ActionListener {
         }
       };
       watchForChanges(eventInput);
-      c.ipady   = 100;
-      c.weightx = 0.5;
-      c.weighty = 1.0;
-      c.gridx   = 0;
-      c.gridy   = 2;
+      c.ipady = 100; c.weightx = 0.5; c.weighty = 1.0; c.gridx = 0; c.gridy = 2;
       container.add(eventInputScrollPane, c);
 
         /* State Input */
 
-      c.ipady   = 0;
-      c.weightx = 0.5;
-      c.weighty = 0.0;
-      c.gridx   = 1;
-      c.gridy   = 1;
+      c.ipady = 0; c.weightx = 0.5; c.weighty = 0.0; c.gridx = 1; c.gridy = 1;
       container.add(new TooltipComponent(new JLabel("Enter states:"), getStateInstructions(type)), c);
       stateInput = new JTextPane();
       stateInput.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
@@ -1566,22 +1554,14 @@ public class AutomataGUI extends JFrame implements ActionListener {
         }
       };
       watchForChanges(stateInput);
-      c.ipady   = 100;
-      c.weightx = 0.5;
-      c.weighty = 1.0;
-      c.gridx   = 1;
-      c.gridy   = 2;
+      c.ipady = 100; c.weightx = 0.5; c.weighty = 1.0; c.gridx = 1; c.gridy = 2;
       container.add(stateInputScrollPane, c);
 
         /* Transition Input */
 
       c.gridwidth = 2;
 
-      c.ipady   = 0;
-      c.weightx = 1.0;
-      c.weighty = 0.0;
-      c.gridx   = 0;
-      c.gridy   = 3;
+      c.ipady = 0; c.weightx = 1.0; c.weighty = 0.0; c.gridx = 0; c.gridy = 3;
       container.add(new TooltipComponent(new JLabel("Enter transitions:"), getTransitionInstructions(type)), c);
       transitionInput = new JTextPane();
       transitionInput.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
@@ -1592,11 +1572,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         }
       };
       watchForChanges(transitionInput);
-      c.ipady   = 200;
-      c.weightx = 0.5;
-      c.weighty = 1.0;
-      c.gridx   = 0;
-      c.gridy   = 4;
+      c.ipady = 200; c.weightx = 0.5; c.weighty = 1.0; c.gridx = 0; c.gridy = 4;
       container.add(transitionInputScrollPane, c);
 
         /* Generate automaton button */
@@ -1615,11 +1591,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         }
 
       });
-      c.ipady   = 0;
-      c.weightx = 0.5;
-      c.weighty = 1.0;
-      c.gridx   = 0;
-      c.gridy   = 5;
+      c.ipady = 0; c.weightx = 0.5; c.weighty = 1.0; c.gridx = 0; c.gridy = 5;
       container.add(generateAutomatonButton, c);
 
         /* Generate image button */
@@ -1638,11 +1610,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         }
 
       });
-      c.ipady   = 0;
-      c.weightx = 0.5;
-      c.weighty = 1.0;
-      c.gridx   = 0;
-      c.gridy   = 6;
+      c.ipady = 0; c.weightx = 0.5; c.weighty = 1.0; c.gridx = 0; c.gridy = 6;
       container.add(generateImageButton, c);
 
       return container;
