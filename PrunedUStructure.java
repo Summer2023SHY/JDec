@@ -170,7 +170,7 @@ public class PrunedUStructure extends UStructure {
 
         // Generate list of all reachable states from the current event
         Set<State> reachableStates = new HashSet<State>();
-        Map<Long, Set<NashCommunicationData>> communicationsToBeCopied = new HashMap<Long, Set<NashCommunicationData>>(); // Separated into lists by target state ID (which indicates which ones are combined)
+        Set<NashCommunicationData> communicationsToBeCopied = new HashSet<NashCommunicationData>();
         for (State s : setOfStates)
           for (Transition t : s.getTransitions())
             if (t.getEvent().equals(e)) {
@@ -181,13 +181,8 @@ public class PrunedUStructure extends UStructure {
               // Check to see if there are any potential or Nash communications that need to be copied over
               TransitionData transitionData = new TransitionData(s.getID(), t.getEvent().getID(), t.getTargetStateID());
               for (NashCommunicationData communication : getNashCommunications())
-                if (transitionData.equals(communication)) {
-                  Set<NashCommunicationData> set = communicationsToBeCopied.get(t.getTargetStateID());
-                  if (set == null)
-                    set = new HashSet<NashCommunicationData>();
-                  set.add(communication);
-                  communicationsToBeCopied.put(t.getTargetStateID(), set);
-                }
+                if (transitionData.equals(communication))
+                  communicationsToBeCopied.add(communication);
             
             }
 
@@ -205,20 +200,18 @@ public class PrunedUStructure extends UStructure {
           
           crush.addTransition(mappedID, e.getID(), mappedTargetID);
 
-          // Add Nash communications
-          for (Set<NashCommunicationData> set : communicationsToBeCopied.values()) {
-
-            System.out.println("set size: " + set.size());
+          // Add Nash communication using combined cost
+          if (communicationsToBeCopied.size() > 0) {
 
             // Combine the communication costs as specified, and combine the probabilities as a sum
             CommunicationRole[] roles = null;
             int totalCost = 0;
             double totalProbability = 0.0;
-            for (NashCommunicationData communication : set) {
+
+            for (NashCommunicationData communication : communicationsToBeCopied) {
 
               if (roles == null)
                 roles = (CommunicationRole[]) communication.roles.clone();
-
               totalProbability += communication.probability;
             
               switch (combiningCostsMethod) {
@@ -240,7 +233,7 @@ public class PrunedUStructure extends UStructure {
                   break;
               }
 
-            }
+            } // for
 
             // Take the average of the total cost, if specified
             if (combiningCostsMethod == Crush.CombiningCosts.AVERAGE)
@@ -248,7 +241,7 @@ public class PrunedUStructure extends UStructure {
 
             // Store the mappings in between communications and combined costs, if requested (for example, this is used in the Nash operation)
             if (combinedCostsMappings != null)
-              for (NashCommunicationData communication : set)
+              for (NashCommunicationData communication : communicationsToBeCopied)
                 combinedCostsMappings.put(communication.toNashString(this), totalCost);
 
             // Add the communication to the Crush
@@ -256,7 +249,7 @@ public class PrunedUStructure extends UStructure {
           
           }
 
-        }
+        } // if
 
       } // outer for
 
