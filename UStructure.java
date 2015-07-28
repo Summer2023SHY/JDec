@@ -923,8 +923,6 @@ public class UStructure extends Automaton {
     for (NashCommunicationData communication : originalCommunicationData) {
 
       Map<String, Integer> costMapping = costMappingsByCrush.get(communication.getIndexOfSender());
-      System.out.println(costMapping);
-      System.out.println(communication.toString(this));
       int newCost = costMapping.get(communication.toNashString(this));
       feasibleProtocol.add(new NashCommunicationData(communication.initialStateID, communication.eventID, communication.targetStateID, communication.roles, newCost, communication.probability));
 

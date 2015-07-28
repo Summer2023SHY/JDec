@@ -237,7 +237,7 @@ public class PrunedUStructure extends UStructure {
 
             // Take the average of the total cost, if specified
             if (combiningCostsMethod == Crush.CombiningCosts.AVERAGE)
-              totalCost /= (double) nControllersBeforeUStructure;
+              totalCost /= (double) communicationsToBeCopied.size();
 
             // Store the mappings in between communications and combined costs, if requested (for example, this is used in the Nash operation)
             if (combinedCostsMappings != null)

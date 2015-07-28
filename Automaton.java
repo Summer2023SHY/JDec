@@ -1466,6 +1466,10 @@ public class Automaton {
 
     try {
 
+      // Create temporary directory if it does not exist
+      if (!TEMPORARY_DIRECTORY.exists())
+        TEMPORARY_DIRECTORY.mkdirs();
+
       // Write DOT language to file
       PrintStream out = new PrintStream(new FileOutputStream(DOT_OUTPUT_FILE_NAME));
       out.print(str.toString());

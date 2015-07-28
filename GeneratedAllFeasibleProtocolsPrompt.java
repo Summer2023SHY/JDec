@@ -9,6 +9,7 @@ public class GeneratedAllFeasibleProtocolsPrompt extends JFrame {
   private UStructure uStructure;
   private JCheckBox[][] checkBoxes;
 
+  private boolean buttonPressed = false;
 
     /** CONSTRUCTOR **/
 
@@ -49,10 +50,22 @@ public class GeneratedAllFeasibleProtocolsPrompt extends JFrame {
 
       /* Add Button */
 
-    JButton button = new JButton("Generate All");
+    final JButton button = new JButton("Generate All");
     button.addActionListener(new ActionListener() {
  
         public void actionPerformed(ActionEvent e) {
+
+            if (buttonPressed)
+              return;
+
+            buttonPressed = true;
+
+            // Needs to be called on the event dispatch thread, or it will not update in time
+            SwingUtilities.invokeLater(new Runnable() {
+              public void run() {
+                button.setEnabled(false);
+              }
+            });
       
             // Generate list of communications which are still allowed based on which boxes the user selected
             java.util.List<CommunicationData> chosenCommunications = new ArrayList<CommunicationData>();

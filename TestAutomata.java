@@ -51,12 +51,12 @@ public class TestAutomata {
   		/* Run tests */
 
     counter.add(runHelperMethodTestRoutine());
-   //  counter.add(runEventCreationTestRoutine());
-   //  counter.add(runStateCreationTestRoutine());
-   //  counter.add(runAutomatonCapacityTestRoutine());
-   //  counter.add(runGuiInputTestRoutine());
-   //  counter.add(runAutomataOperationsTestRoutine());
-  	// counter.add(runExceptionHandlingTestRoutine());
+    counter.add(runEventCreationTestRoutine());
+    counter.add(runStateCreationTestRoutine());
+    counter.add(runAutomatonCapacityTestRoutine());
+    counter.add(runGuiInputTestRoutine());
+    counter.add(runAutomataOperationsTestRoutine());
+  	counter.add(runExceptionHandlingTestRoutine());
 
   		/* Print summary of all tests */
 
@@ -137,37 +137,77 @@ public class TestAutomata {
     ));
     List<Set<NashCommunicationData>> feasibleProtocols = uStructure.generateAllFeasibleProtocols(uStructure.getNashCommunications(), true);
 
-    // Testcase using the protocol with 4 <a,a,a> event vectors
+    printTestOutput("Using protocol with four <a,a,a> event vectors...", 3);
     Set<NashCommunicationData> desiredProtocol = null;
     outer: for (Set<NashCommunicationData> protocol : feasibleProtocols) {
       for (NashCommunicationData communication : protocol)
         if (!uStructure.getEvent(communication.eventID).getLabel().equals("<a,a,a>"))
           continue outer;
-      // If we've gotten this far, then we have the right protocol
       desiredProtocol = protocol;
       break;
     }
-    int total = 0;
-    if (desiredProtocol != null) {
-      // Create copy in order to preserve original protocol
-      Set<NashCommunicationData> copy = new HashSet<NashCommunicationData>();
-      for (NashCommunicationData communication : desiredProtocol)
-        copy.add((NashCommunicationData) communication.clone());
-      // Combine costs, then calculate the total
-      uStructure.combineCommunicationCosts(copy, Crush.CombiningCosts.MAX);
-      for (NashCommunicationData communication : copy)
-        total += communication.cost;
+    
+    int total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.MAX);
+    printTestCase("Ensuring that the communication costs were correct when taking the max", new TestResult(total, 20), counter);
+    total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.AVERAGE);
+    printTestCase("Ensuring that the communication costs were correct when averaging", new TestResult(total, 12), counter);
+    total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.SUM);
+    printTestCase("Ensuring that the communication costs were correct when taking the sum", new TestResult(total, 48), counter);
+    total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.UNIT);
+    printTestCase("Ensuring that the communication costs were correct when using unit costs", new TestResult(total, 12), counter);
+
+    printTestOutput("Using protocol with two <a,a,a> and two <b,b,b> event vectors...", 3);
+    desiredProtocol = null;
+    outer: for (Set<NashCommunicationData> protocol : feasibleProtocols) {
+      int aaa = 0, bbb = 0;
+      for (NashCommunicationData communication : protocol)
+        if (uStructure.getEvent(communication.eventID).getLabel().equals("<a,a,a>"))
+          aaa++;
+        else if (uStructure.getEvent(communication.eventID).getLabel().equals("<b,b,b>"))
+          bbb++;
+      if (aaa == 2 && bbb == 2) {
+        desiredProtocol = protocol;
+        break;
+      }
     }
-    printTestCase("Ensuring that the communication costs were correct", new TestResult(total, 20), counter);
 
-
-    // Set<NashCommunicationData> feasibleProtocol, Crush.CombiningCosts combiningCostsMethod
+    total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.MAX);
+    printTestCase("Ensuring that the communication costs were correct when taking the max", new TestResult(total, 4), counter);
+    total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.AVERAGE);
+    printTestCase("Ensuring that the communication costs were correct when averaging", new TestResult(total, 4), counter);
+    total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.SUM);
+    printTestCase("Ensuring that the communication costs were correct when taking the sum", new TestResult(total, 4), counter);
+    total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.UNIT);
+    printTestCase("Ensuring that the communication costs were correct when using unit costs", new TestResult(total, 4), counter);
 
       /* Print summary of this test routine */
 
     printTestRoutineSummary(testRoutineName, counter);
 
     return counter;
+
+  }
+
+  private static int combineCommunicationCostsHelper(UStructure uStructure,
+                                                     Set<NashCommunicationData> protocol,
+                                                     Crush.CombiningCosts combiningCostsMethod) {   
+
+    if (protocol == null)
+      return 0;
+
+    int total = 0;
+
+    // Create copy in order to preserve original protocol
+    Set<NashCommunicationData> copy = new HashSet<NashCommunicationData>();
+    for (NashCommunicationData communication : protocol)
+      copy.add((NashCommunicationData) communication.clone());
+    
+    // Combine costs, then calculate the total
+    uStructure.combineCommunicationCosts(copy, combiningCostsMethod);
+    for (NashCommunicationData communication : copy)
+      total += communication.cost;
+    
+    return total;
 
   }
 

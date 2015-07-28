@@ -1,5 +1,6 @@
 HOURS:
-Monday, July 27: 3 hour 30 minutes, 11:01 - 
+Monday, July 27: 4 hour 30 minutes
+Tuesday, July 28: 14 minutes, 7:25 -  
 
 JAVADOC TO-DO LIST:
 
@@ -43,33 +44,6 @@ QUESTIONS:
 
 SHORT-TERM:
 
-  -cost combining test cases from Dr. Ricker (test the sum as well!):
-        Example 1
-      Suppose that the communication protocol is the one where there are 4 <a_a_a> labels and nothing else:
-
-      Sender = controller 1, Receiver = controller 2
-      111->222 (cost = 1)
-      131->252 (cost = 5)
-      313->525 (cost = 5)
-      333->555 (cost = 1)
-
-      These 4 transitions happen to be indistinguishable from each other wrt this particular communication protocol. Thus, they form a single communication transition in the crush. As such, the cost, if we are taking the average, is (1+5+5+1)/4 = 3.  If we are taking the max, then the cost of this single transition in the crush is max(1,5,5,1) = 5.
-
-      Example 2
-      Suppose that the communication protocol is the one where we have the following communication protocol:
-
-      Sender = controller 1, Receiver = controller 2
-      111-> 222 (cost = 10)
-      333-> 555 (cost = 4)
-
-      None of these transitions are indistinguishable from the other for controller 1, so in the crush, each will form a unique communication transition with the costs noted above, i.e., the average (10/1) and (4/1), respectively, and max (max(10)=10, max(4)=4) are the same as the original costs.
-
-      Sender = controller 2, Receiver = controller 1
-      111->333
-      222->444
-
-      Same argument for when sender is controller 2.
-  
   -make the user pick costs and probabilities before taking Crush
   -when taking crush, ask whether to take max, sum, or avg of costs
   -Add test case for system does not satisfy observability in Nash algorithm (exception handling)
