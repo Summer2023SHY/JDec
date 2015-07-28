@@ -52,7 +52,7 @@ SHORT-TERM:
   -Add test case for making sure both protential and nash communications are copied into the crush as potential communications, and make sure that communications actually get "combined" (not making duplicates)
   -Ensure that I'm not making the following mistake anywhere: letting two automata share a reference to the same piece of CommunicationData for example.. If one automaton changed it, then it would mess up the other one
   -Add options to generate random automaton:
-    observable - build U-structure, ensure there are not any violations
+    observable - build U-structure, ensure there are not any violations ?? is this right??
     controllable - there cannot be a bad transition that has an event that is uncontrollable by all controllers
   -finish loading bars when loading automaton
   -fix divider issue

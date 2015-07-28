@@ -922,7 +922,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
    **/
   private void refresh(int index) {
 
-    ProgressBarPopup progressBarPopup = new ProgressBarPopup("Loading...", 3);
+    final ProgressBarPopup progressBarPopup = new ProgressBarPopup("Loading...", 3);
 
     AutomatonTab tab = tabs.get(index);
 
@@ -970,7 +970,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     progressBarPopup.updateProgressBar(1);
 
-    progressBarPopup.dispose();
+    EventQueue.invokeLater(new Runnable() {
+        @Override public void run() {
+          progressBarPopup.dispose();
+        }
+      });
 
   }
 

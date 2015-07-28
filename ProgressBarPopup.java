@@ -54,7 +54,7 @@ public class ProgressBarPopup extends JFrame {
     if (nCompletedTasks > nTotalTasks)
       nCompletedTasks = nTotalTasks;
     
-    final int newValue = (int) ((nCompletedTasks * 100) / nTotalTasks);
+    final int newValue = (int) (((double) nCompletedTasks * 100.0) / (double) nTotalTasks);
 
     if (newValue != progressBar.getValue())
       EventQueue.invokeLater(new Runnable() {
