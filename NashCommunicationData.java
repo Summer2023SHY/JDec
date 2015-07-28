@@ -40,9 +40,11 @@ public class NashCommunicationData extends CommunicationData {
    * @return          The string representation
    **/
   public String toNashString(Automaton automaton) {
-
     return super.toString(automaton) + "," + cost + "," + probability;
+  }
 
+  @Override public Object clone() {
+    return new NashCommunicationData(initialStateID, eventID, targetStateID, (CommunicationRole[]) roles.clone(), cost, probability);
   }
 
 }

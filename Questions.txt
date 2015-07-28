@@ -1,6 +1,5 @@
 HOURS:
-Sunday, July 26: 1 hour
-Monday, July 27: 1 hour 5 minutes, 7:38 - 
+Monday, July 27: 3 hour 30 minutes, 11:01 - 
 
 JAVADOC TO-DO LIST:
 

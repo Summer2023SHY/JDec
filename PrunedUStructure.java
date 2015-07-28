@@ -120,18 +120,19 @@ public class PrunedUStructure extends UStructure {
    * @param newHeaderFile         The file where the header should be stored
    * @param newBodyFile           The file where the body should be stored
    * @param indexOfController     The index of the controller in which the crush is taken with respect to (1-based)
-   * @param combinedCostsMappings Passed in as an empty map, this method maps the original Nash communications
+   * @param combinedCostsMappings Passed in as an empty map, this method maps the Nash communications as strings
    *                              with the combined costs (if null, then a HashMap will simply not be populated)
    * @param combiningCostsMethod  The method used to combine communication costs
    * @return                      The crush
    **/
-  public Crush crush(File newHeaderFile, File newBodyFile, int indexOfController, Map<NashCommunicationData, Integer> combinedCostsMappings, Crush.CombiningCosts combiningCostsMethod) {
+  public Crush crush(File newHeaderFile, File newBodyFile, int indexOfController, Map<String, Integer> combinedCostsMappings, Crush.CombiningCosts combiningCostsMethod) {
 
     if (potentialCommunications.size() > 0)
       System.err.println("WARNING: " + potentialCommunications.size() + " communications were ignored. Only Nash communications are considered in the Crush operation.");
 
       /* Setup */
 
+    // Create empty crush, copy over events oberservable by the controller
     Crush crush = new Crush(newHeaderFile, newBodyFile, nControllersBeforeUStructure);
     for (Event e : events)
       if (!e.getVector().isUnobservableToController(indexOfController))
@@ -185,6 +186,7 @@ public class PrunedUStructure extends UStructure {
                   if (set == null)
                     set = new HashSet<NashCommunicationData>();
                   set.add(communication);
+                  communicationsToBeCopied.put(t.getTargetStateID(), set);
                 }
             
             }
@@ -205,6 +207,8 @@ public class PrunedUStructure extends UStructure {
 
           // Add Nash communications
           for (Set<NashCommunicationData> set : communicationsToBeCopied.values()) {
+
+            System.out.println("set size: " + set.size());
 
             // Combine the communication costs as specified, and combine the probabilities as a sum
             CommunicationRole[] roles = null;
@@ -245,7 +249,7 @@ public class PrunedUStructure extends UStructure {
             // Store the mappings in between communications and combined costs, if requested (for example, this is used in the Nash operation)
             if (combinedCostsMappings != null)
               for (NashCommunicationData communication : set)
-                combinedCostsMappings.put(communication, totalCost);
+                combinedCostsMappings.put(communication.toNashString(this), totalCost);
 
             // Add the communication to the Crush
             crush.addNashCommunication(mappedID, e.getID(), mappedTargetID, roles, totalCost, totalProbability);

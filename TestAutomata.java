@@ -51,12 +51,12 @@ public class TestAutomata {
   		/* Run tests */
 
     counter.add(runHelperMethodTestRoutine());
-    counter.add(runEventCreationTestRoutine());
-    counter.add(runStateCreationTestRoutine());
-    counter.add(runAutomatonCapacityTestRoutine());
-    counter.add(runGuiInputTestRoutine());
-    counter.add(runAutomataOperationsTestRoutine());
-  	counter.add(runExceptionHandlingTestRoutine());
+   //  counter.add(runEventCreationTestRoutine());
+   //  counter.add(runStateCreationTestRoutine());
+   //  counter.add(runAutomatonCapacityTestRoutine());
+   //  counter.add(runGuiInputTestRoutine());
+   //  counter.add(runAutomataOperationsTestRoutine());
+  	// counter.add(runExceptionHandlingTestRoutine());
 
   		/* Print summary of all tests */
 
@@ -120,6 +120,48 @@ public class TestAutomata {
     printTestCase("Splitting a string with no vectors", new TestResult(AutomatonGenerator.splitStringWithVectors("One,Two"), new String[]{"One", "Two"}), counter);
     printTestCase("Splitting a string containing vectors", new TestResult(AutomatonGenerator.splitStringWithVectors("<A,B>,C,<D,E,F>"), new String[]{"<A,B>", "C", "<D,E,F>"}), counter);
     printTestCase("Splitting a string with mismatched angled brackets (expecting null)", new TestResult(AutomatonGenerator.splitStringWithVectors("<A,B>,C>") == null), counter);
+
+      /* combineCommunicationCosts() Tests */
+
+    printTestOutput("Combining Communication Costs - combineCommunicationCosts(): ", 2);
+
+    // NOTE: These tests do not check each individual cost to make sure it is correct,
+    //       but instead, the costs are simply added together and compared to the expected sum.
+
+    UStructure uStructure = saveAndLoadUStructure(AutomatonGenerator.generateFromGUICode(
+      new UStructure(null, null, 2),
+      "<a,a,*>\n<b,*,b>\n<*,b,*>\n<*,*,a>\n<o,o,o>\n<*,b,a>\n<b,b,b>\n<a,a,a>", // Events
+      "@1_1_1\n1_1_2\n1_3_1\n1_3_2\n2_2_1\n2_2_2\n2_4_1\n2_4_2\n2_5_1\n2_5_2\n3_1_3\n3_1_4\n3_1_5\n3_3_3\n3_3_4\n3_3_5\n4_2_3\n4_2_4\n4_2_5\n4_4_3\n4_4_4\n4_4_5\n4_5_3\n4_5_4\n4_5_5\n5_2_3\n5_2_4\n5_2_5\n5_4_3\n5_4_4\n5_4_5\n5_5_3\n5_5_4\n5_5_5\n6_6_6\n6_6_7\n6_7_6\n6_7_7\n7_6_6\n7_6_7\n7_7_6\n7_7_7", // States
+      "1_1_1,<a,a,*>,2_2_1\n1_1_1,<b,*,b>,3_1_3\n1_1_1,<*,b,*>,1_3_1\n1_1_1,<*,*,a>,1_1_2\n1_1_1,<*,b,a>,1_3_2:INVALID_COMMUNICATION\n1_1_1,<b,b,b>,3_3_3:NASH_COMMUNICATION-RS-1-0.125\n1_1_1,<a,a,a>,2_2_2:NASH_COMMUNICATION-SR-1-0.125\n1_1_2,<a,a,*>,2_2_2\n1_1_2,<b,*,b>,3_1_4\n1_1_2,<*,b,*>,1_3_2\n1_1_2,<b,b,b>,3_3_4:NASH_COMMUNICATION-RS-1-0.125\n1_3_1,<a,a,*>,2_5_1\n1_3_1,<b,*,b>,3_3_3\n1_3_1,<*,*,a>,1_3_2\n1_3_1,<a,a,a>,2_5_2:NASH_COMMUNICATION-SR-5-0.125\n1_3_2,<a,a,*>,2_5_2\n1_3_2,<b,*,b>,3_3_4\n2_2_1,<b,*,b>,4_2_3\n2_2_1,<*,b,*>,2_4_1\n2_2_1,<*,*,a>,2_2_2\n2_2_1,<*,b,a>,2_4_2:INVALID_COMMUNICATION\n2_2_1,<b,b,b>,4_4_3:NASH_COMMUNICATION-RS-1-0.125\n2_2_2,<b,*,b>,4_2_4\n2_2_2,<*,b,*>,2_4_2\n2_2_2,<b,b,b>,4_4_4:NASH_COMMUNICATION-RS-1-0.125\n2_4_1,<b,*,b>,4_4_3\n2_4_1,<*,*,a>,2_4_2\n2_4_2,<b,*,b>,4_4_4\n2_5_1,<b,*,b>,4_5_3\n2_5_1,<*,*,a>,2_5_2\n2_5_2,<b,*,b>,4_5_4\n3_1_3,<a,a,*>,5_2_3\n3_1_3,<*,b,*>,3_3_3\n3_1_3,<*,*,a>,3_1_5\n3_1_3,<*,b,a>,3_3_5:INVALID_COMMUNICATION\n3_1_3,<a,a,a>,5_2_5:NASH_COMMUNICATION-SR-5-0.125\n3_1_4,<a,a,*>,5_2_4\n3_1_4,<*,b,*>,3_3_4\n3_1_5,<a,a,*>,5_2_5\n3_1_5,<*,b,*>,3_3_5\n3_3_3,<a,a,*>,5_5_3\n3_3_3,<*,*,a>,3_3_5\n3_3_3,<a,a,a>,5_5_5:NASH_COMMUNICATION-SR-1-0.125\n3_3_4,<a,a,*>,5_5_4\n3_3_5,<a,a,*>,5_5_5\n4_2_3,<*,b,*>,4_4_3\n4_2_3,<*,*,a>,4_2_5\n4_2_3,<*,b,a>,4_4_5:INVALID_COMMUNICATION\n4_2_4,<*,b,*>,4_4_4\n4_2_5,<*,b,*>,4_4_5\n4_4_3,<*,*,a>,4_4_5\n4_4_4,<o,o,o>,6_6_6\n4_4_5,<o,o,o>,6_6_7\n4_5_3,<*,*,a>,4_5_5\n4_5_4,<o,o,o>,6_7_6\n4_5_5,<o,o,o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*,b,*>,5_4_3\n5_2_3,<*,*,a>,5_2_5\n5_2_3,<*,b,a>,5_4_5:INVALID_COMMUNICATION\n5_2_4,<*,b,*>,5_4_4\n5_2_5,<*,b,*>,5_4_5\n5_4_3,<*,*,a>,5_4_5\n5_4_4,<o,o,o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o,o,o>,7_6_7\n5_5_3,<*,*,a>,5_5_5\n5_5_4,<o,o,o>,7_7_6\n5_5_5,<o,o,o>,7_7_7", // Transitions
+      false // We do not want it to be verbose
+    ));
+    List<Set<NashCommunicationData>> feasibleProtocols = uStructure.generateAllFeasibleProtocols(uStructure.getNashCommunications(), true);
+
+    // Testcase using the protocol with 4 <a,a,a> event vectors
+    Set<NashCommunicationData> desiredProtocol = null;
+    outer: for (Set<NashCommunicationData> protocol : feasibleProtocols) {
+      for (NashCommunicationData communication : protocol)
+        if (!uStructure.getEvent(communication.eventID).getLabel().equals("<a,a,a>"))
+          continue outer;
+      // If we've gotten this far, then we have the right protocol
+      desiredProtocol = protocol;
+      break;
+    }
+    int total = 0;
+    if (desiredProtocol != null) {
+      // Create copy in order to preserve original protocol
+      Set<NashCommunicationData> copy = new HashSet<NashCommunicationData>();
+      for (NashCommunicationData communication : desiredProtocol)
+        copy.add((NashCommunicationData) communication.clone());
+      // Combine costs, then calculate the total
+      uStructure.combineCommunicationCosts(copy, Crush.CombiningCosts.MAX);
+      for (NashCommunicationData communication : copy)
+        total += communication.cost;
+    }
+    printTestCase("Ensuring that the communication costs were correct", new TestResult(total, 20), counter);
+
+
+    // Set<NashCommunicationData> feasibleProtocol, Crush.CombiningCosts combiningCostsMethod
 
       /* Print summary of this test routine */
 
@@ -788,7 +830,7 @@ public class TestAutomata {
     printTestCase("Ensuring the states are correct", new TestResult(crush.getStateInput(), "@<1_1_1,1_3_1>\n<3_1_3,3_3_3>\n<2_2_2,2_4_2,2_5_2>\n<4_2_4,4_4_4,4_5_4>\n<6_6_6,6_7_6>\n<5_2_5,5_4_5,5_5_5>\n<7_7_7,7_6_7>"), counter);
     printTestCase("Ensuring the transitions are correct", new TestResult(crush.getTransitionInput(), "<1_1_1,1_3_1>,<b,*,b>,<3_1_3,3_3_3>\n<1_1_1,1_3_1>,<a,a,a>,<2_2_2,2_4_2,2_5_2>:COMMUNICATION-SR\n<3_1_3,3_3_3>,<a,a,a>,<5_2_5,5_4_5,5_5_5>:COMMUNICATION-SR\n<2_2_2,2_4_2,2_5_2>,<b,*,b>,<4_2_4,4_4_4,4_5_4>\n<4_2_4,4_4_4,4_5_4>,<o,o,o>,<6_6_6,6_7_6>\n<5_2_5,5_4_5,5_5_5>,<o,o,o>,<7_7_7,7_6_7>"), counter);
 
-    /* Nash Operation Tests */
+      /* Nash Operation Tests */
 
     printTestOutput("NASH OPERATION: ", 2);
 
@@ -819,7 +861,6 @@ public class TestAutomata {
       System.out.println(RED + "\t\t\t*** FAILED 3 TESTS DUE TO EXCEPTION ***" + RESET);
 
     }
-
 
       /* Print summary of this test routine */
 

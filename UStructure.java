@@ -884,13 +884,14 @@ public class UStructure extends Automaton {
    * For a given feasible protocol (that solves the control problem), combine communication costs using
    * the specified technique.
    * NOTE: Most methods will need to apply the protocol, then generate 1 or more Crush structures.
+   * NOTE: This method was made public in order to be able to test it using another
    * @param feasibleProtocol      The list of Nash communications in which costs will be combined
    *                              NOTE: Unless unit costs are used, then new NashCommunicationData objects
    *                                    will be created (since those objects could be referenced in other
    *                                    protocols, and we do not want to interfere with them)
    * @param combiningCostsMethod  The method in which the communications are being combined
    **/
-  private void combineCommunicationCosts(Set<NashCommunicationData> feasibleProtocol, Crush.CombiningCosts combiningCostsMethod) {
+  public void combineCommunicationCosts(Set<NashCommunicationData> feasibleProtocol, Crush.CombiningCosts combiningCostsMethod) {
 
     // No costs need to be combined if we're using unit costs
     if (combiningCostsMethod == Crush.CombiningCosts.UNIT)
@@ -898,18 +899,19 @@ public class UStructure extends Automaton {
 
     // Generated the pruned U-Structure by applying the protocol
     PrunedUStructure prunedUStructure = applyProtocol(feasibleProtocol, null, null);
-    
+
     // Determine which Crushes will need to be generated (we need to generate 1 or more)
     boolean[] crushNeedsToBeGenerated = new boolean[nControllersBeforeUStructure];
     for (NashCommunicationData communication : feasibleProtocol)
       crushNeedsToBeGenerated[communication.getIndexOfSender()] = true;
 
     // Generate the neccessary Crushes, storing only the communication cost mappings
-    List<Map<NashCommunicationData, Integer>> costMappingsByCrush = new ArrayList<Map<NashCommunicationData, Integer>>();
+    List<Map<String, Integer>> costMappingsByCrush = new ArrayList<Map<String, Integer>>();
     for (int i = 0; i < nControllersBeforeUStructure; i++)
       if (crushNeedsToBeGenerated[i]) {
-        Map<NashCommunicationData, Integer> costMapping = new HashMap<NashCommunicationData, Integer>();
+        Map<String, Integer> costMapping = new HashMap<String, Integer>();
         prunedUStructure.crush(null, null, i + 1, costMapping, combiningCostsMethod);
+        costMappingsByCrush.add(costMapping);
       } else
         costMappingsByCrush.add(null);
 
@@ -920,9 +922,10 @@ public class UStructure extends Automaton {
     // Adjust the costs according to the mappings, re-adding the new objects to the set
     for (NashCommunicationData communication : originalCommunicationData) {
 
-      Map<NashCommunicationData, Integer> costMapping = costMappingsByCrush.get(communication.getIndexOfSender());
-
-      int newCost = costMapping.get(communication);
+      Map<String, Integer> costMapping = costMappingsByCrush.get(communication.getIndexOfSender());
+      System.out.println(costMapping);
+      System.out.println(communication.toString(this));
+      int newCost = costMapping.get(communication.toNashString(this));
       feasibleProtocol.add(new NashCommunicationData(communication.initialStateID, communication.eventID, communication.targetStateID, communication.roles, newCost, communication.probability));
 
     }
