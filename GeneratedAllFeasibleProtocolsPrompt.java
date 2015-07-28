@@ -3,7 +3,7 @@ import javax.swing.*;
 import java.awt.event.*;
 import java.awt.*;
 
-public class GeneratedAllFeasibleProtocolsPrompt extends JFrame {
+public class GeneratedAllFeasibleProtocolsPrompt extends JDialog {
 
   private AutomataGUI gui;
   private UStructure uStructure;
@@ -19,6 +19,8 @@ public class GeneratedAllFeasibleProtocolsPrompt extends JFrame {
    * @param uStructure  The UStructure that is being worked with
    **/
   public GeneratedAllFeasibleProtocolsPrompt(AutomataGUI gui, UStructure uStructure) {
+
+    super(gui, true);
 
     this.gui = gui;
     this.uStructure = uStructure;

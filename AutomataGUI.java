@@ -421,9 +421,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
         // Create new tab for the accessible automaton
         if (automaton == null) {
           temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
-          JOptionPane.showMessageDialog(null, "Please specify a starting state.", "Accessible Operation Failed", JOptionPane.ERROR_MESSAGE);
-        } else
+          displayErrorMessage("Accessible Operation Failed", "Please specify a starting state.");
           createTab(automaton);
+        }
         break;
 
       case "Co-Accessible":
@@ -447,7 +447,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         // Create new tab for the trim automaton
         if (automaton == null) {
           temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
-          JOptionPane.showMessageDialog(null, "Please specify a starting state.", "Trim Operation Failed", JOptionPane.ERROR_MESSAGE);
+          displayErrorMessage("Trim Operation Failed", "Please specify a starting state.");
         } else
           createTab(automaton);
         break;
@@ -480,7 +480,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
           createTab(Automaton.intersection(tab.automaton, otherAutomaton, headerFile, bodyFile));
         } catch(IncompatibleAutomataException e) {
           temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
-          JOptionPane.showMessageDialog(null, "Please ensure that both automata have the same number of controllers and that there are no incompatible events (meaning that events share the same name but have different properties).", "Intersection Operation Failed", JOptionPane.ERROR_MESSAGE);
+          displayErrorMessage("Intersection Operation Failed", "Please ensure that both automata have the same number of controllers and that there are no incompatible events (meaning that events share the same name but have different properties).");
         }
         
         break;
@@ -502,7 +502,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
           createTab(Automaton.union(tab.automaton, otherAutomaton, headerFile, bodyFile));
         } catch(IncompatibleAutomataException e) {
           temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
-          JOptionPane.showMessageDialog(null, "Please ensure that both automata have the same number of controllers and that there are no incompatible events (meaning that events share the same name but have different properties).", "Union Operation Failed", JOptionPane.ERROR_MESSAGE);
+          displayErrorMessage("Union Operation Failed", "Please ensure that both automata have the same number of controllers and that there are no incompatible events (meaning that events share the same name but have different properties).");
         }
 
         break;
@@ -517,7 +517,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         automaton = tab.automaton.synchronizedComposition(headerFile, bodyFile);
         if (automaton == null) {
           temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
-          JOptionPane.showMessageDialog(null, "Please ensure that you specified a starting state.", "Synchronized Composition Operation Failed", JOptionPane.ERROR_MESSAGE);
+          displayErrorMessage("Synchronized Composition Operation Failed", "Please ensure that you specified a starting state.");
         } else
           createTab(automaton);
 
@@ -528,20 +528,12 @@ public class AutomataGUI extends JFrame implements ActionListener {
         PrunedUStructure prunedUStructure = ((PrunedUStructure) tab.automaton);
 
         if (prunedUStructure.hasViolations()) {
-          JOptionPane.showMessageDialog(null, "The chosen protocol evidently did not satisfy the control problem\nsince the pruned U-Structure contained one or more violations.", "Crush Operation Aborted", JOptionPane.ERROR_MESSAGE);
+          displayErrorMessage("Crush Operation Aborted", "The chosen protocol evidently did not satisfy the control problem\nsince the pruned U-Structure contained one or more violations.");
           break;
         }
 
-        fileName = getTemporaryFileName();
-        headerFile = new File(fileName + ".hdr");
-        bodyFile = new File(fileName + ".bdy");
+        new NashInfoForCrushPrompt(this, tab, "Cost and Probability Values", "Specify costs and probabilities for each communication.");
 
-        int selectedController = pickController("Which controller would you like to take the crush with respect to?");
-
-        // Create new tab with the generated crush
-        if (selectedController != -1)
-          createTab(prunedUStructure.crush(headerFile, bodyFile, selectedController, null, Crush.CombiningCosts.SUM));
-        
         break;
 
       case "Add Communications":
@@ -567,7 +559,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         uStructure = ((UStructure) tab.automaton);
 
         if (uStructure.getSizeOfPotentialAndNashCommunications() == 0)
-          JOptionPane.showMessageDialog(null, "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.", "Operation Failed", JOptionPane.ERROR_MESSAGE);
+          displayErrorMessage("Operation Failed", "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.");
         else
           new GeneratedAllFeasibleProtocolsPrompt(this, uStructure);
         break;
@@ -577,7 +569,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         uStructure = ((UStructure) tab.automaton);
 
         if (uStructure.getSizeOfPotentialAndNashCommunications() == 0)
-          JOptionPane.showMessageDialog(null, "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.", "Operation Failed", JOptionPane.ERROR_MESSAGE);
+          displayErrorMessage("Operation Failed", "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.");
         else
           new MakeProtocolFeasiblePrompt(this, uStructure);
         break;
@@ -587,7 +579,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         uStructure = ((UStructure) tab.automaton);
 
         if (uStructure.getSizeOfPotentialAndNashCommunications() == 0)
-          JOptionPane.showMessageDialog(null, "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.", "Operation Failed", JOptionPane.ERROR_MESSAGE);
+          displayErrorMessage("Operation Failed", "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.");
         else
           new FeasibleProtocolOutput(this, uStructure, uStructure.generateSmallestFeasibleProtocols(uStructure.getPotentialAndNashCommunications()), "Smallest Feasible Protocols", " Protocol(s) with the fewest number of communications: ");
         break;
@@ -597,9 +589,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
         uStructure = ((UStructure) tab.automaton);
 
         if (uStructure.getSizeOfPotentialAndNashCommunications() == 0)
-          JOptionPane.showMessageDialog(null, "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.", "Operation Failed", JOptionPane.ERROR_MESSAGE);
+          displayErrorMessage("Operation Failed", "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.");
         else
-          new NashInformationPrompt(this, tab, "Cost and Probability Values", "Specify costs and probabilities for each communication.");
+          new NashInfoForNashEquilibriaPrompt(this, tab, "Cost and Probability Values", "Specify costs and probabilities for each communication.");
         break;
 
       case "Random Automaton":
@@ -760,13 +752,13 @@ public class AutomataGUI extends JFrame implements ActionListener {
         if (automaton.generateImage(imageSize, Automaton.OutputMode.SVG, destinationFileName))
           JOptionPane.showMessageDialog(null, "The image of the graph has been exported to '" + destinationFileName + "'.", "Export Complete", JOptionPane.INFORMATION_MESSAGE);
         else
-          JOptionPane.showMessageDialog(null, "Something went wrong while generating and exporting the image of the graph.", "Export Failed", JOptionPane.ERROR_MESSAGE);
+          displayErrorMessage("Export Failed", "Something went wrong while generating and exporting the image of the graph.");
       
       } catch (MissingDependencyException e) {
-        JOptionPane.showMessageDialog(null, "Please ensure that GraphViz is installed, with its directory added to the PATH environment variable.", "Missing Dependency", JOptionPane.ERROR_MESSAGE);
+        displayErrorMessage("Missing Dependency", "Please ensure that GraphViz is installed, with its directory added to the PATH environment variable.");
     
       } catch (MissingOrCorruptBodyFileException e) {
-        JOptionPane.showMessageDialog(null, "Please ensure that the .bdy file associated with this automaton is not corrupt or missing.", "Corrupt or Missing File", JOptionPane.ERROR_MESSAGE);
+        displayErrorMessage("Corrupt or Missing File", "Please ensure that the .bdy file associated with this automaton is not corrupt or missing.");
       }
 
     }
@@ -836,7 +828,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
       default:
 
         // NOTE: The following error should never appear to the user, and it indicates a bug in the program
-        JOptionPane.showMessageDialog(null, "Unable to generate automaton from GUI input code due to unrecognized automaton type.", "Crucial Error", JOptionPane.ERROR_MESSAGE);
+        displayErrorMessage("Crucial Error", "Unable to generate automaton from GUI input code due to unrecognized automaton type.");
         return;
 
     }
@@ -881,13 +873,13 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       // Display error message
       else
-        JOptionPane.showMessageDialog(null, "Something went wrong while trying to generate and display the image. NOTE: It may be the case that you do not have X11 installed.", "Error", JOptionPane.ERROR_MESSAGE);
+        displayErrorMessage("Error", "Something went wrong while trying to generate and display the image. NOTE: It may be the case that you do not have X11 installed.");
     
     } catch (MissingDependencyException e) {
-      JOptionPane.showMessageDialog(null, "Please ensure that GraphViz is installed, with its directory added to the PATH environment variable.", "Missing Dependency", JOptionPane.ERROR_MESSAGE);
+      displayErrorMessage("Missing Dependency", "Please ensure that GraphViz is installed, with its directory added to the PATH environment variable.");
     
     } catch (MissingOrCorruptBodyFileException e) {
-      JOptionPane.showMessageDialog(null, "Please ensure that the .bdy file associated with this automaton is not corrupt or missing.", "Corrupt or Missing File", JOptionPane.ERROR_MESSAGE);
+      displayErrorMessage("Corrupt or Missing File", "Please ensure that the .bdy file associated with this automaton is not corrupt or missing.");
     }
 
   }
@@ -946,7 +938,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
         break;
 
       default:
-        JOptionPane.showMessageDialog(null, "Please ensure that the .hdr file associated with this automaton is not corrupt.", "Corrupt File", JOptionPane.ERROR_MESSAGE);
+        displayErrorMessage("Corrupt File", "Please ensure that the .hdr file associated with this automaton is not corrupt.");
         return;
 
     }
@@ -1079,7 +1071,14 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       /* Set up the file chooser */
 
-    JFileChooser fileChooser = new JFileChooser();
+    JFileChooser fileChooser = new JFileChooser() {
+      @Override protected JDialog createDialog(Component parent) throws HeadlessException {
+        JDialog dialog = super.createDialog(AutomataGUI.this);
+        dialog.setModal(true);
+        return dialog;
+      }
+    };
+
     fileChooser.setDialogTitle(title);
 
       /* Filter .hdr files */
@@ -1104,7 +1103,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
       // Check to see if that file is already open
       for (AutomatonTab tab : tabs)
         if (tab.headerFile.equals(fileChooser.getSelectedFile())) {
-          JOptionPane.showMessageDialog(null, "The specified file is already open in another tab.", "File Already Open", JOptionPane.ERROR_MESSAGE);
+          displayErrorMessage("File Already Open", "The specified file is already open in another tab.");
           return null;
         }
 
@@ -1142,7 +1141,14 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       /* Set up the file chooser */
 
-    JFileChooser fileChooser = new JFileChooser();
+    JFileChooser fileChooser = new JFileChooser() {
+      @Override protected JDialog createDialog(Component parent) throws HeadlessException {
+        JDialog dialog = super.createDialog(AutomataGUI.this);
+        dialog.setModal(true);
+        return dialog;
+      }
+    };
+
     fileChooser.setDialogTitle(title);
 
       /* Filter .hdr files */
@@ -1181,7 +1187,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     for (AutomatonTab tab : tabs)
       if (tab.headerFile.equals(headerFile) && currentTab.index != tab.index) {
-        JOptionPane.showMessageDialog(null, "The specified file is open in another tab. Please choose a different filename.", "File Is Open", JOptionPane.ERROR_MESSAGE);
+        displayErrorMessage("File Is Open", "The specified file is open in another tab. Please choose a different filename.");
         return null;
       }
 
@@ -1227,14 +1233,14 @@ public class AutomataGUI extends JFrame implements ActionListener {
       /* Show error message if there is no second automaton to pick from */
 
     if (options.length == 0) {
-      JOptionPane.showMessageDialog(null, "This operation requires two generated automata.", "Operation Failed", JOptionPane.ERROR_MESSAGE);
+      displayErrorMessage("Operation Failed", "This operation requires two generated automata.");
       return -1;
     }
     
       /* Display prompt to user */
     
     String choice = (String) JOptionPane.showInputDialog(
-        null,
+        this,
         str,
         "Choose Automaton",
         JOptionPane.PLAIN_MESSAGE,
@@ -1255,10 +1261,10 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
   /**
    * Allow the user to select a controller in the current automaton.
-   * @param str The message to display
-   * @return    The index of the selected controller (or -1 if there was not a controller selected)
+   * @param str   The message to display
+   * @return      The index of the selected controller (or -1 if there was not a controller selected)
    **/
-  private int pickController(String str) {
+  public int pickController(String str) {
 
     UStructure uStructure = (UStructure) tabs.get(tabbedPane.getSelectedIndex()).automaton;
 
@@ -1272,7 +1278,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
       /* Display prompt to user */
     
     String choice = (String) JOptionPane.showInputDialog(
-        null,
+        this,
         str,
         "Choose Controller",
         JOptionPane.PLAIN_MESSAGE,
@@ -1302,7 +1308,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
     String buttons[] = { "Yes", "No" };
     
     int promptResult = JOptionPane.showOptionDialog(
-      null,
+      this,
       message,
       title,
       JOptionPane.DEFAULT_OPTION,
@@ -1317,6 +1323,33 @@ public class AutomataGUI extends JFrame implements ActionListener {
   }
 
     /* HELPER METHODS */
+
+  /**
+   * Display an error message in a modal dialog which will stay on top of the GUI at all times.
+   * @param title   The title to display in the dialog box
+   * @param message The message to display in the dialog box
+   **/
+  public void displayErrorMessage(String title, String message) {
+    
+    displayMessage(title, message, JOptionPane.ERROR_MESSAGE);
+
+  }
+
+  /**
+   * Display a message of the specified type in a modal dialog which will stay on top of the GUI
+   * at all times.
+   * @param title       The title to display in the dialog box
+   * @param message     The message to display in the dialog box
+   * @param messageType The type of message (using JOptionPane constants)
+   **/
+  public void displayMessage(String title, String message, int messageType) {
+    
+    JOptionPane op = new JOptionPane(message, messageType);
+    JDialog dialog = op.createDialog(title);
+    dialog.setAlwaysOnTop(true);
+    dialog.setVisible(true);
+
+  }
 
   /**
    * Removes the last 4 characters of the string, which is used to trim either '.hdr' or '.bdy' off the end.

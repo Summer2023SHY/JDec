@@ -16,7 +16,7 @@ import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 
-public class RandomAutomatonPrompt extends JFrame {
+public class RandomAutomatonPrompt extends JDialog {
 
     /** CLASS CONSTANTS **/
 
@@ -41,6 +41,8 @@ public class RandomAutomatonPrompt extends JFrame {
    * @param gui A reference to the GUI which will be recieving the generated automaton request.
    **/
   public RandomAutomatonPrompt(AutomataGUI gui) {
+
+    super(gui, true);        
 
     this.gui = gui;
 

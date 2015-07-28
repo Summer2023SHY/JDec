@@ -1,6 +1,6 @@
 HOURS:
 Monday, July 27: 4 hour 30 minutes
-Tuesday, July 28: 14 minutes, 7:25 -  
+Tuesday, July 28: 2 hour 20 minutes, 12:58   
 
 JAVADOC TO-DO LIST:
 
@@ -25,6 +25,7 @@ JAVADOC TO-DO LIST:
   NashCommunicationData.java
   NashEquilibriaOutput.java
   NashInformationPrompt.java
+  NashEquilibriaInformationPrompt.java
   ProgressBarPopup.java
   ProtocolVector.java
   PrunedUStructure.java
@@ -38,14 +39,16 @@ JAVADOC TO-DO LIST:
 
 QUESTIONS:
 
+  observable property of automaton - build U-structure, ensure there are not any violations ?? is this right??
   -where do we need to make notes about cyclic vs. acyclic??
   -Are there any small examples using 3 controllers that do not blow up very large and are easily verifiable? (I'm looking for a good test case)
   -For the observer automaton, if at least one state is marked, does that mean that the entire group of states will be marked in the observer (Figure 2.22 on pg. 89)?
 
 SHORT-TERM:
 
-  -make the user pick costs and probabilities before taking Crush
-  -when taking crush, ask whether to take max, sum, or avg of costs
+  -feasibleProtocolOutput should have a "Finished" button to close the window
+  -add keyboard shortcuts to GUI
+  -test Crush operation through GUI to ensure the new functionalities work
   -Add test case for system does not satisfy observability in Nash algorithm (exception handling)
   -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol
   -tooltips -> Nash communications
@@ -78,6 +81,7 @@ SHORT-TERM:
   -Add addCommunications test for 3 controllers!!
   -Add test case for accessible, one more test case for union (because I'm not 100% confident in the sets of Events working as expected)
   -In Automaton::addState(), there is the potential for 3 calls to recreateBinaryFile. This should be combined into one call.
+  -ensure that all popups are modal, and that they stay on top
 
   POTENTIAL:
   -co-acessible warning message if there are no marked states

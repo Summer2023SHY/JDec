@@ -5,7 +5,7 @@ import java.awt.geom.*;
 import java.awt.*;
 import java.io.*;
 
-public class MakeProtocolFeasiblePrompt extends JFrame {
+public class MakeProtocolFeasiblePrompt extends JDialog {
 
   private AutomataGUI gui;
   private UStructure uStructure;
@@ -20,6 +20,8 @@ public class MakeProtocolFeasiblePrompt extends JFrame {
    * @param uStructure  The uStructure that is being worked with
    **/
   public MakeProtocolFeasiblePrompt(AutomataGUI gui, UStructure uStructure) {
+
+    super(gui, true);
 
     this.gui = gui;
     this.uStructure = uStructure;

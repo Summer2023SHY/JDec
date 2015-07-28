@@ -16,7 +16,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 
-public class FeasibleProtocolOutput extends JFrame {
+public class FeasibleProtocolOutput extends JDialog {
 
     /** PRIVATE INSTANCE VARIABLES **/
 
@@ -36,6 +36,8 @@ public class FeasibleProtocolOutput extends JFrame {
    * @param message           The text for the label to be displayed at the top of the screen
    **/
   public FeasibleProtocolOutput(AutomataGUI gui, UStructure uStructure, java.util.List<Set<CommunicationData>> feasibleProtocols, String title, String message) {
+
+    super(gui, true);
 
     this.gui = gui;
     this.uStructure = uStructure;

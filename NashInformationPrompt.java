@@ -1,28 +1,31 @@
+import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.table.*;
-import java.awt.*;
-import java.awt.event.*;
 
-public class NashInformationPrompt extends JFrame {
+public abstract class NashInformationPrompt extends JDialog {
 
     /* INSTANCE VARIABLES */
 
-  private AutomataGUI gui;
-  private AutomataGUI.AutomatonTab tab;
-  private UStructure uStructure;
+  protected AutomataGUI gui;
+  protected AutomataGUI.AutomatonTab tab;
+  protected UStructure uStructure;
   private boolean pressedNext = false;
 
     /* CONSTRUCTOR */
 
   /**
-   * Construct a NashInformationPrompt object.
+   * Construct a NashInformationPrompt object. This object disposes of itself when
+   * it has finished executing the requested actions.
    * @param gui     A reference to the GUI
    * @param tab     The tab that is being worked with
    * @param title   The title of the popup box
    * @param message The text for the label to be displayed at the top of the screen
    **/
   public NashInformationPrompt(AutomataGUI gui, AutomataGUI.AutomatonTab tab, String title, String message) {
+
+    super(gui, true); 
 
     this.gui = gui;
     this.tab = tab;
@@ -191,18 +194,23 @@ public class NashInformationPrompt extends JFrame {
               totalProbability += probabilities[i];
             }
           } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(null, "Not all entered values could be interpreted as a number. Please fix all cells highlighted in red.", "Input Errors", JOptionPane.ERROR_MESSAGE);
+            gui.displayErrorMessage("Input Errors", "Not all entered values could be interpreted as a number. Please fix all cells highlighted in red.");
             return;
           }
 
           // Ensure that the column of probability adds up to exactly 1.0
           if (totalProbability != 1.0) {
-            JOptionPane.showMessageDialog(null, "The sum of the probability values must equal exactly 1. The entered sum was '" + totalProbability + "'", "Probability Values", JOptionPane.ERROR_MESSAGE);
+            gui.displayErrorMessage("Probability Values", "The sum of the probability values must equal exactly 1. The entered sum was '" + totalProbability + "'");
             return;
           }
 
-          button.setEnabled(false);
+          // Prevent user from pressing this button more than once
           pressedNext = true;
+          EventQueue.invokeLater(new Runnable() {
+            @Override public void run() {
+              button.setEnabled(false);
+            }
+          });
 
           // Remove all pre-existing potential communications and Nash communications
           uStructure.removeAllPotentialCommunications();
@@ -223,12 +231,9 @@ public class NashInformationPrompt extends JFrame {
           // Re-generate and load the GUI input code
           tab.refreshGUI();
 
-          // Find Nash equilibria and display results in another window
-          try {
-            new NashEquilibriaOutput(gui, uStructure, uStructure.nash(Crush.CombiningCosts.UNIT), "Nash Equilibria", " Here is the list of all Nash equilibria: ");
-          } catch (DoesNotSatisfyObservabilityException e) {
-            JOptionPane.showMessageDialog(null, "The system does not satisfy observability, which means that it does not solve the control problem. The Nash operation was aborted.", "Operation Failed", JOptionPane.ERROR_MESSAGE);
-          }
+          // Perform the action specified by the implementing class once the Nash information has been added
+          performAction();
+
           // Dispose of this window
           NashInformationPrompt.this.dispose();
 
@@ -238,6 +243,8 @@ public class NashInformationPrompt extends JFrame {
     add(button, BorderLayout.SOUTH);
 
   }
+
+  protected abstract void performAction();
 
   /**
    * Set some default GUI Properties.
