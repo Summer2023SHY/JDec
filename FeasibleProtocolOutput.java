@@ -132,6 +132,16 @@ public class FeasibleProtocolOutput extends JDialog {
     outerScrollPane.setMaximumSize(new Dimension(500, 500));
     add(outerScrollPane, BorderLayout.CENTER);
 
+      /* Add "Finished" Button */
+
+    JButton finishedButton = new JButton("Finished");
+    finishedButton.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+          FeasibleProtocolOutput.this.dispose();
+        }
+    });
+    add(finishedButton, BorderLayout.SOUTH);
+    
   }
 
   /**

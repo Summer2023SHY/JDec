@@ -1,6 +1,6 @@
 HOURS:
 Monday, July 27: 4 hour 30 minutes
-Tuesday, July 28: 2 hour 20 minutes, 12:58   
+Tuesday, July 28: 3 hour 51 minutes, 9:17 -     
 
 JAVADOC TO-DO LIST:
 
@@ -46,7 +46,6 @@ QUESTIONS:
 
 SHORT-TERM:
 
-  -feasibleProtocolOutput should have a "Finished" button to close the window
   -add keyboard shortcuts to GUI
   -test Crush operation through GUI to ensure the new functionalities work
   -Add test case for system does not satisfy observability in Nash algorithm (exception handling)
