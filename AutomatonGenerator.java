@@ -531,7 +531,7 @@ public abstract class AutomatonGenerator<T> {
                 data.eventID,
                 data.targetStateID,
                 parseCommunicationRoles(parts[1]),
-                Integer.valueOf(parts[2]),
+                Double.valueOf(parts[2]),
                 Double.valueOf(parts[3])
               );
               continue;

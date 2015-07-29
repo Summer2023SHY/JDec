@@ -125,7 +125,7 @@ public class PrunedUStructure extends UStructure {
    * @param combiningCostsMethod  The method used to combine communication costs
    * @return                      The crush
    **/
-  public Crush crush(File newHeaderFile, File newBodyFile, int indexOfController, Map<String, Integer> combinedCostsMappings, Crush.CombiningCosts combiningCostsMethod) {
+  public Crush crush(File newHeaderFile, File newBodyFile, int indexOfController, Map<String, Double> combinedCostsMappings, Crush.CombiningCosts combiningCostsMethod) {
 
     if (potentialCommunications.size() > 0)
       System.err.println("WARNING: " + potentialCommunications.size() + " communications were ignored. Only Nash communications are considered in the Crush operation.");
@@ -205,7 +205,7 @@ public class PrunedUStructure extends UStructure {
 
             // Combine the communication costs as specified, and combine the probabilities as a sum
             CommunicationRole[] roles = null;
-            int totalCost = 0;
+            double totalCost = 0.0;
             double totalProbability = 0.0;
 
             for (NashCommunicationData communication : communicationsToBeCopied) {
@@ -218,10 +218,6 @@ public class PrunedUStructure extends UStructure {
 
                 case SUM: case AVERAGE:
                   totalCost += communication.cost;
-                  // Prevent overflow by simply capping at Integer.MAX_VALUE
-                  // (NOTE: This only works under the assumption that all costs are non-negative)
-                  if (totalCost < 0)
-                    totalCost = Integer.MAX_VALUE;
                   break;
 
                 case MAX:

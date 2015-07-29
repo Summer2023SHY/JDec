@@ -906,10 +906,10 @@ public class UStructure extends Automaton {
       crushNeedsToBeGenerated[communication.getIndexOfSender()] = true;
 
     // Generate the neccessary Crushes, storing only the communication cost mappings
-    List<Map<String, Integer>> costMappingsByCrush = new ArrayList<Map<String, Integer>>();
+    List<Map<String, Double>> costMappingsByCrush = new ArrayList<Map<String, Double>>();
     for (int i = 0; i < nControllersBeforeUStructure; i++)
       if (crushNeedsToBeGenerated[i]) {
-        Map<String, Integer> costMapping = new HashMap<String, Integer>();
+        Map<String, Double> costMapping = new HashMap<String, Double>();
         prunedUStructure.crush(null, null, i + 1, costMapping, combiningCostsMethod);
         costMappingsByCrush.add(costMapping);
       } else
@@ -922,8 +922,8 @@ public class UStructure extends Automaton {
     // Adjust the costs according to the mappings, re-adding the new objects to the set
     for (NashCommunicationData communication : originalCommunicationData) {
 
-      Map<String, Integer> costMapping = costMappingsByCrush.get(communication.getIndexOfSender());
-      int newCost = costMapping.get(communication.toNashString(this));
+      Map<String, Double> costMapping = costMappingsByCrush.get(communication.getIndexOfSender());
+      double newCost = costMapping.get(communication.toNashString(this));
       feasibleProtocol.add(new NashCommunicationData(communication.initialStateID, communication.eventID, communication.targetStateID, communication.roles, newCost, communication.probability));
 
     }
@@ -1158,7 +1158,7 @@ public class UStructure extends Automaton {
 
     for (NashCommunicationData data : list) {
 
-      byte[] buffer = new byte[32 + data.roles.length];
+      byte[] buffer = new byte[36 + data.roles.length];
       int index = 0;
 
       ByteManipulator.writeLongAsBytes(buffer, index, data.initialStateID, 8);
@@ -1170,8 +1170,8 @@ public class UStructure extends Automaton {
       ByteManipulator.writeLongAsBytes(buffer, index, data.targetStateID, 8);
       index += 8;
 
-      ByteManipulator.writeLongAsBytes(buffer, index, data.cost, 4);
-      index += 4;
+      ByteManipulator.writeLongAsBytes(buffer, index, Double.doubleToLongBits(data.cost), 8);
+      index += 8;
 
       ByteManipulator.writeLongAsBytes(buffer, index, Double.doubleToLongBits(data.probability), 8);
       index += 8;
@@ -1269,7 +1269,7 @@ public class UStructure extends Automaton {
    **/
   private void readNashCommunicationDataFromHeader(int nCommunications, List<NashCommunicationData> list) throws IOException {
 
-    byte[] buffer = new byte[nCommunications * (32 + nControllersBeforeUStructure)];
+    byte[] buffer = new byte[nCommunications * (36 + nControllersBeforeUStructure)];
     headerRAFile.read(buffer);
     int index = 0;
 
@@ -1284,8 +1284,8 @@ public class UStructure extends Automaton {
       long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
       index += 8;
 
-      int cost = (int) ByteManipulator.readBytesAsLong(buffer, index, 4);
-      index += 4;
+      double cost = Double.longBitsToDouble(ByteManipulator.readBytesAsLong(buffer, index, 8));
+      index += 8;
 
       double probability = Double.longBitsToDouble(ByteManipulator.readBytesAsLong(buffer, index, 8));
       index += 8;
@@ -1392,7 +1392,7 @@ public class UStructure extends Automaton {
    * @param cost            The cost of this communication
    * @param probability     The probability of choosing this communication (a value between 0 and 1, inclusive)
    **/
-  public void addNashCommunication(long initialStateID, int eventID, long targetStateID, CommunicationRole[] roles, int cost, double probability) {
+  public void addNashCommunication(long initialStateID, int eventID, long targetStateID, CommunicationRole[] roles, double cost, double probability) {
 
     nashCommunications.add(new NashCommunicationData(initialStateID, eventID, targetStateID, roles, cost, probability));
     headerFileNeedsToBeWritten = true;

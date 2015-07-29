@@ -107,12 +107,12 @@ public abstract class NashInformationPrompt extends JDialog {
       // Automatially adjust entered values to reflect how they are being interpreted
       @Override public void setValueAt(Object value, int row, int column) {
 
-        // Format the costs as integers
+        // Format the costs as non-negative doubles
         if (column == 1) {
           try {
         
-            int intValue = Double.valueOf((String) value).intValue();
-            value = String.valueOf(Math.max(0, intValue));
+            double doubleValue = Double.valueOf((String) value);
+            value = String.valueOf(Math.max(0, doubleValue));
 
           } catch (NumberFormatException e) { }
 
@@ -280,7 +280,7 @@ class CostCellRenderer extends DefaultTableCellRenderer {
 
     try {
 
-      Double.valueOf((String) value).intValue();
+      Double.valueOf((String) value);
     
       if (isSelected)
         component.setBackground(javax.swing.UIManager.getColor("Table.selectionBackground"));

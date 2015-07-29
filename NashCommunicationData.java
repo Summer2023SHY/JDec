@@ -1,6 +1,6 @@
 public class NashCommunicationData extends CommunicationData {
 
-  public int cost;
+  public double cost;
   public double probability;
 
     /** CONSTRUCTOR **/
@@ -14,13 +14,13 @@ public class NashCommunicationData extends CommunicationData {
    * @param cost            The cost of this communication
    * @param probability     The probability of choosing this communication (a value between 0 and 1, inclusive)
    **/
-  public NashCommunicationData(long initialStateID, int eventID, long targetStateID, CommunicationRole[] roles, int cost, double probability) {
+  public NashCommunicationData(long initialStateID, int eventID, long targetStateID, CommunicationRole[] roles, double cost, double probability) {
     
     super(initialStateID, eventID, targetStateID, roles);
 
     // Ensure that the cost is a non-negative value
-    if (cost < 0)
-      this.cost = 0;
+    if (cost < 0.0)
+      this.cost = 0.0;
     else
       this.cost = cost;
 

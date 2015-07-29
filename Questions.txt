@@ -48,7 +48,6 @@ QUESTIONS:
 
 SHORT-TERM:
 
-  -change communication costs to doubles
   -Add test case for system does not satisfy observability in Nash algorithm (exception handling)
   -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol
   -tooltips -> Nash communications

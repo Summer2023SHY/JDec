@@ -132,7 +132,7 @@ public class TestAutomata {
       new UStructure(null, null, 2),
       "<a,a,*>\n<b,*,b>\n<*,b,*>\n<*,*,a>\n<o,o,o>\n<*,b,a>\n<b,b,b>\n<a,a,a>", // Events
       "@1_1_1\n1_1_2\n1_3_1\n1_3_2\n2_2_1\n2_2_2\n2_4_1\n2_4_2\n2_5_1\n2_5_2\n3_1_3\n3_1_4\n3_1_5\n3_3_3\n3_3_4\n3_3_5\n4_2_3\n4_2_4\n4_2_5\n4_4_3\n4_4_4\n4_4_5\n4_5_3\n4_5_4\n4_5_5\n5_2_3\n5_2_4\n5_2_5\n5_4_3\n5_4_4\n5_4_5\n5_5_3\n5_5_4\n5_5_5\n6_6_6\n6_6_7\n6_7_6\n6_7_7\n7_6_6\n7_6_7\n7_7_6\n7_7_7", // States
-      "1_1_1,<a,a,*>,2_2_1\n1_1_1,<b,*,b>,3_1_3\n1_1_1,<*,b,*>,1_3_1\n1_1_1,<*,*,a>,1_1_2\n1_1_1,<*,b,a>,1_3_2:INVALID_COMMUNICATION\n1_1_1,<b,b,b>,3_3_3:NASH_COMMUNICATION-RS-1-0.125\n1_1_1,<a,a,a>,2_2_2:NASH_COMMUNICATION-SR-1-0.125\n1_1_2,<a,a,*>,2_2_2\n1_1_2,<b,*,b>,3_1_4\n1_1_2,<*,b,*>,1_3_2\n1_1_2,<b,b,b>,3_3_4:NASH_COMMUNICATION-RS-1-0.125\n1_3_1,<a,a,*>,2_5_1\n1_3_1,<b,*,b>,3_3_3\n1_3_1,<*,*,a>,1_3_2\n1_3_1,<a,a,a>,2_5_2:NASH_COMMUNICATION-SR-5-0.125\n1_3_2,<a,a,*>,2_5_2\n1_3_2,<b,*,b>,3_3_4\n2_2_1,<b,*,b>,4_2_3\n2_2_1,<*,b,*>,2_4_1\n2_2_1,<*,*,a>,2_2_2\n2_2_1,<*,b,a>,2_4_2:INVALID_COMMUNICATION\n2_2_1,<b,b,b>,4_4_3:NASH_COMMUNICATION-RS-1-0.125\n2_2_2,<b,*,b>,4_2_4\n2_2_2,<*,b,*>,2_4_2\n2_2_2,<b,b,b>,4_4_4:NASH_COMMUNICATION-RS-1-0.125\n2_4_1,<b,*,b>,4_4_3\n2_4_1,<*,*,a>,2_4_2\n2_4_2,<b,*,b>,4_4_4\n2_5_1,<b,*,b>,4_5_3\n2_5_1,<*,*,a>,2_5_2\n2_5_2,<b,*,b>,4_5_4\n3_1_3,<a,a,*>,5_2_3\n3_1_3,<*,b,*>,3_3_3\n3_1_3,<*,*,a>,3_1_5\n3_1_3,<*,b,a>,3_3_5:INVALID_COMMUNICATION\n3_1_3,<a,a,a>,5_2_5:NASH_COMMUNICATION-SR-5-0.125\n3_1_4,<a,a,*>,5_2_4\n3_1_4,<*,b,*>,3_3_4\n3_1_5,<a,a,*>,5_2_5\n3_1_5,<*,b,*>,3_3_5\n3_3_3,<a,a,*>,5_5_3\n3_3_3,<*,*,a>,3_3_5\n3_3_3,<a,a,a>,5_5_5:NASH_COMMUNICATION-SR-1-0.125\n3_3_4,<a,a,*>,5_5_4\n3_3_5,<a,a,*>,5_5_5\n4_2_3,<*,b,*>,4_4_3\n4_2_3,<*,*,a>,4_2_5\n4_2_3,<*,b,a>,4_4_5:INVALID_COMMUNICATION\n4_2_4,<*,b,*>,4_4_4\n4_2_5,<*,b,*>,4_4_5\n4_4_3,<*,*,a>,4_4_5\n4_4_4,<o,o,o>,6_6_6\n4_4_5,<o,o,o>,6_6_7\n4_5_3,<*,*,a>,4_5_5\n4_5_4,<o,o,o>,6_7_6\n4_5_5,<o,o,o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*,b,*>,5_4_3\n5_2_3,<*,*,a>,5_2_5\n5_2_3,<*,b,a>,5_4_5:INVALID_COMMUNICATION\n5_2_4,<*,b,*>,5_4_4\n5_2_5,<*,b,*>,5_4_5\n5_4_3,<*,*,a>,5_4_5\n5_4_4,<o,o,o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o,o,o>,7_6_7\n5_5_3,<*,*,a>,5_5_5\n5_5_4,<o,o,o>,7_7_6\n5_5_5,<o,o,o>,7_7_7", // Transitions
+      "1_1_1,<a,a,*>,2_2_1\n1_1_1,<b,*,b>,3_1_3\n1_1_1,<*,b,*>,1_3_1\n1_1_1,<*,*,a>,1_1_2\n1_1_1,<*,b,a>,1_3_2:INVALID_COMMUNICATION\n1_1_1,<b,b,b>,3_3_3:NASH_COMMUNICATION-RS-0.125-0.125\n1_1_1,<a,a,a>,2_2_2:NASH_COMMUNICATION-SR-0.125-0.125\n1_1_2,<a,a,*>,2_2_2\n1_1_2,<b,*,b>,3_1_4\n1_1_2,<*,b,*>,1_3_2\n1_1_2,<b,b,b>,3_3_4:NASH_COMMUNICATION-RS-0.125-0.125\n1_3_1,<a,a,*>,2_5_1\n1_3_1,<b,*,b>,3_3_3\n1_3_1,<*,*,a>,1_3_2\n1_3_1,<a,a,a>,2_5_2:NASH_COMMUNICATION-SR-0.625-0.125\n1_3_2,<a,a,*>,2_5_2\n1_3_2,<b,*,b>,3_3_4\n2_2_1,<b,*,b>,4_2_3\n2_2_1,<*,b,*>,2_4_1\n2_2_1,<*,*,a>,2_2_2\n2_2_1,<*,b,a>,2_4_2:INVALID_COMMUNICATION\n2_2_1,<b,b,b>,4_4_3:NASH_COMMUNICATION-RS-0.125-0.125\n2_2_2,<b,*,b>,4_2_4\n2_2_2,<*,b,*>,2_4_2\n2_2_2,<b,b,b>,4_4_4:NASH_COMMUNICATION-RS-0.125-0.125\n2_4_1,<b,*,b>,4_4_3\n2_4_1,<*,*,a>,2_4_2\n2_4_2,<b,*,b>,4_4_4\n2_5_1,<b,*,b>,4_5_3\n2_5_1,<*,*,a>,2_5_2\n2_5_2,<b,*,b>,4_5_4\n3_1_3,<a,a,*>,5_2_3\n3_1_3,<*,b,*>,3_3_3\n3_1_3,<*,*,a>,3_1_5\n3_1_3,<*,b,a>,3_3_5:INVALID_COMMUNICATION\n3_1_3,<a,a,a>,5_2_5:NASH_COMMUNICATION-SR-0.625-0.125\n3_1_4,<a,a,*>,5_2_4\n3_1_4,<*,b,*>,3_3_4\n3_1_5,<a,a,*>,5_2_5\n3_1_5,<*,b,*>,3_3_5\n3_3_3,<a,a,*>,5_5_3\n3_3_3,<*,*,a>,3_3_5\n3_3_3,<a,a,a>,5_5_5:NASH_COMMUNICATION-SR-0.125-0.125\n3_3_4,<a,a,*>,5_5_4\n3_3_5,<a,a,*>,5_5_5\n4_2_3,<*,b,*>,4_4_3\n4_2_3,<*,*,a>,4_2_5\n4_2_3,<*,b,a>,4_4_5:INVALID_COMMUNICATION\n4_2_4,<*,b,*>,4_4_4\n4_2_5,<*,b,*>,4_4_5\n4_4_3,<*,*,a>,4_4_5\n4_4_4,<o,o,o>,6_6_6\n4_4_5,<o,o,o>,6_6_7\n4_5_3,<*,*,a>,4_5_5\n4_5_4,<o,o,o>,6_7_6\n4_5_5,<o,o,o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*,b,*>,5_4_3\n5_2_3,<*,*,a>,5_2_5\n5_2_3,<*,b,a>,5_4_5:INVALID_COMMUNICATION\n5_2_4,<*,b,*>,5_4_4\n5_2_5,<*,b,*>,5_4_5\n5_4_3,<*,*,a>,5_4_5\n5_4_4,<o,o,o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o,o,o>,7_6_7\n5_5_3,<*,*,a>,5_5_5\n5_5_4,<o,o,o>,7_7_6\n5_5_5,<o,o,o>,7_7_7", // Transitions
       false // We do not want it to be verbose
     ));
     List<Set<NashCommunicationData>> feasibleProtocols = uStructure.generateAllFeasibleProtocols(uStructure.getNashCommunications(), true);
@@ -147,14 +147,14 @@ public class TestAutomata {
       break;
     }
     
-    int total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.MAX);
-    printTestCase("Ensuring that the communication costs were correct when taking the max", new TestResult(total, 20), counter);
+    double total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.MAX);
+    printTestCase("Ensuring that the communication costs were correct when taking the max", new TestResult(total, 2.5), counter);
     total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.AVERAGE);
-    printTestCase("Ensuring that the communication costs were correct when averaging", new TestResult(total, 12), counter);
+    printTestCase("Ensuring that the communication costs were correct when averaging", new TestResult(total, 1.5), counter);
     total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.SUM);
-    printTestCase("Ensuring that the communication costs were correct when taking the sum", new TestResult(total, 48), counter);
+    printTestCase("Ensuring that the communication costs were correct when taking the sum", new TestResult(total, 6.0), counter);
     total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.UNIT);
-    printTestCase("Ensuring that the communication costs were correct when using unit costs", new TestResult(total, 12), counter);
+    printTestCase("Ensuring that the communication costs were correct when using unit costs", new TestResult(total, 1.5), counter);
 
     printTestOutput("Using protocol with two <a,a,a> and two <b,b,b> event vectors...", 3);
     desiredProtocol = null;
@@ -172,13 +172,13 @@ public class TestAutomata {
     }
 
     total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.MAX);
-    printTestCase("Ensuring that the communication costs were correct when taking the max", new TestResult(total, 4), counter);
+    printTestCase("Ensuring that the communication costs were correct when taking the max", new TestResult(total, 0.5), counter);
     total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.AVERAGE);
-    printTestCase("Ensuring that the communication costs were correct when averaging", new TestResult(total, 4), counter);
+    printTestCase("Ensuring that the communication costs were correct when averaging", new TestResult(total, 0.5), counter);
     total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.SUM);
-    printTestCase("Ensuring that the communication costs were correct when taking the sum", new TestResult(total, 4), counter);
+    printTestCase("Ensuring that the communication costs were correct when taking the sum", new TestResult(total, 0.5), counter);
     total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.UNIT);
-    printTestCase("Ensuring that the communication costs were correct when using unit costs", new TestResult(total, 4), counter);
+    printTestCase("Ensuring that the communication costs were correct when using unit costs", new TestResult(total, 0.5), counter);
 
       /* Print summary of this test routine */
 
@@ -188,14 +188,14 @@ public class TestAutomata {
 
   }
 
-  private static int combineCommunicationCostsHelper(UStructure uStructure,
+  private static double combineCommunicationCostsHelper(UStructure uStructure,
                                                      Set<NashCommunicationData> protocol,
                                                      Crush.CombiningCosts combiningCostsMethod) {   
 
     if (protocol == null)
       return 0;
 
-    int total = 0;
+    double total = 0;
 
     // Create copy in order to preserve original protocol
     Set<NashCommunicationData> copy = new HashSet<NashCommunicationData>();
@@ -888,9 +888,9 @@ public class TestAutomata {
       printTestCase("Ensuring that there are 3 Nash equilibria", new TestResult(nashEquilibria.size(), 3), counter);
 
       List<String> equilibriaToString = equilibriaToString(nashExample, nashEquilibria);
-      printTestCase("Ensuring that Nash equilibria #1 is in the list", new TestResult(equilibriaToString.contains("1_1_1,<a,a,a>,2_2_2 (SR),1,0.125\n1_1_1,<b,b,b>,3_3_3 (RS),1,0.125\n")), counter);
-      printTestCase("Ensuring that Nash equilibria #2 is in the list", new TestResult(equilibriaToString.contains("1_1_1,<b,b,b>,3_3_3 (RS),1,0.125\n1_1_2,<b,b,b>,3_3_4 (RS),1,0.125\n2_2_1,<b,b,b>,4_4_3 (RS),1,0.125\n2_2_2,<b,b,b>,4_4_4 (RS),1,0.125\n")), counter);
-      printTestCase("Ensuring that Nash equilibria #3 is in the list", new TestResult(equilibriaToString.contains("1_1_1,<a,a,a>,2_2_2 (SR),1,0.125\n1_3_1,<a,a,a>,2_5_2 (SR),1,0.125\n3_1_3,<a,a,a>,5_2_5 (SR),1,0.125\n3_3_3,<a,a,a>,5_5_5 (SR),1,0.125\n")), counter);
+      printTestCase("Ensuring that Nash equilibria #1 is in the list", new TestResult(equilibriaToString.contains("1_1_1,<a,a,a>,2_2_2 (SR),1.0,0.125\n1_1_1,<b,b,b>,3_3_3 (RS),1.0,0.125\n")), counter);
+      printTestCase("Ensuring that Nash equilibria #2 is in the list", new TestResult(equilibriaToString.contains("1_1_1,<b,b,b>,3_3_3 (RS),1.0,0.125\n1_1_2,<b,b,b>,3_3_4 (RS),1.0,0.125\n2_2_1,<b,b,b>,4_4_3 (RS),1.0,0.125\n2_2_2,<b,b,b>,4_4_4 (RS),1.0,0.125\n")), counter);
+      printTestCase("Ensuring that Nash equilibria #3 is in the list", new TestResult(equilibriaToString.contains("1_1_1,<a,a,a>,2_2_2 (SR),1.0,0.125\n1_3_1,<a,a,a>,2_5_2 (SR),1.0,0.125\n3_1_3,<a,a,a>,5_2_5 (SR),1.0,0.125\n3_3_3,<a,a,a>,5_5_5 (SR),1.0,0.125\n")), counter);
       
     } catch (DoesNotSatisfyObservabilityException e) {
 
@@ -1115,6 +1115,15 @@ class TestResult {
   private String summary = "";
 
   public TestResult(long actual, long expected) {
+    if (actual == expected)
+      passed = true;
+    else {
+      passed = false;
+      summary = "\nEXPECTED:\n" + expected + "\n\nACTUAL:\n" + actual + "\n";
+    }
+  }
+
+  public TestResult(double actual, double expected) {
     if (actual == expected)
       passed = true;
     else {
