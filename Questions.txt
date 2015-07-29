@@ -46,7 +46,6 @@ QUESTIONS:
 
 SHORT-TERM:
 
-  -add keyboard shortcuts to GUI
   -test Crush operation through GUI to ensure the new functionalities work
   -Add test case for system does not satisfy observability in Nash algorithm (exception handling)
   -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol
@@ -88,7 +87,7 @@ SHORT-TERM:
   -Allow modifications to automaton without regenerating the entire thing (example: adding a state or a transition)
   -Creating observer automaton (p.89) (WIP in GitHub history)
   -Allow user to specify layout mode
-  -Zoom feature in image (generate larger image)
+  -Zoom feature in image (generate larger image) - or use formats such as SVG
   -complement test case (where dump state does not need to be created)
   -Projection operation
   -What about if multiple AutomataGUI processes are being run at the same time?? Create temporary folder based on PID (NOTE: PID can't easily be found)

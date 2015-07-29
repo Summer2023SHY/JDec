@@ -239,7 +239,30 @@ public class AutomataGUI extends JFrame implements ActionListener {
     // Create menu item object
     JMenuItem menuItem = new JMenuItem(str);
     menuItem.addActionListener(this);
-    menu.add(menuItem);
+
+    // Add the appropriate accelerator
+    switch (str) {
+
+      case "Open":
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, java.awt.Event.CTRL_MASK));
+        break;
+
+      // NOTE: This accelerator will be extremely useful, however it seems to create some kind of
+      //       discontinuity between the GUI tabs and the underlying tab data.
+      // case "Close Tab":
+      //   menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, java.awt.Event.CTRL_MASK));
+      //   break;
+
+      case "Quit":
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, java.awt.Event.CTRL_MASK));
+        break;
+
+      case "Save As...":
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, java.awt.Event.CTRL_MASK));
+        break;
+
+    }
+
 
     // Add menu items into the appropriate lists
     if (requiresTab)
@@ -252,6 +275,9 @@ public class AutomataGUI extends JFrame implements ActionListener {
       componentsWhichRequireUStructure.add(menuItem);
     if (requiresPrunedUStructure)
       componentsWhichRequirePrunedUStructure.add(menuItem);
+    
+    // Add the item to the menu
+    menu.add(menuItem);
 
   }
 
@@ -733,9 +759,10 @@ public class AutomataGUI extends JFrame implements ActionListener {
     if (tabbedPane.getTabCount() == 0) {
       remove(tabbedPane);
       add(noTabsMessage);
-      repaint();
     }
     
+    repaint();
+
   }
 
 
