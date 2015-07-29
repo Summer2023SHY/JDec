@@ -1,11 +1,10 @@
-public class MissingOrCorruptBodyFileException extends Exception {
+/**
+ * MissingOrCorruptBodyFileException - This exception is thrown when the .bdy file is not able to be
+ *                                     interpreted as indicated by its header file. So when anything
+ *                                     unexpected happens while reading the .bdy file, this exception
+ *                                     should be thrown.     
+ *
+ * @author Micah Stairs
+ **/
 
-  public MissingOrCorruptBodyFileException() {
-    super();
-  }
-
-  public MissingOrCorruptBodyFileException(String message) {
-    super(message);
-  }
-  
-}
+public class MissingOrCorruptBodyFileException extends Exception { }

@@ -1,18 +1,32 @@
+/**
+ * MakeProtocolFeasiblePrompt - This class is used to display a pop-up which prompts the user to
+ *                              decide which communications are allowed to be in protocol, and
+ *                              then go on to generate all applicable feasible protocols, displaying
+ *                              them in another window.
+ *
+ * @author Micah Stairs
+ *
+ * TABLE OF CONTENTS:
+ *  -Instance Variables
+ *  -Constructor
+ *  -Methods
+ **/
+
+import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
-import java.awt.event.*;
-import java.awt.geom.*;
-import java.awt.*;
-import java.io.*;
 
 public class MakeProtocolFeasiblePrompt extends JDialog {
+
+    /* INSTANCE VARIABLES */
 
   private AutomataGUI gui;
   private UStructure uStructure;
   private java.util.List<CommunicationData> communications;
   private JCheckBox[] checkBoxes;
 
-    /** CONSTRUCTOR **/
+    /* CONSTRUCTOR */
 
   /**
    * Construct a MakeProtocolFeasiblePrompt object.
@@ -33,7 +47,7 @@ public class MakeProtocolFeasiblePrompt extends JDialog {
 
   }
 
-    /** METHODS **/
+    /* METHODS */
 
   /**
    * Add all of the components to the window.

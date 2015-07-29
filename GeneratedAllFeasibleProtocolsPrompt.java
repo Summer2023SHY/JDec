@@ -1,9 +1,25 @@
+/**
+ * GeneratedAllFeasibleProtocolsPrompt - This class is used to display a pop-up which prompts the user to
+ *                                       decide which controllers are allowed to be senders and recievers,
+ *                                       and then go on to generate all applicable feasible protocols,
+ *                                       displaying them in another window.
+ *
+ * @author Micah Stairs
+ *
+ * TABLE OF CONTENTS:
+ *  -Instance Variables
+ *  -Constructor
+ *  -Methods
+ **/
+
+import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
-import java.awt.event.*;
-import java.awt.*;
 
 public class GeneratedAllFeasibleProtocolsPrompt extends JDialog {
+
+    /* INSTANCE VARIABLES */
 
   private AutomataGUI gui;
   private UStructure uStructure;
@@ -11,7 +27,7 @@ public class GeneratedAllFeasibleProtocolsPrompt extends JDialog {
 
   private boolean buttonPressed = false;
 
-    /** CONSTRUCTOR **/
+    /* CONSTRUCTOR */
 
   /**
    * Construct a GeneratedAllFeasibleProtocolsPrompt object.
@@ -116,6 +132,14 @@ public class GeneratedAllFeasibleProtocolsPrompt extends JDialog {
 
   }
 
+    /* METHODS */
+
+  /**
+   * Create a container with a 2-D grid of checkboxes, with each column and row corresponding to a specific
+   * controller.
+   * NOTE: This method stores a reference to each JCheckBox object in a 2-D array instance variable.
+   * @return  The container of checkboxes
+   **/
   private Container createCheckBoxGrid() {
 
     Container container = new Container();

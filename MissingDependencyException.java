@@ -1,11 +1,8 @@
-public class MissingDependencyException extends Exception {
+/**
+ * MissingDependencyException - This exception is thrown when a dependency (such as GraphViz) appears to
+ *								be missing.
+ *
+ * @author Micah Stairs
+ **/
 
-  public MissingDependencyException() {
-    super();
-  }
-
-  public MissingDependencyException(String message) {
-    super(message);
-  }
-  
-}
+public class MissingDependencyException extends Exception { }

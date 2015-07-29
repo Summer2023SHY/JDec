@@ -5,27 +5,27 @@
  * @author Micah Stairs
  *
  * TABLE OF CONTENTS:
- *  -Private Instance Variables
+ *  -Instance Variables
  *  -Constructor
  *  -Methods
  **/
 
-import java.util.*;
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.util.*;
+import javax.swing.*;
 
 public class FeasibleProtocolOutput extends JDialog {
 
-    /** PRIVATE INSTANCE VARIABLES **/
+    /* INSTANCE VARIABLES */
 
   private AutomataGUI gui;
   private UStructure uStructure;
   private java.util.List<Set<CommunicationData>> feasibleProtocols;
   private JTextPane[] detailedProtocolText;
 
-    /** CONSTRUCTOR **/
+    /* CONSTRUCTOR */
 
   /**
    * Construct a FeasibleProtocolOutput object.
@@ -35,7 +35,11 @@ public class FeasibleProtocolOutput extends JDialog {
    * @param title             The title of the popup box
    * @param message           The text for the label to be displayed at the top of the screen
    **/
-  public FeasibleProtocolOutput(AutomataGUI gui, UStructure uStructure, java.util.List<Set<CommunicationData>> feasibleProtocols, String title, String message) {
+  public FeasibleProtocolOutput(AutomataGUI gui,
+                                UStructure uStructure,
+                                java.util.List<Set<CommunicationData>> feasibleProtocols,
+                                String title,
+                                String message) {
 
     super(gui, true);
 
@@ -44,12 +48,11 @@ public class FeasibleProtocolOutput extends JDialog {
     this.feasibleProtocols = feasibleProtocols;
 
     addComponents(message);
-
     setGUIproperties(title);
 
   }
 
-    /** METHODS **/
+    /* METHODS */
 
   /**
    * Add all of the components to the window.
@@ -104,19 +107,21 @@ public class FeasibleProtocolOutput extends JDialog {
           if (alreadyPressed[index])
             return;
 
+          // Prevent the user from pressing this button again later
           alreadyPressed[index] = true;
-
           EventQueue.invokeLater(new Runnable() {
             @Override public void run() {
               button.setEnabled(false);
             }
           });
 
+          // Apply the protocol, and place the generated Automaton in a new tab
           String fileName = gui.getTemporaryFileName();
           File headerFile = new File(fileName + ".hdr");
           File bodyFile = new File(fileName + ".bdy");
           Automaton generatedAutomaton = uStructure.applyProtocol(protocol, headerFile, bodyFile);
           gui.createTab(generatedAutomaton);
+
         }
 
       });

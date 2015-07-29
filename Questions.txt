@@ -1,7 +1,7 @@
 HOURS:
 Monday, July 27: 4 hour 30 minutes
 Tuesday, July 28: 5 hour 30 minutes
-Wednesday, July 29: 8:04 - 
+Wednesday, July 29: 1 hour 57 minutes
 
 JAVADOC TO-DO LIST:
 
@@ -17,12 +17,12 @@ JAVADOC TO-DO LIST:
   Event.java - DONE
   IncompatibleAutomataException.java - DONE
   LabelVector.java - DONE
-  
-  FeasibleProtocolOutput.java
-  GeneratedAllFeasibleProtocolsPrompt.java
-  MakeProtocolFeasiblePrompt.java
-  MissingDependencyException.java
-  MissingOrCorruptBodyFileException.java
+  FeasibleProtocolOutput.java - DONE
+  GeneratedAllFeasibleProtocolsPrompt.java - DONE
+  MakeProtocolFeasiblePrompt.java - DONE
+  MissingDependencyException.java - DONE
+  MissingOrCorruptBodyFileException.java - DONE
+
   NashCommunicationData.java
   NashEquilibriaOutput.java
   NashInformationPrompt.java
