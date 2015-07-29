@@ -1,3 +1,17 @@
+/**
+ * NashInformationPrompt - This abstract class is used to allow a user to manipulate Nash communications,
+ *                         instead of being required to do it through GUI input code, which is rather
+ *                         un-intuitive.
+ *
+ * @author Micah Stairs
+ *
+ * TABLE OF CONTENTS:
+ *  -Instance Variables
+ *  -Constructor
+ *  -Methods
+ *  -Inner Classes
+ **/
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -244,6 +258,10 @@ public abstract class NashInformationPrompt extends JDialog {
 
   }
 
+  /**
+   * This action is performed once the user has validated all of the Nash communications and moves on
+   * the next step.
+   **/
   protected abstract void performAction();
 
   /**
@@ -271,6 +289,8 @@ public abstract class NashInformationPrompt extends JDialog {
   }
     
 }
+
+  /* INNER CLASSES */
 
 class CostCellRenderer extends DefaultTableCellRenderer {
 
@@ -304,7 +324,7 @@ class ProbabilityCellRenderer extends DefaultTableCellRenderer {
   @Override public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
     
     Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-
+    
     try {
 
       Double.valueOf((String) value);

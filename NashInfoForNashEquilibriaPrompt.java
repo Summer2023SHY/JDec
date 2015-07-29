@@ -1,6 +1,20 @@
+/**
+ * NashInfoForNashEquilibriaPrompt - Extending the abstract class NashInformationPrompt, this class initiates
+ *                                   a call to find all Nash equilibria once the user has finished choosing
+ *                                   the cost and probability values for the Nash communications.
+ *
+ * @author Micah Stairs
+ *
+ * TABLE OF CONTENTS:
+ *  -Constructor
+ *  -Overidden Method
+ **/
+
 import javax.swing.*;
 
 public class NashInfoForNashEquilibriaPrompt extends NashInformationPrompt {
+
+    /* CONSTRUCTOR */
 
   /**
    * Construct a NashInfoForNashEquilibriaPrompt object.
@@ -14,6 +28,8 @@ public class NashInfoForNashEquilibriaPrompt extends NashInformationPrompt {
     super(gui, tab, title, message);
 
   }
+
+    /* OVERIDDEN METHOD */
 
 	@Override protected void performAction() {
 

@@ -1,7 +1,7 @@
 HOURS:
 Monday, July 27: 4 hour 30 minutes
 Tuesday, July 28: 5 hour 30 minutes
-Wednesday, July 29: 1 hour 57 minutes
+Wednesday, July 29: 1 hour 57 minutes, 10:31 - 
 
 JAVADOC TO-DO LIST:
 
@@ -22,19 +22,19 @@ JAVADOC TO-DO LIST:
   MakeProtocolFeasiblePrompt.java - DONE
   MissingDependencyException.java - DONE
   MissingOrCorruptBodyFileException.java - DONE
+  NashCommunicationData.java - DONE
+  NashEquilibriaOutput.java - DONE
+  NashInformationPrompt.java - DONE
+  NashInfoForCrushPrompt.java - DONE
+  NashInfoForNashEquilibriaPrompt.java - DONE
+  ProgressBarPopup.java - DONE
+  ProtocolVector.java - DONE
+  TooltipComponent.java - DONE
 
-  NashCommunicationData.java
-  NashEquilibriaOutput.java
-  NashInformationPrompt.java
-  NashInfoPromptForCrush.java
-  NashInfoPromptForNashEquilibria.java
-  ProgressBarPopup.java
-  ProtocolVector.java
   PrunedUStructure.java
   RandomAutomatonPrompt.java
   State.java
   TestAutomata.java
-  TooltipComponent.java
   Transition.java
   TransitionData.java
   UStructure.java

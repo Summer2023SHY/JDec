@@ -965,7 +965,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
    **/
   private void refresh(int index) {
 
-    final ProgressBarPopup progressBarPopup = new ProgressBarPopup("Loading...", 3);
+    final ProgressBarPopup progressBarPopup = new ProgressBarPopup(this, "Loading...", 3);
 
     AutomatonTab tab = tabs.get(index);
 
@@ -998,7 +998,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     tab.refreshGUI();
 
-    progressBarPopup.updateProgressBar(1);
+    progressBarPopup.updateProgressBar(2);
 
     // Generate an image (unless it's quite large)
     if (tab.automaton.getNumberOfStates() <= 100) {
@@ -1011,7 +1011,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     tab.setSaved(true);
 
-    progressBarPopup.updateProgressBar(1);
+    progressBarPopup.updateProgressBar(3);
 
     EventQueue.invokeLater(new Runnable() {
         @Override public void run() {

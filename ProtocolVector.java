@@ -1,19 +1,42 @@
+/**
+ * ProtocolVector - Used to vectorize a communication protocol into multiple components, based on the
+ *                  index of the sending controller.
+ *
+ * @author Micah Stairs
+ *
+ * TABLE OF CONTENTS:
+ *  -Instance Variables
+ *  -Constructor
+ *  -Accessor Methods
+ **/
+
 import java.util.*;
 
 public class ProtocolVector {
+
+    /* INSTANCE VARIBLES */
 
 	private NashCommunicationData[][] communications;
   private double[] value;
   private double totalValue;
   private Set<NashCommunicationData> protocol;
-		
+
+    /* CONSTRUCTOR */
+	
+  /** 
+   * Construct a ProtocolVector object using the specified protocol and the number of controllers.
+   * @param protocol      The protocol to be vectorized by index of the sending controller
+   * @param nControllers  The number of controllers in the system
+   **/
 	public ProtocolVector(Set<NashCommunicationData> protocol, int nControllers) {
 
     this.protocol = protocol;
 
+    // Initialize arrays
     communications = new NashCommunicationData[nControllers][];
 		value = new double[nControllers];
 
+    // Vectorize the protocol by the index of the sending communications
 		for (int i = 0; i < nControllers; i++) {
 
 			List<NashCommunicationData> list = new ArrayList<NashCommunicationData>();
@@ -31,6 +54,8 @@ public class ProtocolVector {
 		}
 
 	}
+
+    /* ACCESSOR METHODS */
 
   /**
    * Retrieve the original protocol (before it was vectorized).

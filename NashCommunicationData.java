@@ -1,9 +1,25 @@
+/**
+ * NashCommunicationData - Extending CommunicationData, this class adds the additional information of
+ *                         both cost and probability values. This information is particularly useful
+ *                         when finding Nash equilibria.
+ *
+ * @author Micah Stairs
+ *
+ * TABLE OF CONTENTS:
+ *  -Instance Variables
+ *  -Constructor
+ *  -Method
+ *  -Overidden Method
+ **/
+
 public class NashCommunicationData extends CommunicationData {
+
+    /* INSTANCE VARIABLES */
 
   public double cost;
   public double probability;
 
-    /** CONSTRUCTOR **/
+    /* CONSTRUCTOR */
 
   /**
    * Construct a NashCommunicationData object, which is used by the NashUStructure class.
@@ -34,6 +50,8 @@ public class NashCommunicationData extends CommunicationData {
 
   }
 
+    /* METHOD */
+
   /**
    * Represent this piece of Nash communication data in the form of a string.
    * @param automaton The relevant automaton
@@ -42,6 +60,8 @@ public class NashCommunicationData extends CommunicationData {
   public String toNashString(Automaton automaton) {
     return super.toString(automaton) + "," + cost + "," + probability;
   }
+
+    /* OVERIDDEN METHOD */
 
   @Override public Object clone() {
     return new NashCommunicationData(initialStateID, eventID, targetStateID, (CommunicationRole[]) roles.clone(), cost, probability);

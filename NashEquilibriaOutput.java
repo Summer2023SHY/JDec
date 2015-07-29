@@ -4,7 +4,7 @@
  * @author Micah Stairs
  *
  * TABLE OF CONTENTS:
- *  -Private Instance Variables
+ *  -Instance Variables
  *  -Constructor
  *  -Methods
  **/
@@ -17,16 +17,17 @@ import java.io.*;
 
 public class NashEquilibriaOutput extends JFrame {
 
-    /** PRIVATE INSTANCE VARIABLES **/
+    /* INSTANCE VARIABLES */
 
   private AutomataGUI gui;
   private UStructure uStructure;
   private java.util.List<Set<NashCommunicationData>> nashEquilibria;
   private JTextPane[] detailedText;
 
-    /** CONSTRUCTOR **/
+    /* CONSTRUCTOR **/
 
-  /**NashEquilibriaOutput object.
+  /**
+   * Used to construct a NashEquilibriaOutput object.
    * @param gui               A reference to the GUI which will be recieving requests for new tabs
    * @param uStructure        The U-Structure that is being worked with
    * @param nashEquilibria    The list of protocols that are feasible
@@ -40,12 +41,11 @@ public class NashEquilibriaOutput extends JFrame {
     this.nashEquilibria = nashEquilibria;
 
     addComponents(message);
-
     setGUIproperties(title);
 
   }
 
-    /** METHODS **/
+    /* METHODS */
 
   /**
    * Add all of the components to the window.

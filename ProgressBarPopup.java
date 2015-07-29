@@ -1,23 +1,35 @@
-import javax.swing.*;
+/**
+ * ProgressBarPopup - This class is used to show and update a progress bar inside of a dialog box.
+ *
+ * @author Micah Stairs
+ *
+ * TABLE OF CONTENTS:
+ *  -Instance Variables
+ *  -Constructor
+ *  -Methods
+ **/
+
 import java.awt.*;
+import javax.swing.*;
 
-public class ProgressBarPopup extends JFrame {
+public class ProgressBarPopup extends JDialog {
 
-    /** PRIVATE INSTANCE VARIABLES **/
+    /* INSTANCE VARIABLES */
 
   private JProgressBar progressBar;
   private long nTotalTasks;
-  private long nCompletedTasks;
 
-
-    /** CONSTRUCTOR **/
+    /* CONSTRUCTOR */
 
   /**
    * Construct a ProgressBarPopup object.
+   * @param gui     A reference to the GUI, which is the owner of this dialog box
    * @param title   The title of the popup box
    * @param nTasks  The total number of tasks that need to be completed (which are all treated with an equal weight)
    **/
-  public ProgressBarPopup(final String title, long nTasks) {
+  public ProgressBarPopup(JFrame gui, final String title, long nTasks) {
+
+    super(gui, false);
 
     progressBar = new JProgressBar(0, 100);
     progressBar.setValue(0);
@@ -40,15 +52,13 @@ public class ProgressBarPopup extends JFrame {
 
   }
 
-    /** METHODS **/
+    /* METHODS */
 
   /**
    * Update the progress bar.
-   * @param nNewTasksComplete The number of new tasks that have been completed
+   * @param nCompletedTasks The updated number of how many tasks have been completed
    **/
-  public void updateProgressBar(long nNewTasksComplete) {
-
-    nCompletedTasks += nNewTasksComplete;
+  public void updateProgressBar(long nCompletedTasks) {
 
     // Prevent the bar from exceeding 100% accidentally
     if (nCompletedTasks > nTotalTasks)

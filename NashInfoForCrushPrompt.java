@@ -1,7 +1,22 @@
+/**
+ * NashInfoForCrushPrompt - Extending the abstract class NashInformationPrompt, this class helps the user
+ *                          generate a Crush structure once they have finished choosing the cost and
+ *                          probability values for the Nash communications.
+ *
+ * @author Micah Stairs
+ *
+ * TABLE OF CONTENTS:
+ *  -Constructor
+ *  -Overidden Method
+ *  -Method
+ **/
+
 import java.io.*;
 import javax.swing.*;
 
 public class NashInfoForCrushPrompt extends NashInformationPrompt {
+
+    /* CONSTRUCTOR */
 
   /**
    * Construct a NashInformationForNashEquilibriaPrompt object.
@@ -15,6 +30,8 @@ public class NashInfoForCrushPrompt extends NashInformationPrompt {
     super(gui, tab, title, message);
 
   }
+
+    /* OVERIDDEN METHOD */
 
   @Override protected void performAction() {
 
@@ -46,6 +63,8 @@ public class NashInfoForCrushPrompt extends NashInformationPrompt {
     gui.createTab(prunedUStructure.crush(headerFile, bodyFile, selectedController, null, selectedMethod));
 
   }
+
+    /* METHOD */
 
   /**
    * Allow the user to select a method to combine costs.

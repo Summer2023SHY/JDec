@@ -30,7 +30,6 @@ public class RandomAutomatonPrompt extends JDialog {
 
     /** PRIVATE INSTANCE VARIABLES **/
 
-  // GUI elements
   private AutomataGUI gui;
   private JSpinner nControllers, nEvents, nStates, minTransitions, maxTransitions, nBadTransitions;
 
@@ -176,11 +175,11 @@ public class RandomAutomatonPrompt extends JDialog {
         new Thread() {
             public void run() {
               gui.generateRandomAutomaton(
-                nEventsDefault = (Integer) nEvents.getValue(),
-                nStatesDefault = (Integer) nStates.getValue(),
-                minTransitionsDefault = (Integer) minTransitions.getValue(),
-                maxTransitionsDefault = (Integer) maxTransitions.getValue(),
-                nControllersDefault = (Integer) nControllers.getValue(),
+                nEventsDefault         = (Integer) nEvents.getValue(),
+                nStatesDefault         = (Integer) nStates.getValue(),
+                minTransitionsDefault  = (Integer) minTransitions.getValue(),
+                maxTransitionsDefault  = (Integer) maxTransitions.getValue(),
+                nControllersDefault    = (Integer) nControllers.getValue(),
                 nBadTransitionsDefault = (Integer) nBadTransitions.getValue(),
                 progressBar
               );
