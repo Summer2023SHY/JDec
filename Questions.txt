@@ -1,6 +1,7 @@
 HOURS:
 Monday, July 27: 4 hour 30 minutes
-Tuesday, July 28: 3 hour 51 minutes, 9:17 -     
+Tuesday, July 28: 5 hour 30 minutes
+Wednesday, July 29: 8:04 - 
 
 JAVADOC TO-DO LIST:
 
@@ -25,7 +26,8 @@ JAVADOC TO-DO LIST:
   NashCommunicationData.java
   NashEquilibriaOutput.java
   NashInformationPrompt.java
-  NashEquilibriaInformationPrompt.java
+  NashInfoPromptForCrush.java
+  NashInfoPromptForNashEquilibria.java
   ProgressBarPopup.java
   ProtocolVector.java
   PrunedUStructure.java
@@ -46,7 +48,7 @@ QUESTIONS:
 
 SHORT-TERM:
 
-  -test Crush operation through GUI to ensure the new functionalities work
+  -change communication costs to doubles
   -Add test case for system does not satisfy observability in Nash algorithm (exception handling)
   -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol
   -tooltips -> Nash communications

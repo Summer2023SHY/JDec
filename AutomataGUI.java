@@ -248,7 +248,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
         break;
 
       // NOTE: This accelerator will be extremely useful, however it seems to create some kind of
-      //       discontinuity between the GUI tabs and the underlying tab data.
+      //       discontinuity between the GUI tabs and the underlying tab data. And somehow it ends
+      //       up corrupting the .hdr file.
       // case "Close Tab":
       //   menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, java.awt.Event.CTRL_MASK));
       //   break;

@@ -69,37 +69,43 @@ public class MakeProtocolFeasiblePrompt extends JDialog {
     button.addActionListener(new ActionListener() {
  
       public void actionPerformed(ActionEvent e) {
-          
-        // Create list of selected communications
-        Set<CommunicationData> protocol = new HashSet<CommunicationData>();
-        for (int i = 0; i < checkBoxes.length; i++)
-          if (checkBoxes[i].isSelected())
-            protocol.add(communications.get(i));
+
+        // Start this process in a new thread because it will take a while
+        new Thread() {
+          @Override public void run() {
+
+            // Create list of selected communications
+            Set<CommunicationData> protocol = new HashSet<CommunicationData>();
+            for (int i = 0; i < checkBoxes.length; i++)
+              if (checkBoxes[i].isSelected())
+                protocol.add(communications.get(i));
   
-        // Find all feasible protocols which include the chosen communications
-        System.out.println("DEBUG: " + protocol.toString());
-        java.util.List<Set<CommunicationData>> feasibleProtocols = uStructure.makeProtocolFeasible(protocol);
+            // Find all feasible protocols which include the chosen communications
+            java.util.List<Set<CommunicationData>> feasibleProtocols = uStructure.makeProtocolFeasible(protocol);
 
-        if (feasibleProtocols.size() == 0) {
+            if (feasibleProtocols.size() == 0) {
 
-              JOptionPane.showMessageDialog(null, "The specified protocol could not be made into a feasible protocol by adding communications.", "No Feasible Protocols", JOptionPane.INFORMATION_MESSAGE);
-        
-        } else {
+                  JOptionPane.showMessageDialog(null, "The specified protocol could not be made into a feasible protocol by adding communications.", "No Feasible Protocols", JOptionPane.INFORMATION_MESSAGE);
+            
+            } else {
 
-          // Hide this window
-          EventQueue.invokeLater(new Runnable() {
-            @Override public void run() {
-              MakeProtocolFeasiblePrompt.this.setVisible(false);
+              // Hide this window
+              EventQueue.invokeLater(new Runnable() {
+                @Override public void run() {
+                  MakeProtocolFeasiblePrompt.this.setVisible(false);
+                }
+              });
+            
+              // Display results in another window
+              new FeasibleProtocolOutput(gui, uStructure, feasibleProtocols, "Feasible Protocols", " Here are the feasible protocols: ");
+
+              // Dispose of this window
+              MakeProtocolFeasiblePrompt.this.dispose();
+
             }
-          });
-        
-          // Display results in another window
-          new FeasibleProtocolOutput(gui, uStructure, feasibleProtocols, "Feasible Protocols", " Here are the feasible protocols: ");
+          }
 
-          // Dispose of this window
-          MakeProtocolFeasiblePrompt.this.dispose();
-
-        }
+        }.start();
 
       }
 

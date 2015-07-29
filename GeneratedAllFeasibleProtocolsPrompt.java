@@ -68,40 +68,47 @@ public class GeneratedAllFeasibleProtocolsPrompt extends JDialog {
                 button.setEnabled(false);
               }
             });
-      
-            // Generate list of communications which are still allowed based on which boxes the user selected
-            java.util.List<CommunicationData> chosenCommunications = new ArrayList<CommunicationData>();
 
-            outer: for (CommunicationData data : uStructure.getPotentialAndNashCommunications()) {
-              
-              int sender = data.getIndexOfSender();
+            // Start this process in a new thread because it will take a while
+            new Thread() {
+              @Override public void run() {
+                
+                // Generate list of communications which are still allowed based on which boxes the user selected
+                java.util.List<CommunicationData> chosenCommunications = new ArrayList<CommunicationData>();
 
-              // Check for communication that isn't allowed
-              for (int i = 0; i < data.roles.length; i++)
-                if (data.roles[i] == CommunicationRole.RECIEVER && !checkBoxes[sender][i].isSelected())
-                  continue outer;
+                outer: for (CommunicationData data : uStructure.getPotentialAndNashCommunications()) {
+                  
+                  int sender = data.getIndexOfSender();
 
-              // If we got this far then we can add it
-              chosenCommunications.add(data);
+                  // Check for communication that isn't allowed
+                  for (int i = 0; i < data.roles.length; i++)
+                    if (data.roles[i] == CommunicationRole.RECIEVER && !checkBoxes[sender][i].isSelected())
+                      continue outer;
 
-            }
+                  // If we got this far then we can add it
+                  chosenCommunications.add(data);
 
-            // Print feasible protocols
-            java.util.List<Set<CommunicationData>> feasibleProtocols = uStructure.generateAllFeasibleProtocols(chosenCommunications, false);
+                }
 
-            if (feasibleProtocols.size() == 0) {
+                // Print feasible protocols
+                java.util.List<Set<CommunicationData>> feasibleProtocols = uStructure.generateAllFeasibleProtocols(chosenCommunications, false);
 
-              JOptionPane.showMessageDialog(null, "There were no feasible protocols were found with the specified senders and recievers.", "No Feasible Protocols", JOptionPane.INFORMATION_MESSAGE);
-        
-            } else {
+                if (feasibleProtocols.size() == 0) {
+
+                  JOptionPane.showMessageDialog(null, "There were no feasible protocols were found with the specified senders and recievers.", "No Feasible Protocols", JOptionPane.INFORMATION_MESSAGE);
             
-              // Display results in another window
-              new FeasibleProtocolOutput(gui, uStructure, feasibleProtocols, "Feasible Protocols", " Here is the list of all feasible protocols: ");
+                } else {
+                
+                  // Display results in another window
+                  new FeasibleProtocolOutput(gui, uStructure, feasibleProtocols, "Feasible Protocols", " Here is the list of all feasible protocols: ");
 
-              // Dispose of this window
-              GeneratedAllFeasibleProtocolsPrompt.this.dispose();
+                  // Dispose of this window
+                  GeneratedAllFeasibleProtocolsPrompt.this.dispose();
 
-            }
+                }
+
+              }  
+            }.start();
         }
 
     });
