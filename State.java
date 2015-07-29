@@ -3,21 +3,14 @@
  *
  * @author Micah Stairs
  *
- * State ID (used to identify states): a binary number where 0 is reserved to represent "null", so:
- * 		-1 byte allows us to represent up to 255 possible states (2^8 - 1)
- *		-2 bytes gives 65535 possible states (2^16 - 1)
- *		-3 bytes gives 16777215 possible states (2^24 - 1)
- *		...
- *		-8 bytes gives ~9.2*10^18 possible states (2^63 - 1)
- *
  * TABLE OF CONTENTS:
  *	-Class Constants
- *	-Private Instance Variables
+ *	-Instance Variables
  *	-Constructors
  *  -Working With Files
  *  -Mutator Methods
  *  -Accessor Methods
- *  -Overridden Method
+ *  -Overridden Methods
  **/
 
 import java.util.*;
@@ -25,20 +18,20 @@ import java.io.*;
 
 public class State {
 
-		/** CLASS CONSTANTS **/
+		/* CLASS CONSTANTS */
 
 	// These masks allow us to store and access multiple true/false values within the same byte
 	private static final int EXISTS_MASK = 0b00000010; // Whether or not a state actually exists here
 	private static final int MARKED_MASK = 0b00000001; // Whether or not the state is marked
     
-		/** PRIVATE INSTANCE VARIABLES **/
+		/* INSTANCE VARIABLES */
 	
 	private String label;
 	private long id;
 	private boolean marked;
 	private List<Transition> transitions;
 
-		/** CONSTRUCTORS **/
+		/* CONSTRUCTORS */
 
 	/**
 	 * Construct a state (including transitions).
@@ -67,7 +60,7 @@ public class State {
 		transitions = new ArrayList<Transition>();
 	}
 
-		/** WORKING WITH FILES **/
+		/* WORKING WITH FILES */
 
 	/**
 	 * Write this state to file.
@@ -300,7 +293,7 @@ public class State {
 
 	}
 
-		/** MUTATOR METHODS **/
+		/* MUTATOR METHODS */
 
 	/**
 	 * Change the ID of this state.
@@ -321,25 +314,25 @@ public class State {
   /**
    * Remove a transition from the list.
    * @param transition  The transition to be removed
-   * @return whether or not the removal was successful
+   * @return            Whether or not the removal was successful
    **/
   public boolean removeTransition(Transition transition) {
     return transitions.remove(transition);
   }
 
-		/** ACCESSOR METHODS **/
+		/* ACCESSOR METHODS */
 
 	/**
 	 * Get the marked status of this state.
-	 * @return whether or not the state is marked
+	 * @return Whether or not the state is marked
 	 **/
 	public boolean isMarked() {
 		return marked;
 	}
 
 	/**
-	 * Get the label of the event.
- 	 * @return label
+	 * Get the state's label.
+ 	 * @return  The state's label
 	 **/
 	public String getLabel() {
 		return label;
@@ -347,7 +340,7 @@ public class State {
 
 	/**
 	 * Get the ID of this state.
- 	 * @return id
+ 	 * @return  The state's ID
 	 **/
 	public long getID() {
 		return id;
@@ -355,7 +348,7 @@ public class State {
 
   /**
    * Get the list of transitions leading out from this state.
-   * @return list of transitions
+   * @return  The list of transitions
    **/
 	public List<Transition> getTransitions() {
 		return transitions;
@@ -363,18 +356,14 @@ public class State {
 
   /**
    * Get the number of transitions leading out from this state.
-   * @return number of transitions
+   * @return  The number of transitions
    **/
 	public int getNumberOfTransitions() {
 		return transitions.size();
 	}
 
-		/** OVERRIDDEN METHOD **/
+		/* OVERRIDDEN METHODS */
 
-  /**
-   * Turn this object into a more meaningful representation as a string.
-   * @return string representation
-   **/
 	@Override public String toString() {
 		return "("
 			+ "\"" + label + "\",ID:"

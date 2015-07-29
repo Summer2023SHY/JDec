@@ -227,11 +227,13 @@ public class UStructure extends Automaton {
 
   /**
    * Checking the feasibility for all possible communication protocols, generate a list of the feasible protocols.
-   * @param communications  The communications to be considered
-   *                        NOTE: These should be a subset of the potentialCommunications list of this U-Structure
-   * @return                The feasible protocols, sorted smallest to largest
+   * @param communications              The communications to be considered
+   *                                    NOTE: These should be a subset of the potentialCommunications list of this U-Structure
+   * @param mustAlsoSolveControlProblem Whether or not the generated protocols must also solve the control problem
+   * @return                            The feasible protocols, sorted smallest to largest
    **/
-  public <T extends CommunicationData> List<Set<T>> generateAllFeasibleProtocols(List<T> communications, boolean mustAlsoSolveControlProblem) {
+  public <T extends CommunicationData> List<Set<T>> generateAllFeasibleProtocols(List<T> communications,
+                                                                                 boolean mustAlsoSolveControlProblem) {
 
       /* Generate powerset of communication protocols */
 
@@ -359,7 +361,9 @@ public class UStructure extends Automaton {
    * @param newBodyFile   The body file where the new U-Structure should be stored
    * @return              The pruned U-Structure that had the specified protocol applied
    **/
-  public <T extends CommunicationData> PrunedUStructure applyProtocol(Set<T> protocol, File newHeaderFile, File newBodyFile) {
+  public <T extends CommunicationData> PrunedUStructure applyProtocol(Set<T> protocol,
+                                                                      File newHeaderFile,
+                                                                      File newBodyFile) {
 
     PrunedUStructure prunedUStructure = duplicateAsPrunedUStructure(null, null);
 
@@ -424,8 +428,15 @@ public class UStructure extends Automaton {
 
   }
 
-  /** NOT YET COMMENTED!!! **/
-  public List<Set<NashCommunicationData>> nash(Crush.CombiningCosts combiningCostsMethod) throws DoesNotSatisfyObservabilityException {
+  /**
+   * Find all nash equilibria using the specified method of combining communication costs.
+   * @param combiningCostsMethod                  The method in which communication costs should be combined
+   * @return                                      The list of Nash equilibria
+   * @throws DoesNotSatisfyObservabilityException If the system does not satisfy observability, meaning
+   *                                              that there are no feasible protocols that satisfy the
+   *                                              control problem.
+   **/
+  public List<Set<NashCommunicationData>> findNashEquilibria(Crush.CombiningCosts combiningCostsMethod) throws DoesNotSatisfyObservabilityException {
 
       /* Generate protocol vectors */
 
@@ -549,7 +560,9 @@ public class UStructure extends Automaton {
    * @param currentState        The state that we are currently on
    * @return                    The destination state (or null if the communication does not lead to a state)
    **/
-  private State findWhereCommunicationLeads(LabelVector communication, boolean[] vectorElementsFound, State currentState) {
+  private State findWhereCommunicationLeads(LabelVector communication,
+                                            boolean[] vectorElementsFound,
+                                            State currentState) {
 
       /* Base case */
 
@@ -793,7 +806,8 @@ public class UStructure extends Automaton {
    * Check to see if the specified protocol is feasible.
    * NOTE: This method works under the assumption that the protocol has at least one communication.
    * @param protocol                    The protocol that is being checked for feasibility
-   * @param mustAlsoSolveControlProblem Whether or not the protocol must solve the control problem (meaning there are no violations after pruning)
+   * @param mustAlsoSolveControlProblem Whether or not the protocol must solve the control problem (meaning
+   *                                    there are no violations after pruning)
    * @return                            Whether or not the protocol is feasible
    **/
   private boolean isFeasibleProtocol(Set<CommunicationData> protocol, boolean mustAlsoSolveControlProblem) {
@@ -866,7 +880,11 @@ public class UStructure extends Automaton {
    * @param currentStateID      The current state
    * @param vectorIndexOfSender The index in the event vector which corresponds to the sending controller
    **/
-  private static void findReachableStates(UStructure uStructure, UStructure invertedUStructure, Set<Long> reachableStates, long currentStateID, int vectorIndexOfSender) {
+  private static void findReachableStates(UStructure uStructure,
+                                          UStructure invertedUStructure,
+                                          Set<Long> reachableStates,
+                                          long currentStateID,
+                                          int vectorIndexOfSender) {
 
     reachableStates.add(currentStateID);
 
@@ -891,7 +909,8 @@ public class UStructure extends Automaton {
    *                                    protocols, and we do not want to interfere with them)
    * @param combiningCostsMethod  The method in which the communications are being combined
    **/
-  public void combineCommunicationCosts(Set<NashCommunicationData> feasibleProtocol, Crush.CombiningCosts combiningCostsMethod) {
+  public void combineCommunicationCosts(Set<NashCommunicationData> feasibleProtocol,
+                                        Crush.CombiningCosts combiningCostsMethod) {
 
     // No costs need to be combined if we're using unit costs
     if (combiningCostsMethod == Crush.CombiningCosts.UNIT)
@@ -963,7 +982,10 @@ public class UStructure extends Automaton {
    * @param elementsChosen  This maintains the elements chosen so far
    * @param index           The current index in the master list
    **/
-  private static <T> void powerSetHelper(List<Set<T>> results, List<T> masterList, Set<T> elementsChosen, int index) {
+  private static <T> void powerSetHelper(List<Set<T>> results,
+                                        List<T> masterList,
+                                        Set<T> elementsChosen,
+                                        int index) {
 
       /* Base case */
 
@@ -1234,7 +1256,8 @@ public class UStructure extends Automaton {
    * @param list            The list of communication data
    * @throws IOException    If there was problems reading from file
    **/
-  private void readCommunicationDataFromHeader(int nCommunications, List<CommunicationData> list) throws IOException {
+  private void readCommunicationDataFromHeader(int nCommunications,
+                                               List<CommunicationData> list) throws IOException {
 
     byte[] buffer = new byte[nCommunications * (20 + nControllersBeforeUStructure)];
     headerRAFile.read(buffer);
@@ -1267,7 +1290,8 @@ public class UStructure extends Automaton {
    * @param list            The list of nash communication data
    * @throws IOException    If there was problems reading from file
    **/
-  private void readNashCommunicationDataFromHeader(int nCommunications, List<NashCommunicationData> list) throws IOException {
+  private void readNashCommunicationDataFromHeader(int nCommunications,
+                                                   List<NashCommunicationData> list) throws IOException {
 
     byte[] buffer = new byte[nCommunications * (36 + nControllersBeforeUStructure)];
     headerRAFile.read(buffer);
@@ -1355,7 +1379,10 @@ public class UStructure extends Automaton {
    * @param targetStateID       The target state
    * @param communicationRoles  The roles associated with each controller
    **/
-  public void addPotentialCommunication(long initialStateID, int eventID, long targetStateID, CommunicationRole[] communicationRoles) {
+  public void addPotentialCommunication(long initialStateID,
+                                        int eventID,
+                                        long targetStateID,
+                                        CommunicationRole[] communicationRoles) {
 
     potentialCommunications.add(new CommunicationData(initialStateID, eventID, targetStateID, communicationRoles));
     headerFileNeedsToBeWritten = true;
@@ -1392,7 +1419,12 @@ public class UStructure extends Automaton {
    * @param cost            The cost of this communication
    * @param probability     The probability of choosing this communication (a value between 0 and 1, inclusive)
    **/
-  public void addNashCommunication(long initialStateID, int eventID, long targetStateID, CommunicationRole[] roles, double cost, double probability) {
+  public void addNashCommunication(long initialStateID,
+                                   int eventID,
+                                   long targetStateID,
+                                   CommunicationRole[] roles,
+                                   double cost,
+                                   double probability) {
 
     nashCommunications.add(new NashCommunicationData(initialStateID, eventID, targetStateID, roles, cost, probability));
     headerFileNeedsToBeWritten = true;
@@ -1411,7 +1443,7 @@ public class UStructure extends Automaton {
 
   /**
    * Check to see if this U-Structure contains violations.
-   * @return Whether or not there are one or more violations
+   * @return  Whether or not there are one or more violations
    **/
   public boolean hasViolations() {
     return unconditionalViolations.size() > 0 || conditionalViolations.size() > 0;
@@ -1419,7 +1451,7 @@ public class UStructure extends Automaton {
 
   /**
    * Get the list of potential communications.
-   * @return The potential communications
+   * @return  The potential communications
    **/
   public List<CommunicationData> getPotentialCommunications() {
     return potentialCommunications;

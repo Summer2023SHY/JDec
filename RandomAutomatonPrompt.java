@@ -1,24 +1,24 @@
 /**
- * RandomAutomatonPrompt - Displays a popup box which allows the user to specify the properties of a random automaton
- *                         that they would like generated. The appropriate actions are also triggered when the user
- *                         presses the "Generate" button in the popup.
+ * RandomAutomatonPrompt - Displays a popup box which allows the user to specify the properties of a random
+ *                         automaton that they would like generated. The appropriate actions are also
+ *                         triggered when the user presses the "Generate" button in the popup.
  *
  * @author Micah Stairs
  *
  * TABLE OF CONTENTS
  *  -Class Constants
- *  -Private Instance Variables
+ *  -Instance Variables
  *  -Constructor
  *  -Methods
  **/
 
 import java.awt.*;
-import javax.swing.*;
 import java.awt.event.*;
+import javax.swing.*;
 
 public class RandomAutomatonPrompt extends JDialog {
 
-    /** CLASS CONSTANTS **/
+    /* CLASS CONSTANTS */
 
   // Default values
   private static int nControllersDefault    = 1;
@@ -28,12 +28,12 @@ public class RandomAutomatonPrompt extends JDialog {
   private static int maxTransitionsDefault  = 3;
   private static int nBadTransitionsDefault = 0;
 
-    /** PRIVATE INSTANCE VARIABLES **/
+    /* INSTANCE VARIABLES */
 
   private AutomataGUI gui;
   private JSpinner nControllers, nEvents, nStates, minTransitions, maxTransitions, nBadTransitions;
 
-    /** CONSTRUCTOR **/
+    /* CONSTRUCTOR */
 
   /**
    * Construct a RandomAutomatonPrompt object.
@@ -46,12 +46,11 @@ public class RandomAutomatonPrompt extends JDialog {
     this.gui = gui;
 
     addComponents();
-
     setGUIproperties();
 
   }
 
-    /** METHODS **/
+    /* METHODS */
 
   /**
    * Add all of the components to the window.

@@ -884,7 +884,7 @@ public class TestAutomata {
 
     try {
 
-      List<Set<NashCommunicationData>> nashEquilibria = nashExample.nash(Crush.CombiningCosts.UNIT);
+      List<Set<NashCommunicationData>> nashEquilibria = nashExample.findNashEquilibria(Crush.CombiningCosts.UNIT);
       printTestCase("Ensuring that there are 3 Nash equilibria", new TestResult(nashEquilibria.size(), 3), counter);
 
       List<String> equilibriaToString = equilibriaToString(nashExample, nashEquilibria);

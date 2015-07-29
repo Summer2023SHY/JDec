@@ -39,7 +39,7 @@ public class NashInfoForNashEquilibriaPrompt extends NashInformationPrompt {
       new NashEquilibriaOutput(
         gui,
         uStructure,
-        uStructure.nash(Crush.CombiningCosts.UNIT),
+        uStructure.findNashEquilibria(Crush.CombiningCosts.UNIT),
         "Nash Equilibria",
         " Here is the list of all Nash equilibria: "
       );

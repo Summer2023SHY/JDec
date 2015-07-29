@@ -1,22 +1,22 @@
 /**
  * TransitionData - Holds all 3 pieces of information needed to identify a transition.
- *                  NOTE: This class is different from the Transition class, since this
- *                  class does not need to be attached to a specific state in order to
- *                  fully represent a transition (the Transition class does not have a
- *                  reference to the initial state ID, and it contains a reference to the
- *                  actual Event object instead of only holding onto its ID).
+ *
+ *                  NOTE: This class is different from the Transition class, since this class does not need
+ *                        to be attached to a specific state in order to fully represent a transition (the
+ *                        Transition class does not have a reference to the initial state ID, and it contains
+ *                        a reference to the actual Event object instead of only holding onto its ID).
  *
  * @author Micah Stairs
  *
  * TABLE OF CONTENTS:
- *  -Public Instance Variables
+ *  -Instance Variables
  *  -Constructor
  *  -Overridden Methods
  **/
 
 public class TransitionData {
 
-    /** PUBLIC INSTANCE VARIABLES **/
+    /* PUBLIC INSTANCE VARIABLES */
 
   /** The ID of the state that the transition starts at. */
   public long initialStateID;
@@ -27,7 +27,7 @@ public class TransitionData {
   /** The ID of the state that the transition ends at. */
   public long targetStateID;
 
-    /** CONSTRUCTOR **/
+    /* CONSTRUCTOR */
 
   /**
    * Construct a TransitionData object using the IDs of the associated event and states.
@@ -41,7 +41,23 @@ public class TransitionData {
       this.targetStateID = targetStateID;
   }
 
-    /** OVERRIDDEN METHODS **/
+    /* METHOD */
+
+  /**
+   * Given the source automaton, provide even more information when represented as a string.
+   * @param automaton The automaton where this transition data came from
+   * @return          The string representation
+   **/
+  public String toString(Automaton automaton) {
+    return String.format(
+      "%s,%s,%s",
+      automaton.getStateExcludingTransitions(initialStateID).getLabel(),
+      automaton.getEvent(eventID).getLabel(),
+      automaton.getStateExcludingTransitions(targetStateID).getLabel()
+    );
+  }
+
+    /* OVERRIDDEN METHODS */
 
   @Override public boolean equals(Object obj) {
 
@@ -59,20 +75,6 @@ public class TransitionData {
 
   @Override public String toString() {
     return String.format("(%d,%d,%d)", initialStateID, eventID, targetStateID);
-  }
-
-  /**
-   * Given the source automaton, provide even more information when represented as a string.
-   * @param automaton The automaton where this transition data came from
-   * @return string representation
-   **/
-  public String toString(Automaton automaton) {
-    return String.format(
-      "%s,%s,%s",
-      automaton.getStateExcludingTransitions(initialStateID).getLabel(),
-      automaton.getEvent(eventID).getLabel(),
-      automaton.getStateExcludingTransitions(targetStateID).getLabel()
-    );
   }
 
 }

@@ -29,15 +29,15 @@ JAVADOC TO-DO LIST:
   NashInfoForNashEquilibriaPrompt.java - DONE
   ProgressBarPopup.java - DONE
   ProtocolVector.java - DONE
+  RandomAutomatonPrompt.java - DONE
+  State.java - DONE
   TooltipComponent.java - DONE
-
-  PrunedUStructure.java
-  RandomAutomatonPrompt.java
-  State.java
+  Transition.java - DONE
+  TransitionData.java - DONE
+  UStructure.java - DONE
+  PrunedUStructure.java - DONE
+  
   TestAutomata.java
-  Transition.java
-  TransitionData.java
-  UStructure.java
 
 QUESTIONS:
 

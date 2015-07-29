@@ -48,8 +48,12 @@ public class PrunedUStructure extends UStructure {
    * @param communication   The event vector representing the chosen communication
    * @param initialStateID  The ID of the state where the pruning begins at
    **/
-  public <T extends CommunicationData> void prune(Set<T> protocol, LabelVector communication, long initialStateID) {
+  public <T extends CommunicationData> void prune(Set<T> protocol,
+                                                  LabelVector communication,
+                                                  long initialStateID) {
+
     pruneHelper(protocol, communication, new boolean[communication.getSize()], getState(initialStateID), 0);
+  
   }
 
   /**
@@ -60,7 +64,11 @@ public class PrunedUStructure extends UStructure {
    * @param currentState        The state that we are currently on
    * @param depth               The current depth of the recursion (first iteration has a depth of 0)
    **/
-  private <T extends CommunicationData> void pruneHelper(Set<T> protocol, LabelVector communication, boolean[] vectorElementsFound, State currentState, int depth) {
+  private <T extends CommunicationData> void pruneHelper(Set<T> protocol,
+                                                         LabelVector communication,
+                                                         boolean[] vectorElementsFound,
+                                                         State currentState,
+                                                         int depth) {
 
       /* Base case */
 
@@ -125,7 +133,11 @@ public class PrunedUStructure extends UStructure {
    * @param combiningCostsMethod  The method used to combine communication costs
    * @return                      The crush
    **/
-  public Crush crush(File newHeaderFile, File newBodyFile, int indexOfController, Map<String, Double> combinedCostsMappings, Crush.CombiningCosts combiningCostsMethod) {
+  public Crush crush(File newHeaderFile,
+                     File newBodyFile,
+                     int indexOfController,
+                     Map<String, Double> combinedCostsMappings,
+                     Crush.CombiningCosts combiningCostsMethod) {
 
     if (potentialCommunications.size() > 0)
       System.err.println("WARNING: " + potentialCommunications.size() + " communications were ignored. Only Nash communications are considered in the Crush operation.");
@@ -419,7 +431,8 @@ public class PrunedUStructure extends UStructure {
    * @param mapping The binary file containing the state ID mappings
    * @param list    The list of special transition data
    **/
-  private void renumberEventsInTransitionData(Map<Integer, Integer> mapping, List<? extends TransitionData> list) {
+  private void renumberEventsInTransitionData(Map<Integer, Integer> mapping,
+                                              List<? extends TransitionData> list) {
 
     for (TransitionData data : list)
       data.eventID = mapping.get((Integer) data.eventID);
