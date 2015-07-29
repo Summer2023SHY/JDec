@@ -77,6 +77,7 @@ public class MakeProtocolFeasiblePrompt extends JDialog {
             protocol.add(communications.get(i));
   
         // Find all feasible protocols which include the chosen communications
+        System.out.println("DEBUG: " + protocol.toString());
         java.util.List<Set<CommunicationData>> feasibleProtocols = uStructure.makeProtocolFeasible(protocol);
 
         if (feasibleProtocols.size() == 0) {
@@ -84,6 +85,13 @@ public class MakeProtocolFeasiblePrompt extends JDialog {
               JOptionPane.showMessageDialog(null, "The specified protocol could not be made into a feasible protocol by adding communications.", "No Feasible Protocols", JOptionPane.INFORMATION_MESSAGE);
         
         } else {
+
+          // Hide this window
+          EventQueue.invokeLater(new Runnable() {
+            @Override public void run() {
+              MakeProtocolFeasiblePrompt.this.setVisible(false);
+            }
+          });
         
           // Display results in another window
           new FeasibleProtocolOutput(gui, uStructure, feasibleProtocols, "Feasible Protocols", " Here are the feasible protocols: ");

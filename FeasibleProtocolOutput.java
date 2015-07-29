@@ -72,6 +72,8 @@ public class FeasibleProtocolOutput extends JDialog {
     outerContainer.setLayout(new BoxLayout(outerContainer, BoxLayout.PAGE_AXIS));
     detailedProtocolText = new JTextPane[feasibleProtocols.size()];
 
+    final boolean[] alreadyPressed = new boolean[feasibleProtocols.size()];
+
     for (int i = 0; i < feasibleProtocols.size(); i++) {
 
       Container containerForTextAndButton = new Container();
@@ -94,10 +96,22 @@ public class FeasibleProtocolOutput extends JDialog {
 
       // Add a button to generate the U-Structure with this protocol
       final JButton button = new JButton("Generate Automaton");
+      final int index = i;
       button.addActionListener(new ActionListener() {
    
         public void actionPerformed(ActionEvent e) {
-          button.setEnabled(false);
+
+          if (alreadyPressed[index])
+            return;
+
+          alreadyPressed[index] = true;
+
+          EventQueue.invokeLater(new Runnable() {
+            @Override public void run() {
+              button.setEnabled(false);
+            }
+          });
+
           String fileName = gui.getTemporaryFileName();
           File headerFile = new File(fileName + ".hdr");
           File bodyFile = new File(fileName + ".bdy");
@@ -141,7 +155,7 @@ public class FeasibleProtocolOutput extends JDialog {
         }
     });
     add(finishedButton, BorderLayout.SOUTH);
-    
+
   }
 
   /**

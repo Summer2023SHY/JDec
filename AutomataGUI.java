@@ -50,6 +50,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
   // Miscellaneous
   private File currentDirectory = null;
   private int temporaryFileIndex = 1;
+  private JLabel noTabsMessage;
 
     /* MAIN METHOD */
 
@@ -72,6 +73,12 @@ public class AutomataGUI extends JFrame implements ActionListener {
       /* Clear temporary files */
 
     Automaton.clearTemporaryFiles();
+
+      /* Create message to dislay when there are no tabs */
+
+    noTabsMessage = new JLabel("You do not have any tabs open.");
+    noTabsMessage.setHorizontalAlignment(JLabel.CENTER);
+    noTabsMessage.setVerticalAlignment(JLabel.CENTER);
 
       /* Create tabbed pane and add a tab to it */
 
@@ -638,6 +645,14 @@ public class AutomataGUI extends JFrame implements ActionListener {
     
     updateComponentsWhichRequireAutomaton();
 
+      /* Remove message indicating no tabs are open, if applicable */
+
+    if (tabbedPane.getTabCount() == 1) {
+      remove(noTabsMessage);
+      add(tabbedPane);
+      repaint();
+    }
+
   }
 
   /**
@@ -712,6 +727,14 @@ public class AutomataGUI extends JFrame implements ActionListener {
     if (tabs.size() == 0)
       for (Component component : componentsWhichRequireTab)
         component.setEnabled(false);
+
+      /* Show message indicating no tabs are open, if applicable */
+
+    if (tabbedPane.getTabCount() == 0) {
+      remove(tabbedPane);
+      add(noTabsMessage);
+      repaint();
+    }
     
   }
 
