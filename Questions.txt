@@ -1,3 +1,5 @@
+-Pareto Fronts ar similar to production–possibility frontier (PPF) in economics
+
 HOURS:
 Monday, July 27: 4 hour 30 minutes
 Tuesday, July 28: 5 hour 30 minutes
@@ -19,9 +21,12 @@ QUESTIONS:
 
 SHORT-TERM:
 
+  1:15pm meeting
+
+  -tooltips - format everything in external html files, set maximum width
+  -access Lemke-howson through Test class, run Nash through it
   -Add test case for system does not satisfy observability in Nash algorithm (exception handling)
   -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol
-  -tooltips -> Nash communications
   -Ensure that I'm not making the following mistake anywhere: letting two automata share a reference to the same piece of CommunicationData for example.. If one automaton changed it, then it would mess up the other one
   -Add options to generate random automaton:
     observable - build U-structure, ensure there are not any violations ?? is this right??

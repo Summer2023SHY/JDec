@@ -1787,7 +1787,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
      * @return      The transition input box instructions, in the form of a string
      **/
     private String getTransitionInstructions(Automaton.Type type) {
-
+  
       switch (type) {
         
         case AUTOMATON:
@@ -1804,23 +1804,30 @@ public class AutomataGUI extends JFrame implements ActionListener {
                + "the state <b>'FirstState'</b> to the state <b>'SecondState'</b> by the event vector called <b>'Event'</b>.<br>"
                + "<b><u>NOTE</u></b>: <i>SPECIAL_PROPERTIES</i> can be added to a transition by appending ':NAME_OF_PROPERTY'. "
                + "Additional properties are separated by commas.<br><b>Names of special properties in a U-Structure:</b>: "
-               + "<i>'UNCONDITIONAL_VIOLATION'</i>, <i>'CONDITIONAL_VIOLATION'</i>, <i>'INVALID_COMMUNICATION'*</i>, and <i>'POTENTIAL_COMMUNICATION'**</i>.<br>"
+               + "<i>'UNCONDITIONAL_VIOLATION'</i>, <i>'CONDITIONAL_VIOLATION'</i>, <i>'INVALID_COMMUNICATION'*</i>, <i>'POTENTIAL_COMMUNICATION'**</i>, and "
+               + "<i>'NASH_COMMUNICATION'**</i>.<br>"
                + "<i>*'INVALID_COMMUNICATION' is used to mark a communication which has been added to the U-Structure for mathematical completion.</i><br>"
                + "<i>**'POTENTIAL_COMMUNICATION' must have the communication roles appended to it. For example, appending '-SRR' (where the dash is simply a separator) "
                + "means that controller 1 is sending the communication to controllers 2 and 3.<br>Appending '-R*S' means that controller 3 is sending the "
-               + "communication to controller 1 (where '*' denotes that a controller that doesn't have a role in the communication).</i></html>";
+               + "communication to controller 1 (where '*' denotes that a controller that doesn't have a role in the communication).</i><br>"
+               + "<i>**'NASH_COMMUNICATION' must have the communication roles appended to it, as well as cost and probability information.<br>"
+               + "Appending '-RS-1.2-0.5' means that controller 2 is sending the communication to controller 1 at a cost of 1.2 and probability of this communication "
+               + "happening in the system is 50%.</i></html>";
 
         case PRUNED_U_STRUCTURE:
-          return "<html>1 transition per line, formatted as <i>INITIAL_STATE,EVENT,TARGET_STATE[:SPECIAL_PROPERTIES]</i>"
+          return "<html><div style=\"width:300px\">1 transition per line, formatted as <i>INITIAL_STATE,EVENT,TARGET_STATE[:SPECIAL_PROPERTIES]</i>"
                + ", which are used in the synchronized composition operation).<br>"
                + "<b><u>EXAMPLE</u></b>: <i>'FirstState,Event,SecondState'</i> denotes a transition that goes from "
                + "the state <b>'FirstState'</b> to the state <b>'SecondState'</b> by the event vector called <b>'Event'</b>.<br>"
                + "<b><u>NOTE</u></b>: <i>SPECIAL_PROPERTIES</i> can be added to a transition by appending ':NAME_OF_PROPERTY'. "
-               + "Additional properties are separated by commas.<br><b>Names of special properties in a U-Structure:</b>: "
-               + "<i>'UNCONDITIONAL_VIOLATION'</i>, <i>'CONDITIONAL_VIOLATION'</i>, <i>'COMMUNICATION'*</i>.<br>"
+               + "Additional properties are separated by commas.<br><b>Names of special properties in a pruned U-Structure:</b>: "
+               + "<i>'UNCONDITIONAL_VIOLATION'</i>, <i>'CONDITIONAL_VIOLATION'</i>, <i>'COMMUNICATION'*</i>, and <i>'NASH_COMMUNICATION'**</i>.<br>"
                + "<i>*'COMMUNICATION' must have the communication roles appended to it. For example, appending '-SRR' (where the dash is simply a separator) "
-               + "means that controller 1 is sending the communication to controllers 2 and 3.<br>Appending '-R*S' means that controller 3 is sending the "
-               + "communication to controller 1 (where '*' denotes that a controller that doesn't have a role in the communication).</i></html>";
+               + "means that controller 1 is sending the communication to controllers 2 and 3. Appending '-R*S' means that controller 3 is sending the "
+               + "communication to controller 1 (where '*' denotes that a controller that doesn't have a role in the communication).</i><br>"
+               + "<i>**'NASH_COMMUNICATION' must have the communication roles appended to it, as well as cost and probability information. "
+               + "Appending '-RS-1.2-0.5' means that controller 2 is sending the communication to controller 1 at a cost of 1.2 and probability of this communication "
+               + "happening in the system is 50%.</i></div></html>";
 
         case CRUSH:
           return "<html>1 transition per line, formatted as <i>INITIAL_STATE,EVENT,TARGET_STATE[:SPECIAL_PROPERTIES]</i>"
@@ -1828,8 +1835,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
                + "<b><u>EXAMPLE</u></b>: <i>'FirstState,Event,SecondState'</i> denotes a transition that goes from "
                + "the state <b>'FirstState'</b> to the state <b>'SecondState'</b> by the event vector called <b>'Event'</b>.<br>"
                + "<b><u>NOTE</u></b>: <i>SPECIAL_PROPERTIES</i> can be added to a transition by appending ':NAME_OF_PROPERTY'. "
-               + "Additional properties are separated by commas.<br><b>Names of special properties in a U-Structure:</b>: "
-               + "<i>'COMMUNICATION'</i>.<br></html>";
+               + "Additional properties are separated by commas.<br><b>Names of special properties in a Crush:</b>: "
+               + "<i>'NASH_COMMUNICATION'*</i>.<br>"
+               + "<i>*'NASH_COMMUNICATION' must have the communication roles appended to it, as well as cost and probability information.<br>"
+               + "Appending '-RS-1.2-0.5' means that controller 2 is sending the communication to controller 1 at a cost of 1.2 and probability of this communication "
+               + "happening in the system is 50%.</i></html>";
 
         default:
           return null;
