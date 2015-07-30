@@ -1,41 +1,12 @@
 HOURS:
 Monday, July 27: 4 hour 30 minutes
 Tuesday, July 28: 5 hour 30 minutes
-Wednesday, July 29: 1 hour 57 minutes, 10:31 - 
+Wednesday, July 29: 3 hour 15 minutes
+Thursday, July 30: 7:50 - (EXPECTED: 5 hours 30 minutes)
+Friday, July 31: (EXPECTED: 6 hours 15 minutes)
+TOTAL: 25 hours
 
 JAVADOC TO-DO LIST:
-
-  AutomataGUI.java - DONE
-  Automaton.java - DONE
-  AutomatonGenerator.java - DONE
-  ByteManipulator.java - DONE
-  CommunicationData.java - DONE
-  CommunicationLabelVector.java - DONE
-  CommunicationRole.java - DONE
-  Crush.java - DONE
-  DoesNotSatisfyObservabilityException.java - DONE
-  Event.java - DONE
-  IncompatibleAutomataException.java - DONE
-  LabelVector.java - DONE
-  FeasibleProtocolOutput.java - DONE
-  GeneratedAllFeasibleProtocolsPrompt.java - DONE
-  MakeProtocolFeasiblePrompt.java - DONE
-  MissingDependencyException.java - DONE
-  MissingOrCorruptBodyFileException.java - DONE
-  NashCommunicationData.java - DONE
-  NashEquilibriaOutput.java - DONE
-  NashInformationPrompt.java - DONE
-  NashInfoForCrushPrompt.java - DONE
-  NashInfoForNashEquilibriaPrompt.java - DONE
-  ProgressBarPopup.java - DONE
-  ProtocolVector.java - DONE
-  RandomAutomatonPrompt.java - DONE
-  State.java - DONE
-  TooltipComponent.java - DONE
-  Transition.java - DONE
-  TransitionData.java - DONE
-  UStructure.java - DONE
-  PrunedUStructure.java - DONE
   
   TestAutomata.java
 
@@ -51,7 +22,6 @@ SHORT-TERM:
   -Add test case for system does not satisfy observability in Nash algorithm (exception handling)
   -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol
   -tooltips -> Nash communications
-  -Add test case for making sure both protential and nash communications are copied into the crush as potential communications, and make sure that communications actually get "combined" (not making duplicates)
   -Ensure that I'm not making the following mistake anywhere: letting two automata share a reference to the same piece of CommunicationData for example.. If one automaton changed it, then it would mess up the other one
   -Add options to generate random automaton:
     observable - build U-structure, ensure there are not any violations ?? is this right??
