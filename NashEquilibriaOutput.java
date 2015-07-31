@@ -19,7 +19,7 @@ public class NashEquilibriaOutput extends JFrame {
 
     /* INSTANCE VARIABLES */
 
-  private AutomataGUI gui;
+  private JDec gui;
   private UStructure uStructure;
   private java.util.List<Set<NashCommunicationData>> nashEquilibria;
   private JTextPane[] detailedText;
@@ -34,7 +34,7 @@ public class NashEquilibriaOutput extends JFrame {
    * @param title             The title of the popup box
    * @param message           The text for the label to be displayed at the top of the screen
    **/
-  public NashEquilibriaOutput(AutomataGUI gui, UStructure uStructure, java.util.List<Set<NashCommunicationData>> nashEquilibria, String title, String message) {
+  public NashEquilibriaOutput(JDec gui, UStructure uStructure, java.util.List<Set<NashCommunicationData>> nashEquilibria, String title, String message) {
 
     this.gui = gui;
     this.uStructure = uStructure;

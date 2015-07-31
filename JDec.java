@@ -1,6 +1,7 @@
 /**
- * AutomataGUI - This class is a graphical user interface for building and manipulating automata.
- *               NOTE: There should only ever be one instance of this class running at one time.
+ * JDec - A Java application for Decentralized Control. This application has been design to build
+ *        and manipulate various structures such as Automata, U-Structures, and Crushes.
+ *        NOTE: There should only ever be one instance of this class running at one time.
  *
  * @author Micah Stairs
  *
@@ -33,12 +34,12 @@ import javax.xml.transform.stream.*;
 import org.w3c.dom.*;
 import org.xml.sax.*;
 
-public class AutomataGUI extends JFrame implements ActionListener {
+public class JDec extends JFrame implements ActionListener {
 
     /* CLASS CONSTANTS */
 
   private static final String GUI_DATA_FILE_NAME = "gui.data";
-  private static final File TEMPORARY_DIRECTORY = new File("AutomataGUI_Temporary_Files");
+  private static final File TEMPORARY_DIRECTORY = new File("JDec_Temporary_Files");
   private static final int imageSize = 800; // This is used to indicate how large to generate the .PNG image
 
     /* INSTANCE VARIABLES */
@@ -84,7 +85,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
    **/  
   public static void main(String[] args) {
     System.setProperty("apple.laf.useScreenMenuBar", "true");
-    new AutomataGUI();
+    new JDec();
   }
 
     /* CONSTRUCTOR */
@@ -92,7 +93,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
   /**
    * Construct and display the GUI.
    **/
-  public AutomataGUI() {
+  public JDec() {
 
       /* Clear temporary files */
 
@@ -373,7 +374,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
     // Update title
-    setTitle("Automata Manipulator");
+    setTitle("JDec v1.0 - A Java application for Decentralized Control");
 
     // Show screen
     setVisible(true);
@@ -1195,7 +1196,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     JFileChooser fileChooser = new JFileChooser() {
       @Override protected JDialog createDialog(Component parent) throws HeadlessException {
-        JDialog dialog = super.createDialog(AutomataGUI.this);
+        JDialog dialog = super.createDialog(JDec.this);
         dialog.setModal(true);
         return dialog;
       }
@@ -1265,7 +1266,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
     JFileChooser fileChooser = new JFileChooser() {
       @Override protected JDialog createDialog(Component parent) throws HeadlessException {
-        JDialog dialog = super.createDialog(AutomataGUI.this);
+        JDialog dialog = super.createDialog(JDec.this);
         dialog.setModal(true);
         return dialog;
       }
@@ -1624,7 +1625,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
   } // Canvas class
 
   /**
-   * Class used to maintain a tab inside the AutomataGUI object.
+   * Class used to maintain a tab inside the JDec object.
    * NOTE: Since this is an inner class (and since there are a lot of instance variables), I chose to
    * keep most variables public, as opposed to have a multitude of getters and setters.
    **/

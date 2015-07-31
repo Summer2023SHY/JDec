@@ -20,7 +20,7 @@ public class FeasibleProtocolOutput extends JDialog {
 
     /* INSTANCE VARIABLES */
 
-  private AutomataGUI gui;
+  private JDec gui;
   private UStructure uStructure;
   private java.util.List<Set<CommunicationData>> feasibleProtocols;
   private JTextPane[] detailedProtocolText;
@@ -35,7 +35,7 @@ public class FeasibleProtocolOutput extends JDialog {
    * @param title             The title of the popup box
    * @param message           The text for the label to be displayed at the top of the screen
    **/
-  public FeasibleProtocolOutput(AutomataGUI gui,
+  public FeasibleProtocolOutput(JDec gui,
                                 UStructure uStructure,
                                 java.util.List<Set<CommunicationData>> feasibleProtocols,
                                 String title,

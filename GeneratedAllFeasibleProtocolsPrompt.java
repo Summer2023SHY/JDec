@@ -21,7 +21,7 @@ public class GeneratedAllFeasibleProtocolsPrompt extends JDialog {
 
     /* INSTANCE VARIABLES */
 
-  private AutomataGUI gui;
+  private JDec gui;
   private UStructure uStructure;
   private JCheckBox[][] checkBoxes;
 
@@ -34,7 +34,7 @@ public class GeneratedAllFeasibleProtocolsPrompt extends JDialog {
    * @param gui         A reference to the GUI which is being worked with
    * @param uStructure  The UStructure that is being worked with
    **/
-  public GeneratedAllFeasibleProtocolsPrompt(AutomataGUI gui, UStructure uStructure) {
+  public GeneratedAllFeasibleProtocolsPrompt(JDec gui, UStructure uStructure) {
 
     super(gui, true);
 

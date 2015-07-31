@@ -25,7 +25,7 @@ public class NashInfoForCrushPrompt extends NashInformationPrompt {
    * @param title   The title of the popup box
    * @param message The text for the label to be displayed at the top of the screen
    **/
-  public NashInfoForCrushPrompt(AutomataGUI gui, AutomataGUI.AutomatonTab tab, String title, String message) {
+  public NashInfoForCrushPrompt(JDec gui, JDec.AutomatonTab tab, String title, String message) {
 
     super(gui, tab, title, message);
 

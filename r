@@ -2,4 +2,4 @@
 set -e
 javac *.java
 #t -c -v -d&
-java AutomataGUI
+java JDec

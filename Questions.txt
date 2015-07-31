@@ -1,5 +1,5 @@
 HOURS:
-Friday, July 31: 11:18  - (EXPECTED: 2 hours 25 minutes)
+Friday, July 31: 12:00 -  (EXPECTED: 2 hours 6 minutes)
 
 JAVADOC TO-DO LIST:
   
@@ -14,9 +14,7 @@ QUESTIONS:
 
 SHORT-TERM:
 
-  -allow user to generate crush if they have no violations and no communications
   -add test case by ricker
-  -rename application to JDec (A Java application for Decentralized Control)
   -start NSGA-II algorithm (made method to generate non-dominated front for pareto)
   -change export to SVG to view SVG in browser, add message if it could not be displayed (and give them the location of the file), don't re-generate SVG each time, make it at the same time as PNG
   -access Lemke-howson through Test class, run Nash through it
@@ -31,7 +29,7 @@ SHORT-TERM:
   -Nash probability values : feature to automatically distribute? cases where default doesn't add up to 1?)
   -test case for isFeasible() with mustAlsoSolveControlProblem=true
   -Make sure the correct special transitions are being parsed right for each automaton type
-  -Add AutomataGUI constants for pop-up widths and heights
+  -Add JDec constants for pop-up widths and heights
   -add more tests for crush (include one which contains loops!)
   -currently regenerating uStructures when clicking "Generate Automaton" button (but they were already generated before when testing for feasibility, so we should store them)
   -In parsing U-Structure GUI input, add validation check for event vectors?
@@ -61,4 +59,4 @@ SHORT-TERM:
   -Zoom feature in image (generate larger image) - or use formats such as SVG
   -complement test case (where dump state does not need to be created)
   -Projection operation
-  -What about if multiple AutomataGUI processes are being run at the same time?? Create temporary folder based on PID (NOTE: PID can't easily be found)
+  -What about if multiple JDec processes are being run at the same time?? Create temporary folder based on PID (NOTE: PID can't easily be found)

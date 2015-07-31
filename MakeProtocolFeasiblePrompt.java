@@ -21,7 +21,7 @@ public class MakeProtocolFeasiblePrompt extends JDialog {
 
     /* INSTANCE VARIABLES */
 
-  private AutomataGUI gui;
+  private JDec gui;
   private UStructure uStructure;
   private java.util.List<CommunicationData> communications;
   private JCheckBox[] checkBoxes;
@@ -33,7 +33,7 @@ public class MakeProtocolFeasiblePrompt extends JDialog {
    * @param gui         A reference to the GUI which is being worked with
    * @param uStructure  The uStructure that is being worked with
    **/
-  public MakeProtocolFeasiblePrompt(AutomataGUI gui, UStructure uStructure) {
+  public MakeProtocolFeasiblePrompt(JDec gui, UStructure uStructure) {
 
     super(gui, true);
 

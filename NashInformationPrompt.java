@@ -22,8 +22,8 @@ public abstract class NashInformationPrompt extends JDialog {
 
     /* INSTANCE VARIABLES */
 
-  protected AutomataGUI gui;
-  protected AutomataGUI.AutomatonTab tab;
+  protected JDec gui;
+  protected JDec.AutomatonTab tab;
   protected UStructure uStructure;
   private boolean pressedNext = false;
 
@@ -37,7 +37,7 @@ public abstract class NashInformationPrompt extends JDialog {
    * @param title   The title of the popup box
    * @param message The text for the label to be displayed at the top of the screen
    **/
-  public NashInformationPrompt(AutomataGUI gui, AutomataGUI.AutomatonTab tab, String title, String message) {
+  public NashInformationPrompt(JDec gui, JDec.AutomatonTab tab, String title, String message) {
 
     super(gui, true); 
 

@@ -30,7 +30,7 @@ public class RandomAutomatonPrompt extends JDialog {
 
     /* INSTANCE VARIABLES */
 
-  private AutomataGUI gui;
+  private JDec gui;
   private JSpinner nControllers, nEvents, nStates, minTransitions, maxTransitions, nBadTransitions;
 
     /* CONSTRUCTOR */
@@ -39,7 +39,7 @@ public class RandomAutomatonPrompt extends JDialog {
    * Construct a RandomAutomatonPrompt object.
    * @param gui A reference to the GUI which will be recieving the generated automaton request.
    **/
-  public RandomAutomatonPrompt(AutomataGUI gui) {
+  public RandomAutomatonPrompt(JDec gui) {
 
     super(gui, true);        
 
