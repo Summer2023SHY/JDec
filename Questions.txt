@@ -1,12 +1,5 @@
--Pareto Fronts ar similar to production–possibility frontier (PPF) in economics
-
 HOURS:
-Monday, July 27: 4 hour 30 minutes
-Tuesday, July 28: 5 hour 30 minutes
-Wednesday, July 29: 3 hour 15 minutes
-Thursday, July 30: 7:50 - (EXPECTED: 5 hours 30 minutes)
-Friday, July 31: (EXPECTED: 6 hours 15 minutes)
-TOTAL: 25 hours
+Friday, July 31: 11:18  - (EXPECTED: 2 hours 25 minutes)
 
 JAVADOC TO-DO LIST:
   
@@ -21,9 +14,11 @@ QUESTIONS:
 
 SHORT-TERM:
 
-  1:15pm meeting
-
-  -tooltips - format everything in external html files, set maximum width
+  -allow user to generate crush if they have no violations and no communications
+  -add test case by ricker
+  -rename application to JDec (A Java application for Decentralized Control)
+  -start NSGA-II algorithm (made method to generate non-dominated front for pareto)
+  -change export to SVG to view SVG in browser, add message if it could not be displayed (and give them the location of the file), don't re-generate SVG each time, make it at the same time as PNG
   -access Lemke-howson through Test class, run Nash through it
   -Add test case for system does not satisfy observability in Nash algorithm (exception handling)
   -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol
@@ -32,7 +27,7 @@ SHORT-TERM:
     observable - build U-structure, ensure there are not any violations ?? is this right??
     controllable - there cannot be a bad transition that has an event that is uncontrollable by all controllers
   -finish loading bars when loading automaton
-  -fix divider issue
+  -fix divider issue (NOTE: this only occurs when loading, not when doing an operation!!!)
   -Nash probability values : feature to automatically distribute? cases where default doesn't add up to 1?)
   -test case for isFeasible() with mustAlsoSolveControlProblem=true
   -Make sure the correct special transitions are being parsed right for each automaton type

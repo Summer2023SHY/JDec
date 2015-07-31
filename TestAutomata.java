@@ -870,6 +870,18 @@ public class TestAutomata {
     printTestCase("Ensuring the states are correct", new TestResult(crush.getStateInput(), "@<1_1_1,1_3_1>\n<3_1_3,3_3_3>\n<2_2_2,2_4_2,2_5_2>\n<4_2_4,4_4_4,4_5_4>\n<6_6_6,6_7_6>\n<5_2_5,5_4_5,5_5_5>\n<7_7_7,7_6_7>"), counter);
     printTestCase("Ensuring the transitions are correct", new TestResult(crush.getTransitionInput(), "<1_1_1,1_3_1>,<b,*,b>,<3_1_3,3_3_3>\n<1_1_1,1_3_1>,<a,a,a>,<2_2_2,2_4_2,2_5_2>:NASH_COMMUNICATION-SR-3.0-0.5\n<3_1_3,3_3_3>,<a,a,a>,<5_2_5,5_4_5,5_5_5>:NASH_COMMUNICATION-SR-7.0-0.5\n<2_2_2,2_4_2,2_5_2>,<b,*,b>,<4_2_4,4_4_4,4_5_4>\n<4_2_4,4_4_4,4_5_4>,<o,o,o>,<6_6_6,6_7_6>\n<5_2_5,5_4_5,5_5_5>,<o,o,o>,<7_7_7,7_6_7>"), counter);
 
+    // printTestOutput("Instantiating an Automaton, taking the U-Structure, then taking the Crush...", 3);
+
+    // Automaton disablementExampleAutomaton = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+    //   new Automaton(new File("disablementExampleAutomaton.hdr"), new File("disablementExampleAutomaton.bdy"), 2),
+    //   "a,TF,FF\nb,FT,FF\nc,TT,FT", // Events
+    //   "@0,F\n1,F\n2,F\n3,F\n4,F", // States
+    //   "0,a,1\n0,b,2\n1,c,3\n2,c,4:BAD", // Transitions
+    //   false // We do not want it to be verbose
+    // ));
+    // UStructure disablementExampleUStructure = disablementExampleAutomaton.synchronizedComposition(new File("disablementExampleUStructure.hdr"), new File("disablementExampleUStructure.bdy"));
+    // Crush crush = 
+
       /* Nash Operation Tests */
 
     printTestOutput("NASH OPERATION: ", 2);

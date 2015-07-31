@@ -525,6 +525,157 @@ public class UStructure extends Automaton {
 
   }
 
+  /**
+   * Take the crush with respect to a particular controller.
+   * NOTE: A HashMap is used instead of a mapping file to map the IDs, under the assumption that
+   *       a crush will not contain billions of states.
+   * NOTE: All communications in the pruned U-Structure should be Nash communications.
+   * @param newHeaderFile         The file where the header should be stored
+   * @param newBodyFile           The file where the body should be stored
+   * @param indexOfController     The index of the controller in which the crush is taken with respect to (1-based)
+   * @param combinedCostsMappings Passed in as an empty map, this method maps the Nash communications as strings
+   *                              with the combined costs (if null, then a HashMap will simply not be populated)
+   * @param combiningCostsMethod  The method used to combine communication costs
+   * @return                      The crush
+   **/
+  public Crush crush(File newHeaderFile,
+                     File newBodyFile,
+                     int indexOfController,
+                     Map<String, Double> combinedCostsMappings,
+                     Crush.CombiningCosts combiningCostsMethod) {
+
+    if (potentialCommunications.size() > 0)
+      System.err.println("WARNING: " + potentialCommunications.size() + " communications were ignored. Only Nash communications are considered in the Crush operation.");
+
+      /* Setup */
+
+    // Create empty crush, copy over events oberservable by the controller
+    Crush crush = new Crush(newHeaderFile, newBodyFile, nControllersBeforeUStructure);
+    for (Event e : events)
+      if (!e.getVector().isUnobservableToController(indexOfController))
+        crush.addEvent(e.getLabel(), e.isObservable(), e.isControllable());
+
+    // Maps the combined IDs to the ID of the state in the crush, meaning we do not need to re-number states afterwards
+    HashMap<Long, Long> mappings = new HashMap<Long, Long>();
+    long nextID = 1;
+
+    // Find all connecting states
+    Stack<Set<State>> stackOfConnectedStates = new Stack<Set<State>>();
+    Set<State> statesConnectingToInitial = new HashSet<State>();
+    findConnectingStates(statesConnectingToInitial, getState(initialState), indexOfController);
+    stackOfConnectedStates.push(statesConnectingToInitial);
+
+    boolean isInitialState = true;
+
+      /* Build Crush */
+
+    while (stackOfConnectedStates.size() > 0) {
+
+      // Get set from stack and generate unique ID for that collection of states
+      Set<State> setOfStates = stackOfConnectedStates.pop();
+      long combinedID = combinedStateIDs(setOfStates);
+      Long mappedID = mappings.get(combinedID);
+      if (mappedID == null) {
+        mappings.put(combinedID, mappedID = nextID++);
+        addStateToCrush(crush, setOfStates, isInitialState, mappedID);
+      }
+
+      isInitialState = false;
+
+      // Loop through each event
+      outer: for (Event e : crush.events) {
+
+        // Generate list of all reachable states from the current event
+        Set<State> reachableStates = new HashSet<State>();
+        Set<NashCommunicationData> communicationsToBeCopied = new HashSet<NashCommunicationData>();
+        for (State s : setOfStates)
+          for (Transition t : s.getTransitions())
+            if (t.getEvent().equals(e)) {
+
+              // Find reachable states
+              findConnectingStates(reachableStates, getState(t.getTargetStateID()), indexOfController);
+
+              // Check to see if there are any potential or Nash communications that need to be copied over
+              TransitionData transitionData = new TransitionData(s.getID(), t.getEvent().getID(), t.getTargetStateID());
+              for (NashCommunicationData communication : getNashCommunications())
+                if (transitionData.equals(communication))
+                  communicationsToBeCopied.add(communication);
+            
+            }
+
+        // Add the transition (if applicable)
+        if (reachableStates.size() > 0) {
+
+          stackOfConnectedStates.push(reachableStates);
+
+          long combinedTargetID = combinedStateIDs(reachableStates);
+          Long mappedTargetID = mappings.get(combinedTargetID);
+          if (mappedTargetID == null) {
+            mappings.put(combinedTargetID, mappedTargetID = nextID++);
+            addStateToCrush(crush, reachableStates, false, mappedTargetID);
+          }
+          
+          crush.addTransition(mappedID, e.getID(), mappedTargetID);
+
+          // Add Nash communication using combined cost
+          if (communicationsToBeCopied.size() > 0) {
+
+            // Combine the communication costs as specified, and combine the probabilities as a sum
+            CommunicationRole[] roles = null;
+            double totalCost = 0.0;
+            double totalProbability = 0.0;
+
+            for (NashCommunicationData communication : communicationsToBeCopied) {
+
+              if (roles == null)
+                roles = (CommunicationRole[]) communication.roles.clone();
+              totalProbability += communication.probability;
+            
+              switch (combiningCostsMethod) {
+
+                case SUM: case AVERAGE:
+                  totalCost += communication.cost;
+                  break;
+
+                case MAX:
+                  totalCost = Math.max(totalCost, communication.cost);
+                  break;
+
+                default:
+                  System.err.println("ERROR: Could not combine communication costs as requested.");
+                  break;
+              }
+
+            } // for
+
+            // Take the average of the total cost, if specified
+            if (combiningCostsMethod == Crush.CombiningCosts.AVERAGE)
+              totalCost /= (double) communicationsToBeCopied.size();
+
+            // Store the mappings in between communications and combined costs, if requested (for example, this is used in the Nash operation)
+            if (combinedCostsMappings != null)
+              for (NashCommunicationData communication : communicationsToBeCopied)
+                combinedCostsMappings.put(communication.toNashString(this), totalCost);
+
+            // Add the communication to the Crush
+            crush.addNashCommunication(mappedID, e.getID(), mappedTargetID, roles, totalCost, totalProbability);
+          
+          }
+
+        } // if
+
+      } // outer for
+
+    } // while 
+
+      /* Ensure that the header file has been written to disk */
+
+    crush.writeHeaderFile();
+
+    return crush;
+
+  }
+
     /* AUTOMATA OPERATION HELPER METHODS */
 
   @Override protected <T extends Automaton> void copyOverSpecialTransitions(T automaton) {
@@ -946,6 +1097,68 @@ public class UStructure extends Automaton {
       feasibleProtocol.add(new NashCommunicationData(communication.initialStateID, communication.eventID, communication.targetStateID, communication.roles, newCost, communication.probability));
 
     }
+
+  }
+
+  /**
+   * Create a label for the crushed state, and add it to the crush.
+   * @param crush           The crush structure in which the crushed state is being added to
+   * @param setOfStates     The set of states which are being crushed
+   * @param isInitialState  Whether or not this crushed state is the initial state
+   * @param id              The ID of the crushed state
+   **/
+  private void addStateToCrush(Crush crush, Set<State> setOfStates, boolean isInitialState, long id) {
+
+    // Create a label for this state
+    String label = "";
+    for (State s : setOfStates)
+      label += "," + s.getLabel();
+    label = "<" + label.substring(1) + ">";
+
+    // Add new state
+    crush.addStateAt(label, false, new ArrayList<Transition>(), isInitialState, id);
+
+  }
+
+  /**
+   * Given a set of states, create a unique combined ID.
+   * @param setOfStates The set of states which are being combined
+   * @return            The combined ID
+   **/
+  private long combinedStateIDs(Set<State> setOfStates) {
+
+    List<Long> listOfIDs = new ArrayList<Long>();
+
+    for (State s : setOfStates)
+      listOfIDs.add(s.getID());
+
+    Collections.sort(listOfIDs);
+
+    return combineIDs(listOfIDs, nStates);
+
+  }
+
+  /**
+   * Starting at the specified state, find all indistinguishable states with respect to a particular controller.
+   * @param set               The set of connected states, which will be populated by this method
+   * @param currentState      The current state
+   * @param indexOfController The index of the controller
+   **/
+  private void findConnectingStates(Set<State> set, State currentState, int indexOfController) {
+
+      /* Base Case */
+    
+    if (set.contains(currentState))
+      return;
+
+      /* Recursive Case */
+
+    set.add(currentState);
+
+    // Find all unobservable events leading from this state, and add the target states to the set
+    for (Transition t : currentState.getTransitions())
+      if (t.getEvent().getVector().isUnobservableToController(indexOfController))
+        findConnectingStates(set, getState(t.getTargetStateID()), indexOfController);
 
   }
 

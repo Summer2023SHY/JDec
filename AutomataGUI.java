@@ -21,10 +21,17 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
 import java.io.*;
+import java.net.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.filechooser.*;
+import javax.xml.parsers.*;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.*;
+import javax.xml.transform.stream.*;
+import org.w3c.dom.*;
+import org.xml.sax.*;
 
 public class AutomataGUI extends JFrame implements ActionListener {
 
@@ -46,11 +53,28 @@ public class AutomataGUI extends JFrame implements ActionListener {
   private java.util.List<Component> componentsWhichRequireBasicAutomaton   = new ArrayList<Component>();
   private java.util.List<Component> componentsWhichRequireUStructure       = new ArrayList<Component>();
   private java.util.List<Component> componentsWhichRequirePrunedUStructure = new ArrayList<Component>();
+  private java.util.List<Component> componentsWhichRequireAnyUStructure    = new ArrayList<Component>();
 
   // Miscellaneous
   private File currentDirectory = null;
   private int temporaryFileIndex = 1;
   private JLabel noTabsMessage;
+
+  // Tool-tip Text
+  private static Document tooltipDocument;
+  static {
+    
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setValidating(false);
+    factory.setIgnoringElementContentWhitespace(true);
+    
+    try {
+      tooltipDocument = factory.newDocumentBuilder().parse(new File("res/tooltips.xml"));
+    } catch (ParserConfigurationException | SAXException | IOException e) {
+      tooltipDocument = null;
+    }
+
+  }
 
     /* MAIN METHOD */
 
@@ -148,7 +172,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
       null,
       "Add Communications[U_STRUCTURE]",
       "Feasible Protocols->Generate All[U_STRUCTURE],Make Protocol Feasible[U_STRUCTURE],Find Smallest[U_STRUCTURE]",
-      "Crush[PRUNED_U_STRUCTURE]"
+      "Crush[ANY_U_STRUCTURE]"
     ));
 
     // Quantitative communication menu
@@ -236,6 +260,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
     if (requiresPrunedUStructure)
       str = str.replace("[PRUNED_U_STRUCTURE]", "");
 
+    // Check to see if this menu item requires a U-Structure or a pruned U-Structure
+    boolean requiresAnyUStructure = str.contains("[ANY_U_STRUCTURE]");
+    if (requiresAnyUStructure)
+      str = str.replace("[ANY_U_STRUCTURE]", "");
+
     // Create menu item object
     JMenuItem menuItem = new JMenuItem(str);
     menuItem.addActionListener(this);
@@ -276,6 +305,8 @@ public class AutomataGUI extends JFrame implements ActionListener {
       componentsWhichRequireUStructure.add(menuItem);
     if (requiresPrunedUStructure)
       componentsWhichRequirePrunedUStructure.add(menuItem);
+    if (requiresAnyUStructure)
+      componentsWhichRequireAnyUStructure.add(menuItem);
     
     // Add the item to the menu
     menu.add(menuItem);
@@ -559,10 +590,18 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       case "Crush":
 
-        PrunedUStructure prunedUStructure = ((PrunedUStructure) tab.automaton);
+        UStructure uStructure = ((UStructure) tab.automaton);
 
-        if (prunedUStructure.hasViolations()) {
-          displayErrorMessage("Crush Operation Aborted", "The chosen protocol evidently did not satisfy the control problem\nsince the pruned U-Structure contained one or more violations.");
+        if (tab.type == Automaton.Type.U_STRUCTURE) {
+          if (uStructure.getSizeOfPotentialAndNashCommunications() > 0) {
+            displayErrorMessage("Crush Operation Aborted", "You must choose a communication protocol before taking the Crush.");
+            break;
+          }
+        }
+
+
+        if (uStructure.hasViolations()) {
+          displayErrorMessage("Crush Operation Aborted", "This structure contains one or more violations.");
           break;
         }
 
@@ -572,7 +611,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       case "Add Communications":
 
-        UStructure uStructure = ((UStructure) tab.automaton);
+        uStructure = ((UStructure) tab.automaton);
 
         // Display warning message, and abort the operation if requested
         if (uStructure.getSizeOfPotentialAndNashCommunications() > 0)
@@ -800,9 +839,21 @@ public class AutomataGUI extends JFrame implements ActionListener {
         String fileName = tab.headerFile.getName();
         String destinationFileName = currentDirectory + "/" + removeExtension(fileName) + ".svg";
 
-        if (automaton.generateImage(imageSize, Automaton.OutputMode.SVG, destinationFileName))
-          JOptionPane.showMessageDialog(null, "The image of the graph has been exported to '" + destinationFileName + "'.", "Export Complete", JOptionPane.INFORMATION_MESSAGE);
-        else
+        if (automaton.generateImage(imageSize, Automaton.OutputMode.SVG, destinationFileName)) {
+
+          boolean showMessage = true;
+
+          try {
+            if (Desktop.isDesktopSupported()) {
+              Desktop.getDesktop().browse(new URI("file://" + destinationFileName));
+              showMessage = false;
+            }
+          } catch (IOException | URISyntaxException e) { }
+          
+          if (showMessage)
+            JOptionPane.showMessageDialog(null, "The image of the graph has been exported to '" + destinationFileName + "'.", "Export Complete", JOptionPane.INFORMATION_MESSAGE);
+        
+        } else
           displayErrorMessage("Export Failed", "Something went wrong while generating and exporting the image of the graph.");
       
       } catch (MissingDependencyException e) {
@@ -1032,10 +1083,11 @@ public class AutomataGUI extends JFrame implements ActionListener {
     updateComponentsWhichRequireBasicAutomaton();
     updateComponentsWhichRequireUStructure();
     updateComponentsWhichRequirePrunedUStructure();
+    updateComponentsWhichRequireAnyUStructure();
   }
 
   /**
-   * Enable/disable components that require any type automaton.
+   * Enable/disable components that require any type of automaton (including U-Structure, Crush, etc.).
    **/
   private void updateComponentsWhichRequireAnyAutomaton() {
 
@@ -1106,6 +1158,25 @@ public class AutomataGUI extends JFrame implements ActionListener {
     
     // Enabled/disable all components in the list
     for (Component component : componentsWhichRequirePrunedUStructure)
+      component.setEnabled(enabled);
+
+  }
+
+    /**
+   * Enable/disable components that require a U-Structure or a pruned U-Structure.
+   **/
+  private void updateComponentsWhichRequireAnyUStructure() {
+
+    int index = tabbedPane.getSelectedIndex();
+
+    // Determine whether the components should be enabled or disabled
+    boolean enabled = (
+      index >= 0
+      && (tabs.get(index).type == Automaton.Type.PRUNED_U_STRUCTURE || tabs.get(index).type == Automaton.Type.U_STRUCTURE)
+    );
+    
+    // Enabled/disable all components in the list
+    for (Component component : componentsWhichRequireAnyUStructure)
       component.setEnabled(enabled);
 
   }
@@ -1376,6 +1447,42 @@ public class AutomataGUI extends JFrame implements ActionListener {
     /* HELPER METHODS */
 
   /**
+   * Get the tooltip text for the specified input box and automaton type.
+   * @param inputBox      A string representing the relevant input box
+   *                      NOTE: This is the same as the tag used in the XML file
+   * @param automatonType The enum value associated with the automaton type
+   * @return              The HTML formatted tool-tip text, or null if it could not be found
+   **/
+  private static String getTooltipText(String inputBox, Automaton.Type automatonType) {
+
+    try {
+
+      // Find the specified element
+      Node node1 = tooltipDocument.getElementsByTagName("INPUT").item(0);
+      Element element1 = (Element) node1;
+      Node node2 = element1.getElementsByTagName(inputBox).item(0);
+      Element element2 = (Element) node2;
+      Node node3 = element2.getElementsByTagName(automatonType.toString()).item(0);
+      Element element3 = (Element) node3;
+
+      // Generate a string of this element and its descendents, including tags
+      StringWriter buffer = new StringWriter();
+      Transformer xform = TransformerFactory.newInstance().newTransformer();
+      xform.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+      xform.transform(new DOMSource(element3), new StreamResult(buffer));
+
+      // Remove the outer tag, trim it, then return it
+      String startTag = "<" + automatonType.toString() + ">";
+      String endTag = "</" + automatonType.toString() + ">";
+      return buffer.toString().replace(startTag, "").replace(endTag, "").trim();
+
+    } catch (NullPointerException | TransformerException e) { }
+
+    return null;
+
+  }
+
+  /**
    * Display an error message in a modal dialog which will stay on top of the GUI at all times.
    * @param title   The title to display in the dialog box
    * @param message The message to display in the dialog box
@@ -1620,7 +1727,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       // Event input label
       c.ipady = 0; c.weightx = 0.5; c.weighty = 0.0; c.gridx = 0; c.gridy = 1;
-      container.add(new TooltipComponent(new JLabel("Enter events:"), getEventInstructions(type)), c);
+      container.add(new TooltipComponent(new JLabel("Enter events:"), getTooltipText("EVENT_INPUT", type)), c);
       
       // Event input box
       eventInput = new JTextPane();
@@ -1639,7 +1746,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       // State input label
       c.ipady = 0; c.weightx = 0.5; c.weighty = 0.0; c.gridx = 1; c.gridy = 1;
-      container.add(new TooltipComponent(new JLabel("Enter states:"), getStateInstructions(type)), c);
+      container.add(new TooltipComponent(new JLabel("Enter states:"), getTooltipText("STATE_INPUT", type)), c);
       
       // State input box
       stateInput = new JTextPane();
@@ -1660,7 +1767,7 @@ public class AutomataGUI extends JFrame implements ActionListener {
 
       // Transition input label
       c.ipady = 0; c.weightx = 1.0; c.weighty = 0.0; c.gridx = 0; c.gridy = 3;
-      container.add(new TooltipComponent(new JLabel("Enter transitions:"), getTransitionInstructions(type)), c);
+      container.add(new TooltipComponent(new JLabel("Enter transitions:"), getTooltipText("TRANSITION_INPUT", type)), c);
       
       // Transition input box
       transitionInput = new JTextPane();
@@ -1710,141 +1817,6 @@ public class AutomataGUI extends JFrame implements ActionListener {
       container.add(generateImageButton, c);
 
       return container;
-
-    }
-
-    /**
-     * A helper method used to retrieve the instructions for the event input box based on the Automaton type.
-     * @param type  The Automaton type in which the instructions should be relevant for
-     * @return      The event input box instructions, in the form of a string
-     **/
-    private String getEventInstructions(Automaton.Type type) {
-
-      switch (type) {
-        
-        case AUTOMATON:
-          return "<html>1 event per line, formatted as <i>LABEL[,OBSERVABLE,CONTROLLABLE]</i>.<br>"
-               + "<b><u>EXAMPLE 1</u></b>: '<i>EventName,T,F</i>' denotes an event called <b>EventName</b> "
-               + "that is <b>observable</b> but <b>not controllable</b> for 1 controller.<br>"
-               + "<b><u>EXAMPLE 2</u></b>: '<i>EventName,TT,FT</i>' denotes an event called <b>EventName</b> "
-               + "that is <b>observable</b> but <b>not controllable</b> for the first controller, and is "
-               + "<b>observable</b> and <b>controllable</b> for the second controller.<br><b><u>NOTE</u></b>: "
-               + "'<i>T</i>' and '<i>F</i>' are case insensitive. If the observable and controllable properties are "
-               + "omitted, then it is assumed that they are observable and controllable for all controllers.<br>"
-               + "It is not possible, however, to omit the properties for some controllers, but not all.</html>";
-
-        case U_STRUCTURE: case PRUNED_U_STRUCTURE: case CRUSH:
-          return "<html>1 event vector per line, formatted as <i>&lt;Event1,Event2...></i>.<br>"
-               + "<b><u>EXAMPLE</u></b>: '<i><&lt;FirstEvent,SecondEvent,ThirdEvent></i>' denotes an event vector "
-               + "containing the 3 events named <b>FirstEvent</b>, <b>SecondEvent</b>, and <b>ThirdEvent</b>.<br>"
-               + "<b><u>NOTE</u></b>: Unobservable events for a given controller in an event vector are denoted by an asterisk.</html>";
-
-        default:
-          return null;
-
-      }
-
-    }
-
-
-    /**
-     * A helper method used to retrieve the instructions for the state input box based on the Automaton type.
-     * @param type  The Automaton type in which the instructions should be relevant for
-     * @return      The state input box instructions, in the form of a string
-     **/
-    private String getStateInstructions(Automaton.Type type) {
-
-      switch (type) {
-        
-        case AUTOMATON:
-          return "<html>1 state per line, formatted as <i>[@]LABEL[,MARKED]</i> (where the '@' symbol denotes that this is the initial state).<br>"
-               + "<b><u>EXAMPLE 1</u></b>: <i>'StateName,F'</i> denotes a state called <b>StateName</b> that is <b>unmarked</b>.<br>"
-               + "<b><u>EXAMPLE 2</u></b>: <i>'@StateName'</i> denotes a state called <b>StateName</b> that is the <b>initial state</b> and is "
-               + "<b>marked</b>.<br><b><u>NOTE</u></b>: '<i>T</i>' and '<i>F</i>' are case insensitive. If omitted, the default value is "
-               + "'<i>T</i>'. There is only allowed to be one initial state.</html>";
-
-        case U_STRUCTURE: case PRUNED_U_STRUCTURE:
-          return "<html>1 state per line, formatted as <i>[@]LABEL</i> (where the '@' symbol denotes that this is the initial state).<br>"
-               + "<b><u>EXAMPLE 1</u></b>: <i>'StateName'</i> denotes a state called <b>StateName</b>.<br>"
-               + "<b><u>EXAMPLE 2</u></b>: <i>'@StateName'</i> denotes a state called <b>StateName</b> that is the <b>initial state</b></html>";
-
-        case CRUSH:
-          return "<html>1 state vector per line, formatted as <i>[@]&lt;State1,State2...></i> (where the '@' symbol denotes that this is the initial state).<br>"
-               + "<b><u>EXAMPLE</u></b>: '<i><&lt;FirstState,SecondState,ThirdState></i>' denotes a state vector containing the three states named <b>FirstState</b>, "
-               + "<b>SecondState</b>, and <b>ThirdState</b>.<br></html>";
-
-        default:
-          return null;
-
-      }
-
-    }
-
-
-    /**
-     * A helper method used to retrieve the instructions for the transition input box based on the Automaton type.
-     * @param type  The Automaton type in which the instructions should be relevant for
-     * @return      The transition input box instructions, in the form of a string
-     **/
-    private String getTransitionInstructions(Automaton.Type type) {
-  
-      switch (type) {
-        
-        case AUTOMATON:
-          return "<html>1 transition per line, formatted as <i>INITIAL_STATE,EVENT,TARGET_STATE[:BAD]</i>.<br>"
-               + "<b><u>EXAMPLE 1</u></b>: <i>'FirstState,Event,SecondState'</i> denotes a transition that goes from "
-               + "the state <b>'FirstState'</b> to the state <b>'SecondState'</b> by the event called <b>'Event'</b>.<br>"
-               + "<b><u>EXAMPLE 2</u></b>: <i>'FirstState,Event,SecondState:BAD'</i> denotes a transition that is identical "
-               + "to the transition in example 1, except that it has been marked as a bad transition (which is used for synchronized composition).</html>";
-
-        case U_STRUCTURE:
-          return "<html>1 transition per line, formatted as <i>INITIAL_STATE,EVENT,TARGET_STATE[:SPECIAL_PROPERTIES]</i>"
-               + ", which are used in the synchronized composition operation).<br>"
-               + "<b><u>EXAMPLE</u></b>: <i>'FirstState,Event,SecondState'</i> denotes a transition that goes from "
-               + "the state <b>'FirstState'</b> to the state <b>'SecondState'</b> by the event vector called <b>'Event'</b>.<br>"
-               + "<b><u>NOTE</u></b>: <i>SPECIAL_PROPERTIES</i> can be added to a transition by appending ':NAME_OF_PROPERTY'. "
-               + "Additional properties are separated by commas.<br><b>Names of special properties in a U-Structure:</b>: "
-               + "<i>'UNCONDITIONAL_VIOLATION'</i>, <i>'CONDITIONAL_VIOLATION'</i>, <i>'INVALID_COMMUNICATION'*</i>, <i>'POTENTIAL_COMMUNICATION'**</i>, and "
-               + "<i>'NASH_COMMUNICATION'**</i>.<br>"
-               + "<i>*'INVALID_COMMUNICATION' is used to mark a communication which has been added to the U-Structure for mathematical completion.</i><br>"
-               + "<i>**'POTENTIAL_COMMUNICATION' must have the communication roles appended to it. For example, appending '-SRR' (where the dash is simply a separator) "
-               + "means that controller 1 is sending the communication to controllers 2 and 3.<br>Appending '-R*S' means that controller 3 is sending the "
-               + "communication to controller 1 (where '*' denotes that a controller that doesn't have a role in the communication).</i><br>"
-               + "<i>**'NASH_COMMUNICATION' must have the communication roles appended to it, as well as cost and probability information.<br>"
-               + "Appending '-RS-1.2-0.5' means that controller 2 is sending the communication to controller 1 at a cost of 1.2 and probability of this communication "
-               + "happening in the system is 50%.</i></html>";
-
-        case PRUNED_U_STRUCTURE:
-          return "<html><div style=\"width:300px\">1 transition per line, formatted as <i>INITIAL_STATE,EVENT,TARGET_STATE[:SPECIAL_PROPERTIES]</i>"
-               + ", which are used in the synchronized composition operation).<br>"
-               + "<b><u>EXAMPLE</u></b>: <i>'FirstState,Event,SecondState'</i> denotes a transition that goes from "
-               + "the state <b>'FirstState'</b> to the state <b>'SecondState'</b> by the event vector called <b>'Event'</b>.<br>"
-               + "<b><u>NOTE</u></b>: <i>SPECIAL_PROPERTIES</i> can be added to a transition by appending ':NAME_OF_PROPERTY'. "
-               + "Additional properties are separated by commas.<br><b>Names of special properties in a pruned U-Structure:</b>: "
-               + "<i>'UNCONDITIONAL_VIOLATION'</i>, <i>'CONDITIONAL_VIOLATION'</i>, <i>'COMMUNICATION'*</i>, and <i>'NASH_COMMUNICATION'**</i>.<br>"
-               + "<i>*'COMMUNICATION' must have the communication roles appended to it. For example, appending '-SRR' (where the dash is simply a separator) "
-               + "means that controller 1 is sending the communication to controllers 2 and 3. Appending '-R*S' means that controller 3 is sending the "
-               + "communication to controller 1 (where '*' denotes that a controller that doesn't have a role in the communication).</i><br>"
-               + "<i>**'NASH_COMMUNICATION' must have the communication roles appended to it, as well as cost and probability information. "
-               + "Appending '-RS-1.2-0.5' means that controller 2 is sending the communication to controller 1 at a cost of 1.2 and probability of this communication "
-               + "happening in the system is 50%.</i></div></html>";
-
-        case CRUSH:
-          return "<html>1 transition per line, formatted as <i>INITIAL_STATE,EVENT,TARGET_STATE[:SPECIAL_PROPERTIES]</i>"
-               + ", which are used in the synchronized composition operation).<br>"
-               + "<b><u>EXAMPLE</u></b>: <i>'FirstState,Event,SecondState'</i> denotes a transition that goes from "
-               + "the state <b>'FirstState'</b> to the state <b>'SecondState'</b> by the event vector called <b>'Event'</b>.<br>"
-               + "<b><u>NOTE</u></b>: <i>SPECIAL_PROPERTIES</i> can be added to a transition by appending ':NAME_OF_PROPERTY'. "
-               + "Additional properties are separated by commas.<br><b>Names of special properties in a Crush:</b>: "
-               + "<i>'NASH_COMMUNICATION'*</i>.<br>"
-               + "<i>*'NASH_COMMUNICATION' must have the communication roles appended to it, as well as cost and probability information.<br>"
-               + "Appending '-RS-1.2-0.5' means that controller 2 is sending the communication to controller 1 at a cost of 1.2 and probability of this communication "
-               + "happening in the system is 50%.</i></html>";
-
-        default:
-          return null;
-          
-      }
 
     }
 

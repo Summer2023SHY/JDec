@@ -45,9 +45,18 @@ public abstract class NashInformationPrompt extends JDialog {
     this.tab = tab;
     uStructure = (UStructure) tab.automaton;
 
-    addComponents(message);
+    // Skip the screen used to choose communication costs and probabilities if there are no communications
+    if (uStructure.getSizeOfPotentialAndNashCommunications() == 0) {
+    
+      performAction();
 
-    setGUIproperties(title);
+    // Otherwise, prepare and show the screen    
+    } else {
+
+      addComponents(message);
+      setGUIproperties(title);
+
+    }
 
   }
 

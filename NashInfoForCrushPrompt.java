@@ -41,18 +41,19 @@ public class NashInfoForCrushPrompt extends NashInformationPrompt {
         setVisible(false);
       }
     });
-
-    PrunedUStructure prunedUStructure = ((PrunedUStructure) uStructure);
     
-    // Select method to combine communications
-    Crush.CombiningCosts selectedMethod = pickCombiningCostsMethod("How would you like to combine communication costs?");
-    if (selectedMethod == null)
-      return;
+    // Select method to combine communications (unless there are no communications)
+    Crush.CombiningCosts selectedMethod = null;
+    if (uStructure.getSizeOfPotentialAndNashCommunications() > 0) {
+      pickCombiningCostsMethod("How would you like to combine communication costs?");
+      if (selectedMethod == null)
+        return;
+    }
 
     // Select controller to take the Crush with respect to
     int selectedController = gui.pickController("Which controller would you like to take the crush with respect to?");
     if (selectedController == -1)
-    return;
+      return;
 
     // Get temporary files to store the Crush in
     String fileName = gui.getTemporaryFileName();
@@ -60,7 +61,7 @@ public class NashInfoForCrushPrompt extends NashInformationPrompt {
     File bodyFile = new File(fileName + ".bdy");
 
     // Create new tab with the generated crush
-    gui.createTab(prunedUStructure.crush(headerFile, bodyFile, selectedController, null, selectedMethod));
+    gui.createTab(uStructure.crush(headerFile, bodyFile, selectedController, null, selectedMethod));
 
   }
 

@@ -1401,12 +1401,13 @@ public class Automaton {
 
         // Get state from file
         State state = getState(s);
+        String stateLabel = formatStateLabel(state);
 
         // Draw state
         if (state.isMarked())
-          str.append(String.format("\"_%s\" [peripheries=2,label=\"%s\"];", state.getLabel(), state.getLabel()));
+          str.append(String.format("\"_%s\" [peripheries=2,label=\"%s\"];", stateLabel, stateLabel));
         else
-          str.append(String.format("\"_%s\" [peripheries=1,label=\"%s\"];", state.getLabel(), state.getLabel()));
+          str.append(String.format("\"_%s\" [peripheries=1,label=\"%s\"];", stateLabel, stateLabel));
 
         // Draw each of its transitions
         ArrayList<Transition> transitionsToSkip = new ArrayList<Transition>();
@@ -1434,7 +1435,7 @@ public class Automaton {
           }
 
           // Add transition
-          String edge = "\"_" + state.getLabel() + "\" -> \"_" + getStateExcludingTransitions(t1.getTargetStateID()).getLabel() + "\"";
+          String edge = "\"_" + stateLabel + "\" -> \"_" + formatStateLabel(getStateExcludingTransitions(t1.getTargetStateID())) + "\"";
           str.append(edge);
           str.append(" [label=\"" + label.substring(1) + "\"");
 
@@ -1452,7 +1453,7 @@ public class Automaton {
 
       if (initialState > 0) {
         str.append("node [shape=plaintext];");
-        str.append("\" \"-> \"_" + getStateExcludingTransitions(initialState).getLabel() + "\" [color=blue];");
+        str.append("\" \"-> \"_" + formatStateLabel(getStateExcludingTransitions(initialState)) + "\" [color=blue];");
       }
 
       str.append("}");
@@ -1512,6 +1513,29 @@ public class Automaton {
     }
     
     return true;
+
+  }
+
+  /**
+   * This helper method is used to get a state's label, breaking vectors into multiple lines.
+   * @param state The state in which the label is being taken from
+   * @return      The formatted state label
+   **/
+  private String formatStateLabel(State state) {
+
+    String label = state.getLabel();
+    LabelVector labelVector = new LabelVector(label);
+    int size = labelVector.getSize();
+
+    if (size == -1)
+      return label;
+
+    StringBuilder stringBuilder = new StringBuilder();
+
+    for (int i = 0; i < size; i++)
+      stringBuilder.append(labelVector.getLabelAtIndex(i) + "\\n");
+
+    return stringBuilder.toString();
 
   }
 
