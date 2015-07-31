@@ -123,7 +123,7 @@ public class UStructure extends Automaton {
     return accessibleHelper(new UStructure(newHeaderFile, newBodyFile, nControllersBeforeUStructure));
   }
 
-  @Override public UStructure complement(File newHeaderFile, File newBodyFile) {
+  @Override public UStructure complement(File newHeaderFile, File newBodyFile) throws OperationFailedException {
 
     UStructure uStructure = new UStructure(
       newHeaderFile,

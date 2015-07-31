@@ -523,9 +523,13 @@ public class JDec extends JFrame implements ActionListener {
         fileName = getTemporaryFileName();
         headerFile = new File(fileName + ".hdr");
         bodyFile = new File(fileName + ".bdy");
-
-        // Create new tab for complement automaton
-        createTab(tab.automaton.complement(headerFile, bodyFile));
+        try {
+          // Create new tab with the complement
+          createTab(tab.automaton.complement(headerFile, bodyFile));
+        } catch(OperationFailedException e) {
+          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
+          displayErrorMessage("Complement Operation Failed", "There already exists a dump state, so the complement could not be taken again.");
+        }
         break;
 
       case "Intersection":

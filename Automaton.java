@@ -531,11 +531,13 @@ public class Automaton {
    * Create a new copy of this automaton that has the marking status of all states toggled, and that has an added
    * 'dead' or 'dump' state where all undefined transitions lead.
    * NOTE: This method should be overridden by subclasses, using the complementHelper() method.
-   * @param newHeaderFile  The header file where the new automaton should be stored
-   * @param newBodyFile    The body file where the new automaton should be stored
-   * @return               The complement automaton
+   * @param newHeaderFile             The header file where the new automaton should be stored
+   * @param newBodyFile               The body file where the new automaton should be stored
+   * @return                          The complement automaton
+   * @throws OperationFailedException When there already exists a dump state, indicating that this
+   *                                  operation has already been performed on this automaton
    **/
-  public Automaton complement(File newHeaderFile, File newBodyFile) {
+  public Automaton complement(File newHeaderFile, File newBodyFile) throws OperationFailedException {
 
     Automaton automaton = new Automaton(
       newHeaderFile,
@@ -553,19 +555,20 @@ public class Automaton {
 
   /**
    * A helper method used to generate complement of this automaton.
-   * @param automaton The generic automaton object
-   * @return          The same automaton that was passed into the method, now containing the complement of this automaton
+   * @param automaton                 The generic automaton object
+   * @return                          The same automaton that was passed into the method, now containing
+   *                                  the complement of this automaton
+   * @throws OperationFailedException When there already exists a dump state, indicating that this
+   *                                  operation has already been performed on this automaton
    **/
-  protected final <T extends Automaton> T complementHelper(T automaton) {
+  protected final <T extends Automaton> T complementHelper(T automaton) throws OperationFailedException {
 
       /* Setup */
 
+    final String DUMP_STATE_LABEL = "Dump State";
+
     // Add events
     automaton.addAllEvents(events);
-
-    // If there is no initial state, return null, so that the GUI knows to alert the user
-    if (initialState == 0)
-      return null;
 
       /* Build complement of this automaton */
 
@@ -576,6 +579,10 @@ public class Automaton {
     for (long s = 1; s <= nStates; s++) {
 
       State state = getState(s);
+
+      // Indicate that a dump state already exists, and the complement shouldn't be taken again
+      if (state.getLabel().equals(DUMP_STATE_LABEL))
+        throw new OperationFailedException();
 
       long id = automaton.addState(state.getLabel(), !state.isMarked(), s == initialState);
 
@@ -605,7 +612,7 @@ public class Automaton {
 
     if (needToAddDumpState) {
     
-      long id = automaton.addState("Dump State", false, false);
+      long id = automaton.addState(DUMP_STATE_LABEL, false, false);
 
       if (id != dumpStateID)
         System.err.println("ERROR: Dump state ID did not match expected ID.");
