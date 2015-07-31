@@ -1,5 +1,5 @@
 HOURS:
-Friday, July 31: 1:00 -  (EXPECTED: 1 hours 6 minutes)
+Friday, July 31: 2:00 -  (EXPECTED: 6 minutes)
 
 JAVADOC TO-DO LIST:
   

@@ -51,12 +51,12 @@ public class TestAutomata {
   		/* Run tests */
 
     counter.add(runHelperMethodTestRoutine());
-    counter.add(runEventCreationTestRoutine());
-    counter.add(runStateCreationTestRoutine());
-    counter.add(runAutomatonCapacityTestRoutine());
-    counter.add(runGuiInputTestRoutine());
-    counter.add(runAutomataOperationsTestRoutine());
-  	counter.add(runExceptionHandlingTestRoutine());
+   //  counter.add(runEventCreationTestRoutine());
+   //  counter.add(runStateCreationTestRoutine());
+   //  counter.add(runAutomatonCapacityTestRoutine());
+   //  counter.add(runGuiInputTestRoutine());
+   //  counter.add(runAutomataOperationsTestRoutine());
+  	// counter.add(runExceptionHandlingTestRoutine());
 
   		/* Print summary of all tests */
 
@@ -120,6 +120,19 @@ public class TestAutomata {
     printTestCase("Splitting a string with no vectors", new TestResult(AutomatonGenerator.splitStringWithVectors("One,Two"), new String[]{"One", "Two"}), counter);
     printTestCase("Splitting a string containing vectors", new TestResult(AutomatonGenerator.splitStringWithVectors("<A,B>,C,<D,E,F>"), new String[]{"<A,B>", "C", "<D,E,F>"}), counter);
     printTestCase("Splitting a string with mismatched angled brackets (expecting null)", new TestResult(AutomatonGenerator.splitStringWithVectors("<A,B>,C>") == null), counter);
+
+      /* Pareto Helper Method Tests */
+
+    printTestOutput("Pareto Front - getParetoFront(): ", 2);
+
+    int[] x = {1, 2, 3, 3, 5, 5, 7, 8};
+    int[] y = {2, 6, 2, 7, 5, 2, 4, 1};
+    ArrayList<Integer> expectedIndexes = new ArrayList<Integer>();
+    expectedIndexes.add(3);
+    expectedIndexes.add(4);
+    expectedIndexes.add(6);
+    expectedIndexes.add(7);
+    printTestCase("Ensuring that the Pareto front could be generated", new TestResult(expectedIndexes, getParetoFront(x, y)), counter);
 
       /* combineCommunicationCosts() Tests */
 
@@ -1160,6 +1173,55 @@ public class TestAutomata {
 
   }
 
+  private static ArrayList<Integer> getParetoFront(int[] objective1, int[] objective2) {
+
+    ArrayList<Integer> individualsInFront = new ArrayList<Integer>();
+
+    for (int i = 0; i < objective1.length; i++) {
+
+      List<Integer> individualsToRemoveFromFront = new ArrayList<Integer>();
+
+      boolean partOfFront = true;
+
+      for (int other : individualsInFront) {
+
+        if (paretoDominates(objective1[i], objective2[i], objective1[other], objective2[other]))
+          individualsToRemoveFromFront.add(other);
+        
+        else if (paretoDominates(objective1[other], objective2[other], objective1[i], objective2[i])) {
+          partOfFront = false;
+          break;
+        }
+
+      }
+
+      for (Integer individual : individualsToRemoveFromFront)
+        individualsInFront.remove(individual);
+
+      if (partOfFront)
+        individualsInFront.add(i);
+
+    }
+
+    return individualsInFront;
+
+  }
+
+  private static boolean paretoDominates(int x1, int y1, int x2, int y2) {
+
+    // It does not pareto dominate if it is weaker in some way
+    if (x1 < x2 || y1 < y2)
+      return false;
+
+    // It does not pareto dominate if they are equal in every respect
+    if (x1 == x2 && y1 == y2)
+      return false;
+
+    // Otherwise, it must pareto dominate
+    return true;
+
+  }
+
 }
 
 class TestResult {
@@ -1252,6 +1314,15 @@ class TestResult {
   }
 
   public TestResult(List<Long> actual, List<Long> expected) {
+    
+    passed = (actual.equals(expected));
+    
+    if (!passed)
+      summary = "\nEXPECTED:\n" + expected + "\n\nACTUAL:\n" + actual + "\n";
+
+  }
+
+  public TestResult(ArrayList<Integer> actual, ArrayList<Integer> expected) {
     
     passed = (actual.equals(expected));
     
