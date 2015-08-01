@@ -1,6 +1,5 @@
 HOURS:
-Friday, July 31: 2:00 -  (EXPECTED: 6 minutes)
-
+Saturday, August 1: 56 minutes, 7:52 - 
 JAVADOC TO-DO LIST:
   
   TestAutomata.java
@@ -15,7 +14,7 @@ QUESTIONS:
 SHORT-TERM:
 
   -add test case by ricker
-  -start NSGA-II algorithm (made method to generate non-dominated front for pareto)
+  -create NSGA-II algorithm - currently on hold (we can assign ranks to a set of individuals)
   -change export to SVG to view SVG in browser, add message if it could not be displayed (and give them the location of the file), don't re-generate SVG each time, make it at the same time as PNG
   -access Lemke-howson through Test class, run Nash through it
   -Add test case for system does not satisfy observability in Nash algorithm (exception handling)

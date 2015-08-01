@@ -51,12 +51,12 @@ public class TestAutomata {
   		/* Run tests */
 
     counter.add(runHelperMethodTestRoutine());
-   //  counter.add(runEventCreationTestRoutine());
-   //  counter.add(runStateCreationTestRoutine());
-   //  counter.add(runAutomatonCapacityTestRoutine());
-   //  counter.add(runGuiInputTestRoutine());
-   //  counter.add(runAutomataOperationsTestRoutine());
-  	// counter.add(runExceptionHandlingTestRoutine());
+    counter.add(runEventCreationTestRoutine());
+    counter.add(runStateCreationTestRoutine());
+    counter.add(runAutomatonCapacityTestRoutine());
+    counter.add(runGuiInputTestRoutine());
+    counter.add(runAutomataOperationsTestRoutine());
+  	counter.add(runExceptionHandlingTestRoutine());
 
   		/* Print summary of all tests */
 
@@ -123,16 +123,21 @@ public class TestAutomata {
 
       /* Pareto Helper Method Tests */
 
-    printTestOutput("Pareto Front - getParetoFront(): ", 2);
+    printTestOutput("Pareto Ranks - getParetoRanks(): ", 2);
 
     int[] x = {1, 2, 3, 3, 5, 5, 7, 8};
     int[] y = {2, 6, 2, 7, 5, 2, 4, 1};
     ArrayList<Integer> expectedIndexes = new ArrayList<Integer>();
-    expectedIndexes.add(3);
     expectedIndexes.add(4);
-    expectedIndexes.add(6);
-    expectedIndexes.add(7);
-    printTestCase("Ensuring that the Pareto front could be generated", new TestResult(expectedIndexes, getParetoFront(x, y)), counter);
+    expectedIndexes.add(2);
+    expectedIndexes.add(3);
+    expectedIndexes.add(1);
+    expectedIndexes.add(1);
+    expectedIndexes.add(2);
+    expectedIndexes.add(1);
+    expectedIndexes.add(1);
+    printTestCase("Ensuring that the Pareto ranks could be generated", new TestResult(new ArrayList<Integer>(Arrays.asList(getParetoRanks(x, y))), expectedIndexes), counter);
+
 
       /* combineCommunicationCosts() Tests */
 
@@ -1173,11 +1178,60 @@ public class TestAutomata {
 
   }
 
-  private static ArrayList<Integer> getParetoFront(int[] objective1, int[] objective2) {
+  private static Integer[] getParetoRanks(int[] objective1, int[] objective2) {
 
+    if (objective1.length != objective2.length)
+      return null;
+
+    int nIndividuals = objective1.length;
+    Integer[] ranks = new Integer[nIndividuals];
+    boolean[] isAssigned = new boolean[nIndividuals];
+    int nRanksAssigned = 0;
+    int currentRank = 1;
+
+    // Repeat process until all individuals have been assigned a rank
+    while (nRanksAssigned < nIndividuals) {
+
+        /* Find the next pareto front, assigning those individuals the proper rank */
+
+      List<Integer> paretoFront = getParetoFront(objective1, objective2, isAssigned);
+
+      for (int i = 0; i < paretoFront.size(); i++) {
+        ranks[paretoFront.get(i)] = currentRank;
+        isAssigned[paretoFront.get(i)] = true;
+      }
+
+      currentRank++;
+      nRanksAssigned += paretoFront.size();
+
+    }
+
+    return ranks;
+
+  }
+
+  /**
+   *
+   * @param alreadyUsed An array of booleans indicating which individuals have already been used, and are
+   *                    no longer eligible to be considered as part of the pareto front
+   *                    NOTE: To consider all individuals, pass an array filled with false values
+   **/
+  private static ArrayList<Integer> getParetoFront(int[] objective1, int[] objective2, boolean[] alreadyUsed) {
+
+    // Error checking
+    if (objective1.length != objective2.length || objective1.length != alreadyUsed.length)
+      return null;
+
+    // Setup
+    int nIndividuals = objective1.length;
     ArrayList<Integer> individualsInFront = new ArrayList<Integer>();
 
-    for (int i = 0; i < objective1.length; i++) {
+    // Build pareto front
+    for (int i = 0; i < nIndividuals; i++) {
+
+      // Skip this individual if they cannot be part of this pareto front
+      if (alreadyUsed[i])
+        continue;
 
       List<Integer> individualsToRemoveFromFront = new ArrayList<Integer>();
 
