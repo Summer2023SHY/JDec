@@ -125,7 +125,10 @@ public class Automaton {
     PNG,
 
     /** Output the image of the graph as .svg, which is an XML-based format. The image is blown up so that no nodes overlap. */
-    SVG;
+    SVG,
+
+    /** Output the image of the graph in all possible formats. */
+    ALL;
 
   }
 
@@ -1492,15 +1495,28 @@ public class Automaton {
           "-Tsvg",
           DOT_OUTPUT_FILE_NAME,
           "-o",
-          outputFileName
+          outputFileName + ".svg"
         ).start();
+
       else if (mode == OutputMode.PNG)
         process = new ProcessBuilder(
           (nStates > 100) ? "neato": "dot",
           "-Tpng",
           DOT_OUTPUT_FILE_NAME,
           "-o",
-          outputFileName
+          outputFileName + ".png"
+        ).start();
+      
+      else if (mode == OutputMode.ALL)
+        process = new ProcessBuilder(
+          (nStates > 100) ? "neato": "dot",
+          DOT_OUTPUT_FILE_NAME,
+          "-Tpng",
+          "-o",
+          outputFileName + ".png",
+          "-Tsvg",
+          "-o",
+          outputFileName + ".svg"
         ).start();
 
       // Wait for it to finish

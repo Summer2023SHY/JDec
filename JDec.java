@@ -151,7 +151,7 @@ public class JDec extends JFrame implements ActionListener {
       "Clear[TAB]",
       "Close Tab[TAB]",
       null,
-      "Export as SVG[AUTOMATON]",
+      "View in Browser[AUTOMATON]",
       null,
       "Quit"
     ));
@@ -460,9 +460,9 @@ public class JDec extends JFrame implements ActionListener {
         refresh(index);
         break;
 
-      case "Export as SVG":
+      case "View in Browser":
 
-        export();
+        viewInBrowser();
         break;
 
       case "Close Tab":
@@ -812,62 +812,30 @@ public class JDec extends JFrame implements ActionListener {
 
 
   /**
-   * Export an image of the graph to file.
+   * View the .SVG image in the user's default browser, if possible.
    **/
-  private void export() {
+  private void viewInBrowser() {
 
     int index = tabbedPane.getSelectedIndex();
-
     AutomatonTab tab = tabs.get(index);
+    String fileName = currentDirectory + "/" + removeExtension(tab.headerFile.getName()) + ".svg";
 
-    // Create automaton from input code
-    int nControllers = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
-    Automaton automaton = AutomatonGenerator.generateFromGUICode(
-        new Automaton(tab.headerFile, tab.bodyFile, nControllers),
-        tab.eventInput.getText(),
-        tab.stateInput.getText(),
-        tab.transitionInput.getText(),
-        true
-      );
-    tab.automaton = automaton;
-    tab.setSaved(true);
+    boolean successful = false;
 
-    // Set the image blank if there were no states entered
-    if (automaton == null)
-      tab.canvas.setImage(null);
-
-    // Try to create graph image
-    else {
-
-      try {
-        
-        String fileName = tab.headerFile.getName();
-        String destinationFileName = currentDirectory + "/" + removeExtension(fileName) + ".svg";
-
-        if (automaton.generateImage(imageSize, Automaton.OutputMode.SVG, destinationFileName)) {
-
-          boolean showMessage = true;
-
-          try {
-            if (Desktop.isDesktopSupported()) {
-              Desktop.getDesktop().browse(new URI("file://" + destinationFileName));
-              showMessage = false;
-            }
-          } catch (IOException | URISyntaxException e) { }
-          
-          if (showMessage)
-            JOptionPane.showMessageDialog(null, "The image of the graph has been exported to '" + destinationFileName + "'.", "Export Complete", JOptionPane.INFORMATION_MESSAGE);
-        
-        } else
-          displayErrorMessage("Export Failed", "Something went wrong while generating and exporting the image of the graph.");
-      
-      } catch (MissingDependencyException e) {
-        displayErrorMessage("Missing Dependency", "Please ensure that GraphViz is installed, with its directory added to the PATH environment variable.");
-    
-      } catch (MissingOrCorruptBodyFileException e) {
-        displayErrorMessage("Corrupt or Missing File", "Please ensure that the .bdy file associated with this automaton is not corrupt or missing.");
+    // Try to load image from file
+    try {
+      if (Desktop.isDesktopSupported()) {
+        Desktop.getDesktop().browse(new URI("file://" + fileName));
+        successful = true;
       }
-
+    } catch (IOException | URISyntaxException e) { }
+    
+    // Display the proper error message
+    if (!successful) {
+      if (new File(fileName).exists())
+        displayErrorMessage("Unable To Open", "The .SVG file could not be opened in your browser. You can find the file here: '" + fileName + "'.");
+      else
+        displayErrorMessage("File Not Found", "The .SVG file could not be found. Please ensure that you have generated the image.");
     }
 
   }
@@ -954,19 +922,16 @@ public class JDec extends JFrame implements ActionListener {
   }
 
   /**
-   * Generate an image of the graph, displaying it on the screen.
+   * Generate an image of the graph, saving both .PNG and .SVG to file, and displaying the .PNG
+   * on the screen.
    **/
   private void generateImage() {
 
     // Get the current tab
     AutomatonTab tab = tabs.get(tabbedPane.getSelectedIndex());
 
-    // Create destination file name
-    String destinationFileName = "untitled.png";
-    if (tab.headerFile != null) {
-      String fileName = tab.headerFile.getName();
-      destinationFileName = currentDirectory + "/" + removeExtension(fileName) + ".png";
-    }
+    // Create destination file name (excluding extension)
+    String destinationFileName = currentDirectory + "/" + removeExtension(tab.headerFile.getName());
 
     try {
 
@@ -975,8 +940,8 @@ public class JDec extends JFrame implements ActionListener {
         tab.canvas.setImage(null);
 
       // Try to create graph image, displaying it on the screen
-      else if (tab.automaton.generateImage(imageSize, Automaton.OutputMode.PNG, destinationFileName))
-        tab.canvas.setImage(tab.automaton.loadImageFromFile(destinationFileName));
+      else if (tab.automaton.generateImage(imageSize, Automaton.OutputMode.ALL, destinationFileName))
+        tab.canvas.setImage(tab.automaton.loadImageFromFile(destinationFileName + ".png"));
 
       // Display error message
       else
@@ -1645,6 +1610,7 @@ public class JDec extends JFrame implements ActionListener {
     public JSpinner controllerInput;
     public JButton generateAutomatonButton;
     public JButton generateImageButton;
+    public JButton viewImageInBrowserButton;
     public Canvas canvas = null;
 
     // Automaton properties
@@ -1810,7 +1776,7 @@ public class JDec extends JFrame implements ActionListener {
       generateImageButton.setFocusable(false);
       generateImageButton.setToolTipText(
         "<html>Given the generated automaton, produce an image of the graph, displaying it to the right.<br>"
-        + "<b><u>NOTE</u></b>: This process can take a long time for large automata (exporting as an .SVG file is usually better in this case anyway).</html>"
+        + "<b><u>NOTE</u></b>: This process can take a long time for large automata.</html>"
       );
       generateImageButton.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
@@ -1820,6 +1786,19 @@ public class JDec extends JFrame implements ActionListener {
       });
       c.ipady = 0; c.weightx = 0.5; c.weighty = 1.0; c.gridx = 0; c.gridy = 6;
       container.add(generateImageButton, c);
+
+        /* View Image in Browser Button */
+
+      viewImageInBrowserButton = new JButton("View Image in Browser");
+      viewImageInBrowserButton.setFocusable(false);
+      viewImageInBrowserButton.setToolTipText("<html>View an enlarged version of the generated image in your default browser.</html>");
+      viewImageInBrowserButton.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          viewInBrowser();
+        }
+      });
+      c.ipady = 0; c.weightx = 0.5; c.weighty = 1.0; c.gridx = 0; c.gridy = 7;
+      container.add(viewImageInBrowserButton, c);
 
       return container;
 

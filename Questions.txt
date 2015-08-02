@@ -13,18 +13,16 @@ QUESTIONS:
 
 SHORT-TERM:
 
+  -There are 3 tooltips left to go in the XML file (not overly important though)
   -add test case by ricker
+  -Add options to generate random automaton:
   -create NSGA-II algorithm - currently on hold (we can assign ranks to a set of individuals)
-  -change export to SVG to view SVG in browser, add message if it could not be displayed (and give them the location of the file), don't re-generate SVG each time, make it at the same time as PNG
   -access Lemke-howson through Test class, run Nash through it
   -Add test case for system does not satisfy observability in Nash algorithm (exception handling)
+  -fix divider issue (NOTE: this only occurs when loading, not when doing an operation!!!)
   -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol
-  -Ensure that I'm not making the following mistake anywhere: letting two automata share a reference to the same piece of CommunicationData for example.. If one automaton changed it, then it would mess up the other one
-  -Add options to generate random automaton:
     observable - build U-structure, ensure there are not any violations ?? is this right??
     controllable - there cannot be a bad transition that has an event that is uncontrollable by all controllers
-  -finish loading bars when loading automaton
-  -fix divider issue (NOTE: this only occurs when loading, not when doing an operation!!!)
   -Nash probability values : feature to automatically distribute? cases where default doesn't add up to 1?)
   -test case for isFeasible() with mustAlsoSolveControlProblem=true
   -Make sure the correct special transitions are being parsed right for each automaton type
@@ -41,7 +39,6 @@ SHORT-TERM:
     -add export conditional violations to txt file
     -add export unconditional violations to txt file
     -add export potential communications to txt file
-  -export to multiple formats at once (and then when user hits exports, let them choose where this file gets copied to)!
   -Add tests to runAutomatonCapacityTestRoutine that check how capacity expanding works
   -add export to png (maybe others?)
   -Add addCommunications test for 3 controllers!!
