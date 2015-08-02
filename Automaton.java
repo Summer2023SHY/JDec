@@ -452,7 +452,8 @@ public class Automaton {
   /**
    * A helper method used to generate the co-accessible portion of this automaton.
    * @param automaton The generic automaton object
-   * @return          The same automaton that was passed into the method, now containing the co-accessible part of this automaton
+   * @return          The same automaton that was passed into the method, now containing the co-accessible
+   *                  part of this automaton
    **/
   protected final <T extends Automaton> T coaccessibleHelper(T automaton, T invertedAutomaton) {
 

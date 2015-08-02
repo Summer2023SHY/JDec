@@ -1,7 +1,7 @@
 /**
  * NashInformationPrompt - This abstract class is used to allow a user to manipulate Nash communications,
  *                         instead of being required to do it through GUI input code, which is rather
- *                         un-intuitive.
+ *                         unintuitive.
  *
  * @author Micah Stairs
  *
@@ -87,12 +87,11 @@ public abstract class NashInformationPrompt extends JDialog {
     Object[][] tableData = new Object[nCommunications][N_COLUMNS];
     int index = 0;
 
-    // Calculate what the default probability should be
+    // Calculate how much probability has already been assigned
     double totalProbability = 0.0;
     for (NashCommunicationData data : nashCommunications)
       totalProbability += data.probability;
     totalProbability = Math.min(1.0, totalProbability);
-    double defaultProbability = (1.0 - totalProbability) / (double) nCommunications;
 
     // Create array to maintain communication data information
     final CommunicationData[] communications = new CommunicationData[nCommunications];
@@ -103,6 +102,12 @@ public abstract class NashInformationPrompt extends JDialog {
       Object[] row = new Object[N_COLUMNS];
       row[0] = data.toString(uStructure);
       row[1] = "1";
+
+      // Calculate default probability so that it is dispersed as equally as possible, but so that
+      // it also equals exactly 1.0
+      double defaultProbability = (1.0 - totalProbability) / (double) (nCommunications - index);
+      totalProbability += defaultProbability;
+      
       row[2] = String.valueOf(defaultProbability);
 
       communications[index] = data;

@@ -1,19 +1,18 @@
 HOURS:
-Saturday, August 1: 56 minutes, 7:52 - 
+Saturday, August 1: 2 hours
+Sunday, August 2: 15 minutes, 7:41 - 
 JAVADOC TO-DO LIST:
   
   TestAutomata.java
 
 QUESTIONS:
 
-  observable property of automaton - build U-structure, ensure there are not any violations ?? is this right??
   -where do we need to make notes about cyclic vs. acyclic??
   -Are there any small examples using 3 controllers that do not blow up very large and are easily verifiable? (I'm looking for a good test case)
   -For the observer automaton, if at least one state is marked, does that mean that the entire group of states will be marked in the observer (Figure 2.22 on pg. 89)?
 
 SHORT-TERM:
 
-  -There are 3 tooltips left to go in the XML file (not overly important though)
   -add test case by ricker
   -Add options to generate random automaton:
   -create NSGA-II algorithm - currently on hold (we can assign ranks to a set of individuals)
@@ -23,7 +22,6 @@ SHORT-TERM:
   -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol
     observable - build U-structure, ensure there are not any violations ?? is this right??
     controllable - there cannot be a bad transition that has an event that is uncontrollable by all controllers
-  -Nash probability values : feature to automatically distribute? cases where default doesn't add up to 1?)
   -test case for isFeasible() with mustAlsoSolveControlProblem=true
   -Make sure the correct special transitions are being parsed right for each automaton type
   -Add JDec constants for pop-up widths and heights (perhaps add JDecDialog class?)
@@ -46,6 +44,7 @@ SHORT-TERM:
   -In Automaton::addState(), there is the potential for 3 calls to recreateBinaryFile. This should be combined into one call.
 
   POTENTIAL:
+  -There are 3 tooltips left to go in the XML file (from the buttons to generate the image, view image, and generate automaton)
   -co-acessible warning message if there are no marked states
   -message if no initial state is defined (abort generation of automaton), then we can remove some error-checking in the automaton class (NOTE: This affects a lot of our test cases..)
   -Allow modifications to automaton without regenerating the entire thing (example: adding a state or a transition)
