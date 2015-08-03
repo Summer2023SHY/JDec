@@ -11,6 +11,7 @@
 
 import java.awt.*;
 import java.io.*;
+import java.nio.file.*;
 import java.util.*;
 import javax.swing.*;
 
@@ -60,7 +61,7 @@ public abstract class AutomatonGenerator<T> {
                 controllability = new boolean[nControllers];
 
       for (int j = 0; j < nControllers; j++) {
-        observability[j] = generateBoolean();
+        observability[j]   = generateBoolean();
         controllability[j] = generateBoolean();
       }
 
@@ -71,11 +72,12 @@ public abstract class AutomatonGenerator<T> {
     }
 
       /* Generate states */
+
     {
       long initialStateID = generateLong(1, nStates);
       for (int i = 1; i <= nStates; i++) {
 
-        // Update progress bar
+      // Update progress bar
       updateProgressBar(nEvents + i, nTotalTasks, progressBar);
 
         long id = automaton.addState(String.valueOf(i), generateBoolean(), i == initialStateID);
@@ -138,6 +140,12 @@ public abstract class AutomatonGenerator<T> {
       /* Ensure that the header file has been written to disk */
       
     automaton.writeHeaderFile();
+
+      /* Test for controllability */
+
+      /* Test for observability */
+
+    System.out.println(automaton.testObservability());
 
     return automaton;
 

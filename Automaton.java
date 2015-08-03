@@ -945,7 +945,8 @@ public class Automaton {
    * Apply the synchronized composition algorithm to an automaton to produce the U-Structure.
    * @param newHeaderFile  The header file where the new automaton should be stored
    * @param newBodyFile    The body file where the new automaton should be stored
-   * @return               The U-Structure
+   * @return               The U-Structure (or null if there was no starting state or something else
+   *                       went wrong)
    **/
   public UStructure synchronizedComposition(File newHeaderFile, File newBodyFile) {
 
@@ -1162,6 +1163,64 @@ public class Automaton {
       /* Return produced automaton */
 
     return automaton;
+
+  }
+
+  /**
+   * Test to see if this system is observable.
+   * @return  Whether or not this system is observable
+   **/
+  public boolean testObservability() {
+
+    Automaton centralizedAutomaton = new Automaton(
+      // new File("aaaaAUTO.hdr"),
+      // new File("aaaaAUTO.bdy"),
+      null,
+      null,
+      getEvents().size(),
+      getNumberOfStates(),
+      getTransitionCapacity(),
+      getLabelLength(),
+      1,
+      true
+    );
+
+    // Copy over modified events to the centralized automaton
+    for (Event e : getEvents()) {
+
+      // Find the union of the observability and controllability properties for each event
+      boolean[] observableUnion = new boolean[1];
+      boolean[] controllableUnion = new boolean[1];
+      for (boolean b : e.isObservable())
+        if (b)
+          observableUnion[0] = true;
+      for (boolean b : e.isControllable())
+        if (b)
+          controllableUnion[0] = true;
+
+      // Add the event to the centralized automaton
+      centralizedAutomaton.addEvent(e.getLabel(), observableUnion, controllableUnion);
+
+    }
+
+    // Copy over the states and transitions to the centralized automaton
+    // NOTE: I attempted to do this by simply copying the .bdy file, because it would be more efficient,
+    //       however there are many other things that need to be considered (capacities, initial state,
+    //       re-opening the RandomAccessFile object for the body file, etc.)
+    for (long s = 1; s <= getNumberOfStates(); s++) {
+      State state = getState(s);
+      centralizedAutomaton.addState(state.getLabel(), state.isMarked(), s == getInitialStateID());
+    }
+
+    // Copy over all special transitions to the centralized automaton
+    copyOverSpecialTransitions(centralizedAutomaton);
+
+    // Take the U-Structure
+    UStructure uStructure = centralizedAutomaton.synchronizedComposition(null, null);
+    // UStructure uStructure = centralizedAutomaton.synchronizedComposition(new File("aaaaUSTRUCT.hdr"), new File("aaaaUSTRUCT.bdy"));
+
+    // The presence of violations indicate that the system is not observable
+    return !uStructure.hasViolations();
 
   }
 
@@ -2847,6 +2906,14 @@ public class Automaton {
 
   }
 
+  /**
+   * Set the initial state to the state with the specified ID.
+   * @param id  The ID of the new initial state
+   **/
+  public void setInitialStateID(long id) {
+    initialState = id;
+  }
+
     /* ACCESSOR METHODS */
 
   /**
@@ -2988,7 +3055,7 @@ public class Automaton {
     return transitionCapacity;
   }
 
-  /**
+  /**`
    * Get the number of characters that can be used for a state's label.
    * @return  Current maximum label length
    **/

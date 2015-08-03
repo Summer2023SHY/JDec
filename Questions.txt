@@ -1,6 +1,7 @@
 HOURS:
 Saturday, August 1: 2 hours
-Sunday, August 2: 15 minutes, 7:41 - 
+Sunday, August 2: 2 hours
+Monday, August 3: 7:26 - 
 JAVADOC TO-DO LIST:
   
   TestAutomata.java
@@ -13,15 +14,20 @@ QUESTIONS:
 
 SHORT-TERM:
 
+  -Do generated automata need to be connected or trim?
+  -add test case to test 
+  -mark disablement decisions in the u-structure and crush:
+    U-Structure: If the transition is bad in the 0th position, and bad for all of the controllers that control the outgoing event, then that transition represents a pure disablement decision
+    Crush: If the .............? Re-read email...
   -add test case by ricker
   -Add options to generate random automaton:
-  -create NSGA-II algorithm - currently on hold (we can assign ranks to a set of individuals)
+    observable - build U-structure with n=1 and union of properties, ensure there are not any violations
+    controllable - there cannot be a bad transition that has an event that is uncontrollable by all controllers
+  -Discuss what conditional co-observability is.....
+  -create NSGA-II algorithm - currently on hold (we can already assign ranks to a set of individuals)
   -access Lemke-howson through Test class, run Nash through it
   -Add test case for system does not satisfy observability in Nash algorithm (exception handling)
-  -fix divider issue (NOTE: this only occurs when loading, not when doing an operation!!!)
   -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol
-    observable - build U-structure, ensure there are not any violations ?? is this right??
-    controllable - there cannot be a bad transition that has an event that is uncontrollable by all controllers
   -test case for isFeasible() with mustAlsoSolveControlProblem=true
   -Make sure the correct special transitions are being parsed right for each automaton type
   -Add JDec constants for pop-up widths and heights (perhaps add JDecDialog class?)

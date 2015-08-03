@@ -45,7 +45,7 @@ public class NashInfoForCrushPrompt extends NashInformationPrompt {
     // Select method to combine communications (unless there are no communications)
     Crush.CombiningCosts selectedMethod = null;
     if (uStructure.getSizeOfPotentialAndNashCommunications() > 0) {
-      pickCombiningCostsMethod("How would you like to combine communication costs?");
+      selectedMethod = pickCombiningCostsMethod("How would you like to combine communication costs?");
       if (selectedMethod == null)
         return;
     }

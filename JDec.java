@@ -178,8 +178,12 @@ public class JDec extends JFrame implements ActionListener {
 
     // Quantitative communication menu
     menuBar.add(createMenu("Quantitative Communication",
-      "Nash[U_STRUCTURE]",
-      "Pareto"
+      "Nash[U_STRUCTURE]"
+    ));
+
+    // Properties menu
+    menuBar.add(createMenu("Properties",
+      "Test Observability[BASIC_AUTOMATON]"
     ));
     
     // Generate menu
@@ -452,9 +456,8 @@ public class JDec extends JFrame implements ActionListener {
 
         index = tabbedPane.getSelectedIndex(); // Index has changed since a new tab was created
         tab = tabs.get(index);
-        tab.canvas.setImage(null);
         tab.updateTabTitle();
-
+    
       case "Refresh Tab":
 
         refresh(index);
@@ -670,6 +673,14 @@ public class JDec extends JFrame implements ActionListener {
           displayErrorMessage("Operation Failed", "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.");
         else
           new NashInfoForNashEquilibriaPrompt(this, tab, "Cost and Probability Values", "Specify costs and probabilities for each communication.");
+        break;
+
+      case "Test Observability":
+
+        if (tab.automaton.testObservability())
+          displayMessage("Observability Test", "The system is observable.", JOptionPane.INFORMATION_MESSAGE);
+        else
+          displayMessage("Observability Test", "The system is not observable.", JOptionPane.INFORMATION_MESSAGE);
         break;
 
       case "Random Automaton":
@@ -1028,7 +1039,7 @@ public class JDec extends JFrame implements ActionListener {
     } else
       tab.generateImageButton.setEnabled(true);
 
-    tab.splitPane.setDividerLocation(tab.getWidth() / 2);
+    // tab.splitPane.setDividerLocation(tab.getWidth() / 2);
 
     tab.setSaved(true);
 
@@ -1867,8 +1878,8 @@ public class JDec extends JFrame implements ActionListener {
 
     /**
      * Refresh the GUI by re-generating the GUI input code.
-     * NOTE: This method is quite expensive, as it requires the entire automaton to be turned in
-     *       a form representable by strings.
+     * NOTE: This method is quite expensive, as it requires the entire automaton to be read and then
+     *       turned in a form representable by strings.
      **/
     public void refreshGUI() {
 

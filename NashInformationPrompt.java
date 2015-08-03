@@ -212,12 +212,12 @@ public abstract class NashInformationPrompt extends JDialog {
             cellEditor.stopCellEditing();
 
           // Ensure that there are no vaidation errors
-          int[] costs = new int[nCommunications];
-          double[] probabilities = new double[nCommunications];
+          double[] costs          = new double[nCommunications];
+          double[] probabilities  = new double[nCommunications];
           double totalProbability = 0.0;
           try {
             for (int i = 0; i < nCommunications; i++) {
-              costs[i] = Integer.valueOf(tableModel.getValueAt(i, 1).toString());
+              costs[i] = Double.valueOf(tableModel.getValueAt(i, 1).toString());
               probabilities[i] = Double.valueOf(tableModel.getValueAt(i, 2).toString());
               totalProbability += probabilities[i];
             }
