@@ -31,10 +31,11 @@ public abstract class AutomatonGenerator<T> {
    * @param nControllers            The number of controllers in the automaton
    * @param nBadTransitions         The number of bad transition in the automaton
    * @param observable              The observable property of the generated automaton
+   * @param controllable            The controllable property of the generated automaton
    * @param progressBar             The progress bar to be updated during the generation process
    * @return                        The randomly generated automaton
    **/
-  public static Automaton generateRandom(File headerFile, File bodyFile, int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions, boolean observable, JProgressBar progressBar) {
+  public static Automaton generateRandom(File headerFile, File bodyFile, int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions, boolean observable, boolean controllable, JProgressBar progressBar) {
 
     long nTotalTasks = (long) nEvents + (nStates * 2) + (long) nBadTransitions;
 
@@ -138,10 +139,10 @@ public abstract class AutomatonGenerator<T> {
 
     }
 
-      /* Test for observability */
+      /* Test properties */
 
-    // If the observable property isn't satisfied properly, then try generating another automaton
-    if (automaton.testObservability() != observable)
+    // If the observability or controllability properties are not satisfied properly, then try again
+    if (automaton.testObservability() != observable || automaton.testControllability() != controllable)
       return generateRandom(
         headerFile,
         bodyFile,
@@ -152,6 +153,7 @@ public abstract class AutomatonGenerator<T> {
         nControllers,
         nBadTransitions,
         observable,
+        controllable,
         progressBar
       );
 

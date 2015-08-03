@@ -183,7 +183,8 @@ public class JDec extends JFrame implements ActionListener {
 
     // Properties menu
     menuBar.add(createMenu("Properties",
-      "Test Observability[BASIC_AUTOMATON]"
+      "Test Observability[BASIC_AUTOMATON]",
+      "Test Controllability[BASIC_AUTOMATON]"
     ));
     
     // Generate menu
@@ -683,6 +684,14 @@ public class JDec extends JFrame implements ActionListener {
           displayMessage("Observability Test", "The system is not observable.", JOptionPane.INFORMATION_MESSAGE);
         break;
 
+      case "Test Controllability":
+
+        if (tab.automaton.testControllability())
+          displayMessage("Controllability Test", "The system is controllable.", JOptionPane.INFORMATION_MESSAGE);
+        else
+          displayMessage("Controllability Test", "The system is not controllable.", JOptionPane.INFORMATION_MESSAGE);
+        break;
+
       case "Random Automaton":
 
         new RandomAutomatonPrompt(this);
@@ -978,9 +987,10 @@ public class JDec extends JFrame implements ActionListener {
    * @param nControllers            The number of controllers in the automaton
    * @param nBadTransitions         The number of bad transition in the automaton
    * @param observable              The observable property of the generated automaton
+   * @param controllable            The controllable property of the generated automaton
    * @param progressBar             The progress bar to be updated during the generation process
    **/
-  public void generateRandomAutomaton(int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions, boolean controllable, JProgressBar progressBar) {
+  public void generateRandomAutomaton(int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions, boolean observable, boolean controllable, JProgressBar progressBar) {
 
     // Get a temporary file name
     String fileName = getTemporaryFileName();
@@ -995,6 +1005,7 @@ public class JDec extends JFrame implements ActionListener {
       maxTransitionsPerState,
       nControllers,
       nBadTransitions,
+      observable,
       controllable,
       progressBar
     );

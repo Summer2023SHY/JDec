@@ -21,19 +21,20 @@ public class RandomAutomatonPrompt extends JDialog {
     /* CLASS CONSTANTS */
 
   // Default values
-  private static int nControllersDefault    = 1;
-  private static int nEventsDefault         = 4;
-  private static int nStatesDefault         = 10;
-  private static int minTransitionsDefault  = 1;
-  private static int maxTransitionsDefault  = 3;
-  private static int nBadTransitionsDefault = 1;
-  private static boolean observableDefault  = true;
+  private static int nControllersDefault     = 1;
+  private static int nEventsDefault          = 4;
+  private static int nStatesDefault          = 10;
+  private static int minTransitionsDefault   = 1;
+  private static int maxTransitionsDefault   = 3;
+  private static int nBadTransitionsDefault  = 1;
+  private static boolean observableDefault   = true;
+  private static boolean controllableDefault = true;
 
     /* INSTANCE VARIABLES */
 
   private JDec gui;
   private JSpinner nControllers, nEvents, nStates, minTransitions, maxTransitions, nBadTransitions;
-  private JCheckBox observableCheckBox;
+  private JCheckBox observableCheckBox, controllableCheckBox;
 
     /* CONSTRUCTOR */
 
@@ -134,6 +135,17 @@ public class RandomAutomatonPrompt extends JDialog {
     c.gridx = 1; c.gridy = 6;
     add(observableCheckBox, c);
 
+      /* Controllability property */
+
+    JLabel controllableLabel = new JLabel(" Controllable:");
+    c.gridx = 0; c.gridy = 7;
+    add(controllableLabel, c);
+
+    controllableCheckBox = new JCheckBox();
+    controllableCheckBox.setSelected(controllableDefault);
+    c.gridx = 1; c.gridy = 7;
+    add(controllableCheckBox, c);
+
       /* Progress bar */
 
     final JProgressBar progressBar = new JProgressBar(0, 100);
@@ -141,7 +153,7 @@ public class RandomAutomatonPrompt extends JDialog {
     progressBar.setString("0%");
     progressBar.setStringPainted(true);
     progressBar.setVisible(false);
-    c.gridx = 0; c.gridy = 7; c.gridwidth = 2;
+    c.gridx = 0; c.gridy = 8; c.gridwidth = 2;
     add(progressBar, c);
 
       /* Cancel button */
@@ -152,7 +164,7 @@ public class RandomAutomatonPrompt extends JDialog {
         RandomAutomatonPrompt.this.dispose();
       }
     });
-    c.gridx = 0; c.gridy = 7; c.gridwidth = 1;
+    c.gridx = 0; c.gridy = 8; c.gridwidth = 1;
     add(cancelButton, c);
 
       /* Generate button */
@@ -178,6 +190,7 @@ public class RandomAutomatonPrompt extends JDialog {
                 nControllersDefault    = (Integer) nControllers.getValue(),
                 nBadTransitionsDefault = (Integer) nBadTransitions.getValue(),
                 observableDefault      = observableCheckBox.isSelected(),
+                controllableDefault    = controllableCheckBox.isSelected(),
                 progressBar
               );
               RandomAutomatonPrompt.this.dispose();
@@ -187,7 +200,7 @@ public class RandomAutomatonPrompt extends JDialog {
       }
 
     });
-    c.gridx = 1; c.gridy = 7;
+    c.gridx = 1; c.gridy = 8;
     add(generateButton, c);
 
   }

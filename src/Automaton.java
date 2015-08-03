@@ -1168,6 +1168,7 @@ public class Automaton {
 
   /**
    * Test to see if this system is observable.
+   * NOTE: This is an expensive test.
    * @return  Whether or not this system is observable
    **/
   public boolean testObservability() {
@@ -1228,7 +1229,32 @@ public class Automaton {
 
   }
 
-    /** AUTOMATA OPERATION HELPER METHODS **/
+  /**
+   * Test to see if this system is controllable.
+   * NOTE: This is a cheap test.
+   * @return  Whether or not this system is controllable
+   **/
+  public boolean testControllability() {
+
+    outer: for (TransitionData data : badTransitions) {
+      
+      Event event = getEvent(data.eventID);
+      
+      // Ensure that the event is controllable      
+      for (boolean b : event.isControllable())
+        if (b)
+          continue outer;
+
+      // Otherwise this system is not controllable
+      return false;
+
+    }
+
+    return true;
+
+  }
+
+    /* AUTOMATA OPERATION HELPER METHODS */
 
   /**
    * Helper method to copy over all special transition data from this automaton to another.
@@ -1451,7 +1477,7 @@ public class Automaton {
       /* Setup */
 
     StringBuilder str = new StringBuilder();
-    str.append("digraph G {");
+    str.append("digraph Image {");
     str.append("node [shape=circle, style=bold, constraint=false];");
 
       /* Constrain the size of the image if it's a PNG (since we will be displaying it on the GUI) */

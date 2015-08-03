@@ -1,7 +1,7 @@
 HOURS:
 Saturday, August 1: 2 hours
 Sunday, August 2: 2 hours
-Monday, August 3: 1 hour 30 minutes, 8:56 - 
+Monday, August 3: 2 hours 15 minutes, 10:00 - 
 JAVADOC TO-DO LIST:
   
   TestAutomata.java
@@ -20,9 +20,6 @@ SHORT-TERM:
     U-Structure: If the transition is bad in the 0th position, and bad for all of the controllers that control the outgoing event, then that transition represents a pure disablement decision
     Crush: If the .............? Re-read email...
   -add test case by ricker
-  -Add options to generate random automaton:
-    observable - build U-structure with n=1 and union of properties, ensure there are not any violations
-    controllable - there cannot be a bad transition that has an event that is uncontrollable by all controllers
   -Discuss what conditional co-observability is.....
   -create NSGA-II algorithm - currently on hold (we can already assign ranks to a set of individuals)
   -access Lemke-howson through Test class, run Nash through it
