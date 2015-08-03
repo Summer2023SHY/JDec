@@ -33,7 +33,15 @@ public abstract class AutomatonGenerator<T> {
    * @param progressBar             The progress bar to be updated during the generation process
    * @return                        The randomly generated automaton
    **/
-  public static Automaton generateRandom(File headerFile, File bodyFile, int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions, JProgressBar progressBar) {
+  public static Automaton generateRandom(File headerFile,
+                                         File bodyFile,
+                                         int nEvents,
+                                         long nStates,
+                                         int minTransitionsPerState,
+                                         int maxTransitionsPerState,
+                                         int nControllers,
+                                         int nBadTransitions,
+                                         final JProgressBar progressBar) {
 
     long nTotalTasks = (long) nEvents + (nStates * 2) + (long) nBadTransitions;
 
@@ -140,7 +148,7 @@ public abstract class AutomatonGenerator<T> {
       /* Test properties */
 
     // If the observability or controllability properties are not satisfied, then try again
-    if (!automaton.testObservability() || !automaton.testControllability())
+    if (!automaton.testObservability() || !automaton.testControllability()) {
       return generateRandom(
         headerFile,
         bodyFile,
@@ -152,6 +160,7 @@ public abstract class AutomatonGenerator<T> {
         nBadTransitions,
         progressBar
       );
+    }
 
       /* Ensure that the header file has been written to disk */
       
@@ -167,7 +176,9 @@ public abstract class AutomatonGenerator<T> {
    * @param nTotalTasks     The total number of tasks that need to be done
    * @param progressBar     The progress bar that is being updated
    **/
-  private static void updateProgressBar(long nTasksComplete, long nTotalTasks, final JProgressBar progressBar) {
+  private static void updateProgressBar(long nTasksComplete,
+                                        long nTotalTasks,
+                                        final JProgressBar progressBar) {
     
     if (progressBar != null) {
 

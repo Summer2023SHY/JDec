@@ -299,6 +299,10 @@ public class JDec extends JFrame implements ActionListener {
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, java.awt.Event.CTRL_MASK));
         break;
 
+      case "Random Automaton":
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, java.awt.Event.CTRL_MASK));
+        break;
+
     }
 
 
