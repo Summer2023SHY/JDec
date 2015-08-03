@@ -1,7 +1,7 @@
 HOURS:
 Saturday, August 1: 2 hours
 Sunday, August 2: 2 hours
-Monday, August 3: 4 hours 30 minutes, 2:05 - 
+Monday, August 3: 5 hours, 7:04 - 
 
 JAVADOC TO-DO LIST:
   
@@ -24,24 +24,14 @@ SHORT-TERM:
   -create NSGA-II algorithm - currently on hold (we can already assign ranks to a set of individuals)
   -access Lemke-howson through Test class, run Nash through it
   -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol
-  -Make sure the correct special transitions are being parsed right for each automaton type
   -currently regenerating uStructures when clicking "Generate Automaton" button (but they were already generated before when testing for feasibility, so we should store them)
   -add buttons to mark special transitions in GUI? (menu options would work great for this! With checkboxes)
   -option to manually load GUI input code for large automata (alternatively, we could have a screen with automaton stats and list of events, basically everything that is in the header file)
-  -add export special transitions to file (or clipboard!)
-    checkboxes for the following:
-    -add export conditional violations to txt file
-    -add export unconditional violations to txt file
-    -add export potential communications to txt file
   -In Automaton::addState(), there is the potential for 3 calls to recreateBinaryFile. This should be combined into one call.
 
   POTENTIAL:
-  -warning message when saving in GUI to overwrite files
+  -Warning message when saving in GUI to overwrite files
   -There are 3 tooltips left to go in the XML file (from the buttons to generate the image, view image, and generate automaton)
-  -co-acessible warning message if there are no marked states
-  -message if no initial state is defined (abort generation of automaton), then we can remove some error-checking in the automaton class (NOTE: This affects a lot of our test cases..)
+  -Co-acessible warning message if there are no marked states
   -Allow modifications to automaton without regenerating the entire thing (example: adding a state or a transition)
-  -Creating observer automaton (p.89) (WIP in GitHub history)
-  -Allow user to specify layout mode
-  -Projection operation
   -What about if multiple JDec processes are being run at the same time?? Create temporary folder based on PID (NOTE: PID can't easily be found)

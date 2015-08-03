@@ -56,6 +56,7 @@ public class TestAutomata {
     counter.add(runAutomatonCapacityTestRoutine());
     counter.add(runGuiInputTestRoutine());
     counter.add(runAutomataOperationsTestRoutine());
+    counter.add(runAutomataPropertiesTestRoutine());
   	counter.add(runExceptionHandlingTestRoutine());
 
   		/* Print summary of all tests */
@@ -972,6 +973,70 @@ public class TestAutomata {
       System.out.println(RED + "\t\t\t*** FAILED 3 TESTS DUE TO EXCEPTION ***" + RESET);
 
     }
+
+      /* Print summary of this test routine */
+
+    printTestRoutineSummary(testRoutineName, counter);
+
+    return counter;
+
+  }
+
+  private static TestCounter runAutomataPropertiesTestRoutine() {
+
+    String testRoutineName = "TESTING FOR AUTOMATA PROPERTIES";
+
+    printTestOutput("RUNNING " + testRoutineName + " TESTS...", 1);
+
+    TestCounter counter = new TestCounter();
+
+      /* Controllability Tests */
+
+    printTestOutput("TESTING CONTROLLABILITY: ", 2);
+
+    printTestOutput("Instantiating automaton...", 3);
+    Automaton a = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+      new Automaton(null, null, 2),
+      "c,TF,TF\nb,TF,TF\na,TF,TF", // Events
+      "@1,T\n2,F", // States 
+      "1,c,1\n1,b,2:BAD\n2,a,2", // Transitions
+      false // We do not want it to be verbose
+    ));
+    printTestCase("Ensuring that the automaton is controllable", new TestResult(a.testControllability(), true), counter);
+
+    printTestOutput("Instantiating automaton...", 3);
+    a = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+      new Automaton(null, null, 2),
+      "c,TF,TF\nb,TF,TF\na,TF,FF", // Events
+      "@1,T\n2,F", // States 
+      "1,c,1:BAD\n1,b,2\n2,a,2:BAD", // Transitions
+      false // We do not want it to be verbose
+    ));
+    printTestCase("Ensuring that the automaton is not controllable", new TestResult(a.testControllability(), false), counter);
+
+      /* Observability Tests */
+
+    printTestOutput("TESTING OBSERVABILITY: ", 2);
+
+    printTestOutput("Instantiating automaton...", 3);
+    a = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+      new Automaton(null, null, 2),
+      "a,TF,TF\nb,FT,FT\no,TT,TT", // Events
+      "@1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T", // States 
+      "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD", // Transitions
+      false // We do not want it to be verbose
+    ));
+    printTestCase("Ensuring that the automaton is observable", new TestResult(a.testObservability(), true), counter);
+
+    printTestOutput("Instantiating automaton...", 3);
+    a = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+      new Automaton(null, null, 2),
+      "a,FF,TF\nb,FT,FT\no,TT,TT", // Events
+      "@1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T", // States 
+      "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD", // Transitions
+      false // We do not want it to be verbose
+    ));
+    printTestCase("Ensuring that the automaton is not observable", new TestResult(a.testObservability(), false), counter);
 
       /* Print summary of this test routine */
 
