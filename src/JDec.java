@@ -492,8 +492,8 @@ public class JDec extends JFrame implements ActionListener {
         if (automaton == null) {
           temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
           displayErrorMessage("Accessible Operation Failed", "Please specify a starting state.");
+        } else
           createTab(automaton);
-        }
         break;
 
       case "Co-Accessible":
@@ -986,11 +986,9 @@ public class JDec extends JFrame implements ActionListener {
    * @param maxTransitionsPerState  The maximum number of outgoing transitions per state
    * @param nControllers            The number of controllers in the automaton
    * @param nBadTransitions         The number of bad transition in the automaton
-   * @param observable              The observable property of the generated automaton
-   * @param controllable            The controllable property of the generated automaton
    * @param progressBar             The progress bar to be updated during the generation process
    **/
-  public void generateRandomAutomaton(int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions, boolean observable, boolean controllable, JProgressBar progressBar) {
+  public void generateRandomAutomaton(int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions, JProgressBar progressBar) {
 
     // Get a temporary file name
     String fileName = getTemporaryFileName();
@@ -1005,8 +1003,6 @@ public class JDec extends JFrame implements ActionListener {
       maxTransitionsPerState,
       nControllers,
       nBadTransitions,
-      observable,
-      controllable,
       progressBar
     );
 

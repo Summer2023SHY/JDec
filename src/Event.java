@@ -109,21 +109,15 @@ public class Event implements Comparable<Event> {
 	}
 
 	@Override public int compareTo(Event other) {
-
 		return (new Integer(id)).compareTo(other.id);
-
 	}
 
 	@Override public boolean equals(Object obj) {
-
 		Event other = (Event) obj;
-
 		return this.label.equals(other.label);
-
 	}
 
 	@Override public String toString() {
-
 		return "("
 			+ "\"" + label + "\",ID:"
 			+ id + ","
