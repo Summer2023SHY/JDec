@@ -71,7 +71,7 @@ public abstract class NashInformationPrompt extends JDialog {
       /* Setup */
 
     setLayout(new BorderLayout());
-    setMaximumSize(new Dimension(500, 500));
+    setMaximumSize(new Dimension(JDec.PREFERRED_DIALOG_WIDTH, JDec.PREFERRED_DIALOG_HEIGHT));
 
       /* Add Instructions */
 
@@ -192,7 +192,7 @@ public abstract class NashInformationPrompt extends JDialog {
     table.getColumnModel().getColumn(2).setCellRenderer(new ProbabilityCellRenderer());
 
     JScrollPane scrollPane = new JScrollPane(table);
-    scrollPane.setMaximumSize(new Dimension(500, 500));
+    scrollPane.setMaximumSize(new Dimension(JDec.PREFERRED_DIALOG_WIDTH, JDec.PREFERRED_DIALOG_HEIGHT));
     add(scrollPane, BorderLayout.CENTER);
 
       /* Add Next Button */

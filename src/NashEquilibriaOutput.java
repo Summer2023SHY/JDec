@@ -56,7 +56,7 @@ public class NashEquilibriaOutput extends JFrame {
       /* Setup */
 
     setLayout(new BorderLayout());
-    setMaximumSize(new Dimension(500, 500));
+    setMaximumSize(new Dimension(JDec.PREFERRED_DIALOG_WIDTH, JDec.PREFERRED_DIALOG_HEIGHT));
 
       /* Add Instructions */
 
@@ -104,7 +104,7 @@ public class NashEquilibriaOutput extends JFrame {
     }
 
     JScrollPane outerScrollPane = new JScrollPane(outerContainer);
-    outerScrollPane.setMaximumSize(new Dimension(500, 500));
+    outerScrollPane.setMaximumSize(new Dimension(JDec.PREFERRED_DIALOG_WIDTH, JDec.PREFERRED_DIALOG_HEIGHT));
     add(outerScrollPane, BorderLayout.CENTER);
 
   }

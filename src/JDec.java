@@ -41,6 +41,8 @@ public class JDec extends JFrame implements ActionListener {
   private static final String GUI_DATA_FILE_NAME = "gui.data";
   private static final File TEMPORARY_DIRECTORY = new File("JDec_Temporary_Files");
   private static final int imageSize = 800; // This is used to indicate how large to generate the .PNG image
+  public static final int PREFERRED_DIALOG_WIDTH = 500;
+  public static final int PREFERRED_DIALOG_HEIGHT = 500;
 
     /* INSTANCE VARIABLES */
 
