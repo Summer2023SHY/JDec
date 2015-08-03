@@ -1173,8 +1173,6 @@ public class Automaton {
   public boolean testObservability() {
 
     Automaton centralizedAutomaton = new Automaton(
-      // new File("aaaaAUTO.hdr"),
-      // new File("aaaaAUTO.bdy"),
       null,
       null,
       getEvents().size(),
@@ -1209,7 +1207,14 @@ public class Automaton {
     //       re-opening the RandomAccessFile object for the body file, etc.)
     for (long s = 1; s <= getNumberOfStates(); s++) {
       State state = getState(s);
+
+      // Add state
       centralizedAutomaton.addState(state.getLabel(), state.isMarked(), s == getInitialStateID());
+
+      // Add transitions
+      for (Transition t : state.getTransitions())
+        centralizedAutomaton.addTransition(s, t.getEvent().getID(), t.getTargetStateID());
+
     }
 
     // Copy over all special transitions to the centralized automaton
@@ -1217,7 +1222,6 @@ public class Automaton {
 
     // Take the U-Structure
     UStructure uStructure = centralizedAutomaton.synchronizedComposition(null, null);
-    // UStructure uStructure = centralizedAutomaton.synchronizedComposition(new File("aaaaUSTRUCT.hdr"), new File("aaaaUSTRUCT.bdy"));
 
     // The presence of violations indicate that the system is not observable
     return !uStructure.hasViolations();
