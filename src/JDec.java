@@ -967,7 +967,20 @@ public class JDec extends JFrame implements ActionListener {
 
   }
 
-  public void generateRandomAutomaton(int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions, JProgressBar progressBar) {
+  /**
+   * Generate a random automaton with the specified properties.
+   * @param headerFile              The name of the header file where the automaton will be stored
+   * @param bodyFile                The name of the body file where the automaton will be stored
+   * @param nEvents                 The number of events to be generated in the automaton
+   * @param nStates                 The number of states to be generated in the automaton
+   * @param minTransitionsPerState  The minimum number of outgoing transitions per state
+   * @param maxTransitionsPerState  The maximum number of outgoing transitions per state
+   * @param nControllers            The number of controllers in the automaton
+   * @param nBadTransitions         The number of bad transition in the automaton
+   * @param observable              The observable property of the generated automaton
+   * @param progressBar             The progress bar to be updated during the generation process
+   **/
+  public void generateRandomAutomaton(int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions, boolean controllable, JProgressBar progressBar) {
 
     // Get a temporary file name
     String fileName = getTemporaryFileName();
@@ -982,6 +995,7 @@ public class JDec extends JFrame implements ActionListener {
       maxTransitionsPerState,
       nControllers,
       nBadTransitions,
+      controllable,
       progressBar
     );
 

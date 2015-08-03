@@ -26,12 +26,14 @@ public class RandomAutomatonPrompt extends JDialog {
   private static int nStatesDefault         = 10;
   private static int minTransitionsDefault  = 1;
   private static int maxTransitionsDefault  = 3;
-  private static int nBadTransitionsDefault = 0;
+  private static int nBadTransitionsDefault = 1;
+  private static boolean observableDefault  = true;
 
     /* INSTANCE VARIABLES */
 
   private JDec gui;
   private JSpinner nControllers, nEvents, nStates, minTransitions, maxTransitions, nBadTransitions;
+  private JCheckBox observableCheckBox;
 
     /* CONSTRUCTOR */
 
@@ -66,72 +68,71 @@ public class RandomAutomatonPrompt extends JDialog {
       /* Number of controllers */
 
     JLabel nControllersLabel = new JLabel(" # Controllers:");
-    c.gridx = 0;
-    c.gridy = 0;
+    c.gridx = 0; c.gridy = 0;
     add(nControllersLabel, c);
 
     nControllers = new JSpinner(new SpinnerNumberModel(nControllersDefault, 1, Automaton.MAX_NUMBER_OF_CONTROLLERS, 1));
-    c.gridx = 1;
-    c.gridy = 0;
+    c.gridx = 1; c.gridy = 0;
     add(nControllers, c);
 
       /* Number of events */
 
     JLabel nEventsLabel = new JLabel(" # Events:");
-    c.gridx = 0;
-    c.gridy = 1;
+    c.gridx = 0; c.gridy = 1;
     add(nEventsLabel, c);
 
     nEvents = new JSpinner(new SpinnerNumberModel(nEventsDefault, 0, Automaton.MAX_EVENT_CAPACITY, 1));
-    c.gridx = 1;
-    c.gridy = 1;
+    c.gridx = 1; c.gridy = 1;
     add(nEvents, c);
 
       /* Number of states */
 
     JLabel nStatesLabel = new JLabel(" # States:");
-    c.gridx = 0;
-    c.gridy = 2;
+    c.gridx = 0; c.gridy = 2;
     add(nStatesLabel, c);
 
     nStates = new JSpinner(new SpinnerNumberModel(nStatesDefault, 0, Integer.MAX_VALUE, 1)); // The Automaton class can support more states, but SpinnerNumberModel cannot
-    c.gridx = 1;
-    c.gridy = 2;
+    c.gridx = 1; c.gridy = 2;
     add(nStates, c);
 
       /* Number of transitions */
 
     JLabel minTransitionsLabel = new JLabel(" Min. # Transitions per State:");
-    c.gridx = 0;
-    c.gridy = 3;
+    c.gridx = 0; c.gridy = 3;
     add(minTransitionsLabel, c);
 
     minTransitions = new JSpinner(new SpinnerNumberModel(minTransitionsDefault, 0, Automaton.MAX_TRANSITION_CAPACITY, 1));
-    c.gridx = 1;
-    c.gridy = 3;
+    c.gridx = 1; c.gridy = 3;
     add(minTransitions, c);
 
     JLabel maxTransitionsLabel = new JLabel(" Max. # Transitions per State:");
-    c.gridx = 0;
-    c.gridy = 4;
+    c.gridx = 0; c.gridy = 4;
     add(maxTransitionsLabel, c);
 
     maxTransitions = new JSpinner(new SpinnerNumberModel(maxTransitionsDefault, 0, Automaton.MAX_TRANSITION_CAPACITY, 1));
-    c.gridx = 1;
-    c.gridy = 4;
+    c.gridx = 1; c.gridy = 4;
     add(maxTransitions, c);
 
       /* Bad transitions */
 
     JLabel nBadTransitionsLabel = new JLabel(" # Bad Transitions:");
-    c.gridx = 0;
-    c.gridy = 5;
+    c.gridx = 0; c.gridy = 5;
     add(nBadTransitionsLabel, c);
 
     nBadTransitions = new JSpinner(new SpinnerNumberModel(nBadTransitionsDefault, 0, Integer.MAX_VALUE, 1));
-    c.gridx = 1;
-    c.gridy = 5;
+    c.gridx = 1; c.gridy = 5;
     add(nBadTransitions, c);
+
+      /* Observability property */
+
+    JLabel observableLabel = new JLabel(" Observable:");
+    c.gridx = 0; c.gridy = 6;
+    add(observableLabel, c);
+
+    observableCheckBox = new JCheckBox();
+    observableCheckBox.setSelected(observableDefault);
+    c.gridx = 1; c.gridy = 6;
+    add(observableCheckBox, c);
 
       /* Progress bar */
 
@@ -140,9 +141,7 @@ public class RandomAutomatonPrompt extends JDialog {
     progressBar.setString("0%");
     progressBar.setStringPainted(true);
     progressBar.setVisible(false);
-    c.gridx = 0;
-    c.gridy = 6;
-    c.gridwidth = 2;
+    c.gridx = 0; c.gridy = 7; c.gridwidth = 2;
     add(progressBar, c);
 
       /* Cancel button */
@@ -153,9 +152,7 @@ public class RandomAutomatonPrompt extends JDialog {
         RandomAutomatonPrompt.this.dispose();
       }
     });
-    c.gridx = 0;
-    c.gridy = 6;
-    c.gridwidth = 1;
+    c.gridx = 0; c.gridy = 7; c.gridwidth = 1;
     add(cancelButton, c);
 
       /* Generate button */
@@ -180,6 +177,7 @@ public class RandomAutomatonPrompt extends JDialog {
                 maxTransitionsDefault  = (Integer) maxTransitions.getValue(),
                 nControllersDefault    = (Integer) nControllers.getValue(),
                 nBadTransitionsDefault = (Integer) nBadTransitions.getValue(),
+                observableDefault      = observableCheckBox.isSelected(),
                 progressBar
               );
               RandomAutomatonPrompt.this.dispose();
@@ -189,8 +187,7 @@ public class RandomAutomatonPrompt extends JDialog {
       }
 
     });
-    c.gridx = 1;
-    c.gridy = 6;
+    c.gridx = 1; c.gridy = 7;
     add(generateButton, c);
 
   }

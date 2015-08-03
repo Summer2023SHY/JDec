@@ -1,12 +1,12 @@
 /**
- * AutomatonGenerator - Abstract class used to generated automata. Automata can be generated using GUI input code, or they
- *                      can be randomly generated (with a number of specified properties).
+ * AutomatonGenerator - Abstract class used to generated automata. Automata can be generated using GUI input
+ *                      code, or they can be randomly generated (with a number of specified properties).
  *
  * @author Micah Stairs
  *
  * TABLE OF CONTENTS:
- *  -Random Automaton Generation (and associated helper methods)
- *  -Automaton Generation from GUI Input Code (and associated helper methods)
+ *  -Random Automaton Generation
+ *  -Automaton Generation from GUI Input Code
  **/
 
 import java.awt.*;
@@ -17,7 +17,7 @@ import javax.swing.*;
 
 public abstract class AutomatonGenerator<T> {
 
-    /* RANDOM AUTOMATON GENERATION (AND ASSOCIATED HELPER METHODS) */
+    /* RANDOM AUTOMATON GENERATION */
 
   /**
    * Generate a random automaton with the specified properties.
@@ -30,10 +30,11 @@ public abstract class AutomatonGenerator<T> {
    * @param maxTransitionsPerState  The maximum number of outgoing transitions per state
    * @param nControllers            The number of controllers in the automaton
    * @param nBadTransitions         The number of bad transition in the automaton
+   * @param observable              The observable property of the generated automaton
    * @param progressBar             The progress bar to be updated during the generation process
    * @return                        The randomly generated automaton
    **/
-  public static Automaton generateRandom(File headerFile, File bodyFile, int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions, JProgressBar progressBar) {
+  public static Automaton generateRandom(File headerFile, File bodyFile, int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions, boolean observable, JProgressBar progressBar) {
 
     long nTotalTasks = (long) nEvents + (nStates * 2) + (long) nBadTransitions;
 
@@ -137,15 +138,26 @@ public abstract class AutomatonGenerator<T> {
 
     }
 
+      /* Test for observability */
+
+    // If the observable property isn't satisfied properly, then try generating another automaton
+    if (automaton.testObservability() != observable)
+      return generateRandom(
+        headerFile,
+        bodyFile,
+        nEvents,
+        nStates,
+        minTransitionsPerState,
+        maxTransitionsPerState,
+        nControllers,
+        nBadTransitions,
+        observable,
+        progressBar
+      );
+
       /* Ensure that the header file has been written to disk */
       
     automaton.writeHeaderFile();
-
-      /* Test for controllability */
-
-      /* Test for observability */
-
-    System.out.println(automaton.testObservability());
 
     return automaton;
 
@@ -235,7 +247,7 @@ public abstract class AutomatonGenerator<T> {
 
   }
 
-    /* AUTOMATON GENERATION FROM GUI INPUT CODE (AND ASSOCIATED HELPER METHODS) */
+    /* AUTOMATON GENERATION FROM GUI INPUT CODE */
 
   /**
    * Generate an automaton using the given GUI input code.
