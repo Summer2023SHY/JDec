@@ -1,5 +1,5 @@
 #!/bin/sh
 set -e
-javac *.java
-#t -c -v -d&
-java JDec
+javac -d bin src/*.java
+t -c -v -d&
+java -cp ./bin JDec

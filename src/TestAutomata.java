@@ -548,7 +548,7 @@ public class TestAutomata {
 
     printTestOutput("Instantiating automaton from Figure 2.1...", 3);
     Automaton fig2_12 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(new File("fig2_12.hdr"), new File("fig2_12.bdy"), 1),
+      new Automaton(new File("aut/fig2_12.hdr"), new File("aut/fig2_12.bdy"), 1),
       "a,T,T\nb,T,T\ng,T,T", // Events
       "@zero,F\none,F\ntwo,T\nthree,F\nfour,F\nfive,F\nsix,F", // States 
       "zero,a,one\none,a,three\none,b,two\none,g,five\ntwo,g,zero\nthree,b,four\nfour,g,four\nfour,a,three\nsix,a,three\nsix,b,two", // Transitions
@@ -556,7 +556,7 @@ public class TestAutomata {
     ));
 
     printTestOutput("Taking the co-accessible part of Figure 2.12 (and comparing the result to the automaton in Figure 2.13a)...", 3);
-    Automaton result = saveAndLoadAutomaton(fig2_12.coaccessible(new File("coaccessible.hdr"), new File("coaccessible.bdy")));
+    Automaton result = saveAndLoadAutomaton(fig2_12.coaccessible(new File("aut/coaccessible.hdr"), new File("aut/coaccessible.bdy")));
 
     result.generateInputForGUI();
     printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T\ng,T,T"), counter);
@@ -568,7 +568,7 @@ public class TestAutomata {
     printTestOutput("TRIM OPERATION: ", 2);
 
     printTestOutput("Trimming the automaton in Figure 2.12 (and comparing the result to the automaton in Figure 2.13b)...", 3);
-    result = saveAndLoadAutomaton(fig2_12.trim(new File("trim.hdr"), new File("trim.bdy")));
+    result = saveAndLoadAutomaton(fig2_12.trim(new File("aut/trim.hdr"), new File("aut/trim.bdy")));
 
     result.generateInputForGUI();
     printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T\ng,T,T"), counter);
@@ -581,7 +581,7 @@ public class TestAutomata {
 
     printTestOutput("Instantiating an automaton...", 3);
     Automaton complementExample = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(new File("complementExample.hdr"), new File("complementExample.bdy"), 3),
+      new Automaton(new File("aut/complementExample.hdr"), new File("aut/complementExample.bdy"), 3),
       "a1,TFF,FFF\na2,TFF,FFF\nb1,FTF,FFF\nb2,FTF,FFF\nc1,FFT,FFF\nc2,FFT,FFF\no,FFF,TTT", // Events
       "@0,F\n1,F\n2,F\n3,F\n4,F\n5,F\n6,F\n7,F\n8,F\n9,F\n10,F\n11,F\n12,F\n13,F\n14,F\n15,F\n16,F\n17,F\n18,F\n19,F", // States 
       "0,a1,4\n0,b2,3\n0,b1,2\n0,c1,1\n1,b2,6\n1,a2,5\n2,a1,7\n3,c2,8\n4,b1,9\n5,b1,10\n6,a1,11\n7,c2,12\n8,a2,13\n9,c1,14\n10,o,15\n11,o,16\n12,o,17\n13,o,18:BAD\n14,o,19:BAD", // Transitions
@@ -592,7 +592,7 @@ public class TestAutomata {
 
     try {
     
-      result = saveAndLoadAutomaton(complementExample.complement(new File("complement.hdr"), new File("complement.bdy")));
+      result = saveAndLoadAutomaton(complementExample.complement(new File("aut/complement.hdr"), new File("aut/complement.bdy")));
       result.generateInputForGUI();
       printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a1,TFF,FFF\na2,TFF,FFF\nb1,FTF,FFF\nb2,FTF,FFF\nc1,FFT,FFF\nc2,FFT,FFF\no,FFF,TTT"), counter);
       printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@0,T\nDump State,F\n1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T\n8,T\n9,T\n10,T\n11,T\n12,T\n13,T\n14,T\n15,T\n16,T\n17,T\n18,T\n19,T"), counter);
@@ -610,7 +610,7 @@ public class TestAutomata {
 
     printTestOutput("Instantiating an automaton...", 3);
     Automaton complementExample2 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(new File("complementExample.hdr"), new File("complementExample.bdy"), 1),
+      new Automaton(new File("aut/complementExample.hdr"), new File("aut/complementExample.bdy"), 1),
       "a,T,F\nb,T,T", // Events
       "0,T\n1,F", // States 
       "0,a,1\n0,b,0\n1,a,0\n1,b,0", // Transitions
@@ -643,7 +643,7 @@ public class TestAutomata {
 
     printTestOutput("Instantiating automaton from Figure 2.1...", 3);
     Automaton fig2_1 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(new File("fig2_1.hdr"), new File("fig2_1.bdy"), 1),
+      new Automaton(new File("aut/fig2_1.hdr"), new File("aut/fig2_1.bdy"), 1),
       "a,T,T\nb,T,T\ng,T,T", // Events
       "@x,T\ny,F\nz,T", // States 
       "x,a,x\nx,g,z\ny,b,y\ny,a,x\nz,b,z\nz,a,y\nz,g,y", // Transitions
@@ -651,7 +651,7 @@ public class TestAutomata {
     ));
     printTestOutput("Instantiating automaton from Figure 2.2...", 3);
     Automaton fig2_2 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(new File("fig2_2.hdr"), new File("fig2_2.bdy"), 1),
+      new Automaton(new File("aut/fig2_2.hdr"), new File("aut/fig2_2.bdy"), 1),
       "a,T,T\nb,T,T", // Events
       "@zero,F\none,T", // States 
       "zero,b,zero\nzero,a,one\none,a,one\none,b,zero", // Transitions
@@ -661,7 +661,7 @@ public class TestAutomata {
     printTestOutput("Taking the intersection of Figure 2.1 and Figure 2.2 (and comparing the result to the first automaton in Figure 2.15)...", 3);
 
     try {
-      result = saveAndLoadAutomaton(Automaton.intersection(fig2_1, fig2_2, new File("intersection.hdr"), new File("intersection.bdy")));
+      result = saveAndLoadAutomaton(Automaton.intersection(fig2_1, fig2_2, new File("aut/intersection.hdr"), new File("aut/intersection.bdy")));
       result.generateInputForGUI();
       printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T"), counter);
       printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@x_zero,F\nx_one,T"), counter);
@@ -676,7 +676,7 @@ public class TestAutomata {
 
     printTestOutput("Instantiating automaton from Figure 2.13(b)...", 3);
     Automaton fig2_13b = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(new File("fig2_13b.hdr"), new File("fig2_13b.bdy"), 1),
+      new Automaton(new File("aut/fig2_13b.hdr"), new File("aut/fig2_13b.bdy"), 1),
       "a,T,T\nb,T,T\ng,T,T", // Events
       "@zero,F\none,F\ntwo,T", // States 
       "zero,a,one\none,b,two\ntwo,g,zero", // Transitions
@@ -686,7 +686,7 @@ public class TestAutomata {
     printTestOutput("Taking the intersection of Figure 2.2 and Figure 2.13(b) (and comparing the result to the second automaton in Figure 2.15)...", 3);
 
     try {
-      result = saveAndLoadAutomaton(Automaton.intersection(fig2_2, fig2_13b, new File("intersection.hdr"), new File("intersection.bdy")));
+      result = saveAndLoadAutomaton(Automaton.intersection(fig2_2, fig2_13b, new File("aut/intersection.hdr"), new File("aut/intersection.bdy")));
       result.generateInputForGUI();
       printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T"), counter);
       printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@zero_zero,F\none_one,F\nzero_two,F"), counter);
@@ -701,7 +701,7 @@ public class TestAutomata {
 
     printTestOutput("Instantiating the first automaton from Figure 2.20...", 3);
     Automaton fig2_20a = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(new File("fig2_20a.hdr"), new File("fig2_20a.bdy"), 1),
+      new Automaton(new File("aut/fig2_20a.hdr"), new File("aut/fig2_20a.bdy"), 1),
       "a1\na2\nb\nr", // Events
       "@x1,F\nx2,F\nx3,T", // States 
       "x1,a1,x2\nx1,a2,x2\nx2,b,x3\nx3,r,x1", // Transitions
@@ -710,7 +710,7 @@ public class TestAutomata {
 
     printTestOutput("Instantiating the second automaton from Figure 2.20...", 3);
     Automaton fig2_20b = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(new File("fig2_20b.hdr"), new File("fig2_20b.bdy"), 1),
+      new Automaton(new File("aut/fig2_20b.hdr"), new File("aut/fig2_20b.bdy"), 1),
       "a1\nb\nc1\nr\na2\nc2", // Events
       "@y1,F\ny2,F\ny3,F\ny4,F\ny5,F\ny6,F", // States 
       "y1,a1,y2\ny2,b,y4\ny4,r,y1\ny4,c1,y6\ny6,r,y1\ny1,a2,y3\ny3,b,y5\ny5,c2,y6\ny5,r,y1", // Transitions
@@ -719,7 +719,7 @@ public class TestAutomata {
 
     printTestOutput("Taking the intersection of the first two automata in Figure 2.20 (and comparing the result to the third automaton in Figure 2.20)...", 3);
     try {
-      result = saveAndLoadAutomaton(Automaton.intersection(fig2_20a, fig2_20b, new File("intersection.hdr"), new File("intersection.bdy")));
+      result = saveAndLoadAutomaton(Automaton.intersection(fig2_20a, fig2_20b, new File("aut/intersection.hdr"), new File("aut/intersection.bdy")));
       result.generateInputForGUI();
       printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a1,T,T\na2,T,T\nb,T,T\nr,T,T"), counter);
       printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@x1_y1,F\nx2_y2,F\nx2_y3,F\nx3_y4,F\nx3_y5,F"), counter);
@@ -739,7 +739,7 @@ public class TestAutomata {
     printTestOutput("Taking the union of Figure 2.1 and Figure 2.2 (and comparing the result to the automaton in Figure 2.16)...", 3);
 
     try {
-      result = saveAndLoadAutomaton(Automaton.union(fig2_1, fig2_2, new File("union.hdr"), new File("union.bdy")));
+      result = saveAndLoadAutomaton(Automaton.union(fig2_1, fig2_2, new File("aut/union.hdr"), new File("aut/union.bdy")));
       result.generateInputForGUI();
       printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T\ng,T,T"), counter);
       printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@x_zero,F\ny_zero,F\nz_zero,F\nx_one,T\ny_one,F\nz_one,T"), counter);
@@ -754,7 +754,7 @@ public class TestAutomata {
 
     printTestOutput("Instantiating the first automaton from Figure 2.17...", 3);
     Automaton fig2_17a = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(new File("fig2_17a.hdr"), new File("fig2_17a.bdy"), 1),
+      new Automaton(new File("aut/fig2_17a.hdr"), new File("aut/fig2_17a.bdy"), 1),
       "a,T,T\nb,T,T\nc,T,T", // Events
       "@one,T\ntwo,F", // States 
       "one,c,one\none,a,two\ntwo,b,two", // Transitions
@@ -763,7 +763,7 @@ public class TestAutomata {
 
     printTestOutput("Instantiating the second automaton from Figure 2.17...", 3);
     Automaton fig2_17b = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(new File("fig2_17b.hdr"), new File("fig2_17b.bdy"), 1),
+      new Automaton(new File("aut/fig2_17b.hdr"), new File("aut/fig2_17b.bdy"), 1),
       "b,T,T\na,T,T\nd,T,T", // Events
       "@A,T\nB,F", // States 
       "A,b,A\nA,a,B\nB,d,B", // Transitions
@@ -772,7 +772,7 @@ public class TestAutomata {
 
     printTestOutput("Instantiating the third automaton from Figure 2.17...", 3);
     Automaton fig2_17c = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(new File("fig2_17c.hdr"), new File("fig2_17c.bdy"), 1),
+      new Automaton(new File("aut/fig2_17c.hdr"), new File("aut/fig2_17c.bdy"), 1),
       "c,T,T\nb,T,T\na,T,T", // Events
       "@D,T\nE,F", // States 
       "D,c,D\nD,b,E\nE,a,E", // Transitions
@@ -783,10 +783,10 @@ public class TestAutomata {
     
     try {
       result = saveAndLoadAutomaton(Automaton.union(
-        saveAndLoadAutomaton(Automaton.union(fig2_17a, fig2_17b, new File("union1.hdr"), new File("union1.bdy"))),
+        saveAndLoadAutomaton(Automaton.union(fig2_17a, fig2_17b, new File("aut/union1.hdr"), new File("aut/union1.bdy"))),
         fig2_17c,
-        new File("union2.hdr"),
-        new File("union2.bdy")
+        new File("aut/union2.hdr"),
+        new File("aut/union2.bdy")
       ));
       result.generateInputForGUI();
       printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T\nc,T,T\nd,T,T"), counter);
@@ -806,7 +806,7 @@ public class TestAutomata {
 
     printTestOutput("Instantiating an automaton...", 3);
     Automaton synchronizedCompositionExample = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(new File("synchronizedCompositionExample.hdr"), new File("synchronizedCompositionExample.bdy"), 2),
+      new Automaton(new File("aut/synchronizedCompositionExample.hdr"), new File("aut/synchronizedCompositionExample.bdy"), 2),
       "a,TF,TF\nb,FT,FT\no,TT,TT", // Events
       "@1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T", // States
       "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD", // Transitions
@@ -814,7 +814,7 @@ public class TestAutomata {
     ));
 
     printTestOutput("Taking the synchronized composition of an automaton...", 3);
-    UStructure uStructure = saveAndLoadUStructure(synchronizedCompositionExample.synchronizedComposition(new File("synchronizedComposition.hdr"), new File("synchronizedComposition.bdy")));
+    UStructure uStructure = saveAndLoadUStructure(synchronizedCompositionExample.synchronizedComposition(new File("aut/synchronizedComposition.hdr"), new File("aut/synchronizedComposition.bdy")));
     uStructure.generateInputForGUI();
     printTestCase("Ensuring the events are correct", new TestResult(uStructure.getEventInput(), "<a,a,*>\n<b,*,b>\n<*,b,*>\n<*,*,a>\n<o,o,o>"), counter);
     printTestCase("Ensuring the states are correct", new TestResult(uStructure.getStateInput(), "@1_1_1\n1_1_2\n1_3_1\n1_3_2\n2_2_1\n2_2_2\n2_4_1\n2_4_2\n2_5_1\n2_5_2\n3_1_3\n3_1_4\n3_1_5\n3_3_3\n3_3_4\n3_3_5\n4_2_3\n4_2_4\n4_2_5\n4_4_3\n4_4_4\n4_4_5\n4_5_3\n4_5_4\n4_5_5\n5_2_3\n5_2_4\n5_2_5\n5_4_3\n5_4_4\n5_4_5\n5_5_3\n5_5_4\n5_5_5\n6_6_6\n6_6_7\n6_7_6\n6_7_7\n7_6_6\n7_6_7\n7_7_6\n7_7_7"), counter);
@@ -829,7 +829,7 @@ public class TestAutomata {
 
     try {
 
-      addCommunications = saveAndLoadUStructure(uStructure.addCommunications(new File("addCommunications.hdr"), new File("addCommunications.bdy")));
+      addCommunications = saveAndLoadUStructure(uStructure.addCommunications(new File("aut/addCommunications.hdr"), new File("aut/addCommunications.bdy")));
       addCommunications.generateInputForGUI();
       printTestCase("Ensuring the events are correct", new TestResult(addCommunications.getEventInput(), "<a,a,*>\n<b,*,b>\n<*,b,*>\n<*,*,a>\n<o,o,o>\n<*,b,a>\n<b,b,b>\n<a,a,a>"), counter);
       printTestCase("Ensuring the states are correct", new TestResult(addCommunications.getStateInput(), "@1_1_1\n1_1_2\n1_3_1\n1_3_2\n2_2_1\n2_2_2\n2_4_1\n2_4_2\n2_5_1\n2_5_2\n3_1_3\n3_1_4\n3_1_5\n3_3_3\n3_3_4\n3_3_5\n4_2_3\n4_2_4\n4_2_5\n4_4_3\n4_4_4\n4_4_5\n4_5_3\n4_5_4\n4_5_5\n5_2_3\n5_2_4\n5_2_5\n5_4_3\n5_4_4\n5_4_5\n5_5_3\n5_5_4\n5_5_5\n6_6_6\n6_6_7\n6_7_6\n6_7_7\n7_6_6\n7_6_7\n7_7_6\n7_7_7"), counter);
@@ -848,13 +848,13 @@ public class TestAutomata {
     printTestOutput("Add communications to the same automaton as above (but this time generated by GUI input code)...", 3);
     printTestOutput("Instantiating a U-Structure...", 3);
     UStructure synchronizedComposition = saveAndLoadUStructure(AutomatonGenerator.generateFromGUICode(
-      new UStructure(new File("synchronizedComposition.hdr"), new File("synchronizedComposition.bdy"), 2),
+      new UStructure(new File("aut/synchronizedComposition.hdr"), new File("aut/synchronizedComposition.bdy"), 2),
       "<a,a,*>\n<b,*,b>\n<*,b,*>\n<*,*,a>\n<o,o,o>", // Events
       "@1_1_1\n1_1_2\n1_3_1\n1_3_2\n2_2_1\n2_2_2\n2_4_1\n2_4_2\n2_5_1\n2_5_2\n3_1_3\n3_1_4\n3_1_5\n3_3_3\n3_3_4\n3_3_5\n4_2_3\n4_2_4\n4_2_5\n4_4_3\n4_4_4\n4_4_5\n4_5_3\n4_5_4\n4_5_5\n5_2_3\n5_2_4\n5_2_5\n5_4_3\n5_4_4\n5_4_5\n5_5_3\n5_5_4\n5_5_5\n6_6_6\n6_6_7\n6_7_6\n6_7_7\n7_6_6\n7_6_7\n7_7_6\n7_7_7", // States
       "1_1_1,<a,a,*>,2_2_1\n1_1_1,<b,*,b>,3_1_3\n1_1_1,<*,b,*>,1_3_1\n1_1_1,<*,*,a>,1_1_2\n1_1_2,<a,a,*>,2_2_2\n1_1_2,<b,*,b>,3_1_4\n1_1_2,<*,b,*>,1_3_2\n1_3_1,<a,a,*>,2_5_1\n1_3_1,<b,*,b>,3_3_3\n1_3_1,<*,*,a>,1_3_2\n1_3_2,<a,a,*>,2_5_2\n1_3_2,<b,*,b>,3_3_4\n2_2_1,<b,*,b>,4_2_3\n2_2_1,<*,b,*>,2_4_1\n2_2_1,<*,*,a>,2_2_2\n2_2_2,<b,*,b>,4_2_4\n2_2_2,<*,b,*>,2_4_2\n2_4_1,<b,*,b>,4_4_3\n2_4_1,<*,*,a>,2_4_2\n2_4_2,<b,*,b>,4_4_4\n2_5_1,<b,*,b>,4_5_3\n2_5_1,<*,*,a>,2_5_2\n2_5_2,<b,*,b>,4_5_4\n3_1_3,<a,a,*>,5_2_3\n3_1_3,<*,b,*>,3_3_3\n3_1_3,<*,*,a>,3_1_5\n3_1_4,<a,a,*>,5_2_4\n3_1_4,<*,b,*>,3_3_4\n3_1_5,<a,a,*>,5_2_5\n3_1_5,<*,b,*>,3_3_5\n3_3_3,<a,a,*>,5_5_3\n3_3_3,<*,*,a>,3_3_5\n3_3_4,<a,a,*>,5_5_4\n3_3_5,<a,a,*>,5_5_5\n4_2_3,<*,b,*>,4_4_3\n4_2_3,<*,*,a>,4_2_5\n4_2_4,<*,b,*>,4_4_4\n4_2_5,<*,b,*>,4_4_5\n4_4_3,<*,*,a>,4_4_5\n4_4_4,<o,o,o>,6_6_6\n4_4_5,<o,o,o>,6_6_7\n4_5_3,<*,*,a>,4_5_5\n4_5_4,<o,o,o>,6_7_6\n4_5_5,<o,o,o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*,b,*>,5_4_3\n5_2_3,<*,*,a>,5_2_5\n5_2_4,<*,b,*>,5_4_4\n5_2_5,<*,b,*>,5_4_5\n5_4_3,<*,*,a>,5_4_5\n5_4_4,<o,o,o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o,o,o>,7_6_7\n5_5_3,<*,*,a>,5_5_5\n5_5_4,<o,o,o>,7_7_6\n5_5_5,<o,o,o>,7_7_7", // Transitions
       false // We do not want it to be verbose
     ));
-    addCommunications = saveAndLoadUStructure(synchronizedComposition.addCommunications(new File("addCommunications.hdr"), new File("addCommunications.bdy")));
+    addCommunications = saveAndLoadUStructure(synchronizedComposition.addCommunications(new File("aut/addCommunications.hdr"), new File("aut/addCommunications.bdy")));
     addCommunications.generateInputForGUI();
     printTestCase("Ensuring the events are correct", new TestResult(addCommunications.getEventInput(), "<a,a,*>\n<b,*,b>\n<*,b,*>\n<*,*,a>\n<o,o,o>\n<*,b,a>\n<b,b,b>\n<a,a,a>"), counter);
     printTestCase("Ensuring the states are correct", new TestResult(addCommunications.getStateInput(), "@1_1_1\n1_1_2\n1_3_1\n1_3_2\n2_2_1\n2_2_2\n2_4_1\n2_4_2\n2_5_1\n2_5_2\n3_1_3\n3_1_4\n3_1_5\n3_3_3\n3_3_4\n3_3_5\n4_2_3\n4_2_4\n4_2_5\n4_4_3\n4_4_4\n4_4_5\n4_5_3\n4_5_4\n4_5_5\n5_2_3\n5_2_4\n5_2_5\n5_4_3\n5_4_4\n5_4_5\n5_5_3\n5_5_4\n5_5_5\n6_6_6\n6_6_7\n6_7_6\n6_7_7\n7_6_6\n7_6_7\n7_7_6\n7_7_7"), counter);
@@ -914,7 +914,7 @@ public class TestAutomata {
 
     printTestOutput("Instantiating a U-Structure...", 3);
     PrunedUStructure crushExample = saveAndLoadPrunedUStructure(AutomatonGenerator.generateFromGUICode(
-      new PrunedUStructure(new File("crushExample.hdr"), new File("crushExample.bdy"), 2),
+      new PrunedUStructure(new File("aut/crushExample.hdr"), new File("aut/crushExample.bdy"), 2),
       "<a,a,a>\n<b,*,b>\n<*,b,*>\n<o,o,o>", // Events
       "@1_1_1\n1_3_1\n2_2_2\n2_4_2\n2_5_2\n3_1_3\n3_3_3\n4_2_4\n4_4_4\n4_5_4\n5_2_5\n5_4_5\n5_5_5\n6_6_6\n6_7_6\n7_6_7\n7_7_7", // States
       "1_1_1,<b,*,b>,3_1_3\n1_1_1,<*,b,*>,1_3_1\n1_1_1,<a,a,a>,2_2_2:NASH_COMMUNICATION-SR-1.0-0.25\n1_3_1,<b,*,b>,3_3_3\n1_3_1,<a,a,a>,2_5_2:NASH_COMMUNICATION-SR-2.0-0.25\n2_2_2,<b,*,b>,4_2_4\n2_2_2,<*,b,*>,2_4_2\n2_4_2,<b,*,b>,4_4_4\n2_5_2,<b,*,b>,4_5_4\n3_1_3,<*,b,*>,3_3_3\n3_1_3,<a,a,a>,5_2_5:NASH_COMMUNICATION-SR-3.0-0.25\n3_3_3,<a,a,a>,5_5_5:NASH_COMMUNICATION-SR-4.0-0.25\n4_2_4,<*,b,*>,4_4_4\n4_4_4,<o,o,o>,6_6_6\n4_5_4,<o,o,o>,6_7_6\n5_2_5,<*,b,*>,5_4_5\n5_4_5,<o,o,o>,7_6_7\n5_5_5,<o,o,o>,7_7_7", // Transitions
@@ -932,13 +932,13 @@ public class TestAutomata {
     // printTestOutput("Instantiating an Automaton, taking the U-Structure, then taking the Crush...", 3);
 
     // Automaton disablementExampleAutomaton = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-    //   new Automaton(new File("disablementExampleAutomaton.hdr"), new File("disablementExampleAutomaton.bdy"), 2),
+    //   new Automaton(new File("aut/disablementExampleAutomaton.hdr"), new File("aut/disablementExampleAutomaton.bdy"), 2),
     //   "a,TF,FF\nb,FT,FF\nc,TT,FT", // Events
     //   "@0,F\n1,F\n2,F\n3,F\n4,F", // States
     //   "0,a,1\n0,b,2\n1,c,3\n2,c,4:BAD", // Transitions
     //   false // We do not want it to be verbose
     // ));
-    // UStructure disablementExampleUStructure = disablementExampleAutomaton.synchronizedComposition(new File("disablementExampleUStructure.hdr"), new File("disablementExampleUStructure.bdy"));
+    // UStructure disablementExampleUStructure = disablementExampleAutomaton.synchronizedComposition(new File("aut/disablementExampleUStructure.hdr"), new File("aut/disablementExampleUStructure.bdy"));
     // Crush crush = 
 
       /* Nash Operation Tests */
@@ -946,7 +946,7 @@ public class TestAutomata {
     printTestOutput("NASH OPERATION: ", 2);
 
     UStructure nashExample = saveAndLoadUStructure(AutomatonGenerator.generateFromGUICode(
-      new UStructure(new File("nashExample.hdr"), new File("nashExample.bdy"), 2),
+      new UStructure(new File("aut/nashExample.hdr"), new File("aut/nashExample.bdy"), 2),
       "<a,a,*>\n<b,*,b>\n<*,b,*>\n<*,*,a>\n<o,o,o>\n<*,b,a>\n<b,b,b>\n<a,a,a>", // Events
       "@1_1_1\n1_1_2\n1_3_1\n1_3_2\n2_2_1\n2_2_2\n2_4_1\n2_4_2\n2_5_1\n2_5_2\n3_1_3\n3_1_4\n3_1_5\n3_3_3\n3_3_4\n3_3_5\n4_2_3\n4_2_4\n4_2_5\n4_4_3\n4_4_4\n4_4_5\n4_5_3\n4_5_4\n4_5_5\n5_2_3\n5_2_4\n5_2_5\n5_4_3\n5_4_4\n5_4_5\n5_5_3\n5_5_4\n5_5_5\n6_6_6\n6_6_7\n6_7_6\n6_7_7\n7_6_6\n7_6_7\n7_7_6\n7_7_7", // States
       "1_1_1,<a,a,*>,2_2_1\n1_1_1,<b,*,b>,3_1_3\n1_1_1,<*,b,*>,1_3_1\n1_1_1,<*,*,a>,1_1_2\n1_1_1,<*,b,a>,1_3_2:INVALID_COMMUNICATION\n1_1_1,<b,b,b>,3_3_3:NASH_COMMUNICATION-RS-1-0.125\n1_1_1,<a,a,a>,2_2_2:NASH_COMMUNICATION-SR-1-0.125\n1_1_2,<a,a,*>,2_2_2\n1_1_2,<b,*,b>,3_1_4\n1_1_2,<*,b,*>,1_3_2\n1_1_2,<b,b,b>,3_3_4:NASH_COMMUNICATION-RS-1-0.125\n1_3_1,<a,a,*>,2_5_1\n1_3_1,<b,*,b>,3_3_3\n1_3_1,<*,*,a>,1_3_2\n1_3_1,<a,a,a>,2_5_2:NASH_COMMUNICATION-SR-1-0.125\n1_3_2,<a,a,*>,2_5_2\n1_3_2,<b,*,b>,3_3_4\n2_2_1,<b,*,b>,4_2_3\n2_2_1,<*,b,*>,2_4_1\n2_2_1,<*,*,a>,2_2_2\n2_2_1,<*,b,a>,2_4_2:INVALID_COMMUNICATION\n2_2_1,<b,b,b>,4_4_3:NASH_COMMUNICATION-RS-1-0.125\n2_2_2,<b,*,b>,4_2_4\n2_2_2,<*,b,*>,2_4_2\n2_2_2,<b,b,b>,4_4_4:NASH_COMMUNICATION-RS-1-0.125\n2_4_1,<b,*,b>,4_4_3\n2_4_1,<*,*,a>,2_4_2\n2_4_2,<b,*,b>,4_4_4\n2_5_1,<b,*,b>,4_5_3\n2_5_1,<*,*,a>,2_5_2\n2_5_2,<b,*,b>,4_5_4\n3_1_3,<a,a,*>,5_2_3\n3_1_3,<*,b,*>,3_3_3\n3_1_3,<*,*,a>,3_1_5\n3_1_3,<*,b,a>,3_3_5:INVALID_COMMUNICATION\n3_1_3,<a,a,a>,5_2_5:NASH_COMMUNICATION-SR-1-0.125\n3_1_4,<a,a,*>,5_2_4\n3_1_4,<*,b,*>,3_3_4\n3_1_5,<a,a,*>,5_2_5\n3_1_5,<*,b,*>,3_3_5\n3_3_3,<a,a,*>,5_5_3\n3_3_3,<*,*,a>,3_3_5\n3_3_3,<a,a,a>,5_5_5:NASH_COMMUNICATION-SR-1-0.125\n3_3_4,<a,a,*>,5_5_4\n3_3_5,<a,a,*>,5_5_5\n4_2_3,<*,b,*>,4_4_3\n4_2_3,<*,*,a>,4_2_5\n4_2_3,<*,b,a>,4_4_5:INVALID_COMMUNICATION\n4_2_4,<*,b,*>,4_4_4\n4_2_5,<*,b,*>,4_4_5\n4_4_3,<*,*,a>,4_4_5\n4_4_4,<o,o,o>,6_6_6\n4_4_5,<o,o,o>,6_6_7\n4_5_3,<*,*,a>,4_5_5\n4_5_4,<o,o,o>,6_7_6\n4_5_5,<o,o,o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*,b,*>,5_4_3\n5_2_3,<*,*,a>,5_2_5\n5_2_3,<*,b,a>,5_4_5:INVALID_COMMUNICATION\n5_2_4,<*,b,*>,5_4_4\n5_2_5,<*,b,*>,5_4_5\n5_4_3,<*,*,a>,5_4_5\n5_4_4,<o,o,o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o,o,o>,7_6_7\n5_5_3,<*,*,a>,5_5_5\n5_5_4,<o,o,o>,7_7_6\n5_5_5,<o,o,o>,7_7_7", // Transitions
