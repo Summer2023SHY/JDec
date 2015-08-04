@@ -148,7 +148,8 @@ public abstract class AutomatonGenerator<T> {
       /* Test properties */
 
     // If the observability or controllability properties are not satisfied, then try again
-    if (!automaton.testObservability() || !automaton.testControllability()) {
+    // NOTE: The controllability test is done first since it is less expensive
+    if (!automaton.testControllability() || !automaton.testObservability()) {
       return generateRandom(
         headerFile,
         bodyFile,

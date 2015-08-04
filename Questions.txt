@@ -1,7 +1,8 @@
 HOURS:
 Saturday, August 1: 2 hours
 Sunday, August 2: 2 hours
-Monday, August 3: 6 hours, 8:35 -  
+Monday, August 3: 7 hours
+Tuesday, August 4: 1 hour, 7:50 - 
 
 JAVADOC TO-DO LIST:
   
@@ -23,7 +24,7 @@ SHORT-TERM:
     U-Structure: If the transition is bad in the 0th position, and bad for all of the controllers that control the outgoing event, then that transition represents a pure disablement decision
     Crush: If the .............? Re-read email...
   -create NSGA-II algorithm - currently on hold (we can already assign ranks to a set of individuals)
-  -access Lemke-howson through Test class, run Nash through it
+  -Lemke-howson
   -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol
   -add buttons to mark special transitions in GUI? (menu options would work great for this! With checkboxes)
   -option to manually load GUI input code for large automata (alternatively, we could have a screen with automaton stats and list of events, basically everything that is in the header file)

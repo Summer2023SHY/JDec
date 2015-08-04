@@ -128,7 +128,7 @@ public abstract class NashInformationPrompt extends JDialog {
 
     }
 
-    String[] columnNames = new String[] {"Communication", "Cost (Integer)", "Probability (Double)"};
+    String[] columnNames = new String[] {"Communication", "Cost", "Probability"};
 
     final TableModel tableModel = new DefaultTableModel(tableData, columnNames) {
 
