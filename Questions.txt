@@ -2,7 +2,7 @@ HOURS:
 Saturday, August 1: 2 hours
 Sunday, August 2: 2 hours
 Monday, August 3: 7 hours
-Tuesday, August 4: 1 hour, 7:50 - 
+Tuesday, August 4: 1 hour 50 minutes, 8:55 - 
 
 JAVADOC TO-DO LIST:
   

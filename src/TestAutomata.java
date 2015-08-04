@@ -481,6 +481,35 @@ public class TestAutomata {
   	printTestCase("Ensuring that 'stateCapacity' remained at 'Long.MAX_VALUE >> 7'", new TestResult(automaton.getStateCapacity(), Long.MAX_VALUE >> 7), counter);
   	automaton.closeFiles();
 
+    printTestOutput("AUTOMATON CAPACITY EXPANSION: ", 2);
+
+    printTestOutput("Instantiating empty automaton...", 3);
+    automaton = saveAndLoadAutomaton(new Automaton());
+    
+    printTestOutput("Adding 256 events to it...", 3);
+    printTestCase("Ensuring that 'eventCapacity' was originally '255'", new TestResult(automaton.getEventCapacity(), 255), counter);
+    boolean[] arbitraryArray = {true};
+    for (int i = 0; i < 256; i++)
+      automaton.addEvent(String.valueOf(i), arbitraryArray, arbitraryArray);
+    automaton = saveAndLoadAutomaton(automaton);
+    printTestCase("Ensuring that 'eventCapacity' was expanded to '65535'", new TestResult(automaton.getEventCapacity(), 65535), counter);
+    
+    printTestOutput("Adding 256 states to it...", 3);
+    printTestCase("Ensuring that 'stateCapacity' was originally '255'", new TestResult(automaton.getStateCapacity(), 255), counter);
+    printTestCase("Ensuring that 'labelLength' was originally '1'", new TestResult(automaton.getLabelLength(), 1), counter);
+    for (long i = 0; i < 256; i++)
+      automaton.addState(String.valueOf(i), i % 2 == 0, i == 135);
+    automaton = saveAndLoadAutomaton(automaton);
+    printTestCase("Ensuring that 'stateCapacity' was expanded to '65535'", new TestResult(automaton.getStateCapacity(), 65535), counter);
+    printTestCase("Ensuring that 'labelLength' was expanded to '3'", new TestResult(automaton.getLabelLength(), 3), counter);
+    
+    printTestOutput("Adding transitions to it...", 3);
+    printTestCase("Ensuring that 'transitionCapacity' was originally '1'", new TestResult(automaton.getTransitionCapacity(), 1), counter);
+    for (int i = 0; i < 2; i++)
+      automaton.addTransition(1, i + 1, 1);
+    automaton = saveAndLoadAutomaton(automaton);
+    printTestCase("Ensuring that 'transitionCapacity' was expanded to '2'", new TestResult(automaton.getTransitionCapacity(), 2), counter);
+    
   		/* Print summary of this test routine */
 
   	printTestRoutineSummary(testRoutineName, counter);
