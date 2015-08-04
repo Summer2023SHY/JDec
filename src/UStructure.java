@@ -1239,37 +1239,17 @@ public class UStructure extends Automaton {
 
   @Override protected void addAdditionalEdgeProperties(Map<String, String> map) {
 
-    for (TransitionData t : unconditionalViolations) {
-      String str = "" + getState(t.initialStateID).getLabel() + " " + getStateExcludingTransitions(t.targetStateID).getLabel() + " " + t.eventID;
-      if (map.containsKey(str))
-        map.put(str, map.get(str) + ",color=red");
-      else
-        map.put(str, ",color=red"); 
-    }
+    for (TransitionData data : unconditionalViolations)
+      appendValueToMap(map, createKey(data), ",color=red");
 
-    for (TransitionData t : conditionalViolations) {
-      String str = "" + getState(t.initialStateID).getLabel() + " " + getStateExcludingTransitions(t.targetStateID).getLabel() + " " + t.eventID;
-      if (map.containsKey(str))
-        map.put(str, map.get(str) + ",color=green3");
-      else
-        map.put(str, ",color=green3"); 
-    }
+    for (TransitionData data : conditionalViolations)
+      appendValueToMap(map, createKey(data), ",color=green3");
 
-    for (TransitionData t : potentialCommunications) {
-      String str = "" + getState(t.initialStateID).getLabel() + " " + getStateExcludingTransitions(t.targetStateID).getLabel() + " " + t.eventID;
-      if (map.containsKey(str))
-        map.put(str, map.get(str) + ",color=blue,fontcolor=blue");
-      else
-        map.put(str, ",color=blue,fontcolor=blue"); 
-    }
+    for (TransitionData data : getPotentialCommunications())
+      appendValueToMap(map, createKey(data), ",color=blue,fontcolor=blue");
 
-    for (TransitionData t : nashCommunications) {
-      String str = "" + getState(t.initialStateID).getLabel() + " " + getStateExcludingTransitions(t.targetStateID).getLabel() + " " + t.eventID;
-      if (map.containsKey(str))
-        map.put(str, map.get(str) + ",color=blue,fontcolor=blue");
-      else
-        map.put(str, ",color=blue,fontcolor=blue"); 
-    }
+    for (TransitionData data : getNashCommunications())
+      appendValueToMap(map, createKey(data), ",color=blue,fontcolor=blue");
 
   }
 

@@ -1516,7 +1516,7 @@ public class Automaton {
           State targetState = getStateExcludingTransitions(t.getTargetStateID());
 
           // Check to see if this transition has additional properties (meaning it's a special transition)
-          String key = "" + state.getLabel() + " " + targetState.getLabel() + " " + t.getEvent().getID();
+          String key = "" + stateLabel + " " + t.getEvent().getID() + " " + targetState.getLabel();
           String properties = additionalEdgeProperties.get(key);
 
           if (properties != null) {
@@ -1678,14 +1678,34 @@ public class Automaton {
    **/
   protected void addAdditionalEdgeProperties(Map<String, String> map) {
 
-    for (TransitionData t : badTransitions) {
-      String str = "" + getState(t.initialStateID).getLabel() + " " + getStateExcludingTransitions(t.targetStateID).getLabel() + " " + t.eventID;
-      if (map.containsKey(str))
-        map.put(str, map.get(str) + ",style=dotted");
-      else
-        map.put(str, ",style=dotted"); 
-    }
+    for (TransitionData data : badTransitions)
+      appendValueToMap(map, createKey(data), ",style=dotted");
     
+  }
+
+  /**
+   * Helper method used to create a key for the additional edge properties map.
+   * @param data  The relevant transition data
+   * @return      A string used to identify this particular transition
+   **/
+  protected String createKey(TransitionData data) {
+    return "" + getState(data.initialStateID).getLabel() + " "
+              + data.eventID + " "
+              + getStateExcludingTransitions(data.targetStateID).getLabel();
+  }
+
+  /**
+   * Helper method used to append a value to the pre-existing value of a particular key in a map.
+   * If the key was not previously in the map, then the value is simply added.
+   * @param map   The relevant map
+   * @param key   The key which is mapped to a value that is being appending to
+   * @param value The value to be appended
+   **/
+  protected void appendValueToMap(Map<String, String> map, String key, String value) {
+    if (map.containsKey(key))
+      map.put(key, map.get(key) + value);
+    else
+      map.put(key, value); 
   }
 
   /**
