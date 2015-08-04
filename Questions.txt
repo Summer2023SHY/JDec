@@ -28,9 +28,9 @@ SHORT-TERM:
   -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol
   -add buttons to mark special transitions in GUI? (menu options would work great for this! With checkboxes)
   -option to manually load GUI input code for large automata (alternatively, we could have a screen with automaton stats and list of events, basically everything that is in the header file)
-  -In Automaton::addState(), there is the potential for 3 calls to recreateBinaryFile. This should be combined into one call.
 
   POTENTIAL:
+  -In Automaton::addState(), there is the potential for 3 calls to recreateBinaryFile. This should be combined into one call.
   -currently regenerating uStructures when clicking "Generate Automaton" button (but they were already generated before when testing for feasibility, so we should store them). NOTE: While this would be more efficient, I do not see a clean way of implementing it
   -Multiple violations on the same transition are not properly drawn in graphviz (we should draw them as two separate transitions)
   -Warning message when saving in GUI to overwrite files

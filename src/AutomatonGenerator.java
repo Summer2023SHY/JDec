@@ -43,124 +43,131 @@ public abstract class AutomatonGenerator<T> {
                                          int nBadTransitions,
                                          final JProgressBar progressBar) {
 
+    Automaton automaton;
     long nTotalTasks = (long) nEvents + (nStates * 2) + (long) nBadTransitions;
+    int nAttempts = 1;
 
-      /* Create empty automaton with capacities that should prevent the need to re-create the body file */
+    while (true) {
 
-    Automaton automaton = new Automaton(
-      headerFile,
-      bodyFile,
-      nEvents,
-      nStates,
-      maxTransitionsPerState,
-      String.valueOf(nStates).length(),
-      nControllers,
-      true
-    );
+        /* Create empty automaton with capacities that should prevent the need to re-create the body file */
 
-      /* Generate events */
-
-    for (int i = 1; i <= nEvents; i++) {
-
-      // Update progress bar
-      updateProgressBar(i, nTotalTasks, progressBar);
-
-      boolean[] observability = new boolean[nControllers],
-                controllability = new boolean[nControllers];
-
-      for (int j = 0; j < nControllers; j++) {
-        observability[j]   = generateBoolean();
-        controllability[j] = generateBoolean();
-      }
-
-      int id = automaton.addEvent(generateEventLabel(i, nEvents), observability, controllability);
-      if (id == 0)
-          System.err.println("ERROR: Event could not be added.");
-
-    }
-
-      /* Generate states */
-
-    {
-      long initialStateID = generateLong(1, nStates);
-      for (int i = 1; i <= nStates; i++) {
-
-      // Update progress bar
-      updateProgressBar(nEvents + i, nTotalTasks, progressBar);
-
-        long id = automaton.addState(String.valueOf(i), generateBoolean(), i == initialStateID);
-        if (id == 0)
-          System.err.println("ERROR: State could not be added.");
-      }
-    }
-
-      /* Generate transitions */
-
-    for (long s = 1; s <= nStates; s++) {
-
-      // Update progress bar
-      updateProgressBar(nEvents + nStates + s, nTotalTasks, progressBar);
-
-      int nTransitions = generateInt(minTransitionsPerState, maxTransitionsPerState);
-      for (int i = 0; i < nTransitions; i++) {
-
-        int eventID;
-        long targetStateID;
-
-        // Ensure that we don't produce any duplicates
-        do {
-          eventID = generateInt(1, nEvents);
-          targetStateID = generateLong(1, nStates);
-        } while (automaton.transitionExists(s, eventID, targetStateID));
-
-        automaton.addTransition(s, eventID, targetStateID);
-      }
-    }
-
-      /* Add bad transitions */
-
-    for (int i = 0; i < nBadTransitions; i++) {
-
-      // Update progress bar
-      updateProgressBar(nEvents + (nStates * 2) + i, nTotalTasks, progressBar);
-
-      while (true) {
-
-        long initialStateID = generateLong(1, nStates);
-        java.util.List<Transition> transitions = automaton.getState(initialStateID).getTransitions();
-
-        // There needs to be at least one transition
-        if (transitions.size() == 0)
-          continue;
-
-        Transition transition = transitions.get(generateInt(0, transitions.size() - 1));
-
-        // Mark this one as bad, as long as it isn't already a bad transition
-        if (!automaton.isBadTransition(initialStateID, transition.getEvent().getID(), transition.getTargetStateID())) {
-          automaton.markTransitionAsBad(initialStateID, transition.getEvent().getID(), transition.getTargetStateID());
-          break;
-        }
-
-      }
-
-    }
-
-      /* Test properties */
-
-    // If the observability or controllability properties are not satisfied, then try again
-    // NOTE: The controllability test is done first since it is less expensive
-    if (!automaton.testControllability() || !automaton.testObservability()) {
-      return generateRandom(
+      automaton = new Automaton(
         headerFile,
         bodyFile,
         nEvents,
         nStates,
-        minTransitionsPerState,
         maxTransitionsPerState,
+        String.valueOf(nStates).length(),
         nControllers,
-        nBadTransitions,
-        progressBar
+        true
       );
+
+        /* Generate events */
+
+      for (int i = 1; i <= nEvents; i++) {
+
+        // Update progress bar
+        updateProgressBar(i, nTotalTasks, progressBar, nAttempts);
+
+        boolean[] observability = new boolean[nControllers],
+                  controllability = new boolean[nControllers];
+
+        for (int j = 0; j < nControllers; j++) {
+          observability[j]   = generateBoolean();
+          controllability[j] = generateBoolean();
+        }
+
+        int id = automaton.addEvent(generateEventLabel(i, nEvents), observability, controllability);
+        if (id == 0)
+            System.err.println("ERROR: Event could not be added.");
+
+      }
+
+        /* Generate states */
+
+      {
+        long initialStateID = generateLong(1, nStates);
+        for (int i = 1; i <= nStates; i++) {
+
+        // Update progress bar
+        updateProgressBar(nEvents + i, nTotalTasks, progressBar, nAttempts);
+
+          long id = automaton.addState(String.valueOf(i), generateBoolean(), i == initialStateID);
+          if (id == 0)
+            System.err.println("ERROR: State could not be added.");
+        }
+      }
+
+        /* Generate transitions */
+
+      for (long s = 1; s <= nStates; s++) {
+
+        // Update progress bar
+        updateProgressBar(nEvents + nStates + s, nTotalTasks, progressBar, nAttempts);
+
+        int nTransitions = generateInt(minTransitionsPerState, maxTransitionsPerState);
+        for (int i = 0; i < nTransitions; i++) {
+
+          int eventID;
+          long targetStateID;
+
+          // Ensure that we don't produce any duplicates
+          do {
+            eventID = generateInt(1, nEvents);
+            targetStateID = generateLong(1, nStates);
+          } while (automaton.transitionExists(s, eventID, targetStateID));
+
+          automaton.addTransition(s, eventID, targetStateID);
+        }
+      }
+
+        /* Add bad transitions */
+
+      for (int i = 0; i < nBadTransitions; i++) {
+
+        // Update progress bar
+        updateProgressBar(nEvents + (nStates * 2) + i, nTotalTasks, progressBar, nAttempts);
+
+        while (true) {
+
+          long initialStateID = generateLong(1, nStates);
+          java.util.List<Transition> transitions = automaton.getState(initialStateID).getTransitions();
+
+          // There needs to be at least one transition
+          if (transitions.size() == 0)
+            continue;
+
+          Transition transition = transitions.get(generateInt(0, transitions.size() - 1));
+
+          // Mark this one as bad, as long as it isn't already a bad transition
+          if (!automaton.isBadTransition(initialStateID, transition.getEvent().getID(), transition.getTargetStateID())) {
+            automaton.markTransitionAsBad(initialStateID, transition.getEvent().getID(), transition.getTargetStateID());
+            break;
+          }
+
+        }
+
+      }
+
+        /* Test properties */
+
+      // Observability is the only epxensive test, controllability is trivial
+      final int currentNumberOfAttempts = nAttempts;
+      EventQueue.invokeLater(new Runnable() {
+          @Override public void run() {
+            progressBar.setString("Attempt #" + currentNumberOfAttempts + ": Testing Observability...");
+            progressBar.setValue(100);
+            progressBar.repaint();
+          }
+        });
+
+      // If the observability or controllability properties are both satisfied, then we are done
+      // NOTE: The controllability test is done first since it is less expensive
+      if (automaton.testControllability() && automaton.testObservability())
+        break;
+
+      nAttempts++;
+
     }
 
       /* Ensure that the header file has been written to disk */
@@ -176,10 +183,12 @@ public abstract class AutomatonGenerator<T> {
    * @param nTasksComplete  The number of tasks that have already been completed
    * @param nTotalTasks     The total number of tasks that need to be done
    * @param progressBar     The progress bar that is being updated
+   * @param nAttempts       The number of automata that had to be generated so far
    **/
   private static void updateProgressBar(long nTasksComplete,
                                         long nTotalTasks,
-                                        final JProgressBar progressBar) {
+                                        final JProgressBar progressBar,
+                                        final int nAttempts) {
     
     if (progressBar != null) {
 
@@ -188,7 +197,7 @@ public abstract class AutomatonGenerator<T> {
       if (newValue != progressBar.getValue())
         EventQueue.invokeLater(new Runnable() {
           @Override public void run() {
-            progressBar.setString(newValue + "%");
+            progressBar.setString("Attempt #" + nAttempts + ": " + newValue + "%");
             progressBar.setValue(newValue);
             progressBar.repaint();
           }

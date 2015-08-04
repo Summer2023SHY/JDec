@@ -1908,6 +1908,8 @@ public class JDec extends JFrame implements ActionListener {
      **/
     public void refreshGUI() {
 
+      // System.out.println("Starting refresh...");
+      // long s = System.currentTimeMillis();
       automaton.generateInputForGUI();
 
       controllerInput.setValue(
@@ -1918,6 +1920,7 @@ public class JDec extends JFrame implements ActionListener {
       eventInput.setText(automaton.getEventInput());
       stateInput.setText(automaton.getStateInput());
       transitionInput.setText(automaton.getTransitionInput());
+      // System.out.println("Finished in " + (System.currentTimeMillis() - s) + "ms.");
 
     }
 
