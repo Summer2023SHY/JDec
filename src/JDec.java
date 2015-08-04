@@ -365,7 +365,7 @@ public class JDec extends JFrame implements ActionListener {
 
           /* Prompt user to save */
 
-        if (askForConfirmation("Are you sure you want to exit? Any unsaved information will be lost.", "Unsaved Information"))
+        if (askForConfirmation("Unsaved Information", "Are you sure you want to exit? Any unsaved information will be lost."))
           System.exit(0);
 
       }
@@ -630,7 +630,7 @@ public class JDec extends JFrame implements ActionListener {
 
         // Display warning message, and abort the operation if requested
         if (uStructure.getSizeOfPotentialAndNashCommunications() > 0)
-          if (!askForConfirmation("This U-Structure appears to already have had communications added. Are you sure you want to proceed? WARNING: This may result in duplicate communications.", "Communications Already Exist"))  
+          if (!askForConfirmation("Communications Already Exist", "This U-Structure appears to already have had communications added. Are you sure you want to proceed? WARNING: This may result in duplicate communications."))  
             break;
 
         fileName = getTemporaryFileName();
@@ -804,7 +804,7 @@ public class JDec extends JFrame implements ActionListener {
         message += "Any un-generated GUI input code will be lost.";
 
       // Confirm that the user wants to proceed
-      if (!askForConfirmation(message, "Unsaved Information"))
+      if (!askForConfirmation("Unsaved Information", message))
         return;
 
     }
@@ -984,8 +984,6 @@ public class JDec extends JFrame implements ActionListener {
 
   /**
    * Generate a random automaton with the specified properties.
-   * @param headerFile              The name of the header file where the automaton will be stored
-   * @param bodyFile                The name of the body file where the automaton will be stored
    * @param nEvents                 The number of events to be generated in the automaton
    * @param nStates                 The number of states to be generated in the automaton
    * @param minTransitionsPerState  The minimum number of outgoing transitions per state
@@ -1429,11 +1427,11 @@ public class JDec extends JFrame implements ActionListener {
 
   /**
    * Given a title and a message, ask the user for confirmation, returning the result.
+   * @param title   The title to display on the dialog box
    * @param message The message to display in the dialog box
-   * @param message The title to display on the dialog box
    * @return        True if the user selected "Yes", false if the user selected "No"
    **/
-  private boolean askForConfirmation(String message, String title) {
+  private boolean askForConfirmation(String title, String message) {
 
     String buttons[] = { "Yes", "No" };
     
@@ -1951,7 +1949,7 @@ public class JDec extends JFrame implements ActionListener {
     /**
      * Check to see if this tab is using temporary files.
      * NOTE: This method assumes that both the .hdr and .bdy file are found in the same directory.
-     * @return
+     * @return  Whether or not the tab is using temporary files to store the automaton
      **/
     public boolean usingTemporaryFiles() {
 
