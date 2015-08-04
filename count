@@ -1,0 +1,10 @@
+#!/bin/sh
+
+echo "Including empty lines:"
+cat src/* | wc -l
+
+echo "Excluding empty lines:"
+cat src/* | grep -v -e '^$' | wc -l
+
+echo "Excluding empty lines and single-line comments"
+cat src/* | grep -v -e '^$' | grep -v '//' | wc -l
