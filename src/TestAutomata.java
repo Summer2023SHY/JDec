@@ -55,7 +55,8 @@ public class TestAutomata {
     counter.add(runStateCreationTestRoutine());
     counter.add(runAutomatonCapacityTestRoutine());
     counter.add(runGuiInputTestRoutine());
-    counter.add(runAutomataOperationsTestRoutine());
+    counter.add(runAutomataStandardOperationsTestRoutine());
+    counter.add(runAutomataSpecialOperationsTestRoutine());
     counter.add(runAutomataPropertiesTestRoutine());
   	counter.add(runExceptionHandlingTestRoutine());
 
@@ -564,9 +565,9 @@ public class TestAutomata {
 
   }
 
-  private static TestCounter runAutomataOperationsTestRoutine() {
+  private static TestCounter runAutomataStandardOperationsTestRoutine() {
 
-    String testRoutineName = "AUTOMATA OPERATIONS";
+    String testRoutineName = "AUTOMATA STANDARD OPERATIONS";
 
     printTestOutput("RUNNING " + testRoutineName + " TEST ROUTINE...", 1);
 
@@ -829,6 +830,22 @@ public class TestAutomata {
       counter.increment(false);
       System.out.println(RED + "\t\t\t*** FAILED 3 TESTS DUE TO EXCEPTION ***" + RESET);
     }
+
+    /* Print summary of this test routine */
+
+    printTestRoutineSummary(testRoutineName, counter);
+
+    return counter;
+
+  }
+
+  private static TestCounter runAutomataSpecialOperationsTestRoutine() {
+
+    String testRoutineName = "AUTOMATA SPECIAL OPERATIONS";
+
+    printTestOutput("RUNNING " + testRoutineName + " TEST ROUTINE...", 1);
+
+    TestCounter counter = new TestCounter();
 
       /* Synchronized Composition Operation Tests */
 
