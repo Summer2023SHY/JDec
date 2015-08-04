@@ -1,7 +1,7 @@
 HOURS:
 Saturday, August 1: 2 hours
 Sunday, August 2: 2 hours
-Monday, August 3: 5 hours, 7:04 - 
+Monday, August 3: 6 hours, 8:35 -  
 
 JAVADOC TO-DO LIST:
   
@@ -19,7 +19,6 @@ QUESTIONS:
 SHORT-TERM:
 
   -what should the U-structure look like when there were loops in the system automaton? Consider this small example with event "a", state "1", and transition "1,a,1". Shouldn't there be a self-loop in the U-structure?
-  -bug: when generating image in graphviz, if there is both a normal transition and a bad transition coming from and going to the same state, there should be separate lines for them (otherwise it looks like both transitions are bad transitions!). The same logic could apply for when we have more than one violation in the same spot (make 2 separate arrows).
   -mark disablement decisions in the u-structure and crush with a dotted line:
     U-Structure: If the transition is bad in the 0th position, and bad for all of the controllers that control the outgoing event, then that transition represents a pure disablement decision
     Crush: If the .............? Re-read email...
@@ -32,6 +31,7 @@ SHORT-TERM:
   -In Automaton::addState(), there is the potential for 3 calls to recreateBinaryFile. This should be combined into one call.
 
   POTENTIAL:
+  -Multiple violations on the same transition are not properly drawn in graphviz (we should draw them as two separate transitions)
   -Warning message when saving in GUI to overwrite files
   -There are 3 tooltips left to go in the XML file (from the buttons to generate the image, view image, and generate automaton)
   -Co-acessible warning message if there are no marked states

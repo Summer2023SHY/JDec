@@ -1508,21 +1508,46 @@ public class Automaton {
           str.append(String.format("\"_%s\" [peripheries=2,label=\"%s\"];", stateLabel, stateLabel));
         else
           str.append(String.format("\"_%s\" [peripheries=1,label=\"%s\"];", stateLabel, stateLabel));
-
-        // Draw each of its transitions
+        
+        // Find and draw all of the special transitions 
         ArrayList<Transition> transitionsToSkip = new ArrayList<Transition>();
+        for (Transition t : state.getTransitions()) {
+
+          State targetState = getStateExcludingTransitions(t.getTargetStateID());
+
+          // Check to see if this transition has additional properties (meaning it's a special transition)
+          String key = "" + state.getLabel() + " " + targetState.getLabel() + " " + t.getEvent().getID();
+          String properties = additionalEdgeProperties.get(key);
+
+          if (properties != null) {
+
+            transitionsToSkip.add(t);
+
+            String edge = "\"_" + stateLabel + "\" -> \"_" + formatStateLabel(targetState) + "\"";
+            str.append(edge);
+            str.append(" [label=\"" + t.getEvent().getLabel() + "\"");
+            str.append(properties);
+            str.append("];");
+          
+          }
+        }
+
+        // Draw all of the remaining (normal) transitions
         for (Transition t1 : state.getTransitions()) {
 
           // Skip it if this was already taken care of (grouped into another transition going to the same target state)
           if (transitionsToSkip.contains(t1))
             continue;
 
-          String label = "";
+          // Start building the label
+          String label = t1.getEvent().getLabel();
+          transitionsToSkip.add(t1);
 
-          // Look for all transitions that can be group with this one (for simplicity of code, this will also include 't1')
+          // Look for all transitions that can be grouped with this one
           for (Transition t2 : state.getTransitions()) {
 
-            // Skip it if this was already taken care of (grouped into another transition going to the same target state)
+            // Skip it if this was already taken care of (grouped into another transition going to
+            // the same target state)
             if (transitionsToSkip.contains(t2))
               continue;
 
@@ -1537,14 +1562,8 @@ public class Automaton {
           // Add transition
           String edge = "\"_" + stateLabel + "\" -> \"_" + formatStateLabel(getStateExcludingTransitions(t1.getTargetStateID())) + "\"";
           str.append(edge);
-          str.append(" [label=\"" + label.substring(1) + "\"");
+          str.append(" [label=\"" + label + "\"]");
 
-          // Add additional properties (if applicable)
-          String properties = additionalEdgeProperties.get(edge);
-          if (edge != null)
-            str.append(properties);
-
-          str.append("];");
         }
 
       }
@@ -1660,11 +1679,11 @@ public class Automaton {
   protected void addAdditionalEdgeProperties(Map<String, String> map) {
 
     for (TransitionData t : badTransitions) {
-      String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-      if (map.containsKey(edge))
-        map.put(edge, map.get(edge) + ",style=dotted");
+      String str = "" + getState(t.initialStateID).getLabel() + " " + getStateExcludingTransitions(t.targetStateID).getLabel() + " " + t.eventID;
+      if (map.containsKey(str))
+        map.put(str, map.get(str) + ",style=dotted");
       else
-        map.put(edge, ",style=dotted"); 
+        map.put(str, ",style=dotted"); 
     }
     
   }

@@ -1240,35 +1240,35 @@ public class UStructure extends Automaton {
   @Override protected void addAdditionalEdgeProperties(Map<String, String> map) {
 
     for (TransitionData t : unconditionalViolations) {
-      String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-      if (map.containsKey(edge))
-        map.put(edge, map.get(edge) + ",color=red");
+      String str = "" + getState(t.initialStateID).getLabel() + " " + getStateExcludingTransitions(t.targetStateID).getLabel() + " " + t.eventID;
+      if (map.containsKey(str))
+        map.put(str, map.get(str) + ",color=red");
       else
-        map.put(edge, ",color=red"); 
+        map.put(str, ",color=red"); 
     }
 
     for (TransitionData t : conditionalViolations) {
-      String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-      if (map.containsKey(edge))
-        map.put(edge, map.get(edge) + ",color=green3");
+      String str = "" + getState(t.initialStateID).getLabel() + " " + getStateExcludingTransitions(t.targetStateID).getLabel() + " " + t.eventID;
+      if (map.containsKey(str))
+        map.put(str, map.get(str) + ",color=green3");
       else
-        map.put(edge, ",color=green3"); 
+        map.put(str, ",color=green3"); 
     }
 
     for (TransitionData t : potentialCommunications) {
-      String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-      if (map.containsKey(edge))
-        map.put(edge, map.get(edge) + ",color=blue,fontcolor=blue");
+      String str = "" + getState(t.initialStateID).getLabel() + " " + getStateExcludingTransitions(t.targetStateID).getLabel() + " " + t.eventID;
+      if (map.containsKey(str))
+        map.put(str, map.get(str) + ",color=blue,fontcolor=blue");
       else
-        map.put(edge, ",color=blue,fontcolor=blue"); 
+        map.put(str, ",color=blue,fontcolor=blue"); 
     }
 
     for (TransitionData t : nashCommunications) {
-      String edge = "\"_" + getState(t.initialStateID).getLabel() + "\" -> \"_" + getStateExcludingTransitions(t.targetStateID).getLabel() + "\"";
-      if (map.containsKey(edge))
-        map.put(edge, map.get(edge) + ",color=blue,fontcolor=blue");
+      String str = "" + getState(t.initialStateID).getLabel() + " " + getStateExcludingTransitions(t.targetStateID).getLabel() + " " + t.eventID;
+      if (map.containsKey(str))
+        map.put(str, map.get(str) + ",color=blue,fontcolor=blue");
       else
-        map.put(edge, ",color=blue,fontcolor=blue"); 
+        map.put(str, ",color=blue,fontcolor=blue"); 
     }
 
   }
