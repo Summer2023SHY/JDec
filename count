@@ -6,5 +6,5 @@ cat src/* | wc -l
 echo "Excluding empty lines:"
 cat src/* | grep -v -e '^$' | wc -l
 
-echo "Excluding empty lines and single-line comments"
-cat src/* | grep -v -e '^$' | grep -v '//' | wc -l
+echo "Excluding empty lines and comments"
+cat src/* | grep -v -e '^$' | grep -v '^[[:space:]]*//' | grep -v '^[[:space:]]*/*[[:space:]]*\*' | wc -l
