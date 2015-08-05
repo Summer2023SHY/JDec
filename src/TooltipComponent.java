@@ -5,6 +5,7 @@
  **/
 
 import java.awt.*;
+import java.awt.event.*;
 import javax.swing.*;
 
 public class TooltipComponent extends JPanel {
@@ -32,9 +33,9 @@ public class TooltipComponent extends JPanel {
 
       /* Create tool-tip */
 
-    JButton openTooltip = new JButton("?");
-    openTooltip.setFocusable(false);
-    openTooltip.setToolTipText(tooltipText);
+    JButton tooltip = new JButton("?");
+    tooltip.setFocusable(false);
+    tooltip.setToolTipText(tooltipText);
 
       /* Position components */
 
@@ -43,7 +44,7 @@ public class TooltipComponent extends JPanel {
     
     // Hide the '?' button if there is no text to display
     if (tooltipText != null)
-      add(openTooltip, BorderLayout.WEST);
+      add(tooltip, BorderLayout.WEST);
 
   }
 

@@ -69,8 +69,8 @@ public abstract class AutomatonGenerator<T> {
         // Update progress bar
         updateProgressBar(i, nTotalTasks, progressBar, nAttempts);
 
-        boolean[] observability = new boolean[nControllers],
-                  controllability = new boolean[nControllers];
+        boolean[] observability   = new boolean[nControllers];
+        boolean[] controllability = new boolean[nControllers];
 
         for (int j = 0; j < nControllers; j++) {
           observability[j]   = generateBoolean();

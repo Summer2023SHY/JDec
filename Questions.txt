@@ -3,7 +3,7 @@ Saturday, August 1: 2 hours
 Sunday, August 2: 2 hours
 Monday, August 3: 7 hours
 Tuesday, August 4: 5 hours
-Wednesday, August 5: 6:59 - 
+Wednesday, August 5: 1 hour 15 minutes, 8:54 - 
 
 JAVADOC TO-DO LIST:
   
@@ -20,6 +20,7 @@ QUESTIONS:
 
 SHORT-TERM:
 
+  -tooltips dissapear when button is clicked
   -what should the U-structure look like when there were loops in the system automaton? Consider this small example with event "a", state "1", and transition "1,a,1". Shouldn't there be a self-loop in the U-structure?
   -mark disablement decisions in the u-structure and crush with a dotted line:
     U-Structure: If the transition is bad in the 0th position, and bad for all of the controllers that control the outgoing event, then that transition represents a pure disablement decision

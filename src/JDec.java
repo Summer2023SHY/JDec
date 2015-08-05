@@ -390,6 +390,12 @@ public class JDec extends JFrame implements ActionListener {
     // Show screen
     setVisible(true);
 
+    // Make tooltips appear instantly when the user hovers over them
+    ToolTipManager.sharedInstance().setInitialDelay(0);
+
+    // Makes tooltips stay longer (default is only 4 seconds)
+    ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
+
   }
 
     /* ACTIONS */
