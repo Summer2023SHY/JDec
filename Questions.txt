@@ -3,19 +3,22 @@ Saturday, August 1: 2 hours
 Sunday, August 2: 2 hours
 Monday, August 3: 7 hours
 Tuesday, August 4: 5 hours
-Wednesday, August 5: 1 hour 15 minutes, 8:54 - 
+Wednesday, August 5: 4 hours 15 minutes, 6:58 -  
 
 JAVADOC TO-DO LIST:
   
   TestAutomata.java
 
-QUESTIONS:
-  -Discuss what conditional co-observability is.....
+THURSDAY:
   -I'm still trying to wrap my head around disablement decisions - sent email
   -Do generated automata need to be accessible? - if it does, that complicates things..
-  -how far into the program can a user get with an uncontrollable system?
+  -look at my presentation
+  -Discuss what conditional co-observability is.....
   -where do we need to make notes about cyclic vs. acyclic??
+  
+QUESTIONS:
   -Are there any small examples using 3 controllers that do not blow up very large and are easily verifiable? (I'm looking for a good test case)
+  -how far into the program can a user get with an uncontrollable system?
   -For the observer automaton, if at least one state is marked, does that mean that the entire group of states will be marked in the observer (Figure 2.22 on pg. 89)?
 
 SHORT-TERM:
@@ -32,6 +35,8 @@ SHORT-TERM:
   -option to manually load GUI input code for large automata (alternatively, we could have a screen with automaton stats and list of events, basically everything that is in the header file)
 
   POTENTIAL:
+  -Create settings: "overlap=scale;" should be an option for the user since it makes a drastic difference in the output of the graphs
+  -File->Open Recent menu
   -In Automaton::addState(), there is the potential for 3 calls to recreateBinaryFile. This should be combined into one call.
   -currently regenerating uStructures when clicking "Generate Automaton" button (but they were already generated before when testing for feasibility, so we should store them). NOTE: While this would be more efficient, I do not see a clean way of implementing it
   -Multiple violations on the same transition are not properly drawn in graphviz (we should draw them as two separate transitions)

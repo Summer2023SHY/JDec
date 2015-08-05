@@ -691,17 +691,17 @@ public class JDec extends JFrame implements ActionListener {
       case "Test Observability":
 
         if (tab.automaton.testObservability())
-          displayMessage("Observability Test", "The system is observable.", JOptionPane.INFORMATION_MESSAGE);
+          displayMessage("Passed Test", "The system is observable.", JOptionPane.INFORMATION_MESSAGE);
         else
-          displayMessage("Observability Test", "The system is not observable.", JOptionPane.INFORMATION_MESSAGE);
+          displayMessage("Failed Test", "The system is not observable.", JOptionPane.INFORMATION_MESSAGE);
         break;
 
       case "Test Controllability":
 
         if (tab.automaton.testControllability())
-          displayMessage("Controllability Test", "The system is controllable.", JOptionPane.INFORMATION_MESSAGE);
+          displayMessage("Passed Test", "The system is controllable.", JOptionPane.INFORMATION_MESSAGE);
         else
-          displayMessage("Controllability Test", "The system is not controllable.", JOptionPane.INFORMATION_MESSAGE);
+          displayMessage("Failed Test", "The system is not controllable.", JOptionPane.INFORMATION_MESSAGE);
         break;
 
       case "Random Automaton":
@@ -972,13 +972,16 @@ public class JDec extends JFrame implements ActionListener {
         tab.canvas.setImage(null);
 
       // Try to create graph image, displaying it on the screen
-      else if (tab.automaton.generateImage(imageSize, Automaton.OutputMode.ALL, destinationFileName))
+      else if (tab.automaton.generateImage(imageSize, destinationFileName))
         tab.canvas.setImage(tab.automaton.loadImageFromFile(destinationFileName + ".png"));
 
       // Display error message
       else
         displayErrorMessage("Error", "Something went wrong while trying to generate and display the image. NOTE: It may be the case that you do not have X11 installed.");
     
+    } catch (SegmentationFaultException e) {
+      displayErrorMessage("GraphViz Failed", "GraphViz encountered a segmentation fault, so the .PNG image was unable to be generated.\nFortunately, the .SVG image was likely able to be generated. Click 'View Image in Browser' to see it.");
+
     } catch (MissingDependencyException e) {
       displayErrorMessage("Missing Dependency", "Please ensure that GraphViz is installed, with its directory added to the PATH environment variable.");
     
@@ -1128,6 +1131,7 @@ public class JDec extends JFrame implements ActionListener {
     boolean enabled = (
       index >= 0
       && tabs.get(index).type == Automaton.Type.AUTOMATON
+      && tabs.get(index).automaton != null
     );
     
     // Enabled/disable all components in the list
@@ -1147,6 +1151,7 @@ public class JDec extends JFrame implements ActionListener {
     boolean enabled = (
       index >= 0
       && tabs.get(index).type == Automaton.Type.U_STRUCTURE
+      && tabs.get(index).automaton != null
     );
     
     // Enabled/disable all components in the list
@@ -1166,6 +1171,7 @@ public class JDec extends JFrame implements ActionListener {
     boolean enabled = (
       index >= 0
       && tabs.get(index).type == Automaton.Type.PRUNED_U_STRUCTURE
+      && tabs.get(index).automaton != null
     );
     
     // Enabled/disable all components in the list
@@ -1185,6 +1191,7 @@ public class JDec extends JFrame implements ActionListener {
     boolean enabled = (
       index >= 0
       && (tabs.get(index).type == Automaton.Type.PRUNED_U_STRUCTURE || tabs.get(index).type == Automaton.Type.U_STRUCTURE)
+      && tabs.get(index).automaton != null
     );
     
     // Enabled/disable all components in the list
@@ -1354,7 +1361,7 @@ public class JDec extends JFrame implements ActionListener {
       AutomatonTab tab = tabs.get(i);
         
       // Skip automaton
-      if (i == indexToSkip || tab.headerFile == null)
+      if (i == indexToSkip || tab.automaton == null)
         continue;
 
       // Add automaton to list of options

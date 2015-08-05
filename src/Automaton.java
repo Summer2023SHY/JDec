@@ -12,7 +12,7 @@
  *  -Class Constants
  *  -Class Variables
  *  -Instance Variables
- *  -Enums
+ *  -Automaton Type Enum
  *  -Constructors
  *  -Automata Operations
  *  -Automata Operations Helper Methods
@@ -70,9 +70,6 @@ public class Automaton {
   /** This is the directory used to hold all temporary files. */
   protected static final File TEMPORARY_DIRECTORY = new File("Automaton_Temporary_Files");
 
-  /** This is the location of the file where the DOT output is being placed during image generation */
-  protected static final String DOT_OUTPUT_FILE_NAME = TEMPORARY_DIRECTORY + "/out.tmp";
-
     /* CLASS VARIABLES */
 
   protected static int temporaryFileIndex = 1;
@@ -115,22 +112,8 @@ public class Automaton {
   protected StringBuilder eventInputBuilder;
   protected StringBuilder stateInputBuilder;
   protected StringBuilder transitionInputBuilder;
-
-    /* ENUMS */
-
-  /** Image of automaton can be formatted as either .png or .svg. */
-  public static enum OutputMode {
-
-    /** Output the image of the graph as .png. NOTE: The image size is limited since this image is intended for the GUI. */
-    PNG,
-
-    /** Output the image of the graph as .svg, which is an XML-based format. The image is blown up so that no nodes overlap. */
-    SVG,
-
-    /** Output the image of the graph in all possible formats. */
-    ALL;
-
-  }
+ 
+    /* AUTOMATON TYPE ENUM */
 
   /** The automaton type is directly correlated to the class of the instantiated Automaton */
   public static enum Type {
@@ -1471,8 +1454,11 @@ public class Automaton {
    * @return                            Whether or not the output was successfully generated
    * @throws MissingOrCorruptBodyFile   If any of the states are unable to be read from the body file
    * @throws MissingDependencyException If GraphViz is not installed and/or its directory has been added to the PATH variable
+   * @throws SegmentationFaultException If GraphViz encountered a segmentaiton fault and was unable to generated the .PNG file
    **/
-  public boolean generateImage(int size, OutputMode mode, String outputFileName) throws MissingOrCorruptBodyFileException, MissingDependencyException {
+  public boolean generateImage(int size, String outputFileName) throws MissingOrCorruptBodyFileException,
+                                                                       MissingDependencyException,
+                                                                       SegmentationFaultException {
 
       /* Setup */
 
@@ -1480,13 +1466,7 @@ public class Automaton {
     str.append("digraph Image {");
     str.append("node [shape=circle, style=bold, constraint=false];");
 
-      /* Constrain the size of the image if it's a PNG (since we will be displaying it on the GUI) */
-
-    if (mode == OutputMode.PNG) {
-      double inches = ((double) size) / 96.0; // Assuming DPI is 96
-      str.append("size=\"" + inches + "," + inches + "\";");
-      str.append("ratio=fill;");
-    }
+    str.append("overlap=scale;");
 
     try {
 
@@ -1586,52 +1566,45 @@ public class Automaton {
 
     try {
 
-      // Create temporary directory if it does not exist
-      if (!TEMPORARY_DIRECTORY.exists())
-        TEMPORARY_DIRECTORY.mkdirs();
-
       // Write DOT language to file
-      PrintStream out = new PrintStream(new FileOutputStream(DOT_OUTPUT_FILE_NAME));
-      out.print(str.toString());
+      new PrintStream(new FileOutputStream(outputFileName + ".dot")).print(str.toString());
 
-      // Produce PNG from DOT language
-      Process process = null;
-
-      if (mode == OutputMode.SVG) 
-        process = new ProcessBuilder(
-          (nStates > 100) ? "neato": "dot",
-          "-Goverlap=scale",
-          "-Tsvg",
-          DOT_OUTPUT_FILE_NAME,
-          "-o",
-          outputFileName + ".svg"
-        ).start();
-
-      else if (mode == OutputMode.PNG)
-        process = new ProcessBuilder(
-          (nStates > 100) ? "neato": "dot",
-          "-Tpng",
-          DOT_OUTPUT_FILE_NAME,
-          "-o",
-          outputFileName + ".png"
-        ).start();
-      
-      else if (mode == OutputMode.ALL)
-        process = new ProcessBuilder(
-          (nStates > 100) ? "neato": "dot",
-          DOT_OUTPUT_FILE_NAME,
-          "-Tpng",
-          "-o",
-          outputFileName + ".png",
-          "-Tsvg",
-          "-o",
-          outputFileName + ".svg"
-        ).start();
+      // Produce image from DOT language
+      Process process = new ProcessBuilder(
+        (nStates > 100) ? "neato": "dot",
+        outputFileName + ".dot",
+        "-Tpng",
+        "-o",
+        outputFileName + ".png",
+        "-Tsvg",
+        "-o",
+        outputFileName + ".svg"
+      ).start();
 
       // Wait for it to finish
-      if (process.waitFor() != 0) {
-        System.err.println("ERROR: GraphViz failed to generate image of graph. Check to ensure that X11 is installed.");
-        return false;
+      int exitValue;
+      if ((exitValue = process.waitFor()) != 0) {
+
+        if (exitValue == 139) {
+          System.err.println("ERROR: GraphViz failed to generate .PNG image of graph due to a segmentation fault.");
+        
+          // For some reason, this seems to work when generating both .SVG and .PNG doesn't
+          process = new ProcessBuilder(
+            (nStates > 100) ? "neato": "dot",
+            "-Tsvg",
+            outputFileName + ".dot",
+            "-o",
+            outputFileName + ".svg"
+          ).start();
+
+          throw new SegmentationFaultException();
+        
+        // If there is some other error, it is likely that X11 is missing
+        } else {
+          System.err.println("ERROR: GraphViz failed to generate image of graph. Check to ensure that X11 is installed.");
+          return false;
+        }
+        
       }
 
     } catch (IOException e) {
