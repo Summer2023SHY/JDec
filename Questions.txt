@@ -2,7 +2,8 @@ HOURS:
 Saturday, August 1: 2 hours
 Sunday, August 2: 2 hours
 Monday, August 3: 7 hours
-Tuesday, August 4: 1 hour 50 minutes, 8:55 - 
+Tuesday, August 4: 5 hours
+Wednesday, August 5: 6:59 - 
 
 JAVADOC TO-DO LIST:
   
@@ -10,8 +11,8 @@ JAVADOC TO-DO LIST:
 
 QUESTIONS:
   -Discuss what conditional co-observability is.....
-  -I'm still trying to wrap my head around disablement decisions
-  -Do generated automata need to be accessible?
+  -I'm still trying to wrap my head around disablement decisions - sent email
+  -Do generated automata need to be accessible? - if it does, that complicates things..
   -how far into the program can a user get with an uncontrollable system?
   -where do we need to make notes about cyclic vs. acyclic??
   -Are there any small examples using 3 controllers that do not blow up very large and are easily verifiable? (I'm looking for a good test case)

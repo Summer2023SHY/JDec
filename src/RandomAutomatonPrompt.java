@@ -92,7 +92,7 @@ public class RandomAutomatonPrompt extends JDialog {
     c.gridx = 0; c.gridy = 2;
     add(nStatesLabel, c);
 
-    nStates = new JSpinner(new SpinnerNumberModel(nStatesDefault, 0, Integer.MAX_VALUE, 1)); // The Automaton class can support more states, but SpinnerNumberModel cannot
+    nStates = new JSpinner(new SpinnerNumberModel(nStatesDefault, 1, 1000, 1)); // The observability test is too expensive to deal with more states
     c.gridx = 1; c.gridy = 2;
     add(nStates, c);
 
@@ -110,7 +110,7 @@ public class RandomAutomatonPrompt extends JDialog {
     c.gridx = 0; c.gridy = 4;
     add(maxTransitionsLabel, c);
 
-    maxTransitions = new JSpinner(new SpinnerNumberModel(maxTransitionsDefault, 0, Automaton.MAX_TRANSITION_CAPACITY, 1));
+    maxTransitions = new JSpinner(new SpinnerNumberModel(maxTransitionsDefault, 1, Automaton.MAX_TRANSITION_CAPACITY, 1));
     c.gridx = 1; c.gridy = 4;
     add(maxTransitions, c);
 
@@ -174,6 +174,29 @@ public class RandomAutomatonPrompt extends JDialog {
  
       public void actionPerformed(ActionEvent e) {
 
+        final int nEventsValue         = (Integer) nEvents.getValue();
+        final int nStatesValue         = (Integer) nStates.getValue();
+        final int minTransitionsValue  = (Integer) minTransitions.getValue();
+        final int maxTransitionsValue  = (Integer) maxTransitions.getValue();
+        final int nControllersValue    = (Integer) nControllers.getValue();
+        final int nBadTransitionsValue = (Integer) nBadTransitions.getValue();
+
+        // Ensure that the min. # of transition is not larger than the max. # of transitions
+        if (minTransitionsValue > maxTransitionsValue) {
+          gui.displayErrorMessage("Invalid Input", "The minimum number of transitions per state cannot be larger than the maximum number of transitions per state.");
+          return;
+        }
+
+        if (nBadTransitionsValue > nStatesValue * maxTransitionsValue) {
+          gui.displayErrorMessage("Invalid Input", "The number of bad transitions cannot be larger than the number of states multiplied by the maximum number of transitions per state.");
+          return;
+        }
+
+        if (maxTransitionsValue > nEventsValue) {
+          gui.displayErrorMessage("Invalid Input", "The maximum number of transitions per state cannot be larger than the number of events since we are dealing with deterministic automata.");
+          return;
+        }
+
         progressBar.setVisible(true);
         cancelButton.setVisible(false);
         generateButton.setVisible(false);
@@ -183,12 +206,12 @@ public class RandomAutomatonPrompt extends JDialog {
         new Thread() {
             public void run() {
               gui.generateRandomAutomaton(
-                nEventsDefault         = (Integer) nEvents.getValue(),
-                nStatesDefault         = (Integer) nStates.getValue(),
-                minTransitionsDefault  = (Integer) minTransitions.getValue(),
-                maxTransitionsDefault  = (Integer) maxTransitions.getValue(),
-                nControllersDefault    = (Integer) nControllers.getValue(),
-                nBadTransitionsDefault = (Integer) nBadTransitions.getValue(),
+                nEventsDefault         = nEventsValue,
+                nStatesDefault         = nStatesValue,
+                minTransitionsDefault  = minTransitionsValue,
+                maxTransitionsDefault  = maxTransitionsValue,
+                nControllersDefault    = nControllersValue,
+                nBadTransitionsDefault = nBadTransitionsValue,
                 // observableDefault      = observableCheckBox.isSelected(),
                 // controllableDefault    = controllableCheckBox.isSelected(),
                 progressBar

@@ -100,18 +100,36 @@ public abstract class AutomatonGenerator<T> {
 
         /* Generate transitions */
 
+      int nTransitionsCreated = 0;
       for (long s = 1; s <= nStates; s++) {
 
         // Update progress bar
         updateProgressBar(nEvents + nStates + s, nTotalTasks, progressBar, nAttempts);
 
+        // Choose a random number of transitions
         int nTransitions = generateInt(minTransitionsPerState, maxTransitionsPerState);
+        nTransitionsCreated += nTransitions;
+
+        // Make sure that there is enough transitions to be marked bad
+        // NOTE: These calculations wouldn't work if nStates * maxTransitionsPerState was larger than
+        //       Integer.MAX_VALUE. We can make this assumption since the observability test is expensive,
+        //       so the number of states will be quite limited.
+        int nTransitionsNeeded = nBadTransitions - nTransitionsCreated;
+        int nTransitionsAvailable = (int) (nStates - s) * maxTransitionsPerState;
+        int difference = nTransitionsNeeded - nTransitionsAvailable;
+        if (difference > 0) {
+          nTransitions += difference;
+          nTransitionsCreated += difference;
+        }
+
         for (int i = 0; i < nTransitions; i++) {
 
           int eventID;
           long targetStateID;
 
           // Ensure that we don't produce any duplicates
+          // NOTE: This could be coded more efficiently (using transitionExists() is not as efficient
+          //       as simply keeping track of the transitions generated so far)
           do {
             eventID = generateInt(1, nEvents);
             targetStateID = generateLong(1, nStates);
