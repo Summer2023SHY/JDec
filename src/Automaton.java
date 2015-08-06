@@ -1470,15 +1470,13 @@ public class Automaton {
 
   /**
    * Output this automaton in a format that is readable by GraphViz, then export as requested.
-   * @param size                        The requested width and height in pixels
-   * @param mode                        The output type
    * @param outputFileName              The location to put the generated output
    * @return                            Whether or not the output was successfully generated
    * @throws MissingOrCorruptBodyFile   If any of the states are unable to be read from the body file
    * @throws MissingDependencyException If GraphViz is not installed and/or its directory has been added to the PATH variable
    * @throws SegmentationFaultException If GraphViz encountered a segmentaiton fault and was unable to generated the .PNG file
    **/
-  public boolean generateImage(int size, String outputFileName) throws MissingOrCorruptBodyFileException,
+  public boolean generateImage(String outputFileName) throws MissingOrCorruptBodyFileException,
                                                                        MissingDependencyException,
                                                                        SegmentationFaultException {
 
@@ -1486,9 +1484,8 @@ public class Automaton {
 
     StringBuilder str = new StringBuilder();
     str.append("digraph Image {");
-    str.append("node [shape=circle, style=bold, constraint=false];");
-
     str.append("overlap=scale;");
+    str.append("node [shape=circle, style=bold, constraint=false];");
 
     try {
 

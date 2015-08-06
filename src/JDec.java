@@ -38,10 +38,9 @@ public class JDec extends JFrame implements ActionListener {
 
     /* CLASS CONSTANTS */
 
-  private static final String GUI_DATA_FILE_NAME = "gui.data";
-  private static final File TEMPORARY_DIRECTORY = new File("JDec_Temporary_Files");
-  private static final int imageSize = 800; // This is used to indicate how large to generate the .PNG image
-  public static final int PREFERRED_DIALOG_WIDTH = 500;
+  private static final String GUI_DATA_FILE_NAME  = "gui.data";
+  private static final File TEMPORARY_DIRECTORY   = new File("JDec_Temporary_Files");
+  public static final int PREFERRED_DIALOG_WIDTH  = 500;
   public static final int PREFERRED_DIALOG_HEIGHT = 500;
 
     /* INSTANCE VARIABLES */
@@ -972,7 +971,7 @@ public class JDec extends JFrame implements ActionListener {
         tab.canvas.setImage(null);
 
       // Try to create graph image, displaying it on the screen
-      else if (tab.automaton.generateImage(imageSize, destinationFileName))
+      else if (tab.automaton.generateImage(destinationFileName))
         tab.canvas.setImage(tab.automaton.loadImageFromFile(destinationFileName + ".png"));
 
       // Display error message
@@ -1653,19 +1652,14 @@ public class JDec extends JFrame implements ActionListener {
 
     // GUI elements
     public JSplitPane splitPane;
-    public JTextPane eventInput;
-    public JTextPane stateInput;
-    public JTextPane transitionInput;
+    public JTextPane eventInput, stateInput, transitionInput;
     public JSpinner controllerInput;
-    public JButton generateAutomatonButton;
-    public JButton generateImageButton;
-    public JButton viewImageInBrowserButton;
+    public JButton generateAutomatonButton, generateImageButton, viewImageInBrowserButton;
     public Canvas canvas = null;
 
     // Automaton properties
     public Automaton automaton;
-    public File headerFile;
-    public File bodyFile;
+    public File headerFile, bodyFile;
     public Automaton.Type type;
 
     // Tab properties
@@ -1703,13 +1697,6 @@ public class JDec extends JFrame implements ActionListener {
       splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, inputContainer, canvas);
       splitPane.setOneTouchExpandable(true);
       add(splitPane, BorderLayout.CENTER);
-      // System.out.println(getWidth());
-      // splitPane.setDividerLocation(getWidth() / 2);
-
-      // // Ensure the divider does not get moved to the left side of the screen when the content changes in either of the containers
-      // int location = splitPane.getDividerLocation();
-      // RepaintManager.currentManager(splitPane).validateInvalidComponents();
-      // splitPane.setDividerLocation(location);
 
     }
 
@@ -1750,9 +1737,7 @@ public class JDec extends JFrame implements ActionListener {
       container.add(new TooltipComponent(new JLabel("Enter events:"), getTooltipText("EVENT_INPUT", type)), c);
       
       // Event input box
-      eventInput = new JTextPane();
-      eventInput.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
-      eventInput.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
+      eventInput = createTextPaneWithTraversal();
       JScrollPane eventInputScrollPane = new JScrollPane(eventInput) {
         @Override public Dimension getPreferredSize() {
           return new Dimension(200, 200);  
@@ -1769,9 +1754,7 @@ public class JDec extends JFrame implements ActionListener {
       container.add(new TooltipComponent(new JLabel("Enter states:"), getTooltipText("STATE_INPUT", type)), c);
       
       // State input box
-      stateInput = new JTextPane();
-      stateInput.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
-      stateInput.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
+      stateInput = createTextPaneWithTraversal();
       JScrollPane stateInputScrollPane = new JScrollPane(stateInput) {
         @Override public Dimension getPreferredSize() {
           return new Dimension(200, 200);  
@@ -1790,9 +1773,7 @@ public class JDec extends JFrame implements ActionListener {
       container.add(new TooltipComponent(new JLabel("Enter transitions:"), getTooltipText("TRANSITION_INPUT", type)), c);
       
       // Transition input box
-      transitionInput = new JTextPane();
-      transitionInput.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
-      transitionInput.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
+      transitionInput = createTextPaneWithTraversal();
       JScrollPane transitionInputScrollPane = new JScrollPane(transitionInput) {
         @Override public Dimension getPreferredSize() {
           return new Dimension(200, 200);  
@@ -1850,6 +1831,21 @@ public class JDec extends JFrame implements ActionListener {
       container.add(viewImageInBrowserButton, c);
 
       return container;
+
+    }
+
+    /**
+     * Create a textpane that allows the user to use traversal keys to navigate in between panes.
+     * NOTE: These traversal keys are likely 'Tab' to go forward and 'Shift + Tab' to go backward.
+     * @return  The instantiated textpane with traversal keys added
+     **/
+    private JTextPane createTextPaneWithTraversal() {
+
+      JTextPane pane = new JTextPane();
+      pane.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
+      pane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
+
+      return pane;
 
     }
 
