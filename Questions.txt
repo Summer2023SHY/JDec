@@ -3,29 +3,27 @@ Saturday, August 1: 2 hours
 Sunday, August 2: 2 hours
 Monday, August 3: 7 hours
 Tuesday, August 4: 5 hours
-Wednesday, August 5: 5 hours 40 minutes
-Thursday, August 6: 8:18 -   
+Wednesday, August 5: 5 hours 30 minutes
+Thursday, August 6: 4 hours, 12:30 -   (Expected: 7h30)
+Friday, August 7: (Expected: 6h)
+TOTAL: 
 
 JAVADOC TO-DO LIST:
   
   TestAutomata.java
 
-THURSDAY:
-  -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol
-  
 QUESTIONS:
   -Are there any small examples using 3 controllers that do not blow up very large and are easily verifiable? (I'm looking for a good test case)
   -how far into the program can a user get with an uncontrollable system?
 
 SHORT-TERM:
 
+  -generate u-structure for ricker
+  -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol
   -add buttons to mark special transitions in GUI? (menu options would work great for this! With checkboxes), specifically marking Bad Transitions is useful
-  -what should the U-structure look like when there were loops in the system automaton? Consider this small example with event "a", state "1", and transition "1,a,1". Shouldn't there be a self-loop in the U-structure? Yes there should be! Fix this..
   -Make generated automata accessible
   -NSGA-II algorithm:
-    -For each pareto front, calculate the sparasities:
-      -Each 'end' of a rank is infinitely sparse, 
-  -remove "Figure 3." in powerpoint presentation
+    -Code algorithms 3 and 4
   -lemke-howson file input (specify which pivot or specify "ALL")
   -deploy as jar
   -mark disablement decisions in the u-structure and crush with a dotted line

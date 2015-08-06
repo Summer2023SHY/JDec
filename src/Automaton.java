@@ -1067,11 +1067,11 @@ public class Automaton {
 
         long combinedTargetID = combineIDs(listOfTargetIDs, nStates);
 
+        // Add event
+        automaton.addEventIfNonExisting(combinedEventLabel, new boolean[] {true}, new boolean[] {true} );
+
         // Add state if it doesn't already exist
         if (!automaton.stateExists(combinedTargetID)) {
-
-          // Add event
-          automaton.addEventIfNonExisting(combinedEventLabel, new boolean[] {true}, new boolean[] {true} );
 
           // Add state
           if (!automaton.addStateAt(combinedStateLabel, false, new ArrayList<Transition>(), false, combinedTargetID)) {
@@ -1084,7 +1084,7 @@ public class Automaton {
               stack.push(combinedTargetID);
               valuesInStack.add(combinedTargetID);
           } else
-            System.out.println("DEBUG: Prevented adding of state since it was already in the stack (NOTE: does this ever get printed to the console?).");
+            System.out.println("DEBUG: Prevented adding of state since it was already in the stack (NOTE: Does this ever get printed to the console? Intuitively it should, but I have never seen it before.).");
         }
 
         // Add transition
@@ -1096,7 +1096,7 @@ public class Automaton {
 
       } // for
 
-      // For each unobservable transition in the each controller automata
+      // For each unobservable transition in the each of the controllers of the automaton (including the system)
       outer: for (int i = 0; i < nControllers; i++) {
 
         for (Transition t : listOfStates.get(i + 1).getTransitions()) {
@@ -2526,6 +2526,7 @@ public class Automaton {
           return e.getID();
       }
 
+    System.err.println("ERROR: Could not find the specified event, so the transition was not added.");
     return 0;
 
   }
