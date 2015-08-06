@@ -1,12 +1,5 @@
 HOURS:
-Saturday, August 1: 2 hours
-Sunday, August 2: 2 hours
-Monday, August 3: 7 hours
-Tuesday, August 4: 5 hours
-Wednesday, August 5: 5 hours 30 minutes
-Thursday, August 6: 4 hours, 12:30 -   (Expected: 7h30)
-Friday, August 7: (Expected: 6h)
-TOTAL: 
+Friday, August 7: (Expected: 6h) 7:24 - 
 
 JAVADOC TO-DO LIST:
   
@@ -18,13 +11,11 @@ QUESTIONS:
 
 SHORT-TERM:
 
-  -email CV ASAP!
-  -allow prime symbols as labels in GUI (asked ricker about this)
   -save as button should also move the .dot and .svg and .png files!!
   -change control_down_mask to Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() (http://alvinalexander.com/blog/post/jfc-swing/how-program-apple-command-key-keystroke-java-swing-mac-osx)
   -make GUI input code validation more verbose (console messages won't be visible to the user). Perhaps when they generate an automaton, have a popup containing a scrollview with the lines of input that were not understood?? And tips to correct them? OR BETTER YET: Use a 'syntax' highlighting feel to validate lines of input - see code on my dad's laptop called JavaEditor?
   -work on shapley values! in order to do this, the u-structure must maintain controllable and observable properties
-  -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol
+  -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol - implement this!! Refactor the class which allows the user to pick senders and recievers
   -should the u-structure event properties appear now that we've added them when doing syncrhonized composition?
   -add buttons to mark special transitions in GUI? (menu options would work great for this! With checkboxes), specifically marking Bad Transitions is useful
   -add buttons to add events, add states, and add transitions (maybe little plus icons?)

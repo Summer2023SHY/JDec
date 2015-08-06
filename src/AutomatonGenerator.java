@@ -20,8 +20,9 @@ public abstract class AutomatonGenerator<T> {
     /* RANDOM AUTOMATON GENERATION */
 
   /**
-   * Generate a random automaton with the specified properties.
-   * NOTE: Generated automaton is not guaranteed to be accessible, co-accessible, controllable, or even connected.
+   * Generate a random automaton with the specified properties. The generated automaton is guaranteed to
+   * be both observable and controllable, however is not guaranteed to be accessible, co-accessible, or
+   * even connected.
    * @param headerFile              The name of the header file where the automaton will be stored
    * @param bodyFile                The name of the body file where the automaton will be stored
    * @param nEvents                 The number of events to be generated in the automaton
@@ -47,6 +48,7 @@ public abstract class AutomatonGenerator<T> {
     long nTotalTasks = (long) nEvents + (nStates * 2) + (long) nBadTransitions;
     int nAttempts = 1;
 
+    // Repeat until it passes both the observability and controllability tests
     while (true) {
 
         /* Create empty automaton with capacities that should prevent the need to re-create the body file */
@@ -721,6 +723,7 @@ public abstract class AutomatonGenerator<T> {
       if (!Character.isLetterOrDigit(label.charAt(i))
           && label.charAt(i) != ','
           && label.charAt(i) != '_'
+          && label.charAt(i) != '\''
           && label.charAt(i) != '*'
           && label.charAt(i) != '<'
           && label.charAt(i) != '>')
