@@ -18,9 +18,17 @@ QUESTIONS:
 
 SHORT-TERM:
 
-  -generate u-structure for ricker
+  -email CV ASAP!
+  -allow prime symbols as labels in GUI (asked ricker about this)
+  -save as button should also move the .dot and .svg and .png files!!
+  -fix tooltips in GUI, change toString() to name()
+  -change control_down_mask to Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() (http://alvinalexander.com/blog/post/jfc-swing/how-program-apple-command-key-keystroke-java-swing-mac-osx)
+  -make GUI input code validation more verbose (console messages won't be visible to the user). Perhaps when they generate an automaton, have a popup containing a scrollview with the lines of input that were not understood?? And tips to correct them? OR BETTER YET: Use a 'syntax' highlighting feel to validate lines of input - see code on my dad's laptop called JavaEditor?
+  -work on shapley values! in order to do this, the u-structure must maintain controllable and observable properties
   -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol
+  -should the u-structure event properties appear now that we've added them when doing syncrhonized composition?
   -add buttons to mark special transitions in GUI? (menu options would work great for this! With checkboxes), specifically marking Bad Transitions is useful
+  -add buttons to add events, add states, and add transitions (maybe little plus icons?)
   -Make generated automata accessible
   -NSGA-II algorithm:
     -Code algorithms 3 and 4
