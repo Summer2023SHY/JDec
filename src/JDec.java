@@ -86,7 +86,6 @@ public class JDec extends JFrame implements ActionListener {
    * @param args  Any arguments are simply ignored
    **/  
   public static void main(String[] args) {
-
     System.setProperty("apple.laf.useScreenMenuBar", "true");
     new JDec();
   }
@@ -1482,7 +1481,7 @@ public class JDec extends JFrame implements ActionListener {
       Element element1 = (Element) node1;
       Node node2 = element1.getElementsByTagName(inputBox).item(0);
       Element element2 = (Element) node2;
-      Node node3 = element2.getElementsByTagName(automatonType.toString()).item(0);
+      Node node3 = element2.getElementsByTagName(automatonType.name()).item(0);
       Element element3 = (Element) node3;
 
       // Generate a string of this element and its descendents, including tags
@@ -1492,8 +1491,8 @@ public class JDec extends JFrame implements ActionListener {
       xform.transform(new DOMSource(element3), new StreamResult(buffer));
 
       // Remove the outer tag, trim it, then return it
-      String startTag = "<" + automatonType.toString() + ">";
-      String endTag = "</" + automatonType.toString() + ">";
+      String startTag = "<" + automatonType.name() + ">";
+      String endTag = "</" + automatonType.name() + ">";
       return buffer.toString().replace(startTag, "").replace(endTag, "").trim();
 
     } catch (NullPointerException | TransformerException e) { }
