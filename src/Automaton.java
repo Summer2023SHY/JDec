@@ -202,6 +202,28 @@ public class Automaton {
 
     }
 
+    @Override public String toString() {
+
+      switch (this) {
+        
+        case AUTOMATON:
+          return "Automaton";
+        
+        case U_STRUCTURE:
+          return "U-Structure";
+        
+        case PRUNED_U_STRUCTURE:
+          return "Pruned U-Structure";
+        
+        case CRUSH:
+          return "Crush";
+      
+      }
+
+      return null;
+
+    }
+
   }
 
     /* CONSTRUCTORS */

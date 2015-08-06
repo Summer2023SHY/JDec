@@ -4,21 +4,33 @@ public class LHTest {
 	
 	public static void main(String[] args) {
 	
+		// double[][] a = {
+		// 	{100, 100, 100,   0},
+		// 	{ 50,  50,   0,   0},
+		// 	{ 25,   0,   0,  25},
+		// 	{  0,   0, 500,   0}
+		// };
+
+		// double[][] b = {
+		// 	{100,  50,  25,   0},
+		// 	{100,  50,   0,   0},
+		// 	{100,   0,   0, 500},
+		// 	{  0,   0,  25,   0}
+		// };
+
 		double[][] a = {
-			{100, 100, 100,   0},
-			{ 50,  50,   0,   0},
-			{ 25,   0,   0,  25},
-			{  0,   0, 500,   0}
+			{1, 3, 0},
+			{0, 0, 2},
+			{2, 1, 1}
 		};
 
 		double[][] b = {
-			{100,  50,  25,   0},
-			{100,  50,   0,   0},
-			{100,   0,   0, 500},
-			{  0,   0,  25,   0}
+			{2, 1, 0},
+			{1, 3, 1},
+			{0, 0, 3}
 		};
 
-		int width = 4, height = 4;
+		int width = 3, height = 3;
 
 	    BimatrixGame game = new BimatrixGame(a, b);    
 	    BimatrixGame.ReducedGame reducedGame = game.getReducedGame();
