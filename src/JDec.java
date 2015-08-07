@@ -23,6 +23,7 @@ import java.awt.event.*;
 import java.awt.image.*;
 import java.io.*;
 import java.net.*;
+import java.nio.file.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -276,30 +277,41 @@ public class JDec extends JFrame implements ActionListener {
     JMenuItem menuItem = new JMenuItem(str);
     menuItem.addActionListener(this);
 
+    int shortcutKey = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+
     // Add the appropriate accelerator
     switch (str) {
 
       case "Open":
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, java.awt.Event.CTRL_MASK));
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, shortcutKey));
         break;
 
-      // NOTE: This accelerator will be extremely useful, however it seems to create some kind of
-      //       discontinuity between the GUI tabs and the underlying tab data. And somehow it ends
-      //       up corrupting the .hdr file.
-      // case "Close Tab":
-      //   menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, java.awt.Event.CTRL_MASK));
-      //   break;
-
-      case "Quit":
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, java.awt.Event.CTRL_MASK));
+      case "Close Tab":
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, shortcutKey));
         break;
 
       case "Save As...":
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, java.awt.Event.CTRL_MASK));
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, shortcutKey));
+        break;
+
+      case "View in Browser":
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, shortcutKey));
+        break;
+
+      case "Synchronized Composition":
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_U, shortcutKey));
+        break;
+
+      case "Add Communications":
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, shortcutKey | InputEvent.SHIFT_DOWN_MASK));
+        break;
+
+      case "Nash":
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, shortcutKey));
         break;
 
       case "Random Automaton":
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, java.awt.Event.CTRL_MASK));
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, shortcutKey));
         break;
 
     }
@@ -971,8 +983,10 @@ public class JDec extends JFrame implements ActionListener {
         tab.canvas.setImage(null);
 
       // Try to create graph image, displaying it on the screen
-      else if (tab.automaton.generateImage(destinationFileName))
+      else if (tab.automaton.generateImage(destinationFileName)) {
         tab.canvas.setImage(tab.automaton.loadImageFromFile(destinationFileName + ".png"));
+        tab.svgFile = new File(destinationFileName + ".svg");
+      }
 
       // Display error message
       else
@@ -1318,8 +1332,10 @@ public class JDec extends JFrame implements ActionListener {
     if (name.indexOf(".") != -1)
       name = name.substring(0, name.indexOf("."));
 
-    File headerFile = new File(fileChooser.getSelectedFile().getParentFile() + "/" + name + ".hdr");
-    File bodyFile = new File(fileChooser.getSelectedFile().getParentFile() + "/" + name + ".bdy");
+    String prefix   = fileChooser.getSelectedFile().getParentFile() + "/" + name;
+    File headerFile = new File(prefix + ".hdr");
+    File bodyFile   = new File(prefix + ".bdy");
+    File svgFile    = new File(prefix + ".svg");
 
     AutomatonTab currentTab = tabs.get(tabbedPane.getSelectedIndex());
 
@@ -1331,10 +1347,28 @@ public class JDec extends JFrame implements ActionListener {
         return null;
       }
 
+      /* If it exists, copy the .SVG file to the new location */
+
+    try {
+
+      // Copy the file if it exists
+      if (currentTab.svgFile.exists()) {
+        Files.copy(currentTab.svgFile.toPath(), svgFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        currentTab.svgFile = svgFile;
+      }
+
+    } catch (IOException e) {
+
+      // Allow the user to re-generate the image if there was nothing to copy
+      currentTab.svgFile = null;
+      currentTab.generateImageButton.setEnabled(true);
+
+    }
+
       /* Update last file opened and update current directory */
 
     currentTab.headerFile = headerFile;
-    currentTab.bodyFile = bodyFile;
+    currentTab.bodyFile   = bodyFile;
 
     currentDirectory = headerFile.getParentFile();
     saveCurrentDirectory();
@@ -1659,7 +1693,7 @@ public class JDec extends JFrame implements ActionListener {
 
     // Automaton properties
     public Automaton automaton;
-    public File headerFile, bodyFile;
+    public File headerFile, bodyFile, svgFile;
     public Automaton.Type type;
 
     // Tab properties
@@ -1696,6 +1730,7 @@ public class JDec extends JFrame implements ActionListener {
       // Create a split pane with the two scroll panes in it
       splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, inputContainer, canvas);
       splitPane.setOneTouchExpandable(true);
+      splitPane.setContinuousLayout(true);
       add(splitPane, BorderLayout.CENTER);
 
     }

@@ -1,5 +1,5 @@
 HOURS:
-Friday, August 7: (Expected: 6h) 7:24 - 
+Friday, August 7: (Expected: 5h 05), 9:08 - 
 
 JAVADOC TO-DO LIST:
   
@@ -11,8 +11,6 @@ QUESTIONS:
 
 SHORT-TERM:
 
-  -save as button should also move the .dot and .svg and .png files!!
-  -change control_down_mask to Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() (http://alvinalexander.com/blog/post/jfc-swing/how-program-apple-command-key-keystroke-java-swing-mac-osx)
   -make GUI input code validation more verbose (console messages won't be visible to the user). Perhaps when they generate an automaton, have a popup containing a scrollview with the lines of input that were not understood?? And tips to correct them? OR BETTER YET: Use a 'syntax' highlighting feel to validate lines of input - see code on my dad's laptop called JavaEditor?
   -work on shapley values! in order to do this, the u-structure must maintain controllable and observable properties
   -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol - implement this!! Refactor the class which allows the user to pick senders and recievers
