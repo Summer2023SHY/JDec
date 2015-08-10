@@ -1137,14 +1137,14 @@ public class Automaton {
             combinedStateLabel = combinedStateLabel.substring(1);
             long combinedTargetID = combineIDs(listOfTargetIDs, nStates);
 
+            // Add event
+            boolean[] observable = new boolean[nControllers];
+            boolean[] controllable = new boolean[nControllers];
+            controllable[i] = t.getEvent().isControllable()[i];
+            uStructure.addEventIfNonExisting(combinedEventLabel, observable, controllable);
+
             // Add state if it doesn't already exist
             if (!uStructure.stateExists(combinedTargetID)) {
-
-              // Add event
-              boolean[] observable = new boolean[nControllers];
-              boolean[] controllable = new boolean[nControllers];
-              controllable[i] = t.getEvent().isControllable()[i];
-              uStructure.addEventIfNonExisting(combinedEventLabel, observable, controllable);
 
               // Add state
               if (!uStructure.addStateAt(combinedStateLabel, false, new ArrayList<Transition>(), false, combinedTargetID)) {
@@ -1162,7 +1162,8 @@ public class Automaton {
             }
 
             // Add transition
-            uStructure.addTransition(combinedID, combinedEventLabel, combinedTargetID);
+            if (uStructure.addTransition(combinedID, combinedEventLabel, combinedTargetID) == 0)
+              System.err.println("ERROR: Failed to add transition.");
 
           }
         }
@@ -2534,7 +2535,6 @@ public class Automaton {
           return e.getID();
       }
 
-    System.err.println("ERROR: Could not find the specified event, so the transition was not added.");
     return 0;
 
   }

@@ -851,6 +851,20 @@ public class TestAutomata {
     printTestCase("Ensuring the states are correct", new TestResult(uStructureSelfLoop.getStateInput(), "@1_1"), counter);
     printTestCase("Ensuring the transitions are correct", new TestResult(uStructureSelfLoop.getTransitionInput(), "1_1,<a,*>,1_1\n1_1,<*,a>,1_1"), counter);
 
+    printTestOutput("Instantiating a more complex automaton with a self-loop...", 3);
+    Automaton automatonSelfLoopExtended = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+      new Automaton(null, null, 2),
+      "a,TF,TT\nb,FT,FT", // Events
+      "@1,T\n2,T", // States
+      "1,b,2\n1,a,1" // Transitions
+    ));
+
+    printTestOutput("Taking the synchronized composition of the automaton...", 3);
+    UStructure uStructureSelfLoopExtended = saveAndLoadUStructure(automatonSelfLoopExtended.synchronizedComposition(null, null));
+    uStructureSelfLoopExtended.generateInputForGUI();
+    printTestCase("Ensuring the events are correct", new TestResult(uStructureSelfLoopExtended.getEventInput(), "<a,a,*>,TF,TF\n<*,*,a>,FF,FT\n<*,b,*>,FF,FF\n<b,*,b>,FT,FT"), counter);
+    printTestCase("Ensuring the states are correct", new TestResult(uStructureSelfLoopExtended.getStateInput(), "@1_1_1\n1_2_1\n2_1_2\n2_2_2"), counter);
+    printTestCase("Ensuring the transitions are correct", new TestResult(uStructureSelfLoopExtended.getTransitionInput(), "1_1_1,<b,*,b>,2_1_2\n1_1_1,<a,a,*>,1_1_1\n1_1_1,<*,b,*>,1_2_1\n1_1_1,<*,*,a>,1_1_1\n1_2_1,<b,*,b>,2_2_2\n1_2_1,<*,*,a>,1_2_1\n2_1_2,<*,b,*>,2_2_2"), counter);
 
       /* Add Communications Operation Tests */
 
