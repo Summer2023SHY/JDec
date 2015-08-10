@@ -311,14 +311,12 @@ public abstract class AutomatonGenerator<T> {
    * @param eventInputText      The event input text
    * @param stateInputText      The state input text
    * @param transitionInputText The transitionsInputText
-   * @param verbose             Whether or not parsing errors should be printed to the console
    * @return                    The generated automaton
    **/
   public static <T extends Automaton> T generateFromGUICode(T automaton,
                                                             String eventInputText,
                                                             String stateInputText,
-                                                            String transitionInputText,
-                                                            boolean verbose) {
+                                                            String transitionInputText) {
 
     return generateFromGUICode(
       automaton,

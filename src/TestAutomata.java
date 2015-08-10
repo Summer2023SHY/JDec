@@ -152,8 +152,7 @@ public class TestAutomata {
       new UStructure(null, null, 2),
       "<a,a,*>\n<b,*,b>\n<*,b,*>\n<*,*,a>\n<o,o,o>\n<*,b,a>\n<b,b,b>\n<a,a,a>", // Events
       "@1_1_1\n1_1_2\n1_3_1\n1_3_2\n2_2_1\n2_2_2\n2_4_1\n2_4_2\n2_5_1\n2_5_2\n3_1_3\n3_1_4\n3_1_5\n3_3_3\n3_3_4\n3_3_5\n4_2_3\n4_2_4\n4_2_5\n4_4_3\n4_4_4\n4_4_5\n4_5_3\n4_5_4\n4_5_5\n5_2_3\n5_2_4\n5_2_5\n5_4_3\n5_4_4\n5_4_5\n5_5_3\n5_5_4\n5_5_5\n6_6_6\n6_6_7\n6_7_6\n6_7_7\n7_6_6\n7_6_7\n7_7_6\n7_7_7", // States
-      "1_1_1,<a,a,*>,2_2_1\n1_1_1,<b,*,b>,3_1_3\n1_1_1,<*,b,*>,1_3_1\n1_1_1,<*,*,a>,1_1_2\n1_1_1,<*,b,a>,1_3_2:INVALID_COMMUNICATION\n1_1_1,<b,b,b>,3_3_3:NASH_COMMUNICATION-RS-0.125-0.125\n1_1_1,<a,a,a>,2_2_2:NASH_COMMUNICATION-SR-0.125-0.125\n1_1_2,<a,a,*>,2_2_2\n1_1_2,<b,*,b>,3_1_4\n1_1_2,<*,b,*>,1_3_2\n1_1_2,<b,b,b>,3_3_4:NASH_COMMUNICATION-RS-0.125-0.125\n1_3_1,<a,a,*>,2_5_1\n1_3_1,<b,*,b>,3_3_3\n1_3_1,<*,*,a>,1_3_2\n1_3_1,<a,a,a>,2_5_2:NASH_COMMUNICATION-SR-0.625-0.125\n1_3_2,<a,a,*>,2_5_2\n1_3_2,<b,*,b>,3_3_4\n2_2_1,<b,*,b>,4_2_3\n2_2_1,<*,b,*>,2_4_1\n2_2_1,<*,*,a>,2_2_2\n2_2_1,<*,b,a>,2_4_2:INVALID_COMMUNICATION\n2_2_1,<b,b,b>,4_4_3:NASH_COMMUNICATION-RS-0.125-0.125\n2_2_2,<b,*,b>,4_2_4\n2_2_2,<*,b,*>,2_4_2\n2_2_2,<b,b,b>,4_4_4:NASH_COMMUNICATION-RS-0.125-0.125\n2_4_1,<b,*,b>,4_4_3\n2_4_1,<*,*,a>,2_4_2\n2_4_2,<b,*,b>,4_4_4\n2_5_1,<b,*,b>,4_5_3\n2_5_1,<*,*,a>,2_5_2\n2_5_2,<b,*,b>,4_5_4\n3_1_3,<a,a,*>,5_2_3\n3_1_3,<*,b,*>,3_3_3\n3_1_3,<*,*,a>,3_1_5\n3_1_3,<*,b,a>,3_3_5:INVALID_COMMUNICATION\n3_1_3,<a,a,a>,5_2_5:NASH_COMMUNICATION-SR-0.625-0.125\n3_1_4,<a,a,*>,5_2_4\n3_1_4,<*,b,*>,3_3_4\n3_1_5,<a,a,*>,5_2_5\n3_1_5,<*,b,*>,3_3_5\n3_3_3,<a,a,*>,5_5_3\n3_3_3,<*,*,a>,3_3_5\n3_3_3,<a,a,a>,5_5_5:NASH_COMMUNICATION-SR-0.125-0.125\n3_3_4,<a,a,*>,5_5_4\n3_3_5,<a,a,*>,5_5_5\n4_2_3,<*,b,*>,4_4_3\n4_2_3,<*,*,a>,4_2_5\n4_2_3,<*,b,a>,4_4_5:INVALID_COMMUNICATION\n4_2_4,<*,b,*>,4_4_4\n4_2_5,<*,b,*>,4_4_5\n4_4_3,<*,*,a>,4_4_5\n4_4_4,<o,o,o>,6_6_6\n4_4_5,<o,o,o>,6_6_7\n4_5_3,<*,*,a>,4_5_5\n4_5_4,<o,o,o>,6_7_6\n4_5_5,<o,o,o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*,b,*>,5_4_3\n5_2_3,<*,*,a>,5_2_5\n5_2_3,<*,b,a>,5_4_5:INVALID_COMMUNICATION\n5_2_4,<*,b,*>,5_4_4\n5_2_5,<*,b,*>,5_4_5\n5_4_3,<*,*,a>,5_4_5\n5_4_4,<o,o,o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o,o,o>,7_6_7\n5_5_3,<*,*,a>,5_5_5\n5_5_4,<o,o,o>,7_7_6\n5_5_5,<o,o,o>,7_7_7", // Transitions
-      false // We do not want it to be verbose
+      "1_1_1,<a,a,*>,2_2_1\n1_1_1,<b,*,b>,3_1_3\n1_1_1,<*,b,*>,1_3_1\n1_1_1,<*,*,a>,1_1_2\n1_1_1,<*,b,a>,1_3_2:INVALID_COMMUNICATION\n1_1_1,<b,b,b>,3_3_3:NASH_COMMUNICATION-RS-0.125-0.125\n1_1_1,<a,a,a>,2_2_2:NASH_COMMUNICATION-SR-0.125-0.125\n1_1_2,<a,a,*>,2_2_2\n1_1_2,<b,*,b>,3_1_4\n1_1_2,<*,b,*>,1_3_2\n1_1_2,<b,b,b>,3_3_4:NASH_COMMUNICATION-RS-0.125-0.125\n1_3_1,<a,a,*>,2_5_1\n1_3_1,<b,*,b>,3_3_3\n1_3_1,<*,*,a>,1_3_2\n1_3_1,<a,a,a>,2_5_2:NASH_COMMUNICATION-SR-0.625-0.125\n1_3_2,<a,a,*>,2_5_2\n1_3_2,<b,*,b>,3_3_4\n2_2_1,<b,*,b>,4_2_3\n2_2_1,<*,b,*>,2_4_1\n2_2_1,<*,*,a>,2_2_2\n2_2_1,<*,b,a>,2_4_2:INVALID_COMMUNICATION\n2_2_1,<b,b,b>,4_4_3:NASH_COMMUNICATION-RS-0.125-0.125\n2_2_2,<b,*,b>,4_2_4\n2_2_2,<*,b,*>,2_4_2\n2_2_2,<b,b,b>,4_4_4:NASH_COMMUNICATION-RS-0.125-0.125\n2_4_1,<b,*,b>,4_4_3\n2_4_1,<*,*,a>,2_4_2\n2_4_2,<b,*,b>,4_4_4\n2_5_1,<b,*,b>,4_5_3\n2_5_1,<*,*,a>,2_5_2\n2_5_2,<b,*,b>,4_5_4\n3_1_3,<a,a,*>,5_2_3\n3_1_3,<*,b,*>,3_3_3\n3_1_3,<*,*,a>,3_1_5\n3_1_3,<*,b,a>,3_3_5:INVALID_COMMUNICATION\n3_1_3,<a,a,a>,5_2_5:NASH_COMMUNICATION-SR-0.625-0.125\n3_1_4,<a,a,*>,5_2_4\n3_1_4,<*,b,*>,3_3_4\n3_1_5,<a,a,*>,5_2_5\n3_1_5,<*,b,*>,3_3_5\n3_3_3,<a,a,*>,5_5_3\n3_3_3,<*,*,a>,3_3_5\n3_3_3,<a,a,a>,5_5_5:NASH_COMMUNICATION-SR-0.125-0.125\n3_3_4,<a,a,*>,5_5_4\n3_3_5,<a,a,*>,5_5_5\n4_2_3,<*,b,*>,4_4_3\n4_2_3,<*,*,a>,4_2_5\n4_2_3,<*,b,a>,4_4_5:INVALID_COMMUNICATION\n4_2_4,<*,b,*>,4_4_4\n4_2_5,<*,b,*>,4_4_5\n4_4_3,<*,*,a>,4_4_5\n4_4_4,<o,o,o>,6_6_6\n4_4_5,<o,o,o>,6_6_7\n4_5_3,<*,*,a>,4_5_5\n4_5_4,<o,o,o>,6_7_6\n4_5_5,<o,o,o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*,b,*>,5_4_3\n5_2_3,<*,*,a>,5_2_5\n5_2_3,<*,b,a>,5_4_5:INVALID_COMMUNICATION\n5_2_4,<*,b,*>,5_4_4\n5_2_5,<*,b,*>,5_4_5\n5_4_3,<*,*,a>,5_4_5\n5_4_4,<o,o,o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o,o,o>,7_6_7\n5_5_3,<*,*,a>,5_5_5\n5_5_4,<o,o,o>,7_7_6\n5_5_5,<o,o,o>,7_7_7" // Transitions
     ));
     List<Set<NashCommunicationData>> feasibleProtocols = uStructure.generateAllFeasibleProtocols(uStructure.getNashCommunications(), true);
 
@@ -520,8 +519,7 @@ public class TestAutomata {
       new Automaton(),
       "a,T,T\nb,T,F\nc,F,T\nd,F,F", // Events
       "e,T\nf,F", // States  
-      "e,a,f\nf,b,e", // Transitions
-      false // We do not want it to be verbose
+      "e,a,f\nf,b,e" // Transitions
     ));
     automaton.generateInputForGUI();
     printTestCase("Ensuring the event input was saved and loaded correctly", new TestResult(automaton.getEventInput(), "a,T,T\nb,T,F\nc,F,T\nd,F,F"), counter);
@@ -533,8 +531,7 @@ public class TestAutomata {
       new Automaton(),
       "a\nb,F,F\na,F,F\nb", // Events
       "@c\nc,F", // States  
-      "", // Transitions
-      false // We do not want it to be verbose
+      "" // Transitions
     ));
     automaton.generateInputForGUI();
     printTestCase("Ensuring the event input was saved and loaded correctly", new TestResult(automaton.getEventInput(), "a,T,T\nb,F,F"), counter);
@@ -566,8 +563,7 @@ public class TestAutomata {
       new Automaton(new File("aut/fig2_12.hdr"), new File("aut/fig2_12.bdy"), 1),
       "a,T,T\nb,T,T\ng,T,T", // Events
       "@zero,F\none,F\ntwo,T\nthree,F\nfour,F\nfive,F\nsix,F", // States 
-      "zero,a,one\none,a,three\none,b,two\none,g,five\ntwo,g,zero\nthree,b,four\nfour,g,four\nfour,a,three\nsix,a,three\nsix,b,two", // Transitions
-      false // We do not want it to be verbose
+      "zero,a,one\none,a,three\none,b,two\none,g,five\ntwo,g,zero\nthree,b,four\nfour,g,four\nfour,a,three\nsix,a,three\nsix,b,two" // Transitions
     ));
 
     printTestOutput("Taking the co-accessible part of Figure 2.12 (and comparing the result to the automaton in Figure 2.13a)...", 3);
@@ -599,8 +595,7 @@ public class TestAutomata {
       new Automaton(new File("aut/complementExample.hdr"), new File("aut/complementExample.bdy"), 3),
       "a1,TFF,FFF\na2,TFF,FFF\nb1,FTF,FFF\nb2,FTF,FFF\nc1,FFT,FFF\nc2,FFT,FFF\no,FFF,TTT", // Events
       "@0,F\n1,F\n2,F\n3,F\n4,F\n5,F\n6,F\n7,F\n8,F\n9,F\n10,F\n11,F\n12,F\n13,F\n14,F\n15,F\n16,F\n17,F\n18,F\n19,F", // States 
-      "0,a1,4\n0,b2,3\n0,b1,2\n0,c1,1\n1,b2,6\n1,a2,5\n2,a1,7\n3,c2,8\n4,b1,9\n5,b1,10\n6,a1,11\n7,c2,12\n8,a2,13\n9,c1,14\n10,o,15\n11,o,16\n12,o,17\n13,o,18:BAD\n14,o,19:BAD", // Transitions
-      false // We do not want it to be verbose
+      "0,a1,4\n0,b2,3\n0,b1,2\n0,c1,1\n1,b2,6\n1,a2,5\n2,a1,7\n3,c2,8\n4,b1,9\n5,b1,10\n6,a1,11\n7,c2,12\n8,a2,13\n9,c1,14\n10,o,15\n11,o,16\n12,o,17\n13,o,18:BAD\n14,o,19:BAD" // Transitions
     ));
 
     printTestOutput("Taking the complement of the automaton...", 3);
@@ -628,8 +623,7 @@ public class TestAutomata {
       new Automaton(new File("aut/complementExample.hdr"), new File("aut/complementExample.bdy"), 1),
       "a,T,F\nb,T,T", // Events
       "0,T\n1,F", // States 
-      "0,a,1\n0,b,0\n1,a,0\n1,b,0", // Transitions
-      false // We do not want it to be verbose
+      "0,a,1\n0,b,0\n1,a,0\n1,b,0" // Transitions
     ));
 
     printTestOutput("Taking the complement of the automaton which will not need a dump state...", 3);
@@ -661,16 +655,14 @@ public class TestAutomata {
       new Automaton(new File("aut/fig2_1.hdr"), new File("aut/fig2_1.bdy"), 1),
       "a,T,T\nb,T,T\ng,T,T", // Events
       "@x,T\ny,F\nz,T", // States 
-      "x,a,x\nx,g,z\ny,b,y\ny,a,x\nz,b,z\nz,a,y\nz,g,y", // Transitions
-      false // We do not want it to be verbose
+      "x,a,x\nx,g,z\ny,b,y\ny,a,x\nz,b,z\nz,a,y\nz,g,y" // Transitions
     ));
     printTestOutput("Instantiating automaton from Figure 2.2...", 3);
     Automaton fig2_2 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
       new Automaton(new File("aut/fig2_2.hdr"), new File("aut/fig2_2.bdy"), 1),
       "a,T,T\nb,T,T", // Events
       "@zero,F\none,T", // States 
-      "zero,b,zero\nzero,a,one\none,a,one\none,b,zero", // Transitions
-      false // We do not want it to be verbose
+      "zero,b,zero\nzero,a,one\none,a,one\none,b,zero" // Transitions
     ));
 
     printTestOutput("Taking the intersection of Figure 2.1 and Figure 2.2 (and comparing the result to the first automaton in Figure 2.15)...", 3);
@@ -694,8 +686,7 @@ public class TestAutomata {
       new Automaton(new File("aut/fig2_13b.hdr"), new File("aut/fig2_13b.bdy"), 1),
       "a,T,T\nb,T,T\ng,T,T", // Events
       "@zero,F\none,F\ntwo,T", // States 
-      "zero,a,one\none,b,two\ntwo,g,zero", // Transitions
-      false // We do not want it to be verbose
+      "zero,a,one\none,b,two\ntwo,g,zero" // Transitions
     ));
 
     printTestOutput("Taking the intersection of Figure 2.2 and Figure 2.13(b) (and comparing the result to the second automaton in Figure 2.15)...", 3);
@@ -719,8 +710,7 @@ public class TestAutomata {
       new Automaton(new File("aut/fig2_20a.hdr"), new File("aut/fig2_20a.bdy"), 1),
       "a1\na2\nb\nr", // Events
       "@x1,F\nx2,F\nx3,T", // States 
-      "x1,a1,x2\nx1,a2,x2\nx2,b,x3\nx3,r,x1", // Transitions
-      false // We do not want it to be verbose
+      "x1,a1,x2\nx1,a2,x2\nx2,b,x3\nx3,r,x1" // Transitions
     ));
 
     printTestOutput("Instantiating the second automaton from Figure 2.20...", 3);
@@ -728,8 +718,7 @@ public class TestAutomata {
       new Automaton(new File("aut/fig2_20b.hdr"), new File("aut/fig2_20b.bdy"), 1),
       "a1\nb\nc1\nr\na2\nc2", // Events
       "@y1,F\ny2,F\ny3,F\ny4,F\ny5,F\ny6,F", // States 
-      "y1,a1,y2\ny2,b,y4\ny4,r,y1\ny4,c1,y6\ny6,r,y1\ny1,a2,y3\ny3,b,y5\ny5,c2,y6\ny5,r,y1", // Transitions
-      false // We do not want it to be verbose
+      "y1,a1,y2\ny2,b,y4\ny4,r,y1\ny4,c1,y6\ny6,r,y1\ny1,a2,y3\ny3,b,y5\ny5,c2,y6\ny5,r,y1" // Transitions
     ));
 
     printTestOutput("Taking the intersection of the first two automata in Figure 2.20 (and comparing the result to the third automaton in Figure 2.20)...", 3);
@@ -772,8 +761,7 @@ public class TestAutomata {
       new Automaton(new File("aut/fig2_17a.hdr"), new File("aut/fig2_17a.bdy"), 1),
       "a,T,T\nb,T,T\nc,T,T", // Events
       "@one,T\ntwo,F", // States 
-      "one,c,one\none,a,two\ntwo,b,two", // Transitions
-      false // We do not want it to be verbose
+      "one,c,one\none,a,two\ntwo,b,two" // Transitions
     ));
 
     printTestOutput("Instantiating the second automaton from Figure 2.17...", 3);
@@ -781,8 +769,7 @@ public class TestAutomata {
       new Automaton(new File("aut/fig2_17b.hdr"), new File("aut/fig2_17b.bdy"), 1),
       "b,T,T\na,T,T\nd,T,T", // Events
       "@A,T\nB,F", // States 
-      "A,b,A\nA,a,B\nB,d,B", // Transitions
-      false // We do not want it to be verbose
+      "A,b,A\nA,a,B\nB,d,B" // Transitions
     ));
 
     printTestOutput("Instantiating the third automaton from Figure 2.17...", 3);
@@ -790,8 +777,7 @@ public class TestAutomata {
       new Automaton(new File("aut/fig2_17c.hdr"), new File("aut/fig2_17c.bdy"), 1),
       "c,T,T\nb,T,T\na,T,T", // Events
       "@D,T\nE,F", // States 
-      "D,c,D\nD,b,E\nE,a,E", // Transitions
-      false // We do not want it to be verbose
+      "D,c,D\nD,b,E\nE,a,E" // Transitions
     ));
 
     printTestOutput("Taking the union of the three automata in Figure 2.17 (and comparing the result to the automaton described in Example 2.17)...", 3);
@@ -840,8 +826,7 @@ public class TestAutomata {
       new Automaton(new File("aut/synchronizedCompositionExample.hdr"), new File("aut/synchronizedCompositionExample.bdy"), 2),
       "a,TF,TF\nb,FT,FT\no,TT,TT", // Events
       "@1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T", // States
-      "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD", // Transitions
-      false // We do not want it to be verbose
+      "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD" // Transitions
     ));
 
     printTestOutput("Taking the synchronized composition of the automaton...", 3);
@@ -856,8 +841,7 @@ public class TestAutomata {
       new Automaton(null, null, 1),
       "a,F,T", // Events
       "@1,T", // States
-      "1,a,1", // Transitions
-      false // We do not want it to be verbose
+      "1,a,1" // Transitions
     ));
 
     printTestOutput("Taking the synchronized composition of the automaton...", 3);
@@ -899,8 +883,7 @@ public class TestAutomata {
       new UStructure(new File("aut/synchronizedComposition.hdr"), new File("aut/synchronizedComposition.bdy"), 2),
       "<a,a,*>,TF,TF\n<b,*,b>,FT,FT\n<*,b,*>,FF,FF\n<*,*,a>,FF,FF\n<o,o,o>,TT,TT", // Events
       "@1_1_1\n1_1_2\n1_3_1\n1_3_2\n2_2_1\n2_2_2\n2_4_1\n2_4_2\n2_5_1\n2_5_2\n3_1_3\n3_1_4\n3_1_5\n3_3_3\n3_3_4\n3_3_5\n4_2_3\n4_2_4\n4_2_5\n4_4_3\n4_4_4\n4_4_5\n4_5_3\n4_5_4\n4_5_5\n5_2_3\n5_2_4\n5_2_5\n5_4_3\n5_4_4\n5_4_5\n5_5_3\n5_5_4\n5_5_5\n6_6_6\n6_6_7\n6_7_6\n6_7_7\n7_6_6\n7_6_7\n7_7_6\n7_7_7", // States
-      "1_1_1,<a,a,*>,2_2_1\n1_1_1,<b,*,b>,3_1_3\n1_1_1,<*,b,*>,1_3_1\n1_1_1,<*,*,a>,1_1_2\n1_1_2,<a,a,*>,2_2_2\n1_1_2,<b,*,b>,3_1_4\n1_1_2,<*,b,*>,1_3_2\n1_3_1,<a,a,*>,2_5_1\n1_3_1,<b,*,b>,3_3_3\n1_3_1,<*,*,a>,1_3_2\n1_3_2,<a,a,*>,2_5_2\n1_3_2,<b,*,b>,3_3_4\n2_2_1,<b,*,b>,4_2_3\n2_2_1,<*,b,*>,2_4_1\n2_2_1,<*,*,a>,2_2_2\n2_2_2,<b,*,b>,4_2_4\n2_2_2,<*,b,*>,2_4_2\n2_4_1,<b,*,b>,4_4_3\n2_4_1,<*,*,a>,2_4_2\n2_4_2,<b,*,b>,4_4_4\n2_5_1,<b,*,b>,4_5_3\n2_5_1,<*,*,a>,2_5_2\n2_5_2,<b,*,b>,4_5_4\n3_1_3,<a,a,*>,5_2_3\n3_1_3,<*,b,*>,3_3_3\n3_1_3,<*,*,a>,3_1_5\n3_1_4,<a,a,*>,5_2_4\n3_1_4,<*,b,*>,3_3_4\n3_1_5,<a,a,*>,5_2_5\n3_1_5,<*,b,*>,3_3_5\n3_3_3,<a,a,*>,5_5_3\n3_3_3,<*,*,a>,3_3_5\n3_3_4,<a,a,*>,5_5_4\n3_3_5,<a,a,*>,5_5_5\n4_2_3,<*,b,*>,4_4_3\n4_2_3,<*,*,a>,4_2_5\n4_2_4,<*,b,*>,4_4_4\n4_2_5,<*,b,*>,4_4_5\n4_4_3,<*,*,a>,4_4_5\n4_4_4,<o,o,o>,6_6_6\n4_4_5,<o,o,o>,6_6_7\n4_5_3,<*,*,a>,4_5_5\n4_5_4,<o,o,o>,6_7_6\n4_5_5,<o,o,o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*,b,*>,5_4_3\n5_2_3,<*,*,a>,5_2_5\n5_2_4,<*,b,*>,5_4_4\n5_2_5,<*,b,*>,5_4_5\n5_4_3,<*,*,a>,5_4_5\n5_4_4,<o,o,o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o,o,o>,7_6_7\n5_5_3,<*,*,a>,5_5_5\n5_5_4,<o,o,o>,7_7_6\n5_5_5,<o,o,o>,7_7_7", // Transitions
-      false // We do not want it to be verbose
+      "1_1_1,<a,a,*>,2_2_1\n1_1_1,<b,*,b>,3_1_3\n1_1_1,<*,b,*>,1_3_1\n1_1_1,<*,*,a>,1_1_2\n1_1_2,<a,a,*>,2_2_2\n1_1_2,<b,*,b>,3_1_4\n1_1_2,<*,b,*>,1_3_2\n1_3_1,<a,a,*>,2_5_1\n1_3_1,<b,*,b>,3_3_3\n1_3_1,<*,*,a>,1_3_2\n1_3_2,<a,a,*>,2_5_2\n1_3_2,<b,*,b>,3_3_4\n2_2_1,<b,*,b>,4_2_3\n2_2_1,<*,b,*>,2_4_1\n2_2_1,<*,*,a>,2_2_2\n2_2_2,<b,*,b>,4_2_4\n2_2_2,<*,b,*>,2_4_2\n2_4_1,<b,*,b>,4_4_3\n2_4_1,<*,*,a>,2_4_2\n2_4_2,<b,*,b>,4_4_4\n2_5_1,<b,*,b>,4_5_3\n2_5_1,<*,*,a>,2_5_2\n2_5_2,<b,*,b>,4_5_4\n3_1_3,<a,a,*>,5_2_3\n3_1_3,<*,b,*>,3_3_3\n3_1_3,<*,*,a>,3_1_5\n3_1_4,<a,a,*>,5_2_4\n3_1_4,<*,b,*>,3_3_4\n3_1_5,<a,a,*>,5_2_5\n3_1_5,<*,b,*>,3_3_5\n3_3_3,<a,a,*>,5_5_3\n3_3_3,<*,*,a>,3_3_5\n3_3_4,<a,a,*>,5_5_4\n3_3_5,<a,a,*>,5_5_5\n4_2_3,<*,b,*>,4_4_3\n4_2_3,<*,*,a>,4_2_5\n4_2_4,<*,b,*>,4_4_4\n4_2_5,<*,b,*>,4_4_5\n4_4_3,<*,*,a>,4_4_5\n4_4_4,<o,o,o>,6_6_6\n4_4_5,<o,o,o>,6_6_7\n4_5_3,<*,*,a>,4_5_5\n4_5_4,<o,o,o>,6_7_6\n4_5_5,<o,o,o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*,b,*>,5_4_3\n5_2_3,<*,*,a>,5_2_5\n5_2_4,<*,b,*>,5_4_4\n5_2_5,<*,b,*>,5_4_5\n5_4_3,<*,*,a>,5_4_5\n5_4_4,<o,o,o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o,o,o>,7_6_7\n5_5_3,<*,*,a>,5_5_5\n5_5_4,<o,o,o>,7_7_6\n5_5_5,<o,o,o>,7_7_7" // Transitions
     ));
     addCommunications = saveAndLoadUStructure(synchronizedComposition.addCommunications(new File("aut/addCommunications.hdr"), new File("aut/addCommunications.bdy")));
     addCommunications.generateInputForGUI();
@@ -965,8 +948,7 @@ public class TestAutomata {
       new PrunedUStructure(new File("aut/crushExample.hdr"), new File("aut/crushExample.bdy"), 2),
       "<a,a,a>,TF,TF\n<b,*,b>,FT,FT\n<*,b,*>,FF,FF\n<o,o,o>,TT,TT", // Events
       "@1_1_1\n1_3_1\n2_2_2\n2_4_2\n2_5_2\n3_1_3\n3_3_3\n4_2_4\n4_4_4\n4_5_4\n5_2_5\n5_4_5\n5_5_5\n6_6_6\n6_7_6\n7_6_7\n7_7_7", // States
-      "1_1_1,<b,*,b>,3_1_3\n1_1_1,<*,b,*>,1_3_1\n1_1_1,<a,a,a>,2_2_2:NASH_COMMUNICATION-SR-1.0-0.25\n1_3_1,<b,*,b>,3_3_3\n1_3_1,<a,a,a>,2_5_2:NASH_COMMUNICATION-SR-2.0-0.25\n2_2_2,<b,*,b>,4_2_4\n2_2_2,<*,b,*>,2_4_2\n2_4_2,<b,*,b>,4_4_4\n2_5_2,<b,*,b>,4_5_4\n3_1_3,<*,b,*>,3_3_3\n3_1_3,<a,a,a>,5_2_5:NASH_COMMUNICATION-SR-3.0-0.25\n3_3_3,<a,a,a>,5_5_5:NASH_COMMUNICATION-SR-4.0-0.25\n4_2_4,<*,b,*>,4_4_4\n4_4_4,<o,o,o>,6_6_6\n4_5_4,<o,o,o>,6_7_6\n5_2_5,<*,b,*>,5_4_5\n5_4_5,<o,o,o>,7_6_7\n5_5_5,<o,o,o>,7_7_7", // Transitions
-      false // We do not want it to be verbose
+      "1_1_1,<b,*,b>,3_1_3\n1_1_1,<*,b,*>,1_3_1\n1_1_1,<a,a,a>,2_2_2:NASH_COMMUNICATION-SR-1.0-0.25\n1_3_1,<b,*,b>,3_3_3\n1_3_1,<a,a,a>,2_5_2:NASH_COMMUNICATION-SR-2.0-0.25\n2_2_2,<b,*,b>,4_2_4\n2_2_2,<*,b,*>,2_4_2\n2_4_2,<b,*,b>,4_4_4\n2_5_2,<b,*,b>,4_5_4\n3_1_3,<*,b,*>,3_3_3\n3_1_3,<a,a,a>,5_2_5:NASH_COMMUNICATION-SR-3.0-0.25\n3_3_3,<a,a,a>,5_5_5:NASH_COMMUNICATION-SR-4.0-0.25\n4_2_4,<*,b,*>,4_4_4\n4_4_4,<o,o,o>,6_6_6\n4_5_4,<o,o,o>,6_7_6\n5_2_5,<*,b,*>,5_4_5\n5_4_5,<o,o,o>,7_6_7\n5_5_5,<o,o,o>,7_7_7" // Transitions
     ));
 
     printTestOutput("Applying crush operation with respect to controller 2...", 3);
@@ -983,8 +965,7 @@ public class TestAutomata {
     //   new Automaton(new File("aut/disablementExampleAutomaton.hdr"), new File("aut/disablementExampleAutomaton.bdy"), 2),
     //   "a,TF,FF\nb,FT,FF\nc,TT,FT", // Events
     //   "@0,F\n1,F\n2,F\n3,F\n4,F", // States
-    //   "0,a,1\n0,b,2\n1,c,3\n2,c,4:BAD", // Transitions
-    //   false // We do not want it to be verbose
+    //   "0,a,1\n0,b,2\n1,c,3\n2,c,4:BAD" // Transitions
     // ));
     // UStructure disablementExampleUStructure = disablementExampleAutomaton.synchronizedComposition(new File("aut/disablementExampleUStructure.hdr"), new File("aut/disablementExampleUStructure.bdy"));
     // Crush crush = 
@@ -997,8 +978,7 @@ public class TestAutomata {
       new UStructure(new File("aut/nashExample.hdr"), new File("aut/nashExample.bdy"), 2),
       "<a,a,*>\n<b,*,b>\n<*,b,*>\n<*,*,a>\n<o,o,o>\n<*,b,a>\n<b,b,b>\n<a,a,a>", // Events
       "@1_1_1\n1_1_2\n1_3_1\n1_3_2\n2_2_1\n2_2_2\n2_4_1\n2_4_2\n2_5_1\n2_5_2\n3_1_3\n3_1_4\n3_1_5\n3_3_3\n3_3_4\n3_3_5\n4_2_3\n4_2_4\n4_2_5\n4_4_3\n4_4_4\n4_4_5\n4_5_3\n4_5_4\n4_5_5\n5_2_3\n5_2_4\n5_2_5\n5_4_3\n5_4_4\n5_4_5\n5_5_3\n5_5_4\n5_5_5\n6_6_6\n6_6_7\n6_7_6\n6_7_7\n7_6_6\n7_6_7\n7_7_6\n7_7_7", // States
-      "1_1_1,<a,a,*>,2_2_1\n1_1_1,<b,*,b>,3_1_3\n1_1_1,<*,b,*>,1_3_1\n1_1_1,<*,*,a>,1_1_2\n1_1_1,<*,b,a>,1_3_2:INVALID_COMMUNICATION\n1_1_1,<b,b,b>,3_3_3:NASH_COMMUNICATION-RS-1-0.125\n1_1_1,<a,a,a>,2_2_2:NASH_COMMUNICATION-SR-1-0.125\n1_1_2,<a,a,*>,2_2_2\n1_1_2,<b,*,b>,3_1_4\n1_1_2,<*,b,*>,1_3_2\n1_1_2,<b,b,b>,3_3_4:NASH_COMMUNICATION-RS-1-0.125\n1_3_1,<a,a,*>,2_5_1\n1_3_1,<b,*,b>,3_3_3\n1_3_1,<*,*,a>,1_3_2\n1_3_1,<a,a,a>,2_5_2:NASH_COMMUNICATION-SR-1-0.125\n1_3_2,<a,a,*>,2_5_2\n1_3_2,<b,*,b>,3_3_4\n2_2_1,<b,*,b>,4_2_3\n2_2_1,<*,b,*>,2_4_1\n2_2_1,<*,*,a>,2_2_2\n2_2_1,<*,b,a>,2_4_2:INVALID_COMMUNICATION\n2_2_1,<b,b,b>,4_4_3:NASH_COMMUNICATION-RS-1-0.125\n2_2_2,<b,*,b>,4_2_4\n2_2_2,<*,b,*>,2_4_2\n2_2_2,<b,b,b>,4_4_4:NASH_COMMUNICATION-RS-1-0.125\n2_4_1,<b,*,b>,4_4_3\n2_4_1,<*,*,a>,2_4_2\n2_4_2,<b,*,b>,4_4_4\n2_5_1,<b,*,b>,4_5_3\n2_5_1,<*,*,a>,2_5_2\n2_5_2,<b,*,b>,4_5_4\n3_1_3,<a,a,*>,5_2_3\n3_1_3,<*,b,*>,3_3_3\n3_1_3,<*,*,a>,3_1_5\n3_1_3,<*,b,a>,3_3_5:INVALID_COMMUNICATION\n3_1_3,<a,a,a>,5_2_5:NASH_COMMUNICATION-SR-1-0.125\n3_1_4,<a,a,*>,5_2_4\n3_1_4,<*,b,*>,3_3_4\n3_1_5,<a,a,*>,5_2_5\n3_1_5,<*,b,*>,3_3_5\n3_3_3,<a,a,*>,5_5_3\n3_3_3,<*,*,a>,3_3_5\n3_3_3,<a,a,a>,5_5_5:NASH_COMMUNICATION-SR-1-0.125\n3_3_4,<a,a,*>,5_5_4\n3_3_5,<a,a,*>,5_5_5\n4_2_3,<*,b,*>,4_4_3\n4_2_3,<*,*,a>,4_2_5\n4_2_3,<*,b,a>,4_4_5:INVALID_COMMUNICATION\n4_2_4,<*,b,*>,4_4_4\n4_2_5,<*,b,*>,4_4_5\n4_4_3,<*,*,a>,4_4_5\n4_4_4,<o,o,o>,6_6_6\n4_4_5,<o,o,o>,6_6_7\n4_5_3,<*,*,a>,4_5_5\n4_5_4,<o,o,o>,6_7_6\n4_5_5,<o,o,o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*,b,*>,5_4_3\n5_2_3,<*,*,a>,5_2_5\n5_2_3,<*,b,a>,5_4_5:INVALID_COMMUNICATION\n5_2_4,<*,b,*>,5_4_4\n5_2_5,<*,b,*>,5_4_5\n5_4_3,<*,*,a>,5_4_5\n5_4_4,<o,o,o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o,o,o>,7_6_7\n5_5_3,<*,*,a>,5_5_5\n5_5_4,<o,o,o>,7_7_6\n5_5_5,<o,o,o>,7_7_7", // Transitions
-      false // We do not want it to be verbose
+      "1_1_1,<a,a,*>,2_2_1\n1_1_1,<b,*,b>,3_1_3\n1_1_1,<*,b,*>,1_3_1\n1_1_1,<*,*,a>,1_1_2\n1_1_1,<*,b,a>,1_3_2:INVALID_COMMUNICATION\n1_1_1,<b,b,b>,3_3_3:NASH_COMMUNICATION-RS-1-0.125\n1_1_1,<a,a,a>,2_2_2:NASH_COMMUNICATION-SR-1-0.125\n1_1_2,<a,a,*>,2_2_2\n1_1_2,<b,*,b>,3_1_4\n1_1_2,<*,b,*>,1_3_2\n1_1_2,<b,b,b>,3_3_4:NASH_COMMUNICATION-RS-1-0.125\n1_3_1,<a,a,*>,2_5_1\n1_3_1,<b,*,b>,3_3_3\n1_3_1,<*,*,a>,1_3_2\n1_3_1,<a,a,a>,2_5_2:NASH_COMMUNICATION-SR-1-0.125\n1_3_2,<a,a,*>,2_5_2\n1_3_2,<b,*,b>,3_3_4\n2_2_1,<b,*,b>,4_2_3\n2_2_1,<*,b,*>,2_4_1\n2_2_1,<*,*,a>,2_2_2\n2_2_1,<*,b,a>,2_4_2:INVALID_COMMUNICATION\n2_2_1,<b,b,b>,4_4_3:NASH_COMMUNICATION-RS-1-0.125\n2_2_2,<b,*,b>,4_2_4\n2_2_2,<*,b,*>,2_4_2\n2_2_2,<b,b,b>,4_4_4:NASH_COMMUNICATION-RS-1-0.125\n2_4_1,<b,*,b>,4_4_3\n2_4_1,<*,*,a>,2_4_2\n2_4_2,<b,*,b>,4_4_4\n2_5_1,<b,*,b>,4_5_3\n2_5_1,<*,*,a>,2_5_2\n2_5_2,<b,*,b>,4_5_4\n3_1_3,<a,a,*>,5_2_3\n3_1_3,<*,b,*>,3_3_3\n3_1_3,<*,*,a>,3_1_5\n3_1_3,<*,b,a>,3_3_5:INVALID_COMMUNICATION\n3_1_3,<a,a,a>,5_2_5:NASH_COMMUNICATION-SR-1-0.125\n3_1_4,<a,a,*>,5_2_4\n3_1_4,<*,b,*>,3_3_4\n3_1_5,<a,a,*>,5_2_5\n3_1_5,<*,b,*>,3_3_5\n3_3_3,<a,a,*>,5_5_3\n3_3_3,<*,*,a>,3_3_5\n3_3_3,<a,a,a>,5_5_5:NASH_COMMUNICATION-SR-1-0.125\n3_3_4,<a,a,*>,5_5_4\n3_3_5,<a,a,*>,5_5_5\n4_2_3,<*,b,*>,4_4_3\n4_2_3,<*,*,a>,4_2_5\n4_2_3,<*,b,a>,4_4_5:INVALID_COMMUNICATION\n4_2_4,<*,b,*>,4_4_4\n4_2_5,<*,b,*>,4_4_5\n4_4_3,<*,*,a>,4_4_5\n4_4_4,<o,o,o>,6_6_6\n4_4_5,<o,o,o>,6_6_7\n4_5_3,<*,*,a>,4_5_5\n4_5_4,<o,o,o>,6_7_6\n4_5_5,<o,o,o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*,b,*>,5_4_3\n5_2_3,<*,*,a>,5_2_5\n5_2_3,<*,b,a>,5_4_5:INVALID_COMMUNICATION\n5_2_4,<*,b,*>,5_4_4\n5_2_5,<*,b,*>,5_4_5\n5_4_3,<*,*,a>,5_4_5\n5_4_4,<o,o,o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o,o,o>,7_6_7\n5_5_3,<*,*,a>,5_5_5\n5_5_4,<o,o,o>,7_7_6\n5_5_5,<o,o,o>,7_7_7" // Transitions
     ));
 
     try {
@@ -1046,8 +1026,7 @@ public class TestAutomata {
       new Automaton(null, null, 2),
       "c,TF,TF\nb,TF,TF\na,TF,TF", // Events
       "@1,T\n2,F", // States 
-      "1,c,1\n1,b,2:BAD\n2,a,2", // Transitions
-      false // We do not want it to be verbose
+      "1,c,1\n1,b,2:BAD\n2,a,2" // Transitions
     ));
     printTestCase("Ensuring that the automaton is controllable", new TestResult(a.testControllability(), true), counter);
 
@@ -1056,8 +1035,7 @@ public class TestAutomata {
       new Automaton(null, null, 2),
       "c,TF,TF\nb,TF,TF\na,TF,FF", // Events
       "@1,T\n2,F", // States 
-      "1,c,1:BAD\n1,b,2\n2,a,2:BAD", // Transitions
-      false // We do not want it to be verbose
+      "1,c,1:BAD\n1,b,2\n2,a,2:BAD" // Transitions
     ));
     printTestCase("Ensuring that the automaton is not controllable", new TestResult(a.testControllability(), false), counter);
 
@@ -1070,8 +1048,7 @@ public class TestAutomata {
       new Automaton(null, null, 2),
       "a,TF,TF\nb,FT,FT\no,TT,TT", // Events
       "@1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T", // States 
-      "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD", // Transitions
-      false // We do not want it to be verbose
+      "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD" // Transitions
     ));
     printTestCase("Ensuring that the automaton is observable", new TestResult(a.testObservability(), true), counter);
 
@@ -1080,8 +1057,7 @@ public class TestAutomata {
       new Automaton(null, null, 2),
       "a,FF,TF\nb,FT,FT\no,TT,TT", // Events
       "@1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T", // States 
-      "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD", // Transitions
-      false // We do not want it to be verbose
+      "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD" // Transitions
     ));
     printTestCase("Ensuring that the automaton is not observable", new TestResult(a.testObservability(), false), counter);
 
@@ -1110,8 +1086,7 @@ public class TestAutomata {
       new Automaton(),
       "a,T,T\nb,T,F\nc,F,T\nd,F,F", // Events
       "", // States  
-      "", // Transitions
-      false // We do not want it to be verbose
+      "" // Transitions
     ));
 
     printTestOutput("Instantiating a second automaton (with an incompatible event)...", 3);
@@ -1119,8 +1094,7 @@ public class TestAutomata {
       new Automaton(),
       "a,T,T\nc,T,T\ne,T,F", // Events
       "", // States  
-      "", // Transitions
-      false // We do not want it to be verbose
+      "" // Transitions
     ));
 
     try {
@@ -1136,8 +1110,7 @@ public class TestAutomata {
       new Automaton(null, null, 2),
       "", // Events
       "", // States  
-      "", // Transitions
-      false // We do not want it to be verbose
+      "" // Transitions
     ));
 
     try {

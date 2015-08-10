@@ -13,8 +13,6 @@ QUESTIONS:
 SHORT-TERM:
   
   -manual testing of validation
-  -remove verbose parameter from generateFromGUICode()
-  -Update Readme file
   -Update tooltips for events in U-struct, pruned, and crush
   -work on shapley values
   -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol - implement this!! Refactor the class which allows the user to pick senders and recievers
