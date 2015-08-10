@@ -144,7 +144,7 @@ public class GeneratedAllFeasibleProtocolsPrompt extends JDialog {
 
     Container container = new Container();
 
-    int nControllers = uStructure.getNumberOfControllersBeforeUStructure();
+    int nControllers = uStructure.getNumberOfControllers();
     checkBoxes = new JCheckBox[nControllers][nControllers];
 
     container.setLayout(new GridLayout(nControllers + 1, nControllers + 1));

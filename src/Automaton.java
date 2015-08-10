@@ -959,7 +959,7 @@ public class Automaton {
 
     Stack<Long> stack = new Stack<Long>();
     HashSet<Long> valuesInStack = new HashSet<Long>();
-    UStructure automaton = new UStructure(newHeaderFile, newBodyFile, nControllers, true);
+    UStructure uStructure = new UStructure(newHeaderFile, newBodyFile, nControllers, true);
 
       /* Add initial state to the stack */
 
@@ -984,7 +984,7 @@ public class Automaton {
       stack.push(combinedID);
       valuesInStack.add(combinedID);
 
-      automaton.addStateAt(combinedStateLabel.substring(1), false, new ArrayList<Transition>(), true, combinedID);
+      uStructure.addStateAt(combinedStateLabel.substring(1), false, new ArrayList<Transition>(), true, combinedID);
 
     }
 
@@ -1023,11 +1023,17 @@ public class Automaton {
             counter++;
         boolean isConditionalViolation = (counter >= 2 && !isBadTransition);
 
+        // Determine observable and controllable properties for this event vector
+        boolean[] observable   = new boolean[nControllers];
+        boolean[] controllable = new boolean[nControllers];
+
         // For each controller
         for (int i = 0; i < nControllers; i++) {
 
           // Observable events by this controller
           if (e.isObservable()[i]) {
+
+            observable[i] = true;
 
             // If the event is observable, but not possible at this current time, then we can skip this altogether
             long targetID = 0;
@@ -1044,15 +1050,21 @@ public class Automaton {
             combinedStateLabel += "_" + label;
             listOfTargetIDs.add(targetID);
 
-            // Check to see if this controller can prevent an unconditional violation
-            if (isUnconditionalViolation && e.isControllable()[i])
-              if (badTransitions.contains(new TransitionData(listOfStates.get(i + 1).getID(), e.getID(), targetID)))
-                isUnconditionalViolation = false;
+            if (e.isControllable()[i]) {
 
-            // Check to see if this controller can prevent a conditional violation
-            if (isConditionalViolation && e.isControllable()[i])
-              if (!badTransitions.contains(new TransitionData(listOfStates.get(i + 1).getID(), e.getID(), targetID)))
-                isConditionalViolation = false;
+              controllable[i] = true;
+
+              TransitionData data = new TransitionData(listOfStates.get(i + 1).getID(), e.getID(), targetID);
+
+              // Check to see if this controller can prevent an unconditional violation
+              if (isUnconditionalViolation && badTransitions.contains(data))
+                  isUnconditionalViolation = false;
+
+              // Check to see if this controller can prevent a conditional violation
+              if (isConditionalViolation && !badTransitions.contains(data))
+                  isConditionalViolation = false;
+
+            }
 
           // Unobservable events by this controller
           } else {
@@ -1061,20 +1073,20 @@ public class Automaton {
             listOfTargetIDs.add(listOfIDs.get(i + 1));
           }
 
-        }
+        } // for i
 
         combinedEventLabel = "<" + combinedEventLabel + ">";
 
         long combinedTargetID = combineIDs(listOfTargetIDs, nStates);
 
         // Add event
-        automaton.addEventIfNonExisting(combinedEventLabel, new boolean[] {true}, new boolean[] {true} );
+        uStructure.addEventIfNonExisting(combinedEventLabel, observable, controllable);
 
         // Add state if it doesn't already exist
-        if (!automaton.stateExists(combinedTargetID)) {
+        if (!uStructure.stateExists(combinedTargetID)) {
 
           // Add state
-          if (!automaton.addStateAt(combinedStateLabel, false, new ArrayList<Transition>(), false, combinedTargetID)) {
+          if (!uStructure.addStateAt(combinedStateLabel, false, new ArrayList<Transition>(), false, combinedTargetID)) {
             System.err.println("ERROR: Failed to add state. Synchronized composition aborted.");
             return null;
           }
@@ -1088,15 +1100,15 @@ public class Automaton {
         }
 
         // Add transition
-        int eventID = automaton.addTransition(combinedID, combinedEventLabel, combinedTargetID);
+        int eventID = uStructure.addTransition(combinedID, combinedEventLabel, combinedTargetID);
         if (isUnconditionalViolation)
-          automaton.addUnconditionalViolation(combinedID, eventID, combinedTargetID);
+          uStructure.addUnconditionalViolation(combinedID, eventID, combinedTargetID);
         if (isConditionalViolation)
-          automaton.addConditionalViolation(combinedID, eventID, combinedTargetID);
+          uStructure.addConditionalViolation(combinedID, eventID, combinedTargetID);
 
       } // for
 
-      // For each unobservable transition in the each of the controllers of the automaton (including the system)
+      // For each unobservable transition in the each of the controllers of the automaton
       outer: for (int i = 0; i < nControllers; i++) {
 
         for (Transition t : listOfStates.get(i + 1).getTransitions()) {
@@ -1126,13 +1138,15 @@ public class Automaton {
             long combinedTargetID = combineIDs(listOfTargetIDs, nStates);
 
             // Add state if it doesn't already exist
-            if (!automaton.stateExists(combinedTargetID)) {
+            if (!uStructure.stateExists(combinedTargetID)) {
 
               // Add event
-              automaton.addEventIfNonExisting(combinedEventLabel, new boolean[] {true}, new boolean[] {true} );
+              boolean[] controllable = new boolean[nControllers];
+              controllable[i] = t.getEvent().isControllable()[i];
+              uStructure.addEventIfNonExisting(combinedEventLabel, new boolean[nControllers], controllable);
 
               // Add state
-              if (!automaton.addStateAt(combinedStateLabel, false, new ArrayList<Transition>(), false, combinedTargetID)) {
+              if (!uStructure.addStateAt(combinedStateLabel, false, new ArrayList<Transition>(), false, combinedTargetID)) {
                 System.err.println("ERROR: Failed to add state. Synchronized composition aborted.");
                 return null;
               }
@@ -1147,7 +1161,7 @@ public class Automaton {
             }
 
             // Add transition
-            automaton.addTransition(combinedID, combinedEventLabel, combinedTargetID);
+            uStructure.addTransition(combinedID, combinedEventLabel, combinedTargetID);
 
           }
         }
@@ -1159,15 +1173,15 @@ public class Automaton {
 
       /* Re-number states (by removing empty ones) */
 
-    automaton.renumberStates();
+    uStructure.renumberStates();
 
       /* Ensure that the header file has been written to disk */
 
-    automaton.writeHeaderFile();
+    uStructure.writeHeaderFile();
 
-      /* Return produced automaton */
+      /* Return produced U-Structure */
 
-    return automaton;
+    return uStructure;
 
   }
 
@@ -1747,21 +1761,16 @@ public class Automaton {
       // Label
       eventInputBuilder.append(e.getLabel());
 
-      // Properties
-      if (type == Type.AUTOMATON) {
+      // Observability properties
+      eventInputBuilder.append(",");
+      for (int i = 0; i < nControllers; i++)
+        eventInputBuilder.append((e.isObservable()[i] ? "T" : "F"));
 
-        // Observability properties
-        eventInputBuilder.append(",");
-        for (int i = 0; i < nControllers; i++)
-          eventInputBuilder.append((e.isObservable()[i] ? "T" : "F"));
+      // Controllability properties
+      eventInputBuilder.append(",");
+      for (int i = 0; i < nControllers; i++)
+        eventInputBuilder.append((e.isControllable()[i] ? "T" : "F"));
 
-        // Controllability properties
-        eventInputBuilder.append(",");
-        for (int i = 0; i < nControllers; i++)
-          eventInputBuilder.append((e.isControllable()[i] ? "T" : "F"));
-
-      }
-      
       // End of line character
       if (++counter < events.size())
         eventInputBuilder.append("\n");
@@ -2028,9 +2037,9 @@ public class Automaton {
     
     byte[] buffer = new byte[HEADER_SIZE];
 
-    ByteManipulator.writeLongAsBytes(buffer, 0, type.getNumericValue(), 1);
-    ByteManipulator.writeLongAsBytes(buffer, 1, nStates, 8);
-    ByteManipulator.writeLongAsBytes(buffer, 9, eventCapacity, 4);
+    ByteManipulator.writeLongAsBytes(buffer, 0,  type.getNumericValue(), 1);
+    ByteManipulator.writeLongAsBytes(buffer, 1,  nStates, 8);
+    ByteManipulator.writeLongAsBytes(buffer, 9,  eventCapacity, 4);
     ByteManipulator.writeLongAsBytes(buffer, 13, stateCapacity, 8);
     ByteManipulator.writeLongAsBytes(buffer, 21, transitionCapacity, 4);
     ByteManipulator.writeLongAsBytes(buffer, 25, labelLength, 4);
@@ -2050,10 +2059,11 @@ public class Automaton {
         // Fill the buffer
         buffer = new byte[ (2 * nControllers) + 4 + e.getLabel().length()];
 
-        // Read event properties (NOTE: If we ever need to condense the space required to hold an event in a file, we can place a property in each bit instead of each byte)
+        // Read event properties (NOTE: If we ever need to condense the space required to hold an event
+        // in a file, we can place a property in each bit instead of each byte)
         int index = 0;
         for (int i = 0; i < nControllers; i++) {
-          buffer[index] = (byte) (e.isObservable()[i] ? 1 : 0);
+          buffer[index]     = (byte) (e.isObservable()[i]   ? 1 : 0);
           buffer[index + 1] = (byte) (e.isControllable()[i] ? 1 : 0);
           index += 2;
         }

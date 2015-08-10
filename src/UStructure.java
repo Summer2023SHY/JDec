@@ -29,8 +29,6 @@ public class UStructure extends Automaton {
   protected List<TransitionData> invalidCommunications;
   protected List<NashCommunicationData> nashCommunications;
 
-  protected int nControllersBeforeUStructure;
-
     /* CONSTRUCTORS */
 
   /**
@@ -49,27 +47,27 @@ public class UStructure extends Automaton {
 
   /**
    * Implicit constructor: used when creating a new U-Structure.
-   * @param headerFile                    The file where the header should be stored
-   * @param bodyFile                      The file where the body should be stored
-   * @param nControllersBeforeUStructure  The number of controllers that were present before the U-Structure was created
+   * @param headerFile    The file where the header should be stored
+   * @param bodyFile      The file where the body should be stored
+   * @param nControllers  The number of controllers
    **/
-  public UStructure(File headerFile, File bodyFile, int nControllersBeforeUStructure) {
+  public UStructure(File headerFile, File bodyFile, int nControllers) {
     this(
       headerFile,
       bodyFile,
-      nControllersBeforeUStructure,
+      nControllers,
       true
     );
   }
 
   /**
    * Implicit constructor: used to load the U-Structure from file or when creating a new U-Structure.
-   * @param headerFile                    The file where the header should be stored
-   * @param bodyFile                      The file where the body should be stored
-   * @param nControllersBeforeUStructure  The number of controllers that were present before the U-Structure was created
-   * @param clearFiles                    Whether or not the header and body files should be wiped before use
+   * @param headerFile    The file where the header should be stored
+   * @param bodyFile      The file where the body should be stored
+   * @param nControllers  The number of controllers
+   * @param clearFiles    Whether or not the header and body files should be wiped before use
    **/
-  public UStructure(File headerFile, File bodyFile, int nControllersBeforeUStructure, boolean clearFiles) {
+  public UStructure(File headerFile, File bodyFile, int nControllers, boolean clearFiles) {
     this(
       headerFile,
       bodyFile,
@@ -77,31 +75,32 @@ public class UStructure extends Automaton {
       DEFAULT_STATE_CAPACITY,
       DEFAULT_TRANSITION_CAPACITY,
       DEFAULT_LABEL_LENGTH,
-      nControllersBeforeUStructure,
+      nControllers,
       clearFiles
     );
   }
 	
 	/**
    * Main constructor.
-   * @param headerFile                    The binary file to load the header information of the U-Structure from (information about events, etc.)
-   * @param bodyFile                      The binary file to load the body information of the U-Structure from (states and transitions)
-   * @param eventCapacity                 The initial event capacity (increases by a factor of 256 when it is exceeded)
-   * @param stateCapacity                 The initial state capacity (increases by a factor of 256 when it is exceeded)
-   * @param transitionCapacity            The initial maximum number of transitions per state (increases by 1 whenever it is exceeded)
-   * @param labelLength                   The initial maximum number characters per state label (increases by 1 whenever it is exceeded)
-   * @param nControllersBeforeUStructure  The number of controllers that were present before the U-Structure was created
-   * @param clearFiles                    Whether or not the header and body files should be cleared prior to use
+   * @param headerFile          The binary file to load the header information of the U-Structure from (information about events, etc.)
+   * @param bodyFile            The binary file to load the body information of the U-Structure from (states and transitions)
+   * @param eventCapacity       The initial event capacity (increases by a factor of 256 when it is exceeded)
+   * @param stateCapacity       The initial state capacity (increases by a factor of 256 when it is exceeded)
+   * @param transitionCapacity  The initial maximum number of transitions per state (increases by 1 whenever it is exceeded)
+   * @param labelLength         The initial maximum number characters per state label (increases by 1 whenever it is exceeded)
+   * @param nControllers        The number of controllers
+   * @param clearFiles          Whether or not the header and body files should be cleared prior to use
    **/
-  public UStructure(File headerFile, File bodyFile, int eventCapacity, long stateCapacity, int transitionCapacity, int labelLength, int nControllersBeforeUStructure, boolean clearFiles) {
+  public UStructure(File headerFile,
+                    File bodyFile,
+                    int eventCapacity,
+                    long stateCapacity,
+                    int transitionCapacity,
+                    int labelLength,
+                    int nControllers,
+                    boolean clearFiles) {
     
-    super(headerFile, bodyFile, eventCapacity, stateCapacity, transitionCapacity, labelLength, 1, clearFiles);
-    
-    // This variable is only reset if this is not being read from file
-    if (nControllersBeforeUStructure != -1) {
-      this.nControllersBeforeUStructure = nControllersBeforeUStructure;
-      headerFileNeedsToBeWritten = true;
-    }
+    super(headerFile, bodyFile, eventCapacity, stateCapacity, transitionCapacity, labelLength, nControllers, clearFiles);
     
 	}
 
@@ -120,7 +119,7 @@ public class UStructure extends Automaton {
     /* AUTOMATA OPERATIONS */
 
   @Override public UStructure accessible(File newHeaderFile, File newBodyFile) {
-    return accessibleHelper(new UStructure(newHeaderFile, newBodyFile, nControllersBeforeUStructure));
+    return accessibleHelper(new UStructure(newHeaderFile, newBodyFile, nControllers));
   }
 
   @Override public UStructure complement(File newHeaderFile, File newBodyFile) throws OperationFailedException {
@@ -132,7 +131,7 @@ public class UStructure extends Automaton {
       stateCapacity,
       events.size(), // This is the new number of transitions that will be required for each state
       labelLength,
-      nControllersBeforeUStructure,
+      nControllers,
       true
     );
 
@@ -141,7 +140,7 @@ public class UStructure extends Automaton {
   }
 
   @Override protected UStructure invert() {
-    return invertHelper(new UStructure(null, null, eventCapacity, stateCapacity, transitionCapacity, labelLength, nControllersBeforeUStructure, true));
+    return invertHelper(new UStructure(null, null, eventCapacity, stateCapacity, transitionCapacity, labelLength, nControllers, true));
   }
 
     /**
@@ -154,7 +153,21 @@ public class UStructure extends Automaton {
     
       /* Setup */
 
-    // Generate all potential
+    // Create a mapping between the event labels and their associated properties in the original automaton
+    // NOTE: The controller's index (1-based, in this case) is appended to the event's label since each
+    //       controller has different properties for each event
+    Map<String, Boolean> observableMapping   = new HashMap<String, Boolean>();
+    Map<String, Boolean> controllableMapping = new HashMap<String, Boolean>();
+    for (Event e : events) {
+      LabelVector vector = e.getVector();
+      for (int i = 1; i < vector.getSize(); i++) {
+        String label = vector.getLabelAtIndex(i);
+        observableMapping.put(label + i, e.isObservable()[i - 1]);    
+        controllableMapping.put(label + i, e.isControllable()[i - 1]);    
+      }
+    }
+
+    // Generate all potential communication labels
     Set<LabelVector> leastUpperBounds = new HashSet<LabelVector>();
     for (Event e : events)
       leastUpperBounds.add(e.getVector());
@@ -182,9 +195,21 @@ public class UStructure extends Automaton {
           // Add event if it doesn't already exist
           int id;
           Event event = uStructure.getEvent(vector.toString());
-          if (event == null)
-            id = uStructure.addEvent(vector.toString(), new boolean[] {true}, new boolean[] {true});
-          else
+          if (event == null) {
+
+            // Determine observable and controllable properties of the event vector
+            boolean[] observable   = new boolean[nControllers];
+            boolean[] controllable = new boolean[nControllers];
+            for (int i = 1; i < vector.getSize(); i++) {
+              String label = vector.getLabelAtIndex(i);
+              if (!label.equals("*")) {
+                observable[i - 1]   = observableMapping.get(label + i);
+                controllable[i - 1] = controllableMapping.get(label + i);
+              }
+            }
+
+            id = uStructure.addEvent(vector.toString(), observable, controllable);
+          } else
             id = event.getID();
 
           // Add the transition (if it doesn't already exist)
@@ -455,7 +480,7 @@ public class UStructure extends Automaton {
     // Split each protocol into 2 parts (by sending controller)
     List<ProtocolVector> protocolVectors = new ArrayList<ProtocolVector>();
     for (Set<NashCommunicationData> protocol : feasibleProtocols)
-      protocolVectors.add(new ProtocolVector(protocol, nControllersBeforeUStructure));
+      protocolVectors.add(new ProtocolVector(protocol, nControllers));
 
       /* Sort protocol vectors */
 
@@ -550,7 +575,7 @@ public class UStructure extends Automaton {
       /* Setup */
 
     // Create empty crush, copy over events oberservable by the controller
-    Crush crush = new Crush(newHeaderFile, newBodyFile, nControllersBeforeUStructure);
+    Crush crush = new Crush(newHeaderFile, newBodyFile, nControllers);
     for (Event e : events)
       if (!e.getVector().isUnobservableToController(indexOfController))
         crush.addEvent(e.getLabel(), e.isObservable(), e.isControllable());
@@ -1071,13 +1096,13 @@ public class UStructure extends Automaton {
     PrunedUStructure prunedUStructure = applyProtocol(feasibleProtocol, null, null);
 
     // Determine which Crushes will need to be generated (we need to generate 1 or more)
-    boolean[] crushNeedsToBeGenerated = new boolean[nControllersBeforeUStructure];
+    boolean[] crushNeedsToBeGenerated = new boolean[nControllers];
     for (NashCommunicationData communication : feasibleProtocol)
       crushNeedsToBeGenerated[communication.getIndexOfSender()] = true;
 
     // Generate the neccessary Crushes, storing only the communication cost mappings
     List<Map<String, Double>> costMappingsByCrush = new ArrayList<Map<String, Double>>();
-    for (int i = 0; i < nControllersBeforeUStructure; i++)
+    for (int i = 0; i < nControllers; i++)
       if (crushNeedsToBeGenerated[i]) {
         Map<String, Double> costMapping = new HashMap<String, Double>();
         prunedUStructure.crush(null, null, i + 1, costMapping, combiningCostsMethod);
@@ -1310,13 +1335,12 @@ public class UStructure extends Automaton {
 
       /* Write numbers to indicate how many special transitions are in the file */
 
-    byte[] buffer = new byte[24];
-    ByteManipulator.writeLongAsBytes(buffer, 0,  nControllersBeforeUStructure,      4);
-    ByteManipulator.writeLongAsBytes(buffer, 4,  unconditionalViolations.size(),    4);
-    ByteManipulator.writeLongAsBytes(buffer, 8,  conditionalViolations.size(),      4);
-    ByteManipulator.writeLongAsBytes(buffer, 12, potentialCommunications.size(),    4);
-    ByteManipulator.writeLongAsBytes(buffer, 16, invalidCommunications.size(),      4);
-    ByteManipulator.writeLongAsBytes(buffer, 20, nashCommunications.size(),         4);
+    byte[] buffer = new byte[20];
+    ByteManipulator.writeLongAsBytes(buffer, 0,  unconditionalViolations.size(), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 4,  conditionalViolations.size(),   4);
+    ByteManipulator.writeLongAsBytes(buffer, 8,  potentialCommunications.size(), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 12, invalidCommunications.size(),   4);
+    ByteManipulator.writeLongAsBytes(buffer, 16, nashCommunications.size(),      4);
     headerRAFile.write(buffer);
 
       /* Write special transitions to the .hdr file */
@@ -1404,15 +1428,14 @@ public class UStructure extends Automaton {
 
       /* Read the number which indicates how many special transitions are in the file */
 
-    byte[] buffer = new byte[24];
+    byte[] buffer = new byte[20];
     headerRAFile.read(buffer);
 
-    nControllersBeforeUStructure    = (int) ByteManipulator.readBytesAsLong(buffer, 0,  4);
-    int nUnconditionalViolations    = (int) ByteManipulator.readBytesAsLong(buffer, 4,  4);
-    int nConditionalViolations      = (int) ByteManipulator.readBytesAsLong(buffer, 8,  4);
-    int nPotentialCommunications    = (int) ByteManipulator.readBytesAsLong(buffer, 12, 4);
-    int nInvalidCommunications      = (int) ByteManipulator.readBytesAsLong(buffer, 16, 4);
-    int nNashCommunications         = (int) ByteManipulator.readBytesAsLong(buffer, 20, 4);
+    int nUnconditionalViolations = (int) ByteManipulator.readBytesAsLong(buffer, 0,  4);
+    int nConditionalViolations   = (int) ByteManipulator.readBytesAsLong(buffer, 4,  4);
+    int nPotentialCommunications = (int) ByteManipulator.readBytesAsLong(buffer, 8,  4);
+    int nInvalidCommunications   = (int) ByteManipulator.readBytesAsLong(buffer, 12, 4);
+    int nNashCommunications      = (int) ByteManipulator.readBytesAsLong(buffer, 16, 4);
 
       /* Read in special transitions from the .hdr file */
     
@@ -1452,7 +1475,7 @@ public class UStructure extends Automaton {
   private void readCommunicationDataFromHeader(int nCommunications,
                                                List<CommunicationData> list) throws IOException {
 
-    byte[] buffer = new byte[nCommunications * (20 + nControllersBeforeUStructure)];
+    byte[] buffer = new byte[nCommunications * (20 + nControllers)];
     headerRAFile.read(buffer);
     int index = 0;
 
@@ -1467,7 +1490,7 @@ public class UStructure extends Automaton {
       long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
       index += 8;
 
-      CommunicationRole[] roles = new CommunicationRole[nControllersBeforeUStructure];
+      CommunicationRole[] roles = new CommunicationRole[nControllers];
       for (int j = 0; j < roles.length; j++)
         roles[j] = CommunicationRole.getRole(buffer[index++]);
       
@@ -1486,7 +1509,7 @@ public class UStructure extends Automaton {
   private void readNashCommunicationDataFromHeader(int nCommunications,
                                                    List<NashCommunicationData> list) throws IOException {
 
-    byte[] buffer = new byte[nCommunications * (36 + nControllersBeforeUStructure)];
+    byte[] buffer = new byte[nCommunications * (36 + nControllers)];
     headerRAFile.read(buffer);
     int index = 0;
 
@@ -1507,7 +1530,7 @@ public class UStructure extends Automaton {
       double probability = Double.longBitsToDouble(ByteManipulator.readBytesAsLong(buffer, index, 8));
       index += 8;
 
-      CommunicationRole[] roles = new CommunicationRole[nControllersBeforeUStructure];
+      CommunicationRole[] roles = new CommunicationRole[nControllers];
       for (int j = 0; j < roles.length; j++)
         roles[j] = CommunicationRole.getRole(buffer[index++]);
       
@@ -1680,14 +1703,6 @@ public class UStructure extends Automaton {
 
     return communications;
   
-  }
-
-  /**
-   * Get the number of controller that were present before the U-Structure was created.
-   * @return The number of controllers before the U-Structure
-   **/
-  public int getNumberOfControllersBeforeUStructure() {
-    return nControllersBeforeUStructure;
   }
 
 }

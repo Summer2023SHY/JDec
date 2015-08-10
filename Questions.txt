@@ -1,35 +1,39 @@
 HOURS:
-Friday, August 7: (Expected: 5h 05), 9:08 - 
+Friday, August 7: (Expected: 2h) 
+9:49 - 
 
 JAVADOC TO-DO LIST:
   
   TestAutomata.java
 
 QUESTIONS:
+  -guess self-loops in u-structure don't seem to be there?? (refer to self-loop test case with unobservable label) - what about adding communications to it afterwards?? Ask Dr. Ricker what this special case is actually supposed to look like.. Do <a,*> and <*,a> make an upper bound of <a,a>????? Or is a event vector with something in the 0th component, but * in all other components actually an unobservable label?? Can communications be added if n=1?? We can talk about this case on Thursday!
   -Are there any small examples using 3 controllers that do not blow up very large and are easily verifiable? (I'm looking for a good test case)
   -how far into the program can a user get with an uncontrollable system?
 
 SHORT-TERM:
-
+  
+  -add GUI input validation before the automaton gets generated
+  -Update Readme file
+  -Update tooltips for events in U-struct, pruned, and crush
+  -work on shapley values
   -make GUI input code validation more verbose (console messages won't be visible to the user). Perhaps when they generate an automaton, have a popup containing a scrollview with the lines of input that were not understood?? And tips to correct them? OR BETTER YET: Use a 'syntax' highlighting feel to validate lines of input - see code on my dad's laptop called JavaEditor?
-  -work on shapley values! in order to do this, the u-structure must maintain controllable and observable properties
   -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol - implement this!! Refactor the class which allows the user to pick senders and recievers
-  -should the u-structure event properties appear now that we've added them when doing syncrhonized composition?
   -add buttons to mark special transitions in GUI? (menu options would work great for this! With checkboxes), specifically marking Bad Transitions is useful
   -add buttons to add events, add states, and add transitions (maybe little plus icons?)
   -Make generated automata accessible
   -NSGA-II algorithm:
     -Code algorithms 3 and 4
   -lemke-howson file input (specify which pivot or specify "ALL")
-  -deploy as jar
   -mark disablement decisions in the u-structure and crush with a dotted line
   -Logo
-  -test case: U-structure basic example, only 1 controller (should be no conditional violation)
-  -prevent user from adding communications if there was a communication that was a self-loop (display message), this is cyclic vs. acyclic
-  -tooltips dissapear when button is clicked
-  -option to manually load GUI input code for large automata (alternatively, we could have a screen with automaton stats and list of events, basically everything that is in the header file)
+  -prevent user from adding communications if there was a communication that was a self-loop (display message), this is cyclic vs. acyclic (and add test case for this!)
+  -deploy as jar
 
-  POTENTIAL:
+  POTENTIAL/MINOR:
+  -should the u-structure event properties appear now that we've added them when doing syncrhonized composition?
+  -option to manually load GUI input code for large automata (alternatively, we could have a screen with automaton stats and list of events, basically everything that is in the header file)
+  -tooltips dissapear when button is clicked
   -Create settings:
     -"overlap=scale;" should be an option for the user since it makes a drastic difference in the output of the graphs
     -open blank automaton tab when program opens (default is yes)

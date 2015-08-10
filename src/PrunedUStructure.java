@@ -27,18 +27,18 @@ public class PrunedUStructure extends UStructure {
 
   /**
    * Implicit constructor: used when creating a new pruned U-Structure structure.
-   * @param headerFile                    The file where the header should be stored
-   * @param bodyFile                      The file where the body should be stored
-   * @param nControllersBeforeUStructure  The number of controllers that were present before the U-Structure was created
+   * @param headerFile    The file where the header should be stored
+   * @param bodyFile      The file where the body should be stored
+   * @param nControllers  The number of controllers
    **/
-  public PrunedUStructure(File headerFile, File bodyFile, int nControllersBeforeUStructure) {
-    super(headerFile, bodyFile, nControllersBeforeUStructure);
+  public PrunedUStructure(File headerFile, File bodyFile, int nControllers) {
+    super(headerFile, bodyFile, nControllers);
   }
 
     /* AUTOMATA OPERATIONS */
 
   @Override public PrunedUStructure accessible(File newHeaderFile, File newBodyFile) {
-    return accessibleHelper(new PrunedUStructure(newHeaderFile, newBodyFile, nControllersBeforeUStructure));
+    return accessibleHelper(new PrunedUStructure(newHeaderFile, newBodyFile, nControllers));
   }
 
   /**
@@ -71,7 +71,7 @@ public class PrunedUStructure extends UStructure {
 
       /* Base case */
 
-    if (depth == nControllersBeforeUStructure)
+    if (depth == nControllers)
       return;
 
       /* Recursive case */

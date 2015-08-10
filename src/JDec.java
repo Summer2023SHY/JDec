@@ -641,9 +641,13 @@ public class JDec extends JFrame implements ActionListener {
 
         break;
 
-      case "Add Communications":
+      case "Add Communications": 
 
         uStructure = ((UStructure) tab.automaton);
+
+        // // Display error message if there was not enough controllers
+        // if (uStructure.getNumberOfControllers() == 1)
+        //   displayErrorMessage("Not Enough Controllers", "There must be more than 1 controller in order for a communication to take place."); 
 
         // Display warning message, and abort the operation if requested
         if (uStructure.getSizeOfPotentialAndNashCommunications() > 0)
@@ -1445,7 +1449,7 @@ public class JDec extends JFrame implements ActionListener {
       /* Create list of options */
 
     ArrayList<String> optionsList = new ArrayList<String>();
-    for (int i = 1; i <= uStructure.getNumberOfControllersBeforeUStructure(); i++)
+    for (int i = 1; i <= uStructure.getNumberOfControllers(); i++)
       optionsList.add(String.valueOf(i));
     String[] options = optionsList.toArray(new String[optionsList.size()]);
 
@@ -1956,11 +1960,7 @@ public class JDec extends JFrame implements ActionListener {
       // long s = System.currentTimeMillis();
       automaton.generateInputForGUI();
 
-      controllerInput.setValue(
-        type == Automaton.Type.AUTOMATON ?
-        automaton.getNumberOfControllers() :
-        ((UStructure) automaton).getNumberOfControllersBeforeUStructure()
-      );
+      controllerInput.setValue(automaton.getNumberOfControllers());
       eventInput.setText(automaton.getEventInput());
       stateInput.setText(automaton.getStateInput());
       transitionInput.setText(automaton.getTransitionInput());
