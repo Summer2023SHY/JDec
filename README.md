@@ -10,17 +10,18 @@
 
 <b>Running:</b>
 
-    javac *.java
-    java AutomataGUI
+    javac -d bin src/*.java
+    java -cp ./bin JDec
 
 <b>Testing:</b>
 
-    javac *.java
-    java TestAutomata (NOTE: -v flag is used for verbose mode, -c flag is used to enable colored output, -d flag is used to enable diff-like output)
+    javac -d bin src/*.java
+    java -cp ./bin TestAutomata (NOTE: -v flag is used for verbose mode, -c flag is used to enable colored output, -d flag is used to enable diff-like output)
    
-<b>Creating Javadocs:</b>
+<b>Creating and Opening Javadocs:</b>
 
-    javadoc -d docs/ *.java
+    javadoc -private -d docs/ src/*.java
+    open docs/index.html
 
 <b>Dependencies:</b>
 
