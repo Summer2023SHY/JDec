@@ -1,4 +1,4 @@
-# Automata
+# JDec v1.0
 
 <b>Downloading:</b>
 
