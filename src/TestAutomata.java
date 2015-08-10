@@ -364,22 +364,6 @@ public class TestAutomata {
     id = automaton.addState("secondState", true, true);
     printTestCase("Ensuring that the state's ID is 2", new TestResult(id, 2), counter);
 
-      /* State Label Trimming Tests */
-
-    printTestOutput("STATE LABEL TRIMMING TESTS: ", 2);
-
-    printTestOutput("Instantiating automaton...", 3);
-    automaton = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(),
-      "", // Events
-      "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv0\nabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv1", // States 
-      "", // Transitions
-      false // We do not want it to be verbose
-    ));
-
-    automaton.generateInputForGUI();
-    printTestCase("Ensuring the states are correct", new TestResult(automaton.getStateInput(), "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv,F"), counter);
-
   		/* Print summary of this test routine */
 
   	printTestRoutineSummary(testRoutineName, counter);

@@ -5,6 +5,7 @@
  * @author Micah Stairs
  *
  * TABLE OF CONTENTS:
+ *  -Static Error Styling Properties
  *  -Random Automaton Generation
  *  -Automaton Generation from GUI Input Code
  **/
@@ -14,8 +15,24 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 import javax.swing.*;
+import javax.swing.text.*;
 
 public abstract class AutomatonGenerator<T> {
+
+      /* STATIC ERROR STYLING PROPERTIES */
+
+    private static StyleContext styleContext = new StyleContext();
+    private static Style errorStyle, normalStyle;
+
+    static {
+
+      errorStyle = styleContext.addStyle("InvalidSyntax", null);
+      StyleConstants.setForeground(errorStyle, Color.red);
+
+      normalStyle = styleContext.addStyle("ValidSyntax", null);
+      StyleConstants.setForeground(normalStyle, Color.black);
+    
+    }
 
     /* RANDOM AUTOMATON GENERATION */
 
@@ -289,7 +306,7 @@ public abstract class AutomatonGenerator<T> {
     /* AUTOMATON GENERATION FROM GUI INPUT CODE */
 
   /**
-   * Generate an automaton using the given GUI input code.
+   * Generate an automaton using the given GUI input code in the form of a string.
    * @param automaton           The empty automaton in which the generated data will be inserted
    * @param eventInputText      The event input text
    * @param stateInputText      The state input text
@@ -297,38 +314,80 @@ public abstract class AutomatonGenerator<T> {
    * @param verbose             Whether or not parsing errors should be printed to the console
    * @return                    The generated automaton
    **/
-  public static <T extends Automaton> T generateFromGUICode(T automaton, String eventInputText, String stateInputText, String transitionInputText, boolean verbose) {
+  public static <T extends Automaton> T generateFromGUICode(T automaton,
+                                                            String eventInputText,
+                                                            String stateInputText,
+                                                            String transitionInputText,
+                                                            boolean verbose) {
 
-    Automaton.Type automatonType = automaton.getType();
+    return generateFromGUICode(
+      automaton,
+      eventInputText,
+      stateInputText,
+      transitionInputText,
+      null,
+      null,
+      null,
+      null
+    );
 
+  }
+
+  /**
+   * Generate an automaton using the given GUI input code. If the text panes are not null, then
+   * lines that could not be parsed are stylized red.
+   * @param automaton           The empty automaton in which the generated data will be inserted
+   * @param eventInputText      The event input text
+   * @param stateInputText      The state input text
+   * @param transitionInputText The transition input text
+   * @param eventInputPane      The text pane containing the event input
+   * @param stateInputPane      The text pane containing the state input
+   * @param transitionInputPane The text pane containing the transition input
+   * @param gui                 If non-null, then error messages will be displayed in a popup 
+   * @return                    The generated automaton
+   **/
+  public static <T extends Automaton> T generateFromGUICode(T automaton,
+                                                            String eventInputText,
+                                                            String stateInputText,
+                                                            String transitionInputText,
+                                                            JTextPane eventInputPane,
+                                                            JTextPane stateInputPane,
+                                                            JTextPane transitionInputPane,
+                                                            JDec gui) {
+      /* Remove Old Errors */
+
+    if (eventInputPane != null)
+      eventInputPane.getStyledDocument().setCharacterAttributes(0, eventInputPane.getDocument().getLength(), normalStyle, false);
+    if (stateInputPane != null)
+      stateInputPane.getStyledDocument().setCharacterAttributes(0, stateInputPane.getDocument().getLength(), normalStyle, false);
+    if (transitionInputPane != null)
+      transitionInputPane.getStyledDocument().setCharacterAttributes(0, transitionInputPane.getDocument().getLength(), normalStyle, false);
+        
       /* Setup */
 
     HashMap<String, Integer> eventMapping = new HashMap<String, Integer>(); // Maps the events' labels to the events' ID
     HashMap<String, Long> stateMapping = new HashMap<String, Long>(); // Maps the states' labels to the state's ID
+    Automaton.Type automatonType = automaton.getType();
+    boolean hasErrors = false;
 
       /* States */
     
+    int endIndex = 0;
     for (String line : stateInputText.split("\n")) {
 
-      // Parse input differently depending on automaton type
-      String label = null;
-      boolean marked;
-      if (automatonType == Automaton.Type.AUTOMATON) {
+      int startIndex = endIndex;
+      endIndex += line.length() + 1;
 
-        String[] splitLine = line.trim().split(",");
-
-        label = trimStateLabel(splitLine[0], Automaton.MAX_LABEL_LENGTH, verbose);
-        marked = (splitLine.length >= 2 && isTrue(splitLine[1]));
-
-      } else {
-        label = trimStateLabel(line, Automaton.MAX_LABEL_LENGTH, verbose);
-        marked = false;
-      }
+      String[] splitLine = line.trim().split(",");
+      String label = splitLine[0].trim();
+      boolean marked = (splitLine.length >= 2 && isTrue(splitLine[1]));
 
       // Check to see if this is a duplicate state label
       if (stateMapping.get(label) != null) {
-        if (verbose)
-          System.err.println("ERROR: Could not store '" + line + "' as a state, since there is already a state with this label.");
+        System.err.println("ERROR: Could not store '" + line + "' as a state, since there is already a state with this label.");
+        if (stateInputPane != null)
+          stateInputPane.getStyledDocument().setCharacterAttributes(startIndex, splitLine[0].length(), errorStyle, false);
+        hasErrors = true;
         continue;
       }
 
@@ -341,8 +400,10 @@ public abstract class AutomatonGenerator<T> {
         if (isInitialState) {
           
           if (label.length() == 1) {
-            if (verbose)
-              System.err.println("ERROR: Could not parse '" + line + "' as a state (state name must be at least 1 character long).");
+            System.err.println("ERROR: Could not parse '" + line + "' as a state (state name must be at least 1 character long).");
+            if (stateInputPane != null)
+              stateInputPane.getStyledDocument().setCharacterAttributes(startIndex, splitLine[0].length(), errorStyle, false);
+            hasErrors = true;
             continue;
           }
 
@@ -354,36 +415,63 @@ public abstract class AutomatonGenerator<T> {
         // Check for invalid label
         if (!isValidLabel(label)) {
           System.err.println("ERROR: Invalid label ('" + label + "').");
+          if (stateInputPane != null)
+            stateInputPane.getStyledDocument().setCharacterAttributes(startIndex, splitLine[0].length(), errorStyle, false);
+          hasErrors = true;
           continue;
         }
 
         long id = automaton.addState(label, marked, isInitialState);
 
-        // Error checking
+        // Check if adding the state was unsuccessful
         if (id == 0) {
-          if (verbose)
-            System.err.println("ERROR: Could not store '" + line + "' as a state.");
+          if (gui != null)
+            gui.displayErrorMessage("Error", "'" + label + "' could not be added as a state. Please ensure that the label has not exceeded " + Automaton.MAX_LABEL_LENGTH + " characters.");
+          if (stateInputPane != null)
+            stateInputPane.getStyledDocument().setCharacterAttributes(startIndex, line.length(), errorStyle, false);
+          hasErrors = true;
           continue;
         }
 
         // Add state
         stateMapping.put(label, id);
 
+      // Otherwise, no text was entered for the label
+      } else if (line.length() > 0) {
+        System.err.println("ERROR: Could not store'" + line + "' as a state. The label must be at least 1 character long.");
+        if (stateInputPane != null)
+          stateInputPane.getStyledDocument().setCharacterAttributes(startIndex, line.length(), errorStyle, false);
+        hasErrors = true;    
       }
 
     }
     
       /* Events */
 
+    endIndex = 0;
     for (String line : eventInputText.split("\n")) {
 
+      int startIndex = endIndex;
+      endIndex += line.length() + 1;
+        
       String[] splitLine = splitStringWithVectors(line);
-      String label = splitLine[0];
+
+      if (splitLine == null) {
+        System.err.println("ERROR: Could not store '" + line + "' as an event, the vectors could not be parsed properly.");
+        if (eventInputPane != null)
+          eventInputPane.getStyledDocument().setCharacterAttributes(startIndex, line.length(), errorStyle, false);
+        hasErrors = true;
+        continue;
+      }
+
+      String label = splitLine[0].trim();
 
       // Check to see if this is a duplicate event label
       if (eventMapping.get(label) != null) {
-        if (verbose)
-          System.err.println("ERROR: Could not store '" + line + "' as an event, since there is already an event with this label.");
+        System.err.println("ERROR: Could not store '" + line + "' as an event, since there is already an event with this label.");
+        if (eventInputPane != null)
+          eventInputPane.getStyledDocument().setCharacterAttributes(startIndex, splitLine[0].length(), errorStyle, false);
+        hasErrors = true;
         continue;
       }
 
@@ -399,7 +487,7 @@ public abstract class AutomatonGenerator<T> {
         // Parse controller properties
         if (splitLine.length == 3) {
           if (splitLine[1].length() == automaton.getNumberOfControllers() && splitLine[2].length() == automaton.getNumberOfControllers()) {
-            observable = isTrueArray(splitLine[1]);
+            observable  = isTrueArray(splitLine[1]);
             controllable = isTrueArray(splitLine[2]);
           } else {
             System.out.println(
@@ -410,12 +498,19 @@ public abstract class AutomatonGenerator<T> {
                 splitLine[2].length()
                 )
               );
+            if (eventInputPane != null)
+              eventInputPane.getStyledDocument().setCharacterAttributes(startIndex + splitLine[0].length() + 1, line.length() - splitLine[0].length() - 1, errorStyle, false);
+            hasErrors = true;
+            continue;
           }
         }
 
         // Check for invalid label
         if (!isValidLabel(label)) {
           System.err.println("ERROR: Invalid label ('" + label + "').");
+          if (eventInputPane != null)
+            eventInputPane.getStyledDocument().setCharacterAttributes(startIndex, splitLine[0].length(), errorStyle, false);
+          hasErrors = true;
           continue;
         }
 
@@ -424,8 +519,11 @@ public abstract class AutomatonGenerator<T> {
 
         // Error checking
         if (id == 0) {
-          if (verbose)
-            System.err.println("ERROR: Could not store '" + line + "' as an event.");
+          if (gui != null)
+            gui.displayErrorMessage("Error", "'" + label + "' could not be added as an event. Please ensure that there are not more than " + Automaton.MAX_EVENT_CAPACITY + " events.");
+          if (eventInputPane != null)
+            eventInputPane.getStyledDocument().setCharacterAttributes(startIndex, line.length(), errorStyle, false);
+          hasErrors = true;
           continue;
         }
 
@@ -433,14 +531,23 @@ public abstract class AutomatonGenerator<T> {
         // Add event
         eventMapping.put(label, id);
 
-      } else if (line.length() > 0 && verbose)
+      } else if (line.length() > 0) {
         System.err.println("ERROR: Could not parse '" + line + "' as an event.");
+        if (eventInputPane != null)
+          eventInputPane.getStyledDocument().setCharacterAttributes(startIndex, line.length(), errorStyle, false);
+        hasErrors = true;
+        continue;
+      }
 
     }
 
       /* Transitions */
 
+    endIndex = 0;
     for (String line : transitionInputText.split("\n")) {
+
+      int startIndex = endIndex;
+      endIndex += line.length() + 1;
 
       String[] splitLine = line.trim().split(":");
 
@@ -448,35 +555,50 @@ public abstract class AutomatonGenerator<T> {
       String[] firstHalf = splitStringWithVectors(splitLine[0]);
       if (firstHalf.length >= 3) {
 
-        String initialStateLabel = trimStateLabel(firstHalf[0].trim(), Automaton.MAX_LABEL_LENGTH, verbose);
-        String eventLabel = firstHalf[1].trim();
-        String targetStateLabel = trimStateLabel(firstHalf[2].trim(), Automaton.MAX_LABEL_LENGTH, verbose);
-
         // Get ID's of initial state, event, and target state
-        Long initialStateID = stateMapping.get(initialStateLabel);
-        Integer eventID = eventMapping.get(eventLabel);
-        Long targetStateID = stateMapping.get(targetStateLabel);
+        Long initialStateID = stateMapping.get(firstHalf[0].trim());
+        Integer eventID = eventMapping.get(firstHalf[1].trim());
+        Long targetStateID = stateMapping.get(firstHalf[2]);
 
         // Prevent crashing by checking to see if any of the values are null (indicates that they've entered a state or event that doesn't exist)
         if (initialStateID == null || eventID == null || targetStateID == null) {
-          if (verbose)
-            System.err.println("ERROR: Could not store '" + line + "' as a transition.");
-        }
+          System.err.println("ERROR: Could not store '" + line + "' as a transition due to bad state and/or event labels.");
+          if (transitionInputPane != null)
+            transitionInputPane.getStyledDocument().setCharacterAttributes(startIndex, line.length(), errorStyle, false);
+          hasErrors = true;
+          continue;
 
         // Add transition
-        else {
+        } else {
          
           if (automaton.addTransition(initialStateID, eventID, targetStateID)) {
             if (splitLine.length > 1)
               parseAndAddSpecialTransitions(automaton, automatonType, splitLine[1], new TransitionData(initialStateID, eventID, targetStateID));
-          } else
-            System.err.println("ERROR: Could not add '" + line + "' as a transition.");
+          } else {
+            if (gui != null)
+              gui.displayErrorMessage("Error", "'" + line + "' could not be added as a transition. Please ensure that there are not more than " + Automaton.MAX_TRANSITION_CAPACITY + " transitions.");
+            if (transitionInputPane != null)
+              transitionInputPane.getStyledDocument().setCharacterAttributes(startIndex, line.length(), errorStyle, false);
+            hasErrors = true;
+            continue;
+          }
         }
         
-      } else if (line.length() > 0 && verbose)
+      } else if (line.length() > 0) {
         System.err.println("ERROR: Could not parse '" + line + "' as a transition.");
+        if (transitionInputPane != null)
+          transitionInputPane.getStyledDocument().setCharacterAttributes(startIndex, line.length(), errorStyle, false);
+        hasErrors = true;
+        continue;
+      }
     }
 
+      /* Display message if there were any errors */
+
+    if (hasErrors && gui != null) {
+      gui.displayErrorMessage("Error", "There were one or more lines of input code that were unable to be parsed.\nPlease fix all lines marked in red and then try re-generating it.");
+      return null;
+    }
       /* Ensure that the header file has been written to disk */
       
     automaton.writeHeaderFile();
@@ -718,39 +840,33 @@ public abstract class AutomatonGenerator<T> {
     if (label.length() < 1)
       return false;
 
+    boolean isVector = false;
+
     // All characters must be either letters, digits, or one of the allowed special characters
-    for (int i = 0; i < label.length(); i++)
-      if (!Character.isLetterOrDigit(label.charAt(i))
-          && label.charAt(i) != ','
-          && label.charAt(i) != '_'
-          && label.charAt(i) != '\''
-          && label.charAt(i) != '*'
-          && label.charAt(i) != '<'
-          && label.charAt(i) != '>')
+    for (int i = 0; i < label.length(); i++) {
+
+      boolean valid = false;
+
+      if (Character.isLetterOrDigit(label.charAt(i)) || label.charAt(i) == '_' || label.charAt(i) == '*' || label.charAt(i) == '\'')
+        valid = true;
+
+      if (label.charAt(i) == ',' || label.charAt(i) == '<' || label.charAt(i) == '>') {
+        valid = true;
+        isVector = true;
+      }
+
+      if (!valid)
         return false;
 
+    }
+
+    // If this label contains characters that indicate it is a vector, ensure that the vector is valid
+    if (isVector) {
+      LabelVector vector = new LabelVector(label);
+      return vector.getSize() != -1;
+    }
+
     return true;
-
-  }
-
-  /**
-   * Trim down the string to the desired length by removing characters from the end.
-   * @param str     The string that needs to be trimmed
-   * @param length  The desired length
-   * @param verbose Whether or not a message should be printed if a label is trimmed
-   * @return        The trimmed string (or the original if it doesn't exceed the desired length)
-   **/
-  private static String trimStateLabel(String str, int length, boolean verbose) {
-
-    if (str.length() <= length)
-      return str;
-
-    String trimmed = str.substring(0, length);
-    
-    if (verbose)
-      System.err.println(String.format("NOTE: State labels must be %d characters or less. '%s' was trimmed to '%s'.", Automaton.MAX_LABEL_LENGTH, str, trimmed));
-
-    return trimmed;
 
   }
 

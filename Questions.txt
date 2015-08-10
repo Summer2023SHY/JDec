@@ -1,6 +1,5 @@
 HOURS:
-Friday, August 7: (Expected: 2h) 
-9:49 - 
+Monday, August 10: 2 hour 25 minutes, 11:05 - 
 
 JAVADOC TO-DO LIST:
   
@@ -13,11 +12,11 @@ QUESTIONS:
 
 SHORT-TERM:
   
-  -add GUI input validation before the automaton gets generated
+  -manual testing of validation
+  -remove verbose parameter from generateFromGUICode()
   -Update Readme file
   -Update tooltips for events in U-struct, pruned, and crush
   -work on shapley values
-  -make GUI input code validation more verbose (console messages won't be visible to the user). Perhaps when they generate an automaton, have a popup containing a scrollview with the lines of input that were not understood?? And tips to correct them? OR BETTER YET: Use a 'syntax' highlighting feel to validate lines of input - see code on my dad's laptop called JavaEditor?
   -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol - implement this!! Refactor the class which allows the user to pick senders and recievers
   -add buttons to mark special transitions in GUI? (menu options would work great for this! With checkboxes), specifically marking Bad Transitions is useful
   -add buttons to add events, add states, and add transitions (maybe little plus icons?)

@@ -907,7 +907,10 @@ public class JDec extends JFrame implements ActionListener {
           tab.eventInput.getText(),
           tab.stateInput.getText(),
           tab.transitionInput.getText(),
-          true
+          tab.eventInput,
+          tab.stateInput,
+          tab.transitionInput,
+          this
         );
         break;
 
@@ -919,7 +922,10 @@ public class JDec extends JFrame implements ActionListener {
           tab.eventInput.getText(),
           tab.stateInput.getText(),
           tab.transitionInput.getText(),
-          true
+          tab.eventInput,
+          tab.stateInput,
+          tab.transitionInput,
+          this
         );
         break;
 
@@ -931,7 +937,10 @@ public class JDec extends JFrame implements ActionListener {
           tab.eventInput.getText(),
           tab.stateInput.getText(),
           tab.transitionInput.getText(),
-          true
+          tab.eventInput,
+          tab.stateInput,
+          tab.transitionInput,
+          this
         );
         break;
 
@@ -943,7 +952,10 @@ public class JDec extends JFrame implements ActionListener {
           tab.eventInput.getText(),
           tab.stateInput.getText(),
           tab.transitionInput.getText(),
-          true
+          tab.eventInput,
+          tab.stateInput,
+          tab.transitionInput,
+          this
         );
         break;
 
@@ -954,6 +966,11 @@ public class JDec extends JFrame implements ActionListener {
         return;
 
     }
+
+    // Abort if the automaton was unable to be generated (due to errors parsing the input code)
+    if (tab.automaton == null)
+      return;
+
     tab.setSaved(true);
 
     // Generate an image (unless it's quite large)

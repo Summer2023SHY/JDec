@@ -1141,9 +1141,10 @@ public class Automaton {
             if (!uStructure.stateExists(combinedTargetID)) {
 
               // Add event
+              boolean[] observable = new boolean[nControllers];
               boolean[] controllable = new boolean[nControllers];
               controllable[i] = t.getEvent().isControllable()[i];
-              uStructure.addEventIfNonExisting(combinedEventLabel, new boolean[nControllers], controllable);
+              uStructure.addEventIfNonExisting(combinedEventLabel, observable, controllable);
 
               // Add state
               if (!uStructure.addStateAt(combinedStateLabel, false, new ArrayList<Transition>(), false, combinedTargetID)) {
@@ -2903,7 +2904,12 @@ public class Automaton {
 
       /* Add the event */
 
-    events.add(event);
+    // NOTE: The implementation of Event.equals() and Event.compareTo() does not guarantee that
+    //       duplicates will always be detected with this method.
+    if (!events.add(event)) {
+      System.err.println("ERROR: Could not add event to set (detected a duplicate).");
+      return 0;
+    }
 
       /* Update the header file */
 
