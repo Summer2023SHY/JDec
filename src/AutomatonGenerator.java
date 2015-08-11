@@ -700,12 +700,16 @@ public abstract class AutomatonGenerator<T> {
 
         UStructure uStructure = (UStructure) automaton;
 
-        if (str.equals("DISABLEMENT_DECISION")) {
-          uStructure.addDisablementDecision(data.initialStateID, data.eventID, data.targetStateID);  
+        String[] parts = str.split("-");
+
+        if (parts[0].equals("DISABLEMENT_DECISION") && parts.length == 2) {
+          boolean[] controllers = new boolean[parts[1].length()];
+          for (int i = 0; i < controllers.length; i++)
+            controllers[i] = isTrue(parts[1].substring(i, i + 1));
+          uStructure.addDisablementDecision(data.initialStateID, data.eventID, data.targetStateID, controllers);  
           continue;
         }
 
-        String[] parts = str.split("-");
 
         if (parts[0].equals("NASH_COMMUNICATION")) {
 

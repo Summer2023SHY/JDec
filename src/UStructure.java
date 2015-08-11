@@ -28,7 +28,7 @@ public class UStructure extends Automaton {
   protected List<CommunicationData> potentialCommunications;
   protected List<TransitionData> invalidCommunications;
   protected List<NashCommunicationData> nashCommunications;
-  protected List<TransitionData> disablementDecisions;
+  protected List<DisablementData> disablementDecisions;
 
     /* CONSTRUCTORS */
 
@@ -114,7 +114,7 @@ public class UStructure extends Automaton {
     potentialCommunications = new ArrayList<CommunicationData>();
     invalidCommunications   = new ArrayList<TransitionData>();
     nashCommunications      = new ArrayList<NashCommunicationData>();
-    disablementDecisions    = new ArrayList<TransitionData>();
+    disablementDecisions    = new ArrayList<DisablementData>();
   
   }
 
@@ -627,10 +627,13 @@ public class UStructure extends Automaton {
       // Loop through each event
       outer: for (Event e : crush.events) {
 
-        // Generate list of all reachable states from the current event
+        // Setup
         Set<State> reachableStates = new HashSet<State>();
         Set<NashCommunicationData> communicationsToBeCopied = new HashSet<NashCommunicationData>();
         boolean isDisablementDecision = false;
+        boolean[] disablementControllers = new boolean[nControllers];
+        
+        // Generate list of all reachable states from the current event        
         for (State s : setOfStates)
           for (Transition t : s.getTransitions())
             if (t.getEvent().equals(e)) {
@@ -646,12 +649,14 @@ public class UStructure extends Automaton {
                   communicationsToBeCopied.add(communication);
               
               // Check to see if there is a disablement decision to be copied over
-              if (!isDisablementDecision)
-                for (TransitionData disablement : disablementDecisions)
-                  if (transitionData.equals(disablement)) {
-                    isDisablementDecision = true;
-                    break;
-                  }
+              for (DisablementData disablementData : disablementDecisions)
+                if (transitionData.equals(disablementData)) {
+                  isDisablementDecision = true;
+                  for (int i = 0; i < nControllers; i++)
+                    if (disablementData.controllers[i])
+                      disablementControllers[i] = true;
+                  break;
+                }
 
             }
 
@@ -671,7 +676,7 @@ public class UStructure extends Automaton {
 
           // Add disablement decision
           if (isDisablementDecision)
-            crush.addDisablementDecision(mappedID, e.getID(), mappedTargetID);
+            crush.addDisablementDecision(mappedID, e.getID(), mappedTargetID, disablementControllers);
 
           // Add Nash communication using combined cost
           if (communicationsToBeCopied.size() > 0) {
@@ -732,6 +737,43 @@ public class UStructure extends Automaton {
 
   }
 
+  public void findShapleyValues() {
+
+    // boolean[][] canDisable = new boolean[nControllers][disablementDecisions.size()];
+
+    // for (DisablementData data : disablementDecisions) {
+      
+    //   Event event = getEvent(data.eventID);
+
+
+
+    // }
+
+    //   /* Generate powerset of controllers (1-based) */
+
+    // List<Integer> elements = new ArrayList<Integer>();
+    // for (int i = 1; i <= nControllers; i++)
+    //   elements.add(i);
+    // List<Set<Integer>> coalitions = new ArrayList<Set<Integer>>();
+    // powerSet(coalitions, elements);
+
+    // for (Set<Integer> coalition : coalitions) {
+
+    //   // Count the number of disablement decisions that are detected by controllers in this coalition
+    //   int count = 0;
+    //   for (DisablementData data : disablementDecisions) {
+
+
+
+    //   }
+
+    //   System.out.println(coalition.toString() + " : " + count);
+
+    // }
+
+
+  }
+
     /* AUTOMATA OPERATION HELPER METHODS */
 
   @Override protected <T extends Automaton> void copyOverSpecialTransitions(T automaton) {
@@ -758,9 +800,9 @@ public class UStructure extends Automaton {
       if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
         uStructure.addNashCommunication(data.initialStateID, data.eventID, data.targetStateID, (CommunicationRole[]) data.roles.clone(), data.cost, data.probability);
 
-    for (TransitionData data : disablementDecisions)
+    for (DisablementData data : disablementDecisions)
       if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
-        uStructure.addDisablementDecision(data.initialStateID, data.eventID, data.targetStateID);
+        uStructure.addDisablementDecision(data.initialStateID, data.eventID, data.targetStateID, (boolean[]) data.controllers.clone());
 
   }
 
@@ -1341,7 +1383,7 @@ public class UStructure extends Automaton {
     if (invalidCommunications.contains(transitionData))
       str += ",INVALID_COMMUNICATION";
 
-    // Search entire list since there may be more than one nash communication
+    // Search entire list since there may be more than one Nash communication
     for (NashCommunicationData communicationData : nashCommunications)
       if (transitionData.equals(communicationData)) {
         str += ",NASH_COMMUNICATION-";
@@ -1351,9 +1393,15 @@ public class UStructure extends Automaton {
         str += "-" + communicationData.probability;
       }
 
-     if (disablementDecisions.contains(transitionData))
-      str += ",DISABLEMENT_DECISION";
-
+    // There is only supposed to be one piece of disablement data per transition
+    for (DisablementData disablementData : disablementDecisions)
+      if (transitionData.equals(disablementData)) {
+        str += ",DISABLEMENT_DECISION-";
+        for (boolean b : disablementData.controllers)
+          str += (b ? "T" : "F");
+        break;
+      }
+    
     return str;
 
   }
@@ -1393,7 +1441,7 @@ public class UStructure extends Automaton {
     writeCommunicationDataToHeader(potentialCommunications);
     writeTransitionDataToHeader(invalidCommunications);
     writeNashCommunicationDataToHeader(nashCommunications);
-    writeTransitionDataToHeader(disablementDecisions);
+    writeDisablementDataToHeader(disablementDecisions);
 
   }
 
@@ -1468,6 +1516,37 @@ public class UStructure extends Automaton {
 
   }
 
+  /**
+   * A helper method to write a list of disablement decisions to the header file.
+   * NOTE: This could be made more efficient by using one buffer for all disablement decisions.
+   * @param list          The list of disablement decisions
+   * @throws IOException  If there were any problems writing to file
+   **/
+  private void writeDisablementDataToHeader(List<DisablementData> list) throws IOException {
+
+    for (DisablementData data : list) {
+
+      byte[] buffer = new byte[20 + data.controllers.length];
+      int index = 0;
+
+      ByteManipulator.writeLongAsBytes(buffer, index, data.initialStateID, 8);
+      index += 8;
+
+      ByteManipulator.writeLongAsBytes(buffer, index, data.eventID, 4);
+      index += 4;
+
+      ByteManipulator.writeLongAsBytes(buffer, index, data.targetStateID, 8);
+      index += 8;
+
+      for (boolean b : data.controllers)
+        buffer[index++] = (byte) (b ? 1 : 0);
+      
+      headerRAFile.write(buffer);
+
+    }
+
+  }
+
   @Override protected void readSpecialTransitionsFromHeader() throws IOException {
 
       /* Read the number which indicates how many special transitions are in the file */
@@ -1510,8 +1589,8 @@ public class UStructure extends Automaton {
     }
 
     if (nDisablementDecisions > 0) {
-      disablementDecisions = new ArrayList<TransitionData>();
-      readTransitionDataFromHeader(nDisablementDecisions, disablementDecisions);
+      disablementDecisions = new ArrayList<DisablementData>();
+      readDisablementDataFromHeader(nDisablementDecisions, disablementDecisions);
     }
 
   }
@@ -1585,6 +1664,40 @@ public class UStructure extends Automaton {
         roles[j] = CommunicationRole.getRole(buffer[index++]);
       
       list.add(new NashCommunicationData(initialStateID, eventID, targetStateID, roles, cost, probability));
+    
+    }
+
+  }
+
+  /**
+   * A helper method to read a list of disablement decisions from the header file.
+   * @param nDisablements The number of disablement decisions that need to be read
+   * @param list          The list of disablement decisions
+   * @throws IOException  If there were any problems reading from file
+   **/
+  private void readDisablementDataFromHeader(int nDisablements,
+                                             List<DisablementData> list) throws IOException {
+
+    byte[] buffer = new byte[nDisablements * (20 + nControllers)];
+    headerRAFile.read(buffer);
+    int index = 0;
+
+    for (int i = 0; i < nDisablements; i++) {
+
+      long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
+      index += 8;
+      
+      int eventID = (int) ByteManipulator.readBytesAsLong(buffer, index, 4);
+      index += 4;
+      
+      long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
+      index += 8;
+
+      boolean[] controllers = new boolean[nControllers];
+      for (int j = 0; j < controllers.length; j++)
+        controllers[j] = (buffer[index++] == 1);
+      
+      list.add(new DisablementData(initialStateID, eventID, targetStateID, controllers));
     
     }
 
@@ -1709,13 +1822,14 @@ public class UStructure extends Automaton {
 
   /**
    * Add a disablement decision.
-   * @param initialStateID   The initial state
-   * @param eventID          The event triggering the transition
-   * @param targetStateID    The target state
+   * @param initialStateID  The initial state
+   * @param eventID         The event triggering the transition
+   * @param targetStateID   The target state
+   * @param controllers     An array indicating which controllers can disable this transition 
    **/
-  public void addDisablementDecision(long initialStateID, int eventID, long targetStateID) {
+  public void addDisablementDecision(long initialStateID, int eventID, long targetStateID, boolean[] controllers) {
 
-    disablementDecisions.add(new TransitionData(initialStateID, eventID, targetStateID));
+    disablementDecisions.add(new DisablementData(initialStateID, eventID, targetStateID, controllers));
     headerFileNeedsToBeWritten = true;
 
   }

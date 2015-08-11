@@ -1019,6 +1019,7 @@ public class Automaton {
         // It is not a disablement decision by default, until we find a controller that can disable it
         // NOTE: The system must also have a bad transition in order for it to be a disablement decision
         boolean isDisablementDecision = false;
+        boolean[] disablementControllers = new boolean[nControllers];
 
         // A conditional violation can only occur when an event is controllable by at least 2 controllers, and the system must have a good transition
         int counter = 0;
@@ -1069,8 +1070,10 @@ public class Automaton {
                   isConditionalViolation = false;
 
               // Check to see if this controller causes a disablement decision
-              if (isBadTransition && !isDisablementDecision && badTransitions.contains(data))
+              if (isBadTransition && badTransitions.contains(data)) {
                 isDisablementDecision = true;
+                disablementControllers[i] = true;
+              }
 
             }
 
@@ -1114,7 +1117,7 @@ public class Automaton {
         if (isConditionalViolation)
           uStructure.addConditionalViolation(combinedID, eventID, combinedTargetID);
         if (isDisablementDecision)
-          uStructure.addDisablementDecision(combinedID, eventID, combinedTargetID);
+          uStructure.addDisablementDecision(combinedID, eventID, combinedTargetID, disablementControllers);
 
       } // for
 
@@ -2413,7 +2416,7 @@ public class Automaton {
           System.err.println("ERROR: Could not create empty temporary file.");
           e.printStackTrace();
         }
-               
+
         return file;
       }
 

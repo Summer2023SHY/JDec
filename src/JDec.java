@@ -186,7 +186,8 @@ public class JDec extends JFrame implements ActionListener {
     // Properties menu
     menuBar.add(createMenu("Properties",
       "Test Observability[BASIC_AUTOMATON]",
-      "Test Controllability[BASIC_AUTOMATON]"
+      "Test Controllability[BASIC_AUTOMATON]",
+      "Shapley Values[ANY_U_STRUCTURE]"
     ));
     
     // Generate menu
@@ -717,6 +718,13 @@ public class JDec extends JFrame implements ActionListener {
           displayMessage("Passed Test", "The system is controllable.", JOptionPane.INFORMATION_MESSAGE);
         else
           displayMessage("Failed Test", "The system is not controllable.", JOptionPane.INFORMATION_MESSAGE);
+        break;
+
+      case "Shapley Values":
+
+        uStructure = (UStructure) tab.automaton;
+        uStructure.findShapleyValues();
+
         break;
 
       case "Random Automaton":

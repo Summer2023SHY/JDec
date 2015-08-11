@@ -1,27 +1,32 @@
 HOURS:
 Monday, August 10: 5 hours 15 minutes
-Tuesday, August 11: 1 hour 40 minutes, 9:19 - 
+Tuesday, August 11: 4 hour 40 minutes, 7:00 - 
 
 JAVADOC TO-DO LIST:
   
   TestAutomata.java
 
 QUESTIONS:
+
+  -Can shpapley values be calculated from anything other than u-structure and pruned u-structure? (emailed)
   -Ask Dr. Ricker what the basic self-loop test case is actually supposed to look like.. Do <a,*> and <*,a> make an upper bound of <a,a>????? Or is a event vector with something in the 0th component, but * in all other components actually an unobservable label?? Can communications be added if n=1?? We can talk about this case on Thursday!
   -Are there any small examples using 3 controllers that do not blow up very large and are easily verifiable? (I'm looking for a good test case)
   -how far into the program can a user get with an uncontrollable system?
 
 SHORT-TERM:
   
-  -prevent user from adding communications if there was a communication that was a self-loop (display message), this is cyclic vs. acyclic (and add test case for this!) What about INVALID_COMMUNICATIONS that are self-loops?
+  -update tooltips for disablement decisions
   -work on shapley values
+  -prevent user from adding communications if there was a communication that was a self-loop (display message), this is cyclic vs. acyclic (and add test case for this!) What about INVALID_COMMUNICATIONS that are self-loops?
   -NSGA-II algorithm:
     -Code algorithms 3 and 4
   -add buttons to mark special transitions in GUI? (menu options would work great for this! With checkboxes), specifically marking Bad Transitions is useful
   -Logo
   -deploy as jar
 
-  POTENTIAL/MINOR:
+POTENTIAL/MINOR:
+
+  -why are Events in a set instead of a map??????? unqiueness is already being guaranteed by JDec
   -add buttons to add events, add states, and add transitions (maybe little plus icons?)
   -warn user when they've specified more than one initial state (only the last one is considered anyway)
   -should the u-structure event properties appear now that we've added them when doing syncrhonized composition?
