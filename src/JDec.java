@@ -1065,7 +1065,6 @@ public class JDec extends JFrame implements ActionListener {
    **/
   private void refresh(final int index) {
     
-
     // This process is started in a new thread so that the progress bar can be refreshed
     new Thread() {
       @Override public void run() {
@@ -1120,6 +1119,9 @@ public class JDec extends JFrame implements ActionListener {
             progressBarPopup.dispose();
           }
         });
+
+      // Refresh components which require a specific type of automaton
+      updateComponentsWhichRequireAutomaton();
 
     }}.start();
 

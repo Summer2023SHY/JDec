@@ -13,7 +13,6 @@ QUESTIONS:
 
 SHORT-TERM:
   
-  -there is bug where the menu options are not always enabled when they should be (sometimes after opening a file or generating an automaton from the feasibleprotocoloutput, changing tabs then coming back again seem to fix it)
   -lemke-howson file input (specify which pivot or specify "ALL")
   -prevent user from adding communications if there was a communication that was a self-loop (display message), this is cyclic vs. acyclic (and add test case for this!) What about INVALID_COMMUNICATIONS that are self-loops?
   -Update tooltips for events in U-struct, pruned, and crush
