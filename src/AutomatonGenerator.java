@@ -698,13 +698,19 @@ public abstract class AutomatonGenerator<T> {
       // Applies to U-Structures, pruned U-Structures, and Crushes
       if (automatonType == Automaton.Type.U_STRUCTURE || automatonType == Automaton.Type.PRUNED_U_STRUCTURE || automatonType == Automaton.Type.CRUSH) {
 
+        UStructure uStructure = (UStructure) automaton;
+
+        if (str.equals("DISABLEMENT_DECISION")) {
+          uStructure.addDisablementDecision(data.initialStateID, data.eventID, data.targetStateID);  
+          continue;
+        }
+
         String[] parts = str.split("-");
 
         if (parts[0].equals("NASH_COMMUNICATION")) {
 
           if (parts.length == 4) {
             try {
-              UStructure uStructure = (UStructure) automaton;
               uStructure.addNashCommunication(
                 data.initialStateID,
                 data.eventID,
@@ -715,7 +721,7 @@ public abstract class AutomatonGenerator<T> {
               );
               continue;
             } catch (NumberFormatException e) {
-            // Do nothing
+              // Do nothing
             }
 
           }

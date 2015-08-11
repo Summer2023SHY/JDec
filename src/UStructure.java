@@ -577,7 +577,7 @@ public class UStructure extends Automaton {
    * @param indexOfController     The index of the controller in which the crush is taken with respect to (1-based)
    * @param combinedCostsMappings Passed in as an empty map, this method maps the Nash communications as strings
    *                              with the combined costs (if null, then a HashMap will simply not be populated)
-   * @param combiningCostsMethod  The method used to combine communication costs
+   * @param combiningCostsMethod  The method used to combine communication costs (can be null if there are no communications)
    * @return                      The crush
    **/
   public Crush crush(File newHeaderFile,
@@ -587,7 +587,7 @@ public class UStructure extends Automaton {
                      Crush.CombiningCosts combiningCostsMethod) {
 
     if (potentialCommunications.size() > 0)
-      System.err.println("WARNING: " + potentialCommunications.size() + " communications were ignored. Only Nash communications are considered in the Crush operation.");
+      System.err.println("WARNING: " + potentialCommunications.size() + " communications were ignored. Only Nash communications are being considered in the Crush operation.");
 
       /* Setup */
 
@@ -630,6 +630,7 @@ public class UStructure extends Automaton {
         // Generate list of all reachable states from the current event
         Set<State> reachableStates = new HashSet<State>();
         Set<NashCommunicationData> communicationsToBeCopied = new HashSet<NashCommunicationData>();
+        boolean isDisablementDecision = false;
         for (State s : setOfStates)
           for (Transition t : s.getTransitions())
             if (t.getEvent().equals(e)) {
@@ -637,12 +638,21 @@ public class UStructure extends Automaton {
               // Find reachable states
               findConnectingStates(reachableStates, getState(t.getTargetStateID()), indexOfController);
 
-              // Check to see if there are any potential or Nash communications that need to be copied over
               TransitionData transitionData = new TransitionData(s.getID(), t.getEvent().getID(), t.getTargetStateID());
+              
+              // Check to see if there are any potential or Nash communications that need to be copied over
               for (NashCommunicationData communication : getNashCommunications())
                 if (transitionData.equals(communication))
                   communicationsToBeCopied.add(communication);
-            
+              
+              // Check to see if there is a disablement decision to be copied over
+              if (!isDisablementDecision)
+                for (TransitionData disablement : disablementDecisions)
+                  if (transitionData.equals(disablement)) {
+                    isDisablementDecision = true;
+                    break;
+                  }
+
             }
 
         // Add the transition (if applicable)
@@ -658,6 +668,10 @@ public class UStructure extends Automaton {
           }
           
           crush.addTransition(mappedID, e.getID(), mappedTargetID);
+
+          // Add disablement decision
+          if (isDisablementDecision)
+            crush.addDisablementDecision(mappedID, e.getID(), mappedTargetID);
 
           // Add Nash communication using combined cost
           if (communicationsToBeCopied.size() > 0) {

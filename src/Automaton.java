@@ -1016,6 +1016,10 @@ public class Automaton {
         boolean isBadTransition = isBadTransition(listOfStates.get(0).getID(), e.getID(), t1.getTargetStateID());
         boolean isUnconditionalViolation = isBadTransition;
 
+        // It is not a disablement decision by default, until we find a controller that can disable it
+        // NOTE: The system must also have a bad transition in order for it to be a disablement decision
+        boolean isDisablementDecision = false;
+
         // A conditional violation can only occur when an event is controllable by at least 2 controllers, and the system must have a good transition
         int counter = 0;
         for (int i = 0; i < nControllers; i++)
@@ -1064,6 +1068,10 @@ public class Automaton {
               if (isConditionalViolation && !badTransitions.contains(data))
                   isConditionalViolation = false;
 
+              // Check to see if this controller causes a disablement decision
+              if (isBadTransition && !isDisablementDecision && badTransitions.contains(data))
+                isDisablementDecision = true;
+
             }
 
           // Unobservable events by this controller
@@ -1105,6 +1113,8 @@ public class Automaton {
           uStructure.addUnconditionalViolation(combinedID, eventID, combinedTargetID);
         if (isConditionalViolation)
           uStructure.addConditionalViolation(combinedID, eventID, combinedTargetID);
+        if (isDisablementDecision)
+          uStructure.addDisablementDecision(combinedID, eventID, combinedTargetID);
 
       } // for
 
@@ -1531,7 +1541,7 @@ public class Automaton {
           State targetState = getStateExcludingTransitions(t.getTargetStateID());
 
           // Check to see if this transition has additional properties (meaning it's a special transition)
-          String key = "" + stateLabel + " " + t.getEvent().getID() + " " + targetState.getLabel();
+          String key = "" + stateLabel + " " + t.getEvent().getID() + " " + formatStateLabel(targetState);
           String properties = additionalEdgeProperties.get(key);
 
           if (properties != null) {
@@ -1697,9 +1707,9 @@ public class Automaton {
    * @return      A string used to identify this particular transition
    **/
   protected String createKey(TransitionData data) {
-    return "" + getState(data.initialStateID).getLabel() + " "
+    return "" + formatStateLabel(getState(data.initialStateID)) + " "
               + data.eventID + " "
-              + getStateExcludingTransitions(data.targetStateID).getLabel();
+              + formatStateLabel(getStateExcludingTransitions(data.targetStateID));
   }
 
   /**
@@ -2403,7 +2413,7 @@ public class Automaton {
           System.err.println("ERROR: Could not create empty temporary file.");
           e.printStackTrace();
         }
-        // System.out.println("DEBUG: " + file.getAbsolutePath());        
+               
         return file;
       }
 
