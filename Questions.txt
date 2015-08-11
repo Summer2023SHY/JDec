@@ -15,7 +15,6 @@ SHORT-TERM:
   
   -lemke-howson file input (specify which pivot or specify "ALL")
   -prevent user from adding communications if there was a communication that was a self-loop (display message), this is cyclic vs. acyclic (and add test case for this!) What about INVALID_COMMUNICATIONS that are self-loops?
-  -Update tooltips for events in U-struct, pruned, and crush
   -work on shapley values
   -NSGA-II algorithm:
     -Code algorithms 3 and 4
