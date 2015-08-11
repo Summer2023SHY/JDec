@@ -1063,61 +1063,65 @@ public class JDec extends JFrame implements ActionListener {
    * NOTE: A loading bar is displayed to keep track of the progress.
    * @param index The tab's index
    **/
-  private void refresh(int index) {
+  private void refresh(final int index) {
+    
 
-    final ProgressBarPopup progressBarPopup = new ProgressBarPopup(this, "Loading...", 3);
+    // This process is started in a new thread so that the progress bar can be refreshed
+    new Thread() {
+      @Override public void run() {
 
-    AutomatonTab tab = tabs.get(index);
+      final ProgressBarPopup progressBarPopup = new ProgressBarPopup(JDec.this, "Loading...", 3);
+      AutomatonTab tab = tabs.get(index);
+      
+      // Instantiate automaton
+      switch (Automaton.Type.getType(tab.headerFile)) {
 
-    // Instantiate automaton
-    switch (Automaton.Type.getType(tab.headerFile)) {
+        case AUTOMATON:
+          tab.automaton = new Automaton(tab.headerFile, tab.bodyFile, false);
+          break;
 
-      case AUTOMATON:
-        tab.automaton = new Automaton(tab.headerFile, tab.bodyFile, false);
-        break;
+        case U_STRUCTURE:
+          tab.automaton = new UStructure(tab.headerFile, tab.bodyFile);
+          break;
 
-      case U_STRUCTURE:
-        tab.automaton = new UStructure(tab.headerFile, tab.bodyFile);
-        break;
+        case PRUNED_U_STRUCTURE:
+          tab.automaton = new PrunedUStructure(tab.headerFile, tab.bodyFile);
+          break;
 
-      case PRUNED_U_STRUCTURE:
-        tab.automaton = new PrunedUStructure(tab.headerFile, tab.bodyFile);
-        break;
+        case CRUSH:
+          tab.automaton = new Crush(tab.headerFile, tab.bodyFile);
+          break;
 
-      case CRUSH:
-        tab.automaton = new Crush(tab.headerFile, tab.bodyFile);
-        break;
+        default:
+          displayErrorMessage("Corrupt File", "Please ensure that the .hdr file associated with this automaton is not corrupt.");
+          return;
 
-      default:
-        displayErrorMessage("Corrupt File", "Please ensure that the .hdr file associated with this automaton is not corrupt.");
-        return;
+      }
 
-    }
+      progressBarPopup.updateProgressBar(1);
 
-    progressBarPopup.updateProgressBar(1);
+      tab.refreshGUI();
 
-    tab.refreshGUI();
+      progressBarPopup.updateProgressBar(2);
 
-    progressBarPopup.updateProgressBar(2);
+      // Generate an image (unless it's quite large)
+      if (tab.automaton.getNumberOfStates() <= 100) {
+        generateImage();
+        tab.generateImageButton.setEnabled(false);
+      } else
+        tab.generateImageButton.setEnabled(true);
 
-    // Generate an image (unless it's quite large)
-    if (tab.automaton.getNumberOfStates() <= 100) {
-      generateImage();
-      tab.generateImageButton.setEnabled(false);
-    } else
-      tab.generateImageButton.setEnabled(true);
+      tab.setSaved(true);
 
-    // tab.splitPane.setDividerLocation(tab.getWidth() / 2);
+      progressBarPopup.updateProgressBar(3);
 
-    tab.setSaved(true);
+      EventQueue.invokeLater(new Runnable() {
+          @Override public void run() {
+            progressBarPopup.dispose();
+          }
+        });
 
-    progressBarPopup.updateProgressBar(3);
-
-    EventQueue.invokeLater(new Runnable() {
-        @Override public void run() {
-          progressBarPopup.dispose();
-        }
-      });
+    }}.start();
 
   }
 

@@ -29,7 +29,7 @@ public class ProgressBarPopup extends JDialog {
    **/
   public ProgressBarPopup(JFrame gui, final String title, long nTasks) {
 
-    super(gui, false);
+    super(gui, true);
 
     progressBar = new JProgressBar(0, 100);
     progressBar.setValue(0);

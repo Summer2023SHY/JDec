@@ -1,6 +1,6 @@
 HOURS:
 Monday, August 10: 5 hours 15 minutes
-Tuesday, August 11: 7:26 - 
+Tuesday, August 11: 1 hour 40 minutes, 9:19 - 
 
 JAVADOC TO-DO LIST:
   
@@ -13,15 +13,13 @@ QUESTIONS:
 
 SHORT-TERM:
   
-  -prevent user from adding communications if there was a communication that was a self-loop (display message), this is cyclic vs. acyclic (and add test case for this!) What about INVALID_COMMUNICATIONS that are self-loops?
+  -mark disablement decisions in the u-structure and crush with a dotted line
   -lemke-howson file input (specify which pivot or specify "ALL")
-  -manual testing of validation
+  -prevent user from adding communications if there was a communication that was a self-loop (display message), this is cyclic vs. acyclic (and add test case for this!) What about INVALID_COMMUNICATIONS that are self-loops?
   -Update tooltips for events in U-struct, pruned, and crush
   -work on shapley values
-  -Make generated automata accessible
   -NSGA-II algorithm:
     -Code algorithms 3 and 4
-  -mark disablement decisions in the u-structure and crush with a dotted line
   -Logo
   -add buttons to add events, add states, and add transitions (maybe little plus icons?)
   -add buttons to mark special transitions in GUI? (menu options would work great for this! With checkboxes), specifically marking Bad Transitions is useful

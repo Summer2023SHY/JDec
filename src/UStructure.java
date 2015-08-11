@@ -28,6 +28,7 @@ public class UStructure extends Automaton {
   protected List<CommunicationData> potentialCommunications;
   protected List<TransitionData> invalidCommunications;
   protected List<NashCommunicationData> nashCommunications;
+  protected List<TransitionData> disablementDecisions;
 
     /* CONSTRUCTORS */
 
@@ -113,6 +114,7 @@ public class UStructure extends Automaton {
     potentialCommunications = new ArrayList<CommunicationData>();
     invalidCommunications   = new ArrayList<TransitionData>();
     nashCommunications      = new ArrayList<NashCommunicationData>();
+    disablementDecisions    = new ArrayList<TransitionData>();
   
   }
 
@@ -734,13 +736,17 @@ public class UStructure extends Automaton {
       if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
         uStructure.addPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID, (CommunicationRole[]) data.roles.clone());
 
+    for (TransitionData data : invalidCommunications)
+      if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
+        uStructure.addInvalidCommunication(data.initialStateID, data.eventID, data.targetStateID);
+
     for (NashCommunicationData data : nashCommunications)
       if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
         uStructure.addNashCommunication(data.initialStateID, data.eventID, data.targetStateID, (CommunicationRole[]) data.roles.clone(), data.cost, data.probability);
 
-    for (TransitionData data : invalidCommunications)
+    for (TransitionData data : disablementDecisions)
       if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
-        uStructure.addInvalidCommunication(data.initialStateID, data.eventID, data.targetStateID);
+        uStructure.addDisablementDecision(data.initialStateID, data.eventID, data.targetStateID);
 
   }
 
@@ -1270,8 +1276,9 @@ public class UStructure extends Automaton {
     renumberStatesInTransitionData(mappingRAFile, unconditionalViolations);
     renumberStatesInTransitionData(mappingRAFile, conditionalViolations);
     renumberStatesInTransitionData(mappingRAFile, potentialCommunications);
-    renumberStatesInTransitionData(mappingRAFile, nashCommunications);
     renumberStatesInTransitionData(mappingRAFile, invalidCommunications);
+    renumberStatesInTransitionData(mappingRAFile, nashCommunications);
+    renumberStatesInTransitionData(mappingRAFile, disablementDecisions);
 
   }
 
@@ -1290,6 +1297,9 @@ public class UStructure extends Automaton {
 
     for (TransitionData data : getNashCommunications())
       appendValueToMap(map, createKey(data), ",color=blue,fontcolor=blue");
+
+    for (TransitionData data : disablementDecisions)
+      appendValueToMap(map, createKey(data), ",style=dotted");
 
   }
 
@@ -1327,6 +1337,9 @@ public class UStructure extends Automaton {
         str += "-" + communicationData.probability;
       }
 
+     if (disablementDecisions.contains(transitionData))
+      str += ",DISABLEMENT_DECISION";
+
     return str;
 
   }
@@ -1350,12 +1363,13 @@ public class UStructure extends Automaton {
 
       /* Write numbers to indicate how many special transitions are in the file */
 
-    byte[] buffer = new byte[20];
+    byte[] buffer = new byte[24];
     ByteManipulator.writeLongAsBytes(buffer, 0,  unconditionalViolations.size(), 4);
     ByteManipulator.writeLongAsBytes(buffer, 4,  conditionalViolations.size(),   4);
     ByteManipulator.writeLongAsBytes(buffer, 8,  potentialCommunications.size(), 4);
     ByteManipulator.writeLongAsBytes(buffer, 12, invalidCommunications.size(),   4);
     ByteManipulator.writeLongAsBytes(buffer, 16, nashCommunications.size(),      4);
+    ByteManipulator.writeLongAsBytes(buffer, 20, disablementDecisions.size(),    4);
     headerRAFile.write(buffer);
 
       /* Write special transitions to the .hdr file */
@@ -1365,6 +1379,7 @@ public class UStructure extends Automaton {
     writeCommunicationDataToHeader(potentialCommunications);
     writeTransitionDataToHeader(invalidCommunications);
     writeNashCommunicationDataToHeader(nashCommunications);
+    writeTransitionDataToHeader(disablementDecisions);
 
   }
 
@@ -1443,7 +1458,7 @@ public class UStructure extends Automaton {
 
       /* Read the number which indicates how many special transitions are in the file */
 
-    byte[] buffer = new byte[20];
+    byte[] buffer = new byte[24];
     headerRAFile.read(buffer);
 
     int nUnconditionalViolations = (int) ByteManipulator.readBytesAsLong(buffer, 0,  4);
@@ -1451,6 +1466,7 @@ public class UStructure extends Automaton {
     int nPotentialCommunications = (int) ByteManipulator.readBytesAsLong(buffer, 8,  4);
     int nInvalidCommunications   = (int) ByteManipulator.readBytesAsLong(buffer, 12, 4);
     int nNashCommunications      = (int) ByteManipulator.readBytesAsLong(buffer, 16, 4);
+    int nDisablementDecisions    = (int) ByteManipulator.readBytesAsLong(buffer, 20, 4);
 
       /* Read in special transitions from the .hdr file */
     
@@ -1477,6 +1493,11 @@ public class UStructure extends Automaton {
     if (nNashCommunications > 0) {
       nashCommunications = new ArrayList<NashCommunicationData>();
       readNashCommunicationDataFromHeader(nNashCommunications, nashCommunications);
+    }
+
+    if (nDisablementDecisions > 0) {
+      disablementDecisions = new ArrayList<TransitionData>();
+      readTransitionDataFromHeader(nDisablementDecisions, disablementDecisions);
     }
 
   }
@@ -1575,6 +1596,8 @@ public class UStructure extends Automaton {
     
     invalidCommunications.remove(data);
 
+    disablementDecisions.remove(data);
+
   }
 
   /**
@@ -1668,6 +1691,19 @@ public class UStructure extends Automaton {
   public void removeAllNashCommunications() {
     nashCommunications.clear();
     headerFileNeedsToBeWritten = true;
+  }
+
+  /**
+   * Add a disablement decision.
+   * @param initialStateID   The initial state
+   * @param eventID          The event triggering the transition
+   * @param targetStateID    The target state
+   **/
+  public void addDisablementDecision(long initialStateID, int eventID, long targetStateID) {
+
+    disablementDecisions.add(new TransitionData(initialStateID, eventID, targetStateID));
+    headerFileNeedsToBeWritten = true;
+
   }
 
     /* ACCESSOR METHODS */
