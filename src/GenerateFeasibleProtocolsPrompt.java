@@ -8,9 +8,9 @@
  * TABLE OF CONTENTS:
  *  -Constructor
  *  -Overidden Method
+ *  -Method
  **/
 
-// import java.io.*;
 import javax.swing.*;
 import java.util.*;
 
@@ -27,13 +27,45 @@ public class GenerateFeasibleProtocolsPrompt extends ChooseSendersAndRecieversPr
    **/
   public GenerateFeasibleProtocolsPrompt(JDec gui, UStructure uStructure, String title, String message) {
 
-    super(gui, uStructure, title, message);
+    super(gui, uStructure, title, message, "Generate All");
 
   }
 
     /* OVERIDDEN METHOD */
 
   @Override protected boolean performAction() {
+
+    List<Set<CommunicationData>> feasibleProtocols = generateFeasibleProtocols();
+
+    if (feasibleProtocols.size() == 0) {
+
+      gui.displayMessage("No Feasible Protocols", "There were no feasible protocols found with the specified senders and recievers.", JOptionPane.INFORMATION_MESSAGE);
+      return false;
+
+    } else {
+    
+      // Hide this screen, since we will not need to go back to it
+      SwingUtilities.invokeLater(new Runnable() {
+        public void run() {
+          setVisible(false);
+        }
+      });
+
+      // Display results in another window
+      new FeasibleProtocolOutput(gui, uStructure, feasibleProtocols, "Feasible Protocols", " Here is the list of all feasible protocols: ");
+      return true;
+      
+    }
+
+  }
+
+    /* METHOD */
+
+  /**
+   * Generate the feasible protocols based on the selected senders and recievers.
+   * @return  The list of feasible protocols
+   **/
+  protected List<Set<CommunicationData>> generateFeasibleProtocols() {
 
     // Generate list of communications which are still allowed based on which boxes the user selected
     List<CommunicationData> chosenCommunications = new ArrayList<CommunicationData>();
@@ -52,21 +84,7 @@ public class GenerateFeasibleProtocolsPrompt extends ChooseSendersAndRecieversPr
 
     }
 
-    // Print feasible protocols
-    List<Set<CommunicationData>> feasibleProtocols = uStructure.generateAllFeasibleProtocols(chosenCommunications, false);
-
-    if (feasibleProtocols.size() == 0) {
-
-      JOptionPane.showMessageDialog(null, "There were no feasible protocols were found with the specified senders and recievers.", "No Feasible Protocols", JOptionPane.INFORMATION_MESSAGE);
-      return false;
-
-    } else {
-    
-      // Display results in another window
-      new FeasibleProtocolOutput(gui, uStructure, feasibleProtocols, "Feasible Protocols", " Here is the list of all feasible protocols: ");
-      return true;
-      
-    }
+    return  uStructure.generateAllFeasibleProtocols(chosenCommunications, false);
 
   }
 

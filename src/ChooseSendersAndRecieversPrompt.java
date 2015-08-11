@@ -12,7 +12,8 @@
  *  -Methods
  **/
 
-import java.awt.*;
+import java.awt.Container;
+import java.awt.GridLayout;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
@@ -35,15 +36,16 @@ public abstract class ChooseSendersAndRecieversPrompt extends JDialog {
    * @param uStructure  The UStructure that is being worked with
    * @param title       The title of the popup box
    * @param message     The text for the label to be displayed at the top of the screen
+   * @param buttonText  The text to be place on the button
    **/
-  public ChooseSendersAndRecieversPrompt(JDec gui, UStructure uStructure, String title, String message) {
+  public ChooseSendersAndRecieversPrompt(JDec gui, UStructure uStructure, String title, String message, String buttonText) {
 
     super(gui, true);
 
     this.gui = gui;
     this.uStructure = uStructure;
 
-    addComponents(message);
+    addComponents(message, buttonText);
 
     setGUIproperties(title);
 
@@ -54,8 +56,9 @@ public abstract class ChooseSendersAndRecieversPrompt extends JDialog {
   /**
    * Add all of the components to the window.
    * @param message The message to be displayed at the top of the screen
+   * @param buttonText  The text to be place on the button
    **/
-  private void addComponents(String message) {
+  private void addComponents(String message, String buttonText) {
 
       /* Setup */
 
@@ -71,7 +74,7 @@ public abstract class ChooseSendersAndRecieversPrompt extends JDialog {
 
       /* Add Button */
 
-    final JButton button = new JButton("Generate All");
+    final JButton button = new JButton(buttonText);
     button.addActionListener(new ActionListener() {
  
         public void actionPerformed(ActionEvent e) {

@@ -350,7 +350,7 @@ public class UStructure extends Automaton {
       /* Generate powerset of communication protocols */
 
     List<Set<CommunicationData>> protocols = new ArrayList<Set<CommunicationData>>();
-    powerSetSubset(protocols, potentialCommunications, requestedProtocol);
+    powerSetSubset(protocols, getPotentialAndNashCommunications(), requestedProtocol);
 
       /* Generate list of feasible protocols */
 
@@ -461,16 +461,31 @@ public class UStructure extends Automaton {
    *                                              that there are no feasible protocols that satisfy the
    *                                              control problem.
    **/
-  public List<Set<NashCommunicationData>> findNashEquilibria(Crush.CombiningCosts combiningCostsMethod) throws DoesNotSatisfyObservabilityException {
+  public List<Set<NashCommunicationData>> findNashEquilibria(Crush.CombiningCosts combiningCostsMethod)
+                                                             throws DoesNotSatisfyObservabilityException {
 
-      /* Generate protocol vectors */
-
-    // Generate the list of all feasible protocols that also solve the control problem
     List<Set<NashCommunicationData>> feasibleProtocols = generateAllFeasibleProtocols(nashCommunications, true);
 
     // Throw error if the system does not satisfy observability
     if (feasibleProtocols.size() == 0)
       throw new DoesNotSatisfyObservabilityException();
+
+    return findNashEquilibria(combiningCostsMethod, feasibleProtocols);
+
+  }
+
+  /**
+   * Find all nash equilibria using the specified method of combining communication costs and the specified
+   * list of feasible protocols.
+   * @param combiningCostsMethod                  The method in which communication costs should be combined
+   * @param feasibleProtocols                     The list of feasible protocols to consider
+   *                                              NOTE: They must all solve the control problem
+   * @return                                      The list of Nash equilibria
+   **/
+  public List<Set<NashCommunicationData>> findNashEquilibria(Crush.CombiningCosts combiningCostsMethod,
+                                                             List<Set<NashCommunicationData>> feasibleProtocols) {
+
+      /* Generate protocol vectors */
 
     // Combine costs as requested (NOTE: Unless unit costs were specified, each protocol will now
     // contain references to different NashCommunicationData objects)

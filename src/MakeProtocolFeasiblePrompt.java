@@ -12,7 +12,9 @@
  *  -Methods
  **/
 
-import java.awt.*;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
@@ -23,7 +25,7 @@ public class MakeProtocolFeasiblePrompt extends JDialog {
 
   private JDec gui;
   private UStructure uStructure;
-  private java.util.List<CommunicationData> communications;
+  private List<CommunicationData> communications;
   private JCheckBox[] checkBoxes;
 
     /* CONSTRUCTOR */
@@ -95,11 +97,11 @@ public class MakeProtocolFeasiblePrompt extends JDialog {
                 protocol.add(communications.get(i));
   
             // Find all feasible protocols which include the chosen communications
-            java.util.List<Set<CommunicationData>> feasibleProtocols = uStructure.makeProtocolFeasible(protocol);
+            List<Set<CommunicationData>> feasibleProtocols = uStructure.makeProtocolFeasible(protocol);
 
             if (feasibleProtocols.size() == 0) {
 
-                  JOptionPane.showMessageDialog(null, "The specified protocol could not be made into a feasible protocol by adding communications.", "No Feasible Protocols", JOptionPane.INFORMATION_MESSAGE);
+                  gui.displayMessage("No Feasible Protocols", "The specified protocol could not be made into a feasible protocol by adding communications.", JOptionPane.INFORMATION_MESSAGE);
             
             } else {
 

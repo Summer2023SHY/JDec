@@ -33,28 +33,14 @@ public class NashInfoForNashEquilibriaPrompt extends NashInformationPrompt {
 
 	@Override protected void performAction() {
 
-    // Find Nash equilibria and display results in another window
-    try {
-    
-      new NashEquilibriaOutput(
-        gui,
-        uStructure,
-        uStructure.findNashEquilibria(Crush.CombiningCosts.UNIT),
-        "Nash Equilibria",
-        " Here is the list of all Nash equilibria: "
-      );
-    
-    // Display error message is the system did not satisfy observability
-    } catch (DoesNotSatisfyObservabilityException e) {
-      
-      JOptionPane.showMessageDialog(
-        null,
-        "The system does not satisfy observability, which means that it does not solve the control problem. The Nash operation was aborted.",
-        "Operation Failed",
-        JOptionPane.ERROR_MESSAGE
-      );
+    // Hide this screen, since we will not need to go back to it
+    SwingUtilities.invokeLater(new Runnable() {
+      public void run() {
+        setVisible(false);
+      }
+    });
 
-    }
+    new ChooseCommunicatorsForNashPrompt(gui, uStructure, "Choose Senders and Receivers", " Specify whether or not a controller is allowed to send to or receive from a certain controller: ");
 
 	}
 

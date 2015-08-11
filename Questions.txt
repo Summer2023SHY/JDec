@@ -1,5 +1,6 @@
 HOURS:
-Monday, August 10: 3 hour 45 minutes, 9:51 - 
+Monday, August 10: 5 hours 15 minutes
+Tuesday, August 11: 7:26 - 
 
 JAVADOC TO-DO LIST:
   
@@ -13,7 +14,6 @@ QUESTIONS:
 SHORT-TERM:
   
   -prevent user from adding communications if there was a communication that was a self-loop (display message), this is cyclic vs. acyclic (and add test case for this!) What about INVALID_COMMUNICATIONS that are self-loops?
-  -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol - implement this!!
   -lemke-howson file input (specify which pivot or specify "ALL")
   -manual testing of validation
   -Update tooltips for events in U-struct, pruned, and crush

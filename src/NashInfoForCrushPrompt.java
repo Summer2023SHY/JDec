@@ -45,7 +45,7 @@ public class NashInfoForCrushPrompt extends NashInformationPrompt {
     // Select method to combine communications (unless there are no communications)
     Crush.CombiningCosts selectedMethod = null;
     if (uStructure.getSizeOfPotentialAndNashCommunications() > 0) {
-      selectedMethod = pickCombiningCostsMethod("How would you like to combine communication costs?");
+      selectedMethod = pickCombiningCostsMethod("How would you like to combine communication costs?", gui);
       if (selectedMethod == null)
         return;
     }
@@ -69,17 +69,18 @@ public class NashInfoForCrushPrompt extends NashInformationPrompt {
 
   /**
    * Allow the user to select a method to combine costs.
-   * @param str The message to display
-   * @return    The enum value associated with the selected method (or null if nothing was selected)
+   * @param str   The message to display
+   * @param frame The application's frame (if null, then this dialog will not be modal)
+   * @return      The enum value associated with the selected method (or null if nothing was selected)
    **/
-  private Crush.CombiningCosts pickCombiningCostsMethod(String str) {
+  public static Crush.CombiningCosts pickCombiningCostsMethod(String str, JFrame frame) {
 
     // Create list of options
     String[] options = new String[] {"Maximum", "Sum", "Average"};
 
     // Display prompt to user
     String choice = (String) JOptionPane.showInputDialog(
-      null,
+      frame,
       str,
       "Choose Method",
       JOptionPane.PLAIN_MESSAGE,
@@ -93,18 +94,21 @@ public class NashInfoForCrushPrompt extends NashInformationPrompt {
 
       /* Return associated enum value */
     
-    if (choice.equals("Maximum"))
-      return Crush.CombiningCosts.MAX;
+    switch (choice) {
 
-    if (choice.equals("Sum"))
-      return Crush.CombiningCosts.SUM;
+      case "Maximum":
+        return Crush.CombiningCosts.MAX;
+        
+      case "Sum":
+        return Crush.CombiningCosts.SUM;
 
-    if (choice.equals("Average"))
-      return Crush.CombiningCosts.AVERAGE;
+      case "Average":
+        return Crush.CombiningCosts.AVERAGE;
 
-    System.err.println("ERROR: This statement should be unreachable.");
+      default:
+        return null;
 
-    return null;
+    }
 
   }
 

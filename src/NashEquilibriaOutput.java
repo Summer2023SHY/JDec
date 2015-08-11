@@ -15,7 +15,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 
-public class NashEquilibriaOutput extends JFrame {
+public class NashEquilibriaOutput extends JDialog {
 
     /* INSTANCE VARIABLES */
 
@@ -28,13 +28,15 @@ public class NashEquilibriaOutput extends JFrame {
 
   /**
    * Used to construct a NashEquilibriaOutput object.
-   * @param gui               A reference to the GUI which will be recieving requests for new tabs
-   * @param uStructure        The U-Structure that is being worked with
-   * @param nashEquilibria    The list of protocols that are feasible
-   * @param title             The title of the popup box
-   * @param message           The text for the label to be displayed at the top of the screen
+   * @param gui             A reference to the GUI which will be recieving requests for new tabs
+   * @param uStructure      The U-Structure that is being worked with
+   * @param nashEquilibria  The list of protocols that are feasible
+   * @param title           The title of the popup box
+   * @param message         The text for the label to be displayed at the top of the screen
    **/
   public NashEquilibriaOutput(JDec gui, UStructure uStructure, java.util.List<Set<NashCommunicationData>> nashEquilibria, String title, String message) {
+
+    super(gui, true);
 
     this.gui = gui;
     this.uStructure = uStructure;
