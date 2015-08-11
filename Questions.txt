@@ -1,5 +1,5 @@
 HOURS:
-Monday, August 10: 3 hour 45 minutes  
+Monday, August 10: 3 hour 45 minutes, 9:51 - 
 
 JAVADOC TO-DO LIST:
   
@@ -12,16 +12,16 @@ QUESTIONS:
 
 SHORT-TERM:
   
+  -prevent user from adding communications if there was a communication that was a self-loop (display message), this is cyclic vs. acyclic (and add test case for this!) What about INVALID_COMMUNICATIONS that are self-loops?
+  -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol - implement this!!
+  -lemke-howson file input (specify which pivot or specify "ALL")
   -manual testing of validation
   -Update tooltips for events in U-struct, pruned, and crush
   -work on shapley values
-  -4. [Not discussed yet but will come up with Nash] user selects all/any senders and all/any receivers and asks for the quantitatively "cheapest" protocol - implement this!! Refactor the class which allows the user to pick senders and recievers
   -Make generated automata accessible
   -NSGA-II algorithm:
     -Code algorithms 3 and 4
-  -lemke-howson file input (specify which pivot or specify "ALL")
   -mark disablement decisions in the u-structure and crush with a dotted line
-  -prevent user from adding communications if there was a communication that was a self-loop (display message), this is cyclic vs. acyclic (and add test case for this!)
   -Logo
   -add buttons to add events, add states, and add transitions (maybe little plus icons?)
   -add buttons to mark special transitions in GUI? (menu options would work great for this! With checkboxes), specifically marking Bad Transitions is useful

@@ -1,8 +1,8 @@
 /**
- * GeneratedAllFeasibleProtocolsPrompt - This class is used to display a pop-up which prompts the user to
- *                                       decide which controllers are allowed to be senders and recievers,
- *                                       and then go on to generate all applicable feasible protocols,
- *                                       displaying them in another window.
+ * ChooseSendersAndRecieversPrompt - This class is used to display a pop-up which prompts the user to
+ *                                   decide which controllers are allowed to be senders and recievers,
+ *                                   and then go on to generate all applicable feasible protocols,
+ *                                   displaying them in another window.
  *
  * @author Micah Stairs
  *
@@ -17,33 +17,35 @@ import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 
-public class GeneratedAllFeasibleProtocolsPrompt extends JDialog {
+public abstract class ChooseSendersAndRecieversPrompt extends JDialog {
 
     /* INSTANCE VARIABLES */
 
-  private JDec gui;
-  private UStructure uStructure;
-  private JCheckBox[][] checkBoxes;
+  protected JDec gui;
+  protected UStructure uStructure;
+  protected JCheckBox[][] checkBoxes;
 
   private boolean buttonPressed = false;
 
     /* CONSTRUCTOR */
 
   /**
-   * Construct a GeneratedAllFeasibleProtocolsPrompt object.
+   * Construct a ChooseSendersAndRecieversPrompt object.
    * @param gui         A reference to the GUI which is being worked with
    * @param uStructure  The UStructure that is being worked with
+   * @param title       The title of the popup box
+   * @param message     The text for the label to be displayed at the top of the screen
    **/
-  public GeneratedAllFeasibleProtocolsPrompt(JDec gui, UStructure uStructure) {
+  public ChooseSendersAndRecieversPrompt(JDec gui, UStructure uStructure, String title, String message) {
 
     super(gui, true);
 
     this.gui = gui;
     this.uStructure = uStructure;
 
-    addComponents();
+    addComponents(message);
 
-    setGUIproperties();
+    setGUIproperties(title);
 
   }
 
@@ -51,8 +53,9 @@ public class GeneratedAllFeasibleProtocolsPrompt extends JDialog {
 
   /**
    * Add all of the components to the window.
+   * @param message The message to be displayed at the top of the screen
    **/
-  private void addComponents() {
+  private void addComponents(String message) {
 
       /* Setup */
 
@@ -60,7 +63,7 @@ public class GeneratedAllFeasibleProtocolsPrompt extends JDialog {
 
       /* Add Instructions */
 
-    add(new JLabel(" Specify whether or not a controller is allowed to send to or receive from a certain controller: "));
+    add(new JLabel(message));
 
       /* Add Checkboxes */
 
@@ -85,46 +88,23 @@ public class GeneratedAllFeasibleProtocolsPrompt extends JDialog {
               }
             });
 
-            // Start this process in a new thread because it will take a while
-            new Thread() {
-              @Override public void run() {
-                
-                // Generate list of communications which are still allowed based on which boxes the user selected
-                java.util.List<CommunicationData> chosenCommunications = new ArrayList<CommunicationData>();
+            // Perform the overridden action
+            if (performAction()) {
+              
+              // Dispose of the dialog box if the action was completed
+              dispose();
 
-                outer: for (CommunicationData data : uStructure.getPotentialAndNashCommunications()) {
-                  
-                  int sender = data.getIndexOfSender();
-
-                  // Check for communication that isn't allowed
-                  for (int i = 0; i < data.roles.length; i++)
-                    if (data.roles[i] == CommunicationRole.RECIEVER && !checkBoxes[sender][i].isSelected())
-                      continue outer;
-
-                  // If we got this far then we can add it
-                  chosenCommunications.add(data);
-
+            } else {
+              
+              // Allow the user to press the button again if the action was not completed successfully
+              buttonPressed = false;
+              SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                  button.setEnabled(true);
                 }
+              });
 
-                // Print feasible protocols
-                java.util.List<Set<CommunicationData>> feasibleProtocols = uStructure.generateAllFeasibleProtocols(chosenCommunications, false);
-
-                if (feasibleProtocols.size() == 0) {
-
-                  JOptionPane.showMessageDialog(null, "There were no feasible protocols were found with the specified senders and recievers.", "No Feasible Protocols", JOptionPane.INFORMATION_MESSAGE);
-            
-                } else {
-                
-                  // Display results in another window
-                  new FeasibleProtocolOutput(gui, uStructure, feasibleProtocols, "Feasible Protocols", " Here is the list of all feasible protocols: ");
-
-                  // Dispose of this window
-                  GeneratedAllFeasibleProtocolsPrompt.this.dispose();
-
-                }
-
-              }  
-            }.start();
+            }
         }
 
     });
@@ -133,6 +113,13 @@ public class GeneratedAllFeasibleProtocolsPrompt extends JDialog {
   }
 
     /* METHODS */
+
+  /**
+   * This action is performed once the user has selected senders and recievers and moves on to the next step.
+   * @return  True if the action was completed (which will dispose of this dialog box), or false if the action
+   *          should be allowed to happen again.
+   **/
+  protected abstract boolean performAction();
 
   /**
    * Create a container with a 2-D grid of checkboxes, with each column and row corresponding to a specific
@@ -177,8 +164,9 @@ public class GeneratedAllFeasibleProtocolsPrompt extends JDialog {
 
   /**
    * Set some default GUI Properties.
+   * @param title The title to be displayed on the dialog box
    **/
-  private void setGUIproperties() {
+  private void setGUIproperties(String title) {
 
       /* Pack things in nicely */
 
@@ -194,7 +182,7 @@ public class GeneratedAllFeasibleProtocolsPrompt extends JDialog {
 
       /* Update title */
 
-    setTitle("Generate All Feasible Protocols");
+    setTitle(title);
 
       /* Show screen */
 

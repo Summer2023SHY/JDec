@@ -274,7 +274,7 @@ public abstract class NashInformationPrompt extends JDialog {
 
   /**
    * This action is performed once the user has validated all of the Nash communications and moves on
-   * the next step.
+   * to the next step.
    **/
   protected abstract void performAction();
 

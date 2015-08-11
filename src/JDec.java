@@ -670,7 +670,7 @@ public class JDec extends JFrame implements ActionListener {
         if (uStructure.getSizeOfPotentialAndNashCommunications() == 0)
           displayErrorMessage("Operation Failed", "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.");
         else
-          new GeneratedAllFeasibleProtocolsPrompt(this, uStructure);
+          new GenerateFeasibleProtocolsPrompt(this, uStructure, "Generate All Feasible Protocols", " Specify whether or not a controller is allowed to send to or receive from a certain controller: ");
         break;
 
       case "Make Protocol Feasible":
