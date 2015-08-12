@@ -1,7 +1,7 @@
 HOURS:
 Monday, August 10: 5 hours
 Tuesday, August 11: 8 hour 30 minutes
-Wednesday, August 12: 1 hour 15 minutes, 9:05 - 
+Wednesday, August 12: 3 hours 15 minutes, 11:05 - 
 
 JAVADOC TO-DO LIST:
   

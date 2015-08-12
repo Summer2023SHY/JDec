@@ -632,6 +632,7 @@ public class UStructure extends Automaton {
         Set<NashCommunicationData> communicationsToBeCopied = new HashSet<NashCommunicationData>();
         boolean isDisablementDecision = false;
         boolean[] disablementControllers = new boolean[nControllers];
+        Arrays.fill(disablementControllers, true);
         
         // Generate list of all reachable states from the current event        
         for (State s : setOfStates)
@@ -653,8 +654,8 @@ public class UStructure extends Automaton {
                 if (transitionData.equals(disablementData)) {
                   isDisablementDecision = true;
                   for (int i = 0; i < nControllers; i++)
-                    if (disablementData.controllers[i])
-                      disablementControllers[i] = true;
+                    if (!disablementData.controllers[i])
+                      disablementControllers[i] = false;
                   break;
                 }
 

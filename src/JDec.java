@@ -1481,17 +1481,19 @@ public class JDec extends JFrame implements ActionListener {
 
   /**
    * Allow the user to select a controller in the current automaton.
-   * @param str   The message to display
-   * @return      The index of the selected controller (or -1 if there was not a controller selected)
+   * @param str                 The message to display
+   * @param include0thComponent Whether or not the 0th component should be included as an option
+   * @return                    The index of the selected controller (or -1 if there was not a controller
+   *                            selected)
    **/
-  public int pickController(String str) {
+  public int pickController(String str, boolean include0thComponent) {
 
     UStructure uStructure = (UStructure) tabs.get(tabbedPane.getSelectedIndex()).automaton;
 
       /* Create list of options */
 
     ArrayList<String> optionsList = new ArrayList<String>();
-    for (int i = 1; i <= uStructure.getNumberOfControllers(); i++)
+    for (int i = (include0thComponent ? 0 : 1); i <= uStructure.getNumberOfControllers(); i++)
       optionsList.add(String.valueOf(i));
     String[] options = optionsList.toArray(new String[optionsList.size()]);
 
@@ -1509,11 +1511,10 @@ public class JDec extends JFrame implements ActionListener {
 
       /* Return index of chosen controller */
 
-    for (int i = 1; i <= options.length; i++)
-      if (choice != null && choice.equals(String.valueOf(i)))
-        return i;
+    if (choice == null)
+      return -1;
 
-    return -1;
+    return Integer.valueOf(choice);
 
   }
 

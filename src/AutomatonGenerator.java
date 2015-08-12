@@ -376,7 +376,7 @@ public abstract class AutomatonGenerator<T> {
       int startIndex = endIndex;
       endIndex += line.length() + 1;
 
-      String[] splitLine = line.trim().split(",");
+      String[] splitLine = splitStringWithVectors(line);
       String label = splitLine[0].trim();
       boolean marked = (splitLine.length >= 2 && isTrue(splitLine[1]));
 

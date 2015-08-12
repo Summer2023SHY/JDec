@@ -51,7 +51,7 @@ public class NashInfoForCrushPrompt extends NashInformationPrompt {
     }
 
     // Select controller to take the Crush with respect to
-    int selectedController = gui.pickController("Which controller would you like to take the crush with respect to?");
+    int selectedController = gui.pickController("Which component would you like to take the crush with respect to?", true);
     if (selectedController == -1)
       return;
 
