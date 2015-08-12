@@ -1387,7 +1387,7 @@ public class JDec extends JFrame implements ActionListener {
     try {
 
       // Copy the file if it exists
-      if (currentTab.svgFile.exists()) {
+      if (currentTab.svgFile != null && currentTab.svgFile.exists()) {
         Files.copy(currentTab.svgFile.toPath(), svgFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         currentTab.svgFile = svgFile;
       }

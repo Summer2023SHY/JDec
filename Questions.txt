@@ -16,6 +16,7 @@ QUESTIONS:
 SHORT-TERM:
   
   -update tooltips for disablement decisions
+  -syntax highlighting for special transition information??
   -work on shapley values
   -prevent user from adding communications if there was a communication that was a self-loop (display message), this is cyclic vs. acyclic (and add test case for this!) What about INVALID_COMMUNICATIONS that are self-loops?
   -NSGA-II algorithm:

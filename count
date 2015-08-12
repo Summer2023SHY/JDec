@@ -8,3 +8,6 @@ cat src/* | grep -v -e '^$' | wc -l
 
 echo "Excluding empty lines and comments"
 cat src/* | grep -v -e '^$' | grep -v '^[[:space:]]*//' | grep -v '^[[:space:]]*/*[[:space:]]*\*' | wc -l
+
+echo "Excluding empty lines, comments, and lines containing a single bracket"
+cat src/* | grep -v -e '^$' | grep -v '^[[:space:]]*//' | grep -v '^[[:space:]]*/*[[:space:]]*\*' | grep -v '^[[:space:]]*[{}][[:space:]]*$' | wc -l

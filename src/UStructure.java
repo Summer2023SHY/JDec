@@ -737,39 +737,33 @@ public class UStructure extends Automaton {
 
   }
 
+  /**
+   * Find the Shapley values, printing them out to the console.
+   **/
   public void findShapleyValues() {
 
-    // boolean[][] canDisable = new boolean[nControllers][disablementDecisions.size()];
+      /* Generate powerset of controllers (1-based) */
 
-    // for (DisablementData data : disablementDecisions) {
-      
-    //   Event event = getEvent(data.eventID);
+    List<Integer> elements = new ArrayList<Integer>();
+    for (int i = 1; i <= nControllers; i++)
+      elements.add(i);
+    List<Set<Integer>> coalitions = new ArrayList<Set<Integer>>();
+    powerSet(coalitions, elements);
 
+    for (Set<Integer> coalition : coalitions) {
 
+      // Count the number of disablement decisions that are detected by controllers in this coalition
+      int count = 0;
+      for (DisablementData data : disablementDecisions)
+        for (Integer controller : coalition)
+          if (data.controllers[controller - 1]) {
+            count++;
+            break;
+          }
 
-    // }
+      System.out.println(coalition.toString() + " : " + count);
 
-    //   /* Generate powerset of controllers (1-based) */
-
-    // List<Integer> elements = new ArrayList<Integer>();
-    // for (int i = 1; i <= nControllers; i++)
-    //   elements.add(i);
-    // List<Set<Integer>> coalitions = new ArrayList<Set<Integer>>();
-    // powerSet(coalitions, elements);
-
-    // for (Set<Integer> coalition : coalitions) {
-
-    //   // Count the number of disablement decisions that are detected by controllers in this coalition
-    //   int count = 0;
-    //   for (DisablementData data : disablementDecisions) {
-
-
-
-    //   }
-
-    //   System.out.println(coalition.toString() + " : " + count);
-
-    // }
+    }
 
 
   }
