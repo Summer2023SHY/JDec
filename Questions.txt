@@ -1,7 +1,7 @@
 HOURS:
 Monday, August 10: 5 hours
 Tuesday, August 11: 8 hour 30 minutes
-Wednesday, August 12: 7:25 - 
+Wednesday, August 12: 1 hour 15 minutes, 9:05 - 
 
 JAVADOC TO-DO LIST:
   
@@ -22,7 +22,6 @@ SHORT-TERM:
   -NSGA-II algorithm:
     -Code algorithms 3 and 4
   -add buttons to mark special transitions in GUI? (menu options would work great for this! With checkboxes), specifically marking Bad Transitions is useful
-  -deploy as jar
 
 POTENTIAL/MINOR:
 

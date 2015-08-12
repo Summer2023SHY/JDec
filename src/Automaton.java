@@ -55,8 +55,12 @@ public class Automaton {
   /** The number of characters that each state label in an automaton can hold by default. */
   public static final int DEFAULT_LABEL_LENGTH = 1;
 
-  /** The maximum number of characters that each state label in an automaton can hold. */
-  public static final int MAX_LABEL_LENGTH = 100;
+  /**
+   * The maximum number of characters that each state label in an automaton can hold.
+   * NOTE: This value was originally 100, but was increased drastically in order to accommodate long
+   *       state vectors that are formed in the crush.
+   **/
+  public static final int MAX_LABEL_LENGTH = 1000000;
 
   /** The default number of controllers in an automaton. */
   public static final int DEFAULT_NUMBER_OF_CONTROLLERS = 1;
@@ -2784,7 +2788,7 @@ public class Automaton {
       /* Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs) */
     
     if (id > MAX_STATE_CAPACITY) {
-      System.err.println("ERROR: Could not write state to file.");
+      System.err.println("ERROR: Could not write state to file (exceeded maximum state capacity).");
       return false;
     }
 
@@ -2794,7 +2798,7 @@ public class Automaton {
 
       // If we cannot increase the capacity, indicate a failure
       if (label.length() > MAX_LABEL_LENGTH) {
-        System.err.println("ERROR: Could not write state to file.");
+        System.err.println("ERROR: Could not write state to file (exceeded maximum label length).");
         return false;
       }
 
@@ -2815,7 +2819,7 @@ public class Automaton {
 
       // If we cannot increase the capacity, indicate a failure (NOTE: This will likely never happen)
       if (transitions.size() > MAX_TRANSITION_CAPACITY) {
-        System.err.println("ERROR: Could not write state to file.");
+        System.err.println("ERROR: Could not write state to file (exceeded maximum transition capacity).");
         return false;
       }
 

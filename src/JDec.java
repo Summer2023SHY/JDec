@@ -1638,8 +1638,8 @@ public class JDec extends JFrame implements ActionListener {
       if (sc.hasNextLine())
         currentDirectory = new File(sc.nextLine());
 
-    } catch (IOException e) {
-      e.printStackTrace();
+    } catch (FileNotFoundException e) {
+      // Simply ignore the error, since it just means that there was no pre-existing file found
     }
 
   }

@@ -739,8 +739,13 @@ public class UStructure extends Automaton {
 
   /**
    * Find the Shapley values, printing them out to the console.
+   * NOTE: This is not currently not set up to working with U-Structures containing communications.
    **/
   public void findShapleyValues() {
+
+    System.out.println(disablementDecisions.toString());
+    Crush crush = crush(null, null, 0, null, null);
+    System.out.println(crush.disablementDecisions.toString());
 
       /* Generate powerset of controllers (1-based) */
 
@@ -754,7 +759,7 @@ public class UStructure extends Automaton {
 
       // Count the number of disablement decisions that are detected by controllers in this coalition
       int count = 0;
-      for (DisablementData data : disablementDecisions)
+      for (DisablementData data : crush.getDisablementDecisions())
         for (Integer controller : coalition)
           if (data.controllers[controller - 1]) {
             count++;
@@ -1212,7 +1217,8 @@ public class UStructure extends Automaton {
     label = "<" + label.substring(1) + ">";
 
     // Add new state
-    crush.addStateAt(label, false, new ArrayList<Transition>(), isInitialState, id);
+    System.out.println(label.length());
+    System.out.println(crush.addStateAt(label, false, new ArrayList<Transition>(), isInitialState, id));
 
   }
 
@@ -1876,6 +1882,14 @@ public class UStructure extends Automaton {
 
     return communications;
   
+  }
+
+  /**
+   * Get the list of disablement decisions.
+   * @return  The disablement decisions
+   **/
+  public List<DisablementData> getDisablementDecisions() {
+    return disablementDecisions;
   }
 
 }
