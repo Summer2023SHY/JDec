@@ -355,11 +355,11 @@ public abstract class AutomatonGenerator<T> {
       /* Remove Old Errors */
 
     if (eventInputPane != null)
-      eventInputPane.getStyledDocument().setCharacterAttributes(0, eventInputPane.getDocument().getLength(), normalStyle, false);
+      eventInputPane.getStyledDocument().setCharacterAttributes(0, eventInputPane.getDocument().getLength() + 1, normalStyle, false);
     if (stateInputPane != null)
-      stateInputPane.getStyledDocument().setCharacterAttributes(0, stateInputPane.getDocument().getLength(), normalStyle, false);
+      stateInputPane.getStyledDocument().setCharacterAttributes(0, stateInputPane.getDocument().getLength() + 1, normalStyle, false);
     if (transitionInputPane != null)
-      transitionInputPane.getStyledDocument().setCharacterAttributes(0, transitionInputPane.getDocument().getLength(), normalStyle, false);
+      transitionInputPane.getStyledDocument().setCharacterAttributes(0, transitionInputPane.getDocument().getLength() + 1, normalStyle, false);
         
       /* Setup */
 
@@ -571,7 +571,11 @@ public abstract class AutomatonGenerator<T> {
          
           if (automaton.addTransition(initialStateID, eventID, targetStateID)) {
             if (splitLine.length > 1)
-              parseAndAddSpecialTransitions(automaton, automatonType, splitLine[1], new TransitionData(initialStateID, eventID, targetStateID));
+              if (!parseAndAddSpecialTransitions(automaton, automatonType, splitLine[1], new TransitionData(initialStateID, eventID, targetStateID))) {
+                if (transitionInputPane != null)
+                  transitionInputPane.getStyledDocument().setCharacterAttributes(splitLine[0].length() + 1, line.length() - splitLine[0].length() - 1, errorStyle, false);
+                hasErrors = true;
+              }
           } else {
             if (gui != null)
               gui.displayErrorMessage("Error", "'" + line + "' could not be added as a transition. Please ensure that there are not more than " + Automaton.MAX_TRANSITION_CAPACITY + " transitions.");
@@ -611,8 +615,11 @@ public abstract class AutomatonGenerator<T> {
    * @param automatonType The enum value associated with the type of the automaton
    * @param line          The text to parse
    * @param data          The transition data (IDs of the associated event and states)
+   * @return              Whether or not the special transition properties could be parsed
    **/
-  private static <T extends Automaton> void parseAndAddSpecialTransitions(T automaton, Automaton.Type automatonType, String line, TransitionData data) {
+  private static <T extends Automaton> boolean parseAndAddSpecialTransitions(T automaton, Automaton.Type automatonType, String line, TransitionData data) {
+
+    boolean valid = true;
 
     String[] split = line.split(",");
 
@@ -661,15 +668,9 @@ public abstract class AutomatonGenerator<T> {
 
         String[] parts = str.split("-");
 
-        if (parts[0].equals("POTENTIAL_COMMUNICATION")) {
-
-          if (parts.length == 2)
-            uStructure.addPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID, parseCommunicationRoles(parts[1]));
-          else
-            System.err.println("ERROR: Could not parse '" + line + "' as special transition information.");
-
+        if (parts[0].equals("POTENTIAL_COMMUNICATION") && parts.length == 2) {
+          uStructure.addPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID, parseCommunicationRoles(parts[1]));
           continue;
-
         }
 
       }
@@ -678,19 +679,11 @@ public abstract class AutomatonGenerator<T> {
       if (automatonType == Automaton.Type.PRUNED_U_STRUCTURE) {
 
         PrunedUStructure prunedUStructure = (PrunedUStructure) automaton;
-
         String[] parts = str.split("-");
 
-        if (parts[0].equals("COMMUNICATION")) {
-
-          if (parts.length == 2) {
-            prunedUStructure.addPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID, parseCommunicationRoles(parts[1]));
-            continue;
-          }
-
-          System.err.println("ERROR: Could not parse '" + line + "' as a communication.");
+        if (parts[0].equals("COMMUNICATION") && parts.length == 2) {
+          prunedUStructure.addPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID, parseCommunicationRoles(parts[1]));
           continue;
-
         }
 
       }
@@ -711,32 +704,30 @@ public abstract class AutomatonGenerator<T> {
         }
 
 
-        if (parts[0].equals("NASH_COMMUNICATION")) {
-
-          if (parts.length == 4) {
-            try {
-              uStructure.addNashCommunication(
-                data.initialStateID,
-                data.eventID,
-                data.targetStateID,
-                parseCommunicationRoles(parts[1]),
-                Double.valueOf(parts[2]),
-                Double.valueOf(parts[3])
-              );
-              continue;
-            } catch (NumberFormatException e) {
-              // Do nothing
-            }
-
-          }
+        if (parts[0].equals("NASH_COMMUNICATION") && parts.length == 4) {
+          
+          try {
+            uStructure.addNashCommunication(
+              data.initialStateID,
+              data.eventID,
+              data.targetStateID,
+              parseCommunicationRoles(parts[1]),
+              Double.valueOf(parts[2]),
+              Double.valueOf(parts[3])
+            );
+            continue;
+          } catch (NumberFormatException e) { }
 
         }
 
       }
 
+      valid = false;
       System.err.println("ERROR: Unable to parse '" + str + "' as a special transition identifier.");
 
     } // for
+
+    return valid;
 
   }
 
