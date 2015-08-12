@@ -1,6 +1,7 @@
 HOURS:
-Monday, August 10: 5 hours 15 minutes
-Tuesday, August 11: 4 hour 40 minutes, 7:00 - 
+Monday, August 10: 5 hours
+Tuesday, August 11: 8 hour 30 minutes
+Wednesday, August 12: 7:25 - 
 
 JAVADOC TO-DO LIST:
   
@@ -8,19 +9,19 @@ JAVADOC TO-DO LIST:
 
 QUESTIONS:
 
-  -Can shpapley values be calculated from anything other than u-structure and pruned u-structure? (emailed)
   -Ask Dr. Ricker what the basic self-loop test case is actually supposed to look like.. Do <a,*> and <*,a> make an upper bound of <a,a>????? Or is a event vector with something in the 0th component, but * in all other components actually an unobservable label?? Can communications be added if n=1?? We can talk about this case on Thursday!
   -Are there any small examples using 3 controllers that do not blow up very large and are easily verifiable? (I'm looking for a good test case)
   -how far into the program can a user get with an uncontrollable system?
 
 SHORT-TERM:
   
+  -ensure that there are no violations before trying to find shapley vaules
+  -shapley values can also be found on the crush
   -work on shapley values
   -prevent user from adding communications if there was a communication that was a self-loop (display message), this is cyclic vs. acyclic (and add test case for this!) What about INVALID_COMMUNICATIONS that are self-loops?
   -NSGA-II algorithm:
     -Code algorithms 3 and 4
   -add buttons to mark special transitions in GUI? (menu options would work great for this! With checkboxes), specifically marking Bad Transitions is useful
-  -Logo
   -deploy as jar
 
 POTENTIAL/MINOR:
