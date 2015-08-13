@@ -1,28 +1,29 @@
 HOURS:
-Monday, August 10: 5 hours
-Tuesday, August 11: 8 hour 30 minutes
-Wednesday, August 12: 7 hours, 10:06 - 
+Thursday, August 13: 8:40 - (Expected: 8 hours)
+Friday, August 14: (Expected: 6 hours)
 
 JAVADOC TO-DO LIST:
   
   TestAutomata.java
-
+AutomataGUI.java: Export GUI Code to File
 QUESTIONS:
 
+  HOW DO YOU DETERMINE WHETHER TWO DISABLEMENT DECISIONS ARE THE SAME GLOBAL DECISION (identical 0th component..???) - IT WAS CODED UNDER THIS ASSUMPTION!
+
   -Ask Dr. Ricker what the basic self-loop test case is actually supposed to look like.. Do <a,*> and <*,a> make an upper bound of <a,a>????? Or is a event vector with something in the 0th component, but * in all other components actually an unobservable label?? Can communications be added if n=1?? We can talk about this case on Thursday!
-  -Are there any small examples using 3 controllers that do not blow up very large and are easily verifiable? (I'm looking for a good test case)
   -how far into the program can a user get with an uncontrollable system?
 
 SHORT-TERM:
   
-  -quiting random automaton dialog now kills any threads (is this type of issue happening anywhere else?)
-  -ensure that there are no violations before trying to find shapley vaules
-  -shapley values can also be found on the crush
+  -Ensure that all spawned threads are being killed properly
+  -ensure that there are no violations before trying to find shapley values (NOTE: Is there allowed to be communications if we simply ignore them, AKA are we allowed to use pruned automata..? )
   -work on shapley values
   -prevent user from adding communications if there was a communication that was a self-loop (display message), this is cyclic vs. acyclic (and add test case for this!) What about INVALID_COMMUNICATIONS that are self-loops?
   -NSGA-II algorithm:
     -Code algorithms 3 and 4
   -add buttons to mark special transitions in GUI? (menu options would work great for this! With checkboxes), specifically marking Bad Transitions is useful
+  -Label application as beta
+  -Documentation for each operation on website
 
 POTENTIAL/MINOR:
 

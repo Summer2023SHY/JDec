@@ -744,33 +744,30 @@ public class UStructure extends Automaton {
    **/
   public void findShapleyValues() {
 
-    System.out.println(disablementDecisions.toString());
-    Crush crush = crush(null, null, 0, null, null);
-    System.out.println(crush.disablementDecisions.toString());
+    // Generate crushes for each component (except for the 0th component)
+    Crush[] crushes = new Crush[nControllers]; // 1-based
+    for (int i = 1; i <= nControllers; i++)
+      crushes[i - 1] = crush(null, null, i, null, null);
 
-      /* Generate powerset of controllers (1-based) */
-
+    // Generate powerset of controllers (1-based)
     List<Integer> elements = new ArrayList<Integer>();
     for (int i = 1; i <= nControllers; i++)
       elements.add(i);
     List<Set<Integer>> coalitions = new ArrayList<Set<Integer>>();
     powerSet(coalitions, elements);
 
+    // Count the number of disablement decisions that are detected by each coalition
     for (Set<Integer> coalition : coalitions) {
 
-      // Count the number of disablement decisions that are detected by controllers in this coalition
-      int count = 0;
-      for (DisablementData data : crush.getDisablementDecisions())
-        for (Integer controller : coalition)
-          if (data.controllers[controller - 1]) {
+      int count = 0; // Doesn't currently account for duplicates.. not sure how to do that yet
+      for (Integer controller : coalition)
+        for (DisablementData data : crushes[controller - 1].getDisablementDecisions())
+          if (data.controllers[controller - 1])
             count++;
-            break;
-          }
 
       System.out.println(coalition.toString() + " : " + count);
 
     }
-
 
   }
 
