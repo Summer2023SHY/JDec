@@ -1218,8 +1218,7 @@ public class UStructure extends Automaton {
     label = "<" + label.substring(1) + ">";
 
     // Add new state
-    System.out.println(label.length());
-    System.out.println(crush.addStateAt(label, false, new ArrayList<Transition>(), isInitialState, id));
+    crush.addStateAt(label, false, new ArrayList<Transition>(), isInitialState, id);
 
   }
 

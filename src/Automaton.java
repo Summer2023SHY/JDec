@@ -2669,18 +2669,21 @@ public class Automaton {
    * @return                The ID of the added state (0 indicates the addition was unsuccessful)
    **/
   public long addState(String label, boolean marked, boolean isInitialState) {
-    return addState(label, marked, new ArrayList<Transition>(), isInitialState);
+    return addState(label, marked, null, isInitialState);
   }
 
   /**
    * Add the specified state to the automaton.
    * @param label           The "name" of the new state
    * @param marked          Whether or not the states is marked
-   * @param transitions     The list of transitions
+   * @param transitions     The list of transitions (if null, then an empty list is made)
    * @param isInitialState  Whether or not this is the initial state
    * @return                The ID of the added state (0 indicates the addition was unsuccessful)
    **/
   public long addState(String label, boolean marked, ArrayList<Transition> transitions, boolean isInitialState) {
+
+    if (transitions == null)
+      transitions = new ArrayList<Transition>();
 
       /* Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs) */
 
@@ -2778,12 +2781,15 @@ public class Automaton {
    * spots in the .bdy file where states don't actually exist (this happens during automata operations such as intersection).
    * @param label           The "name" of the new state
    * @param marked          Whether or not the states is marked
-   * @param transitions     The list of transitions
+   * @param transitions     The list of transitions (if null, then a new list is made)
    * @param isInitialState  Whether or not this is the initial state
    * @param id              The index where the state should be added at
    * @return                Whether or not the addition was successful (returns false if a state already existed there)
    **/
   public boolean addStateAt(String label, boolean marked, ArrayList<Transition> transitions, boolean isInitialState, long id) {
+
+    if (transitions == null)
+      transitions = new ArrayList<Transition>();
 
       /* Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs) */
     
@@ -3125,6 +3131,14 @@ public class Automaton {
     return eventCapacity;
   }
 
+  /**
+   * Get the number of events that are currently in this automaton.
+   * @return  Number of events
+   **/
+  public int getNumberOfEvents() {
+    return getEvents().size();
+  }
+
 
   /**
    * Get the number of states that are currently in this automaton.
@@ -3220,6 +3234,14 @@ public class Automaton {
    **/
   public final Type getType() {
     return type;
+  }
+
+  /**
+   * Get the list of bad transitions.
+   * @return  The bad transitions
+   **/
+  public List<TransitionData> getBadTransitions() {
+    return badTransitions;
   }
 
 }

@@ -294,6 +294,10 @@ public class JDec extends JFrame implements ActionListener {
     // Add the appropriate accelerator
     switch (str) {
 
+      case "New Automaton":
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, shortcutKey));
+        break;
+
       case "Open":
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, shortcutKey));
         break;
@@ -319,7 +323,7 @@ public class JDec extends JFrame implements ActionListener {
         break;
 
       case "Nash":
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, shortcutKey));
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, shortcutKey | InputEvent.SHIFT_DOWN_MASK));
         break;
 
       case "Random Automaton":
@@ -891,10 +895,15 @@ public class JDec extends JFrame implements ActionListener {
     // Try to load image from file
     try {
       if (Desktop.isDesktopSupported()) {
-        Desktop.getDesktop().browse(new URI("file://" + fileName));
+
+        // NOTE: There is the possibility that I am missing some characters that should be encoded
+        Desktop.getDesktop().browse(new URI("file://" + fileName.replaceAll(" ", "%20")));
         successful = true;
+
       }
-    } catch (IOException | URISyntaxException e) { }
+    } catch (IOException | URISyntaxException e) {
+      e.printStackTrace();
+    }
     
     // Display the proper error message
     if (!successful) {
@@ -993,7 +1002,7 @@ public class JDec extends JFrame implements ActionListener {
     tab.setSaved(true);
 
     // Generate an image (unless it's quite large)
-    if (tab.automaton.getNumberOfStates() <= 100) {
+    if (tab.automaton.getNumberOfStates() <= 50) {
       generateImage();
       tab.generateImageButton.setEnabled(false);
     } else
@@ -1052,9 +1061,9 @@ public class JDec extends JFrame implements ActionListener {
    * @param maxTransitionsPerState  The maximum number of outgoing transitions per state
    * @param nControllers            The number of controllers in the automaton
    * @param nBadTransitions         The number of bad transition in the automaton
-   * @param progressBar             The progress bar to be updated during the generation process
+   * @param progressIndicator       The progress indicator to be updated during the generation process
    **/
-  public void generateRandomAutomaton(int nEvents, long nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions, JProgressBar progressBar) {
+  public void generateRandomAutomaton(int nEvents, int nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions, JLabel progressIndicator) {
 
     // Get a temporary file name
     String fileName = getTemporaryFileName();
@@ -1069,7 +1078,7 @@ public class JDec extends JFrame implements ActionListener {
       maxTransitionsPerState,
       nControllers,
       nBadTransitions,
-      progressBar
+      progressIndicator
     );
 
     // Place the generated automaton in a new tab
@@ -1123,7 +1132,7 @@ public class JDec extends JFrame implements ActionListener {
       progressBarPopup.updateProgressBar(2);
 
       // Generate an image (unless it's quite large)
-      if (tab.automaton.getNumberOfStates() <= 100) {
+      if (tab.automaton.getNumberOfStates() <= 50) {
         generateImage();
         tab.generateImageButton.setEnabled(false);
       } else
