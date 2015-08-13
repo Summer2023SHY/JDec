@@ -42,6 +42,8 @@ public abstract class AutomatonGenerator<T> {
   /**
    * Generate a random automaton with the specified properties. The generated automaton is guaranteed to
    * be both observable, controllable, and accessible, co-accessible.
+   * NOTE: This process is terminated
+   * @param prompt                  A reference to the prompt that started this process
    * @param headerFile              The name of the header file where the automaton will be stored
    * @param bodyFile                The name of the body file where the automaton will be stored
    * @param nEvents                 The number of events to be generated in the automaton
@@ -51,9 +53,10 @@ public abstract class AutomatonGenerator<T> {
    * @param nControllers            The number of controllers in the automaton
    * @param nBadTransitions         The number of bad transition in the automaton
    * @param progressIndicator       The progress indicator to be updated during the generation process
-   * @return                        The randomly generated automaton
+   * @return                        The randomly generated automaton (or null if the process was aborted)
    **/
-  public static Automaton generateRandom(File headerFile,
+  public static Automaton generateRandom(RandomAutomatonPrompt prompt,
+                                         File headerFile,
                                          File bodyFile,
                                          int nEvents,
                                          int nStates,
@@ -63,11 +66,11 @@ public abstract class AutomatonGenerator<T> {
                                          int nBadTransitions,
                                          final JLabel progressIndicator) {
 
-    Automaton automaton;
+    Automaton automaton = null;
     int nAttempts = 0;
 
     // Repeat generation until it passes both the observability and controllability tests
-    while (true) {
+    while (!prompt.isDisposed) {
 
       nAttempts++;
 
@@ -214,6 +217,10 @@ public abstract class AutomatonGenerator<T> {
       }
 
     }
+
+    // Return null if the prompt was closed
+    if (prompt.isDisposed || automaton == null)
+      return null;
 
       /* Duplicate the automaton into the requested files */
     

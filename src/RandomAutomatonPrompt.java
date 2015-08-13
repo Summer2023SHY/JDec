@@ -30,6 +30,7 @@ public class RandomAutomatonPrompt extends JDialog {
 
     /* INSTANCE VARIABLES */
 
+  public boolean isDisposed = false;
   private JDec gui;
   private JSpinner nControllers, nEvents, nStates, minTransitions, maxTransitions, nBadTransitions;
 
@@ -44,6 +45,8 @@ public class RandomAutomatonPrompt extends JDialog {
     super(gui, true);        
 
     this.gui = gui;
+    
+    interruptThreadOnClose();
 
     addComponents();
     setGUIproperties();
@@ -175,18 +178,19 @@ public class RandomAutomatonPrompt extends JDialog {
 
         // Create a new thread since this can be a long task
         new Thread() {
-            public void run() {
-              gui.generateRandomAutomaton(
-                nEventsDefault         = nEventsValue,
-                nStatesDefault         = nStatesValue,
-                minTransitionsDefault  = minTransitionsValue,
-                maxTransitionsDefault  = maxTransitionsValue,
-                nControllersDefault    = nControllersValue,
-                nBadTransitionsDefault = nBadTransitionsValue,
-                progressIndicator
-              );
-              RandomAutomatonPrompt.this.dispose();
-            }
+          public void run() {
+            gui.generateRandomAutomaton(
+              RandomAutomatonPrompt.this,
+              nEventsDefault         = nEventsValue,
+              nStatesDefault         = nStatesValue,
+              minTransitionsDefault  = minTransitionsValue,
+              maxTransitionsDefault  = maxTransitionsValue,
+              nControllersDefault    = nControllersValue,
+              nBadTransitionsDefault = nBadTransitionsValue,
+              progressIndicator
+            );
+            RandomAutomatonPrompt.this.dispose();
+          }
         }.start();
 
       }
@@ -221,6 +225,23 @@ public class RandomAutomatonPrompt extends JDialog {
       /* Show screen */
 
     setVisible(true);
+
+  }
+
+  /** 
+   * Add a window listener to this dialog box which interrupts its thread when it is closed.
+   **/
+  private void interruptThreadOnClose() {
+
+    System.out.println("adding listener");
+    addWindowListener(new WindowAdapter() {
+      @Override public void windowClosing(WindowEvent e) {
+        System.out.println("executed!!");
+        // The method being executed in the thread is periodically checking to see if the window has been disposed
+        isDisposed = true;
+      
+      }
+    });
 
   }
     

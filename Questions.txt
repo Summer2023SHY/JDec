@@ -1,7 +1,7 @@
 HOURS:
 Monday, August 10: 5 hours
 Tuesday, August 11: 8 hour 30 minutes
-Wednesday, August 12: 4 hours 29 minutes, 7:17 -  
+Wednesday, August 12: 7 hours, 10:06 - 
 
 JAVADOC TO-DO LIST:
   
@@ -15,7 +15,7 @@ QUESTIONS:
 
 SHORT-TERM:
   
-  -quiting random automaton dialog doesn't kill thread (is this type of issue happening anywhere else?)
+  -quiting random automaton dialog now kills any threads (is this type of issue happening anywhere else?)
   -ensure that there are no violations before trying to find shapley vaules
   -shapley values can also be found on the crush
   -work on shapley values

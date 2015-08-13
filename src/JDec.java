@@ -1055,6 +1055,7 @@ public class JDec extends JFrame implements ActionListener {
 
   /**
    * Generate a random automaton with the specified properties.
+   * @param prompt                  The dialog box which started this process
    * @param nEvents                 The number of events to be generated in the automaton
    * @param nStates                 The number of states to be generated in the automaton
    * @param minTransitionsPerState  The minimum number of outgoing transitions per state
@@ -1063,13 +1064,21 @@ public class JDec extends JFrame implements ActionListener {
    * @param nBadTransitions         The number of bad transition in the automaton
    * @param progressIndicator       The progress indicator to be updated during the generation process
    **/
-  public void generateRandomAutomaton(int nEvents, int nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers, int nBadTransitions, JLabel progressIndicator) {
+  public void generateRandomAutomaton(RandomAutomatonPrompt prompt,
+                                      int nEvents,
+                                      int nStates,
+                                      int minTransitionsPerState,
+                                      int maxTransitionsPerState,
+                                      int nControllers,
+                                      int nBadTransitions,
+                                      JLabel progressIndicator) {
 
     // Get a temporary file name
     String fileName = getTemporaryFileName();
 
     // Generate random automaton
     Automaton automaton = AutomatonGenerator.generateRandom(
+      prompt,
       new File(fileName + ".hdr"),
       new File(fileName + ".bdy"),
       nEvents,
@@ -1081,8 +1090,9 @@ public class JDec extends JFrame implements ActionListener {
       progressIndicator
     );
 
-    // Place the generated automaton in a new tab
-    createTab(automaton);
+    // Place the generated automaton in a new tab as long as the process was not aborted
+    if (automaton != null)
+      createTab(automaton);
 
   }
 
