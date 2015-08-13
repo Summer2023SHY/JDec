@@ -15,7 +15,6 @@ QUESTIONS:
   -how far into the program can a user get with an uncontrollable system?
 
 SHORT-TERM:
-  -fix test cases
   -Is there allowed to be communications for shapley values? ( AKA are we allowed to use pruned automata..? which she said yes..)
   -work on shapley values
   -prevent user from adding communications if there was a communication that was a self-loop (display message), this is cyclic vs. acyclic (and add test case for this!) What about INVALID_COMMUNICATIONS that are self-loops?

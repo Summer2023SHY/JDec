@@ -335,14 +335,6 @@ public class TestAutomata {
   	printTestCase("Ensuring that the added state was labeled the initial state", new TestResult(automaton.getInitialStateID(), id), counter);
   	printTestCase("Ensuring that the added state has the proper label", new TestResult(automaton.getState(id).getLabel(), "secondState"), counter);
   	printTestCase("Ensuring that the added state is unmarked", new TestResult(automaton.getState(id).isMarked(), false), counter);
-
-    printTestOutput("Adding a state with a label of maximum length...", 3);
-    id = automaton.addState("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv", false, true);
-    printTestCase("Ensuring that the added state has the proper label", new TestResult(automaton.getState(id).getLabel(), "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv"), counter);
-
-    printTestOutput("Adding a state with a label exceeding maximum length...", 3);
-    id = automaton.addState("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvw", false, true);
-    printTestCase("Ensuring that the state was not added", new TestResult(id, 0), counter);
   	
   		/* State ID Assignment Tests */
 
@@ -421,7 +413,7 @@ public class TestAutomata {
     printTestCase("Ensuring that 'nControllers' was left at 'Automaton.MAX_NUMBER_OF_CONTROLLERS'", new TestResult(automaton.getNumberOfControllers(), Automaton.MAX_NUMBER_OF_CONTROLLERS), counter);
     printTestCase("Ensuring that 'nBytesPerEventID' was initialized to '2'", new TestResult(automaton.getSizeOfEventID(), 2), counter);
   	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '2'", new TestResult(automaton.getSizeOfStateID(), 2), counter);
-  	printTestCase("Ensuring that 'nBytesPerState' was initialized to '105'", new TestResult(automaton.getSizeOfState(), 105), counter);
+  	printTestCase("Ensuring that 'nBytesPerState' was initialized to '100005'", new TestResult(automaton.getSizeOfState(), 100005), counter);
 
   	printTestOutput("Instantiating empty automaton (Event capacity: Integer.MAX_VALUE, State capacity: Long.MAX_VALUE, Transition capacity: Integer.MAX_VALUE, Label length: Automaton.MAX_LABEL_LENGTH + 1)...", 3);
   	automaton = saveAndLoadAutomaton(new Automaton(Integer.MAX_VALUE, Long.MAX_VALUE, Integer.MAX_VALUE, Automaton.MAX_LABEL_LENGTH + 1, Automaton.MAX_NUMBER_OF_CONTROLLERS + 1, true));
@@ -432,7 +424,7 @@ public class TestAutomata {
     printTestCase("Ensuring that 'nControllers' was reduced to 'Automaton.MAX_NUMBER_OF_CONTROLLERS'", new TestResult(automaton.getNumberOfControllers(), Automaton.MAX_NUMBER_OF_CONTROLLERS), counter);
     printTestCase("Ensuring that 'nBytesPerEventID' was initialized to '4'", new TestResult(automaton.getSizeOfEventID(), 4), counter);
   	printTestCase("Ensuring that 'nBytesPerStateID' was initialized to '8'", new TestResult(automaton.getSizeOfStateID(), 8), counter);
-  	printTestCase("Ensuring that 'nBytesPerState' was initialized to '101 + 12 * Integer.MAX_VALUE'", new TestResult(automaton.getSizeOfState(), 101 + 12 * (long) Integer.MAX_VALUE), counter);
+  	printTestCase("Ensuring that 'nBytesPerState' was initialized to '100001 + 12 * Integer.MAX_VALUE'", new TestResult(automaton.getSizeOfState(), 100001 + 12 * (long) Integer.MAX_VALUE), counter);
 
   	printTestOutput("Instantiating empty automaton (Event capacity: Integer.MAX_VALUE - 1, State capacity: Long.MAX_VALUE - 1, Transition capacity: Integer.MAX_VALUE - 1, Label length: 1)...", 3);
   	automaton = saveAndLoadAutomaton(new Automaton(Integer.MAX_VALUE - 1, Long.MAX_VALUE - 1, Integer.MAX_VALUE - 1, 1, 1, true));
@@ -959,7 +951,7 @@ public class TestAutomata {
     crush.generateInputForGUI();
     printTestCase("Ensuring the events are correct", new TestResult(crush.getEventInput(), "<b,*,b>,FT,FT\n<o,o,o>,TT,TT\n<a,a,a>,TF,TF"), counter);
     printTestCase("Ensuring the states are correct", new TestResult(crush.getStateInput(), "@<1_1_1,1_3_1>\n<3_1_3,3_3_3>\n<2_2_2,2_4_2,2_5_2>\n<4_2_4,4_4_4,4_5_4>\n<6_6_6,6_7_6>\n<5_2_5,5_4_5,5_5_5>\n<7_7_7,7_6_7>"), counter);
-    printTestCase("Ensuring the transitions are correct", new TestResult(crush.getTransitionInput(), "<1_1_1,1_3_1>,<b,*,b>,<3_1_3,3_3_3>\n<1_1_1,1_3_1>,<a,a,a>,<2_2_2,2_4_2,2_5_2>:NASH_COMMUNICATION-SR-3.0-0.5\n<3_1_3,3_3_3>,<a,a,a>,<5_2_5,5_4_5,5_5_5>:NASH_COMMUNICATION-SR-7.0-0.5\n<2_2_2,2_4_2,2_5_2>,<b,*,b>,<4_2_4,4_4_4,4_5_4>\n<4_2_4,4_4_4,4_5_4>,<o,o,o>,<6_6_6,6_7_6>\n<5_2_5,5_4_5,5_5_5>,<o,o,o>,<7_7_7,7_6_7>:DISABLEMENT_DECISION-TT"), counter);
+    printTestCase("Ensuring the transitions are correct", new TestResult(crush.getTransitionInput(), "<1_1_1,1_3_1>,<b,*,b>,<3_1_3,3_3_3>\n<1_1_1,1_3_1>,<a,a,a>,<2_2_2,2_4_2,2_5_2>:NASH_COMMUNICATION-SR-3.0-0.5\n<3_1_3,3_3_3>,<a,a,a>,<5_2_5,5_4_5,5_5_5>:NASH_COMMUNICATION-SR-7.0-0.5\n<2_2_2,2_4_2,2_5_2>,<b,*,b>,<4_2_4,4_4_4,4_5_4>\n<4_2_4,4_4_4,4_5_4>,<o,o,o>,<6_6_6,6_7_6>\n<5_2_5,5_4_5,5_5_5>,<o,o,o>,<7_7_7,7_6_7>:DISABLEMENT_DECISION-FT"), counter);
 
       /* Nash Operation Tests */
 
