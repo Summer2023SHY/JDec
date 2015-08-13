@@ -738,6 +738,12 @@ public class JDec extends JFrame implements ActionListener {
       case "Shapley Values":
 
         uStructure = (UStructure) tab.automaton;
+
+        if (uStructure.hasViolations()) {
+          displayErrorMessage("Operation Aborted", "This structure contains one or more violations.");
+          break;
+        }
+
         uStructure.findShapleyValues();
 
         break;
@@ -1302,6 +1308,7 @@ public class JDec extends JFrame implements ActionListener {
 
       /* Filter .hdr files */
 
+    fileChooser.setAcceptAllFileFilterUsed(false);
     FileNameExtensionFilter filter = new FileNameExtensionFilter("Automaton files", "hdr");
     fileChooser.setFileFilter(filter);
 
@@ -1372,6 +1379,7 @@ public class JDec extends JFrame implements ActionListener {
 
       /* Filter .hdr files */
 
+    fileChooser.setAcceptAllFileFilterUsed(false);
     FileNameExtensionFilter filter = new FileNameExtensionFilter("Automaton files", "hdr");
     fileChooser.setFileFilter(filter);
 

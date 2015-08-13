@@ -1,21 +1,22 @@
 HOURS:
-Thursday, August 13: 2 hours 40 minutes (Expected: 8 hours)
+Thursday, August 13: 2 hours 40 minutes, 12:41 - (Expected: 8 hours)
 Friday, August 14: (Expected: 6 hours)
 
 JAVADOC TO-DO LIST:
   
   TestAutomata.java
-AutomataGUI.java: Export GUI Code to File
+
 QUESTIONS:
 
-  HOW DO YOU DETERMINE WHETHER TWO DISABLEMENT DECISIONS ARE THE SAME GLOBAL DECISION (identical 0th component..???) - IT WAS CODED UNDER THIS ASSUMPTION!
-
+  -example1: The U-Structure has conditional violations but no unconditional violations!! Didn't you say that whenever there were conditional violations, there had to be unconditional violations by symmetry?
+  -HOW DO YOU DETERMINE WHETHER TWO DISABLEMENT DECISIONS ARE THE SAME GLOBAL DECISION (identical 0th component..???)
+  -random automata, do we care about marked states??
   -Ask Dr. Ricker what the basic self-loop test case is actually supposed to look like.. Do <a,*> and <*,a> make an upper bound of <a,a>????? Or is a event vector with something in the 0th component, but * in all other components actually an unobservable label?? Can communications be added if n=1?? We can talk about this case on Thursday!
   -how far into the program can a user get with an uncontrollable system?
 
 SHORT-TERM:
-  
-  -ensure that there are no violations before trying to find shapley values (NOTE: Is there allowed to be communications if we simply ignore them, AKA are we allowed to use pruned automata..? )
+  -fix test cases
+  -Is there allowed to be communications for shapley values? ( AKA are we allowed to use pruned automata..? which she said yes..)
   -work on shapley values
   -prevent user from adding communications if there was a communication that was a self-loop (display message), this is cyclic vs. acyclic (and add test case for this!) What about INVALID_COMMUNICATIONS that are self-loops?
   -NSGA-II algorithm:

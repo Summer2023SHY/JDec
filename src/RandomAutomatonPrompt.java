@@ -21,12 +21,12 @@ public class RandomAutomatonPrompt extends JDialog {
     /* CLASS CONSTANTS */
 
   // Default values
-  private static int nControllersDefault     = 1;
-  private static int nEventsDefault          = 4;
-  private static int nStatesDefault          = 10;
+  private static int nControllersDefault     = 2;
+  private static int nEventsDefault          = 3;
+  private static int nStatesDefault          = 7;
   private static int minTransitionsDefault   = 1;
   private static int maxTransitionsDefault   = 3;
-  private static int nBadTransitionsDefault  = 1;
+  private static int nBadTransitionsDefault  = 2;
 
     /* INSTANCE VARIABLES */
 
@@ -45,7 +45,7 @@ public class RandomAutomatonPrompt extends JDialog {
     super(gui, true);        
 
     this.gui = gui;
-    
+
     interruptThreadOnClose();
 
     addComponents();
@@ -233,10 +233,8 @@ public class RandomAutomatonPrompt extends JDialog {
    **/
   private void interruptThreadOnClose() {
 
-    System.out.println("adding listener");
     addWindowListener(new WindowAdapter() {
       @Override public void windowClosing(WindowEvent e) {
-        System.out.println("executed!!");
         // The method being executed in the thread is periodically checking to see if the window has been disposed
         isDisposed = true;
       

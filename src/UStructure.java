@@ -740,7 +740,7 @@ public class UStructure extends Automaton {
 
   /**
    * Find the Shapley values, printing them out to the console.
-   * NOTE: This is not currently not set up to working with U-Structures containing communications.
+   * NOTE: This is not currently not set designed to handle violations.
    **/
   public void findShapleyValues() {
 
