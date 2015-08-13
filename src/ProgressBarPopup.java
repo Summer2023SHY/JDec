@@ -83,20 +83,23 @@ public class ProgressBarPopup extends JDialog {
    **/
   private void setGUIproperties(String title) {
 
-      /* Pack things in nicely */
-
+    // Pack things in nicely
     pack();
 
-      /* Sets screen location in the center of the screen (only works after calling pack) */
+    // Make it so that the user canot close this dialog box
+    // NOTE: If we did not do this, then we would have to make sure that the thread is killed
+    setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
+    // Ensure that the dialog cannot be resized
+    setResizable(false);
+
+    // Sets screen location in the center of the screen (only works after calling pack)
     setLocationRelativeTo(null);
 
-      /* Update title */
-
+    // Update title
     setTitle(title);
 
-      /* Show screen */
-
+    // Show screen
     setVisible(true);
 
   }

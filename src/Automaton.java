@@ -60,7 +60,7 @@ public class Automaton {
    * NOTE: This value was originally 100, but was increased drastically in order to accommodate long
    *       state vectors that are formed in the crush.
    **/
-  public static final int MAX_LABEL_LENGTH = 1000000;
+  public static final int MAX_LABEL_LENGTH = 100000;
 
   /** The default number of controllers in an automaton. */
   public static final int DEFAULT_NUMBER_OF_CONTROLLERS = 1;

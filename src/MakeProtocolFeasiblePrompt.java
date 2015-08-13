@@ -135,20 +135,16 @@ public class MakeProtocolFeasiblePrompt extends JDialog {
    **/
   private void setGUIproperties() {
 
-      /* Pack things in nicely */
-
+    // Pack things in nicely
     pack();
 
-      /* Sets screen location in the center of the screen (only works after calling pack) */
-
+    // Sets screen location in the center of the screen (only works after calling pack)
     setLocationRelativeTo(null);
 
-      /* Update title */
-
+    // Update title
     setTitle("Make Protocol Feasible");
 
-      /* Show screen */
-
+    // Show screen
     setVisible(true);
 
   }

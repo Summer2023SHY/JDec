@@ -1,5 +1,5 @@
 HOURS:
-Thursday, August 13: 8:40 - (Expected: 8 hours)
+Thursday, August 13: 2 hours 40 minutes (Expected: 8 hours)
 Friday, August 14: (Expected: 6 hours)
 
 JAVADOC TO-DO LIST:
@@ -15,7 +15,6 @@ QUESTIONS:
 
 SHORT-TERM:
   
-  -Ensure that all spawned threads are being killed properly
   -ensure that there are no violations before trying to find shapley values (NOTE: Is there allowed to be communications if we simply ignore them, AKA are we allowed to use pruned automata..? )
   -work on shapley values
   -prevent user from adding communications if there was a communication that was a self-loop (display message), this is cyclic vs. acyclic (and add test case for this!) What about INVALID_COMMUNICATIONS that are self-loops?
