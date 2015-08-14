@@ -1,5 +1,5 @@
 HOURS:
-Friday, August 14: 3 hour, 10:18 -  (Expected: 7 hours 10 minutes)
+Friday, August 14: 7:21 -  (Expected: 2 hours 55 minutes)
 
 JAVADOC TO-DO LIST:
   
@@ -11,7 +11,6 @@ QUESTIONS:
 
 SHORT-TERM:
   -Do the places where we are using "combineID" methods sort the lists where necessary??
-  -add test to crush to ensure that no state appears more than once
   -change crush operation to use combineBigIDs
   -manually test when a self-loop communication has been added to U-Structure, try to do nash
   -EVENT: a,FT,TT, STATE: @1, TRANSITION: 1,a,1 (fix U-structure case)
@@ -24,11 +23,11 @@ SHORT-TERM:
     -Code algorithms 3 and 4
   -add buttons to mark special transitions in GUI? (menu options would work great for this! With checkboxes), specifically marking Bad Transitions is useful
   -Documentation for each operation on website
-  -https://visualvm.java.net/gettingstarted.html
   -http://tutorials.jenkov.com/java-reflection/private-fields-and-methods.html
 
 POTENTIAL/MINOR:
 
+  -find counter-example for Dr. ricker
   -prevent user from picking the label reserved for the dump state in the complement operation
   -why are Events in a set instead of a map??????? unqiueness is already being guaranteed by JDec
   -add buttons to add events, add states, and add transitions (maybe little plus icons?)

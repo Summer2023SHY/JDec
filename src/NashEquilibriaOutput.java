@@ -24,7 +24,7 @@ public class NashEquilibriaOutput extends JDialog {
   private java.util.List<Set<NashCommunicationData>> nashEquilibria;
   private JTextPane[] detailedText;
 
-    /* CONSTRUCTOR **/
+    /* CONSTRUCTOR */
 
   /**
    * Used to construct a NashEquilibriaOutput object.
@@ -117,20 +117,16 @@ public class NashEquilibriaOutput extends JDialog {
    **/
   private void setGUIproperties(String title) {
 
-      /* Pack things in nicely */
-
+    // Pack things in nicely
     pack();
 
-      /* Sets screen location in the center of the screen (only works after calling pack) */
-
+    // Sets screen location in the center of the screen (only works after calling pack)
     setLocationRelativeTo(null);
 
-      /* Update title */
-
+    // Update title
     setTitle(title);
 
-      /* Show screen */
-
+    // Show screen
     setVisible(true);
 
   }

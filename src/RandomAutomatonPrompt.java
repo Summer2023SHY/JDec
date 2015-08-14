@@ -206,24 +206,19 @@ public class RandomAutomatonPrompt extends JDialog {
    **/
   private void setGUIproperties() {
 
-      /* Pack things in nicely */
-
+    // Pack things in nicely
     pack();
     
-      /* Make it so that the user can not resize the popup box */
-
+    // Make it so that the user can not resize the popup box
     setResizable(false);
 
-      /* Sets screen location in the center of the screen (only works after calling pack) */
-
+    // Sets screen location in the center of the screen (only works after calling pack)
     setLocationRelativeTo(null);
 
-      /* Update title */
-
+    // Update title
     setTitle("Generate Random Automaton");
 
-      /* Show screen */
-
+    // Show screen
     setVisible(true);
 
   }

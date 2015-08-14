@@ -70,7 +70,7 @@ public abstract class AutomatonGenerator<T> {
     int nAttempts = 0;
 
     // Repeat generation until it passes both the observability and controllability tests
-    while (!prompt.isDisposed) {
+    while (prompt == null || !prompt.isDisposed) {
 
       nAttempts++;
 
@@ -104,9 +104,9 @@ public abstract class AutomatonGenerator<T> {
         
         /* Keep adding states and transitions until the automaton is entirely accessible */
 
+      System.out.println("starting!");
       boolean isAccessible = false;
       while (!isAccessible) {
-
 
         // Generate new states
         updateProgressIndicator(progressIndicator, "Adding states...", nAttempts);
@@ -219,7 +219,7 @@ public abstract class AutomatonGenerator<T> {
     }
 
     // Return null if the prompt was closed
-    if (prompt.isDisposed || automaton == null)
+    if ( (prompt != null && prompt.isDisposed) || automaton == null)
       return null;
 
       /* Duplicate the automaton into the requested files */
@@ -231,6 +231,7 @@ public abstract class AutomatonGenerator<T> {
 
   /**
    * Add a random transition to the automaton, ensuring that no duplicates are created.
+   * NOTE: This method also ensures that the automaton remains deterministic.
    * @param automaton     The automaton that is being added to
    * @param stateID       The ID of the state which is having the transition added
    * @param targetStateID The ID of the state which the added transition will lead to
@@ -241,12 +242,11 @@ public abstract class AutomatonGenerator<T> {
     int eventID;
 
     // Ensure that we don't produce any duplicates
-    // NOTE: This could be coded more efficiently (using transitionExists() is not as efficient
-    //       as simply keeping track of the transitions generated so far)
     do {
       eventID = generateInt(1, automaton.getNumberOfEvents());
-    } while (automaton.transitionExists(stateID, eventID, targetStateID));
+    } while (automaton.transitionExistsWithEvent(stateID, eventID));
 
+    // Add the transition
     automaton.addTransition(stateID, eventID, targetStateID);
 
     return eventID;

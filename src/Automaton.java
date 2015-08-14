@@ -3048,18 +3048,34 @@ public class Automaton {
 
   /**
    * Check to see if a transition exists.
-   * @param initialStateID   The initial state
-   * @param eventID          The event triggering the transition
-   * @param targetStateID    The target state
-   * @return                 Whether or not the transition exists
+   * @param initialStateID  The initial state
+   * @param eventID         The event triggering the transition
+   * @param targetStateID   The target state
+   * @return                Whether or not the transition exists
    **/
   public boolean transitionExists(long initialStateID, int eventID, long targetStateID) {
-    
+
     Transition transition = new Transition(getEvent(eventID), targetStateID);
     State s = getState(initialStateID);
 
     for (Transition t : s.getTransitions())
       if (t.equals(transition))
+        return true;
+
+    return false;
+
+  }
+
+  /**
+   * Check to see if the specified state already has a transition with a particular event.
+   * @param initialStateID  The initial state
+   * @param eventID         The event triggering the transition
+   * @return                Whether or not the transition exists
+   **/
+  public boolean transitionExistsWithEvent(long initialStateID, int eventID) {
+
+    for (Transition t : getState(initialStateID).getTransitions())
+      if (t.getEvent().getID() == eventID)
         return true;
 
     return false;
@@ -3287,5 +3303,30 @@ public class Automaton {
     return false;
 
   }
+
+  /**
+   * Check to see if this automaton is deterministic.
+   * NOTE: This method has been added purely as a testing mechanism.
+   * @return  Whether or not this automaton is deterministic
+   **/
+  public boolean isDeterministic() {
+
+    for (long s = 1; s <= getNumberOfStates(); s++) {
+      
+      List<Transition> transitions = getState(s).getTransitions();
+      Set<Integer> eventIDs = new HashSet<Integer>();
+
+      for (Transition t : transitions)
+        eventIDs.add(t.getEvent().getID());
+
+      if (eventIDs.size() != transitions.size())
+        return false;
+
+    }
+
+    return true;
+
+  }
+
 
 }
