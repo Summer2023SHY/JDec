@@ -40,6 +40,7 @@ public class JDec extends JFrame implements ActionListener {
 
     /* CLASS CONSTANTS */
 
+  private static final String applicationTitle = "JDec (v1.0 beta 1) - A Java application for Decentralized Control";
   private static final String GUI_DATA_FILE_NAME  = "gui.data";
   private static final File TEMPORARY_DIRECTORY   = new File("JDec_Temporary_Files");
   public static final int PREFERRED_DIALOG_WIDTH  = 500;
@@ -198,7 +199,7 @@ public class JDec extends JFrame implements ActionListener {
     menuBar.add(createMenu("Properties",
       "Test Observability[BASIC_AUTOMATON]",
       "Test Controllability[BASIC_AUTOMATON]",
-      "Shapley Values[ANY_U_STRUCTURE]"
+      "Shapley Values[U_STRUCTURE]"
     ));
     
     // Generate menu
@@ -412,7 +413,7 @@ public class JDec extends JFrame implements ActionListener {
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
     // Update title
-    setTitle("JDec v1.0 - A Java application for Decentralized Control");
+    setTitle(applicationTitle);
 
     // Show screen
     setVisible(true);
@@ -530,7 +531,7 @@ public class JDec extends JFrame implements ActionListener {
         // Create new tab for the accessible automaton
         if (automaton == null) {
           temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
-          displayErrorMessage("Accessible Operation Failed", "Please specify a starting state.");
+          displayErrorMessage("Operation Failed", "Please specify a starting state.");
         } else
           createTab(automaton);
         break;
@@ -556,7 +557,7 @@ public class JDec extends JFrame implements ActionListener {
         // Create new tab for the trim automaton
         if (automaton == null) {
           temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
-          displayErrorMessage("Trim Operation Failed", "Please specify a starting state.");
+          displayErrorMessage("Operation Failed", "Please specify a starting state.");
         } else
           createTab(automaton);
         break;
@@ -571,7 +572,7 @@ public class JDec extends JFrame implements ActionListener {
           createTab(tab.automaton.complement(headerFile, bodyFile));
         } catch(OperationFailedException e) {
           temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
-          displayErrorMessage("Complement Operation Failed", "There already exists a dump state, so the complement could not be taken again.");
+          displayErrorMessage("Operation Failed", "There already exists a dump state, so the complement could not be taken again.");
         }
         break;
 
@@ -593,7 +594,7 @@ public class JDec extends JFrame implements ActionListener {
           createTab(Automaton.intersection(tab.automaton, otherAutomaton, headerFile, bodyFile));
         } catch(IncompatibleAutomataException e) {
           temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
-          displayErrorMessage("Intersection Operation Failed", "Please ensure that both automata have the same number of controllers and that there are no incompatible events (meaning that events share the same name but have different properties).");
+          displayErrorMessage("Operation Failed", "Please ensure that both automata have the same number of controllers and that there are no incompatible events (meaning that events share the same name but have different properties).");
         }
         
         break;
@@ -615,7 +616,7 @@ public class JDec extends JFrame implements ActionListener {
           createTab(Automaton.union(tab.automaton, otherAutomaton, headerFile, bodyFile));
         } catch(IncompatibleAutomataException e) {
           temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
-          displayErrorMessage("Union Operation Failed", "Please ensure that both automata have the same number of controllers and that there are no incompatible events (meaning that events share the same name but have different properties).");
+          displayErrorMessage("Operation Failed", "Please ensure that both automata have the same number of controllers and that there are no incompatible events (meaning that events share the same name but have different properties).");
         }
 
         break;
@@ -630,7 +631,7 @@ public class JDec extends JFrame implements ActionListener {
         automaton = tab.automaton.synchronizedComposition(headerFile, bodyFile);
         if (automaton == null) {
           temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
-          displayErrorMessage("Synchronized Composition Operation Failed", "Please ensure that you specified a starting state.");
+          displayErrorMessage("Operation Failed", "Please ensure that you have specified a starting state (using an '@' symbol).");
         } else
           createTab(automaton);
 
@@ -642,14 +643,13 @@ public class JDec extends JFrame implements ActionListener {
 
         if (tab.type == Automaton.Type.U_STRUCTURE) {
           if (uStructure.getSizeOfPotentialAndNashCommunications() > 0) {
-            displayErrorMessage("Crush Operation Aborted", "You must choose a communication protocol before taking the Crush.");
+            displayErrorMessage("Operation Aborted", "You must choose a communication protocol before taking the Crush.");
             break;
           }
         }
 
-
         if (uStructure.hasViolations()) {
-          displayErrorMessage("Crush Operation Aborted", "This structure contains one or more violations.");
+          displayErrorMessage("Operation Aborted", "This structure contains one or more violations.");
           break;
         }
 
@@ -661,9 +661,9 @@ public class JDec extends JFrame implements ActionListener {
 
         uStructure = ((UStructure) tab.automaton);
 
-        // // Display error message if there was not enough controllers
-        // if (uStructure.getNumberOfControllers() == 1)
-        //   displayErrorMessage("Not Enough Controllers", "There must be more than 1 controller in order for a communication to take place."); 
+        // Display error message if there was not enough controllers
+        if (uStructure.getNumberOfControllers() == 1)
+          displayErrorMessage("Not Enough Controllers", "There must be more than 1 controller in order for a communication to take place."); 
 
         // Display warning message, and abort the operation if requested
         if (uStructure.getSizeOfPotentialAndNashCommunications() > 0)
@@ -675,7 +675,11 @@ public class JDec extends JFrame implements ActionListener {
         bodyFile = new File(fileName + ".bdy");
 
         // Create a copy of the current automaton with all communications added and potential communications marked
-        createTab(uStructure.addCommunications(headerFile, bodyFile));
+        UStructure uStructureWithCommunications = uStructure.addCommunications(headerFile, bodyFile);
+        createTab(uStructureWithCommunications);
+
+        if (uStructureWithCommunications.hasSelfLoop(uStructureWithCommunications.getPotentialCommunications()))
+          displayMessage("Communication Self-Loop", "Please be advised 1 or more of the communications added are a self-loop.", JOptionPane.WARNING_MESSAGE);
 
         break;
 
@@ -704,7 +708,7 @@ public class JDec extends JFrame implements ActionListener {
         uStructure = ((UStructure) tab.automaton);
 
         if (uStructure.getSizeOfPotentialAndNashCommunications() == 0)
-          displayErrorMessage("Operation Failed", "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.");
+          displayErrorMessage("Operation Aborted", "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.");
         else
           new FeasibleProtocolOutput(this, uStructure, uStructure.generateSmallestFeasibleProtocols(uStructure.getPotentialAndNashCommunications()), "Smallest Feasible Protocols", " Protocol(s) with the fewest number of communications: ");
         break;
@@ -713,8 +717,12 @@ public class JDec extends JFrame implements ActionListener {
 
         uStructure = ((UStructure) tab.automaton);
 
+        if (uStructure.hasSelfLoop(uStructure.getPotentialAndNashCommunications())) {
+          displayErrorMessage("Operation Aborted", "There exists one or more communications that are self-loops.");
+        }
+        
         if (uStructure.getSizeOfPotentialAndNashCommunications() == 0)
-          displayErrorMessage("Operation Failed", "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.");
+          displayErrorMessage("Operation Aborted", "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.");
         else
           new NashInfoForNashEquilibriaPrompt(this, tab, "Cost and Probability Values", "Specify costs and probabilities for each communication.");
         break;
@@ -950,9 +958,9 @@ public class JDec extends JFrame implements ActionListener {
 
       case U_STRUCTURE:
 
-        int nControllersBeforeUStructure = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
+        nControllers = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
         tab.automaton = AutomatonGenerator.generateFromGUICode(
-          new UStructure(tab.headerFile, tab.bodyFile, nControllersBeforeUStructure),
+          new UStructure(tab.headerFile, tab.bodyFile, nControllers),
           tab.eventInput.getText(),
           tab.stateInput.getText(),
           tab.transitionInput.getText(),
@@ -965,9 +973,9 @@ public class JDec extends JFrame implements ActionListener {
 
       case PRUNED_U_STRUCTURE:
 
-        nControllersBeforeUStructure = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
+        nControllers = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
         tab.automaton = AutomatonGenerator.generateFromGUICode(
-          new PrunedUStructure(tab.headerFile, tab.bodyFile, nControllersBeforeUStructure),
+          new PrunedUStructure(tab.headerFile, tab.bodyFile, nControllers),
           tab.eventInput.getText(),
           tab.stateInput.getText(),
           tab.transitionInput.getText(),
@@ -980,9 +988,9 @@ public class JDec extends JFrame implements ActionListener {
 
       case CRUSH:
 
-        nControllersBeforeUStructure = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
+        nControllers = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
         tab.automaton = AutomatonGenerator.generateFromGUICode(
-          new Crush(tab.headerFile, tab.bodyFile, nControllersBeforeUStructure),
+          new Crush(tab.headerFile, tab.bodyFile, nControllers),
           tab.eventInput.getText(),
           tab.stateInput.getText(),
           tab.transitionInput.getText(),
@@ -1480,7 +1488,7 @@ public class JDec extends JFrame implements ActionListener {
       /* Show error message if there is no second automaton to pick from */
 
     if (options.length == 0) {
-      displayErrorMessage("Operation Failed", "This operation requires two generated automata.");
+      displayErrorMessage("Operation Aborted", "This operation requires two generated automata.");
       return -1;
     }
     
@@ -1825,7 +1833,7 @@ public class JDec extends JFrame implements ActionListener {
         /* Controller Input */
 
       // Controller input label
-      JLabel controllerInputLabel = new JLabel( (type == Automaton.Type.AUTOMATON ? "# Controllers:" : "# Controllers Before U-Structure:") );
+      JLabel controllerInputLabel = new JLabel("# Controllers:");
       c.ipady = 0; c.weightx = 0.5; c.weighty = 0.0; c.gridx = 0; c.gridy = 0;
       container.add(controllerInputLabel, c);
 

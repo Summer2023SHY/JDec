@@ -1,6 +1,5 @@
 HOURS:
-Thursday, August 13: 2 hours 40 minutes, 12:41 - (Expected: 8 hours)
-Friday, August 14: (Expected: 6 hours)
+Friday, August 14: 3 hour, 10:18 -  (Expected: 7 hours 10 minutes)
 
 JAVADOC TO-DO LIST:
   
@@ -8,37 +7,36 @@ JAVADOC TO-DO LIST:
 
 QUESTIONS:
 
-  -example1: The U-Structure has conditional violations but no unconditional violations!! Didn't you say that whenever there were conditional violations, there had to be unconditional violations by symmetry?
-  -HOW DO YOU DETERMINE WHETHER TWO DISABLEMENT DECISIONS ARE THE SAME GLOBAL DECISION (identical 0th component..???)
-  -random automata, do we care about marked states??
-  -Ask Dr. Ricker what the basic self-loop test case is actually supposed to look like.. Do <a,*> and <*,a> make an upper bound of <a,a>????? Or is a event vector with something in the 0th component, but * in all other components actually an unobservable label?? Can communications be added if n=1?? We can talk about this case on Thursday!
   -how far into the program can a user get with an uncontrollable system?
 
 SHORT-TERM:
-  -Is there allowed to be communications for shapley values? ( AKA are we allowed to use pruned automata..? which she said yes..)
+  -Do the places where we are using "combineID" methods sort the lists where necessary??
+  -add test to crush to ensure that no state appears more than once
+  -change crush operation to use combineBigIDs
+  -manually test when a self-loop communication has been added to U-Structure, try to do nash
+  -EVENT: a,FT,TT, STATE: @1, TRANSITION: 1,a,1 (fix U-structure case)
+  -when generating U-Structure, display warning if there are any unmarked states (we are assuming pre-fixed closed)
+  -hasViolations() doesn't need to care about conditional violations (any implications??)
   -work on shapley values
-  -prevent user from adding communications if there was a communication that was a self-loop (display message), this is cyclic vs. acyclic (and add test case for this!) What about INVALID_COMMUNICATIONS that are self-loops?
+  -GUI Tests?? - http://abbot.sourceforge.net/doc/quick-start.shtml
+  -what happens if a bad transition is a self-loop??
   -NSGA-II algorithm:
     -Code algorithms 3 and 4
   -add buttons to mark special transitions in GUI? (menu options would work great for this! With checkboxes), specifically marking Bad Transitions is useful
-  -Label application as beta
   -Documentation for each operation on website
+  -https://visualvm.java.net/gettingstarted.html
+  -http://tutorials.jenkov.com/java-reflection/private-fields-and-methods.html
 
 POTENTIAL/MINOR:
 
+  -prevent user from picking the label reserved for the dump state in the complement operation
   -why are Events in a set instead of a map??????? unqiueness is already being guaranteed by JDec
   -add buttons to add events, add states, and add transitions (maybe little plus icons?)
   -warn user when they've specified more than one initial state (only the last one is considered anyway)
-  -should the u-structure event properties appear now that we've added them when doing syncrhonized composition?
-  -option to manually load GUI input code for large automata (alternatively, we could have a screen with automaton stats and list of events, basically everything that is in the header file)
   -tooltips dissapear when button is clicked
-  -Create settings:
-    -"overlap=scale;" should be an option for the user since it makes a drastic difference in the output of the graphs
-    -open blank automaton tab when program opens (default is yes)
-  -File->Open Recent menu (up to 10 most recent items, with separator then "Clear Items" which removes all previous recent items. This button is disabled when there are 0 items)
   -In Automaton::addState(), there is the potential for 3 calls to recreateBinaryFile. This should be combined into one call.
   -Currently regenerating uStructures when clicking "Generate Automaton" button (but they were already generated before when testing for feasibility, so we should store them). NOTE: While this would be more efficient, I do not see a clean way of implementing it
-  -Multiple violations on the same transition are not properly drawn in graphviz (we should draw them as two separate transitions)
+  -Multiple violations on the same transition are not properly drawn in graphviz (we should draw them as two separate transitions). Is it even possible for multiple violations to be in the same place??
   -Warning message when saving in GUI to overwrite files
   -There are 3 tooltips left to go in the XML file (from the buttons to generate the image, view image, and generate automaton)
   -Co-acessible warning message if there are no marked states

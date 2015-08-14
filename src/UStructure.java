@@ -744,10 +744,56 @@ public class UStructure extends Automaton {
    **/
   public void findShapleyValues() {
 
-    // Generate crushes for each component (except for the 0th component)
-    Crush[] crushes = new Crush[nControllers]; // 1-based
-    for (int i = 1; i <= nControllers; i++)
-      crushes[i - 1] = crush(null, null, i, null, null);
+    // Generate crushes for each component (including the 0th component)
+    Crush[] crushes = new Crush[nControllers + 1]; // 1-based
+    for (int i = 0; i <= nControllers; i++)
+      crushes[i] = crush(null, null, i, null, null);
+
+    // Get the event and states needed in the crush of the 0th component (because we will use them often)
+    List<State> initialStates  = new ArrayList<State>();
+    List<Event> disabledEvents = new ArrayList<Event>();
+    List<State> targetStates   = new ArrayList<State>();
+    for (DisablementData data : crushes[0].getDisablementDecisions()) {
+      initialStates.add(crushes[0].getState(data.initialStateID));
+      disabledEvents.add(crushes[0].getEvent(data.eventID));
+      targetStates.add(crushes[0].getState(data.targetStateID));
+    }
+    int nGlobalDisablements = initialStates.size();
+
+    // Map the disablements to an ID (each crush needs a separate map, except for the 0th component, in
+    // which the disablements are simply numbered sequentially by their order in the list)
+    // NOTE: Identical IDs mean that two disablements are the same global disablement decision
+    List<HashMap<DisablementData, Integer>> disablementIDs = new ArrayList<HashMap<DisablementData, Integer>>(); // 0-based
+
+    // Add mappings for each Crush
+    for (int i = 1; i <= nControllers; i++) {
+      HashMap<DisablementData, Integer> mapping = new HashMap<DisablementData, Integer>();
+      
+      // Add an entry for each disablement decision (which should all be given unique values in this map)
+      for (DisablementData data : crushes[i].getDisablementDecisions()) {
+
+        State state1 = crushes[i].getState(data.initialStateID);
+        Event event = crushes[i].getEvent(data.eventID);
+        State state2 = crushes[i].getState(data.targetStateID);
+
+        for (int j = 0; j < nGlobalDisablements; j++) {
+          if (event.equals(disabledEvents.get(j)) // If the event is not the same, then it is a different disablement
+              && hasNonNullIntersection(state1, initialStates.get(j)) // The state vectors must share at least one common state
+              && hasNonNullIntersection(state2, targetStates.get(j))) { // The state vectors must share at least one common state
+
+            // Add entry
+            mapping.put(data, j);
+
+            // Each global disablement should correspond to only one disablement
+            // NOTE: If this break statement is remove, we should still get the same answer (just less efficiently)
+            break;
+          }
+        }
+
+      }
+
+      disablementIDs.add(mapping);
+    }
 
     // Generate powerset of controllers (1-based)
     List<Integer> elements = new ArrayList<Integer>();
@@ -759,13 +805,13 @@ public class UStructure extends Automaton {
     // Count the number of disablement decisions that are detected by each coalition
     for (Set<Integer> coalition : coalitions) {
 
-      int count = 0; // Doesn't currently account for duplicates.. not sure how to do that yet
+      Set<Integer> countedDisablements = new HashSet<Integer>();
       for (Integer controller : coalition)
-        for (DisablementData data : crushes[controller - 1].getDisablementDecisions())
+        for (DisablementData data : crushes[controller].getDisablementDecisions())
           if (data.controllers[controller - 1])
-            count++;
+            countedDisablements.add(disablementIDs.get(controller - 1).get(data));
 
-      System.out.println(coalition.toString() + " : " + count);
+      System.out.println(coalition.toString() + " : " + countedDisablements.size());
 
     }
 
@@ -1258,6 +1304,27 @@ public class UStructure extends Automaton {
     for (Transition t : currentState.getTransitions())
       if (t.getEvent().getVector().isUnobservableToController(indexOfController))
         findConnectingStates(set, getState(t.getTargetStateID()), indexOfController);
+
+  }
+
+  /**
+   * Given two states (which have to have label vectors), check if the intersection of the crushed
+   * states are non-null, meaning that they share at least one state in common. 
+   * @param s1  The first state
+   * @param s2  The second state
+   * @return    Whether or not the crushed states have at least one state in common
+   **/
+  private boolean hasNonNullIntersection(State s1, State s2) {
+
+    LabelVector v1 = new LabelVector(s1.getLabel());
+    LabelVector v2 = new LabelVector(s2.getLabel());
+
+    for (int i = 0; i < v1.getSize(); i++)
+      for (int j = 0; j < v2.getSize(); j++)
+        if (v1.getLabelAtIndex(i).equals(v2.getLabelAtIndex(j)))
+          return true;
+
+    return false;
 
   }
 

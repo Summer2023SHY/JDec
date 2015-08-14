@@ -7,18 +7,18 @@
  * @author Micah Stairs
  *
  * TABLE OF CONTENTS:
- *	-Instance Variables
- *	-Constructor
+ *  -Instance Variables
+ *  -Constructor
  *  -Mutator Method
- *	-Accessor Methods
- *	-Overridden Methods
+ *  -Accessor Methods
+ *  -Overridden Methods
  **/
 
 import java.util.*;
 
 public class Event implements Comparable<Event> {
     
-  	/* INSTANCE VARIABLES */
+    /* INSTANCE VARIABLES */
 
   private String label;
   private int id;
@@ -31,24 +31,24 @@ public class Event implements Comparable<Event> {
    **/
   private LabelVector vector = null;
 
-  	/* CONSTRUCTOR */
+    /* CONSTRUCTOR */
 
   /**
    * Construct a new event with the specified properties.
-   * @param label			    The name of the event
+   * @param label         The name of the event
    * @param id            The ID of the event
    * @param observable    Whether or not the event can be observed
-   * @param controllable	Whether or not the event can be controlled
+   * @param controllable  Whether or not the event can be controlled
    **/
-	public Event(String label, int id, boolean[] observable, boolean[] controllable) {
+  public Event(String label, int id, boolean[] observable, boolean[] controllable) {
 
-		this.label = label;
-		this.id = id;
-		this.observable = observable;
-		this.controllable = controllable;
-		this.vector = new LabelVector(label);
+    this.label = label;
+    this.id = id;
+    this.observable = observable;
+    this.controllable = controllable;
+    this.vector = new LabelVector(label);
 
-	}
+  }
 
     /* MUTATOR METHOD */
 
@@ -60,39 +60,39 @@ public class Event implements Comparable<Event> {
     this.id = id;
   }
 
-		/* ACCESSOR METHODS */
+    /* ACCESSOR METHODS */
 
-	/**
-	 * Get the label of the event.
- 	 * @return  The event's label
-	 **/
-	public String getLabel() {
-		return label;
-	}
+  /**
+   * Get the label of the event.
+   * @return  The event's label
+   **/
+  public String getLabel() {
+    return label;
+  }
 
-	/**
-	 * Get the ID number of the event.
- 	 * @return  The ID
-	 **/
-	public int getID() {
-		return id;
-	}
+  /**
+   * Get the ID number of the event.
+   * @return  The ID
+   **/
+  public int getID() {
+    return id;
+  }
 
-	/**
-	 * Get the observability property of the event for each controller.
- 	 * @return  Whether or not the event is observable
-	 **/
-	public boolean[] isObservable() {
-		return observable;
-	}
+  /**
+   * Get the observability property of the event for each controller.
+   * @return  Whether or not the event is observable
+   **/
+  public boolean[] isObservable() {
+    return observable;
+  }
 
-	/**
-	 * Get the controllability property of the event for each controller.
- 	 * @return  Whether or not the event is controllable
-	 **/
-	public boolean[] isControllable() {
-		return controllable;
-	}
+  /**
+   * Get the controllability property of the event for each controller.
+   * @return  Whether or not the event is controllable
+   **/
+  public boolean[] isControllable() {
+    return controllable;
+  }
 
   /**
    * Get the event vector.
@@ -102,28 +102,28 @@ public class Event implements Comparable<Event> {
     return vector;
   }
 
-		/** OVERRIDDEN METHODS **/
+    /* OVERRIDDEN METHODS */
 
-	@Override public int hashCode() {
-		return label.hashCode();
-	}
+  @Override public int hashCode() {
+    return label.hashCode();
+  }
 
-	@Override public int compareTo(Event other) {
-		return (new Integer(id)).compareTo(other.id);
-	}
+  @Override public int compareTo(Event other) {
+    return (new Integer(id)).compareTo(other.id);
+  }
 
-	@Override public boolean equals(Object obj) {
-		Event other = (Event) obj;
-		return this.label.equals(other.label);
-	}
+  @Override public boolean equals(Object obj) {
+    Event other = (Event) obj;
+    return this.label.equals(other.label);
+  }
 
-	@Override public String toString() {
-		return "("
-			+ "\"" + label + "\",ID:"
-			+ id + ","
-			+ "Observable=" + Arrays.toString(observable) + ","
-			+ "Controllable=" + Arrays.toString(controllable)
-			+ ")";
-	}
+  @Override public String toString() {
+    return "("
+      + "\"" + label + "\",ID:"
+      + id + ","
+      + "Observable=" + Arrays.toString(observable) + ","
+      + "Controllable=" + Arrays.toString(controllable)
+      + ")";
+  }
 
 }

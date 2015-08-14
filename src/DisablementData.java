@@ -43,4 +43,8 @@ public class DisablementData extends TransitionData {
 
   }
 
+  @Override public int hashCode() {
+    return ((Long) initialStateID).hashCode();
+  }
+
 }

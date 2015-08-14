@@ -26,6 +26,7 @@
 
 import java.util.*;
 import java.io.*;
+import java.math.*; // temporary
 import java.nio.file.*;
 import java.awt.image.*;
 import javax.imageio.*;
@@ -1444,7 +1445,8 @@ public class Automaton {
   }
 
   /**
-   * Given two state IDs and their respective automatons, create a unique combined ID.
+   * Given two state IDs (the order matters) and their respective automatons, create a unique combined ID.
+   * NOTE: There is potential for long overflow, which could technically result in generating IDs that are not unique
    * NOTE: The reasoning behind this formula is analogous to the following: if you have a table with N rows and M columns,
    * every cell is guaranteed to have a different combination of row and column indexes.
    * @param id1     The state ID from the first automaton
@@ -1461,8 +1463,9 @@ public class Automaton {
 
   /**
    * Given a list of IDs and a maximum possible ID, create a unique combined ID.
+   * NOTE: The order of the list matters.
    * @param list  The list of IDs
-   * @param maxID The largest possible value to be used as an ID
+   * @param maxID The largest possible value to be used as an ID (not the combined ID)
    * @return      The combined ID
    **/
   public static long combineIDs(List<Long> list, long maxID) {
@@ -1470,9 +1473,35 @@ public class Automaton {
     long combinedID = 0;
 
     for (Long id : list) {
+      
       combinedID *= maxID + 1;
       combinedID += id;
+
+      if (combinedID < 0)
+        System.err.println("ERROR: Overflow in Automaton.combineIDs() method.");
+
     }
+
+    return combinedID;
+
+  }
+
+  /**
+   * Given a list of IDs and a maximum possible ID, create a unique combined ID using a BigInteger.
+   * NOTE: The order of the list matters.
+   * @param list  The list of IDs
+   * @param maxID The largest possible value to be used as an ID (not the combined ID)
+   * @return      The combined ID
+   **/
+  public static BigInteger combineBigIDs(List<Long> list, long maxID) {
+    
+    BigInteger bigMaxID = new BigInteger(String.valueOf(maxID));
+    BigInteger maxIDPlusOne = new BigInteger(String.valueOf(maxID + 1));
+
+    BigInteger combinedID = BigInteger.ZERO;
+
+    for (Long id : list)
+      combinedID = combinedID.multiply(maxIDPlusOne).add(new BigInteger(String.valueOf(id)));
 
     return combinedID;
 
@@ -3242,6 +3271,21 @@ public class Automaton {
    **/
   public List<TransitionData> getBadTransitions() {
     return badTransitions;
+  }
+
+  /**
+   * Check to see if the specified list contains at least 1 transition that is a self-loop.
+   * @param list  The list of transitions
+   * @return      Whether or not the list contains a self-loop
+   **/
+  public boolean hasSelfLoop(List<? extends TransitionData> list) {
+
+    for (TransitionData data : list)
+      if (data.initialStateID == data.targetStateID)
+        return true;
+
+    return false;
+
   }
 
 }
