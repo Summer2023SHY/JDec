@@ -1422,10 +1422,10 @@ public class UStructure extends Automaton {
   @Override protected void addAdditionalEdgeProperties(Map<String, String> map) {
 
     for (TransitionData data : unconditionalViolations)
-      appendValueToMap(map, createKey(data), ",color=red");
+      appendValueToMap(map, createKey(data), ",color=red,fontcolor=red");
 
     for (TransitionData data : conditionalViolations)
-      appendValueToMap(map, createKey(data), ",color=green3");
+      appendValueToMap(map, createKey(data), ",color=green3,fontcolor=green3");
 
     for (TransitionData data : getPotentialCommunications())
       appendValueToMap(map, createKey(data), ",color=blue,fontcolor=blue");
