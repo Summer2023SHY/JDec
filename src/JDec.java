@@ -61,7 +61,7 @@ public class JDec extends JFrame implements ActionListener {
   private java.util.List<Component> componentsWhichRequireAnyUStructure    = new ArrayList<Component>();
 
   // Miscellaneous
-  private File currentDirectory = null;
+  private File currentDirectory = new File(System.getProperty("user.dir"));;
   private int temporaryFileIndex = 1;
   private JLabel noTabsMessage;
 
@@ -826,6 +826,7 @@ public class JDec extends JFrame implements ActionListener {
     AutomatonTab tab = tabs.get(newIndex);
     tab.headerFile   = automaton.getHeaderFile();
     tab.bodyFile     = automaton.getBodyFile();
+
     tab.automaton    = automaton;
     tab.refreshGUI();
     tab.setSaved(true);

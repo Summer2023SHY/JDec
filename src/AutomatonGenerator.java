@@ -104,7 +104,6 @@ public abstract class AutomatonGenerator<T> {
         
         /* Keep adding states and transitions until the automaton is entirely accessible */
 
-      System.out.println("starting!");
       boolean isAccessible = false;
       while (!isAccessible) {
 
@@ -219,12 +218,16 @@ public abstract class AutomatonGenerator<T> {
     }
 
     // Return null if the prompt was closed
-    if ( (prompt != null && prompt.isDisposed) || automaton == null)
+    if ((prompt != null && prompt.isDisposed) || automaton == null)
       return null;
 
       /* Duplicate the automaton into the requested files */
     
     updateProgressIndicator(progressIndicator, "Returning result...", nAttempts);
+    
+    if (headerFile == null || bodyFile == null)
+      return automaton.duplicate();
+
     return automaton.duplicate(headerFile, bodyFile);
 
   }

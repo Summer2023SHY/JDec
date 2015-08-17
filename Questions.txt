@@ -1,5 +1,6 @@
 HOURS:
-Friday, August 14: 7:21 -  (Expected: 2 hours 55 minutes)
+Saturday, August 15: 1 hour 30 minutes
+Monday, August 17: 8:47 - 
 
 JAVADOC TO-DO LIST:
   
@@ -10,8 +11,7 @@ QUESTIONS:
   -how far into the program can a user get with an uncontrollable system?
 
 SHORT-TERM:
-  -Do the places where we are using "combineID" methods sort the lists where necessary??
-  -change crush operation to use combineBigIDs
+  -crush is generating repeated states (wait for Dr. ricker's reply)
   -manually test when a self-loop communication has been added to U-Structure, try to do nash
   -EVENT: a,FT,TT, STATE: @1, TRANSITION: 1,a,1 (fix U-structure case)
   -when generating U-Structure, display warning if there are any unmarked states (we are assuming pre-fixed closed)

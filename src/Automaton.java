@@ -26,7 +26,7 @@
 
 import java.util.*;
 import java.io.*;
-import java.math.*; // temporary
+import java.math.*;
 import java.nio.file.*;
 import java.awt.image.*;
 import javax.imageio.*;
@@ -670,6 +670,9 @@ public class Automaton {
 
   /**
    * A helper method used to generate the inverse of this automaton.
+   * NOTE: The states in the inverted automaton should still have the same IDs.
+   * NOTE: This automaton is lightweight, meaning it has no special transition information, only the
+   *       states, events, and transitions.
    * @param automaton The generic automaton object
    * @return          The same automaton that was passed into the method, now containing the inverse of this automaton
    **/
@@ -1463,10 +1466,10 @@ public class Automaton {
 
   /**
    * Given a list of IDs and a maximum possible ID, create a unique combined ID.
-   * NOTE: The order of the list matters.
+   * NOTE: The order of the list matters. This method does not sort the list interally.
    * @param list  The list of IDs
-   * @param maxID The largest possible value to be used as an ID (not the combined ID)
-   * @return      The combined ID
+   * @param maxID The largest possible value that could appear in the list (usually nStates)
+   * @return      The unique combined ID
    **/
   public static long combineIDs(List<Long> list, long maxID) {
     
@@ -1477,8 +1480,9 @@ public class Automaton {
       combinedID *= maxID + 1;
       combinedID += id;
 
+      // Check for overflow
       if (combinedID < 0)
-        System.err.println("ERROR: Overflow in Automaton.combineIDs() method.");
+        System.err.println("ERROR: Overflow in Automaton.combineIDs() method. Consider using Automaton.combineBigIDs() method instead.");
 
     }
 
@@ -1487,11 +1491,12 @@ public class Automaton {
   }
 
   /**
-   * Given a list of IDs and a maximum possible ID, create a unique combined ID using a BigInteger.
-   * NOTE: The order of the list matters.
+   * Given a list of IDs and the largest possible value that could appear in the list, create a unique
+   * combined ID using a BigInteger.
+   * NOTE: The order of the list matters. This method does not sort the list interally.
    * @param list  The list of IDs
-   * @param maxID The largest possible value to be used as an ID (not the combined ID)
-   * @return      The combined ID
+   * @param maxID The largest possible value that could appear in the list (usually nStates)
+   * @return      The unique combined ID
    **/
   public static BigInteger combineBigIDs(List<Long> list, long maxID) {
     
@@ -1953,8 +1958,8 @@ public class Automaton {
   /**
    * Duplicate this automaton and store it in a different set of files.
    * NOTE: This method is intended to be overridden.
-   * @param newHeaderFile The new header file where the automaton is being copied to
-   * @param newBodyFile   The new body file where the automaton is being copied to
+   * @param newHeaderFile The new header file where the automaton is being copied to (cannot be null)
+   * @param newBodyFile   The new body file where the automaton is being copied to (cannot be null)
    * @return              The duplicated automaton
    **/
   public Automaton duplicate(File newHeaderFile, File newBodyFile) {
@@ -2427,9 +2432,10 @@ public class Automaton {
 
   /**
    * Get an unused temporary file.
+   * NOTE: These temporary files do not have extensions. Do not use them directly in JDec.
    * @return  The temporary file
    **/
-  protected static File getTemporaryFile() {
+  public static File getTemporaryFile() {
 
     // Create temporary directory if it does not exist
     if (!TEMPORARY_DIRECTORY.exists())
