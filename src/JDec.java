@@ -662,12 +662,14 @@ public class JDec extends JFrame implements ActionListener {
         uStructure = ((UStructure) tab.automaton);
 
         // Display error message if there was not enough controllers
-        if (uStructure.getNumberOfControllers() == 1)
+        if (uStructure.getNumberOfControllers() == 1) {
           displayErrorMessage("Not Enough Controllers", "There must be more than 1 controller in order for a communication to take place."); 
+          break;
+        }
 
         // Display warning message, and abort the operation if requested
         if (uStructure.getSizeOfPotentialAndNashCommunications() > 0)
-          if (!askForConfirmation("Communications Already Exist", "This U-Structure appears to already have had communications added. Are you sure you want to proceed? WARNING: This may result in duplicate communications."))  
+          if (!askForConfirmation("Communications Already Exist", "This U-Structure appears to already have had communications added. Are you sure you want to proceed?\nWARNING: This may result in duplicate communications."))  
             break;
 
         fileName = getTemporaryFileName();
@@ -679,7 +681,7 @@ public class JDec extends JFrame implements ActionListener {
         createTab(uStructureWithCommunications);
 
         if (uStructureWithCommunications.hasSelfLoop(uStructureWithCommunications.getPotentialCommunications()))
-          displayMessage("Communication Self-Loop", "Please be advised 1 or more of the communications added are a self-loop.", JOptionPane.WARNING_MESSAGE);
+          displayMessage("Communication Self-Loop", "Please be advised that at least one of the communications added is a self-loop.", JOptionPane.WARNING_MESSAGE);
 
         break;
 
@@ -717,11 +719,9 @@ public class JDec extends JFrame implements ActionListener {
 
         uStructure = ((UStructure) tab.automaton);
 
-        if (uStructure.hasSelfLoop(uStructure.getPotentialAndNashCommunications())) {
+        if (uStructure.hasSelfLoop(uStructure.getPotentialAndNashCommunications()))
           displayErrorMessage("Operation Aborted", "There exists one or more communications that are self-loops.");
-        }
-        
-        if (uStructure.getSizeOfPotentialAndNashCommunications() == 0)
+        else if (uStructure.getSizeOfPotentialAndNashCommunications() == 0)
           displayErrorMessage("Operation Aborted", "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.");
         else
           new NashInfoForNashEquilibriaPrompt(this, tab, "Cost and Probability Values", "Specify costs and probabilities for each communication.");

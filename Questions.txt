@@ -12,8 +12,7 @@ QUESTIONS:
   -how far into the program can a user get with an uncontrollable system?
 
 SHORT-TERM:
-  -manually test when a self-loop communication has been added to U-Structure, try to do nash
-  -EVENT: a,FT,TT, STATE: @1, TRANSITION: 1,a,1 (fix U-structure case)
+  -change text color for edge labels of violations
   -when generating U-Structure, display warning if there are any unmarked states (we are assuming pre-fixed closed)
   -hasViolations() - waiting on Dr.Ricker's reply, already has been implemented though
   -work on shapley values
