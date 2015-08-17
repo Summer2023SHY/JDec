@@ -8,14 +8,14 @@ JAVADOC TO-DO LIST:
 
 QUESTIONS:
 
+  -"I have a counter-example for the crush when there the system is not co-observable...the crush contains repeated states." can I see?
   -how far into the program can a user get with an uncontrollable system?
 
 SHORT-TERM:
-  -crush is generating repeated states (wait for Dr. ricker's reply)
   -manually test when a self-loop communication has been added to U-Structure, try to do nash
   -EVENT: a,FT,TT, STATE: @1, TRANSITION: 1,a,1 (fix U-structure case)
   -when generating U-Structure, display warning if there are any unmarked states (we are assuming pre-fixed closed)
-  -hasViolations() doesn't need to care about conditional violations (any implications??)
+  -hasViolations() - waiting on Dr.Ricker's reply, already has been implemented though
   -work on shapley values
   -GUI Tests?? - http://abbot.sourceforge.net/doc/quick-start.shtml
   -what happens if a bad transition is a self-loop??

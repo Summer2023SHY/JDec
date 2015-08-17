@@ -953,6 +953,21 @@ public class TestAutomata {
     printTestCase("Ensuring the states are correct", new TestResult(crush.getStateInput(), "@<1_1_1,1_3_1>\n<3_1_3,3_3_3>\n<2_2_2,2_4_2,2_5_2>\n<4_2_4,4_4_4,4_5_4>\n<6_6_6,6_7_6>\n<5_2_5,5_4_5,5_5_5>\n<7_7_7,7_6_7>"), counter);
     printTestCase("Ensuring the transitions are correct", new TestResult(crush.getTransitionInput(), "<1_1_1,1_3_1>,<b,*,b>,<3_1_3,3_3_3>\n<1_1_1,1_3_1>,<a,a,a>,<2_2_2,2_4_2,2_5_2>:NASH_COMMUNICATION-SR-3.0-0.5\n<3_1_3,3_3_3>,<a,a,a>,<5_2_5,5_4_5,5_5_5>:NASH_COMMUNICATION-SR-7.0-0.5\n<2_2_2,2_4_2,2_5_2>,<b,*,b>,<4_2_4,4_4_4,4_5_4>\n<4_2_4,4_4_4,4_5_4>,<o,o,o>,<6_6_6,6_7_6>\n<5_2_5,5_4_5,5_5_5>,<o,o,o>,<7_7_7,7_6_7>:DISABLEMENT_DECISION-FT"), counter);
 
+    printTestOutput("Instantiating a U-Structure used to bring out a special case...", 3);
+    UStructure crushExample2 = saveAndLoadUStructure(AutomatonGenerator.generateFromGUICode(
+      new UStructure(null, null, 2),
+      "<b,b,b>,TT,FF\n<c,*,c>,FT,FF\n<a,a,*>,TF,TF\n<*,c,*>,FF,TF\n<*,*,a>,FF,FT", // Events
+      "1_1_1\n1_1_2\n2_2_1\n@2_2_2", // States
+      "1_1_1,<c,*,c>,1_1_1\n1_1_1,<*,c,*>,1_1_1\n1_1_1,<a,a,*>,2_2_1\n1_1_1,<a,a,*>,1_1_2\n1_1_2,<*,c,*>,1_1_2\n2_2_1,<*,*,a>,2_2_2\n1_1_2,<a,a,*>,2_2_2\n2_2_2,<b,b,b>,1_1_1" // Transitions
+    ));
+
+    crush = crushExample2.crush(null, null, 2, null, null);
+
+    crush.generateInputForGUI();
+    printTestCase("Ensuring the events are correct", new TestResult(crush.getEventInput(), "<b,b,b>,TT,FF\n<c,*,c>,FT,FF"), counter);
+    printTestCase("Ensuring the states are correct", new TestResult(crush.getStateInput(), "@<1_1_1,1_1_2,2_2_1,2_2_2>"), counter);
+    printTestCase("Ensuring the transitions are correct", new TestResult(crush.getTransitionInput(), "<1_1_1,1_1_2,2_2_1,2_2_2>,<b,b,b>,<1_1_1,1_1_2,2_2_1,2_2_2>\n<1_1_1,1_1_2,2_2_1,2_2_2>,<c,*,c>,<1_1_1,1_1_2,2_2_1,2_2_2>"), counter);
+
       /* Nash Operation Tests */
 
     printTestOutput("NASH OPERATION: ", 2);

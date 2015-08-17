@@ -608,11 +608,13 @@ public class UStructure extends Automaton {
     // Find all connecting states
     Stack<Set<State>> stackOfConnectedStates = new Stack<Set<State>>();
     HashSet<BigInteger> crushedStatesAlreadyPushed = new HashSet<BigInteger>();
-    Set<State> statesConnectingToInitial = new HashSet<State>();
-    findConnectingStates(this, statesConnectingToInitial, getState(initialState), indexOfController);
-    findConnectingStates(invertedUStructure, statesConnectingToInitial, invertedUStructure.getState(initialState), indexOfController);
-    stackOfConnectedStates.push(statesConnectingToInitial);
-    crushedStatesAlreadyPushed.add(combineStateIDs(statesConnectingToInitial));
+    Set<State> connectingStates = new HashSet<State>();
+    findConnectingStates(this, connectingStates, getState(initialState), indexOfController);
+    Set<State> connectingStatesFromInverted = new HashSet<State>();
+    findConnectingStates(invertedUStructure, connectingStatesFromInverted, invertedUStructure.getState(initialState), indexOfController);
+    connectingStates.addAll(connectingStatesFromInverted);
+    stackOfConnectedStates.push(connectingStates);
+    crushedStatesAlreadyPushed.add(combineStateIDs(connectingStates));
 
     boolean isInitialState = true;
 
@@ -1907,10 +1909,11 @@ public class UStructure extends Automaton {
 
   /**
    * Check to see if this U-Structure contains violations.
+   * NOTE: Conditional violations are not included for out purposes.
    * @return  Whether or not there are one or more violations
    **/
   public boolean hasViolations() {
-    return unconditionalViolations.size() > 0 || conditionalViolations.size() > 0;
+    return unconditionalViolations.size() > 0;
   }
 
   /**

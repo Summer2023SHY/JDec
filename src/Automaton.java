@@ -3003,7 +3003,7 @@ public class Automaton {
   protected void addAllEvents(Set<Event> newEvents) {
 
     for (Event e : newEvents)
-      addEvent(e.getLabel(), e.isObservable(), e.isControllable());
+      addEvent(e.getLabel(), (boolean[]) e.isObservable().clone(), (boolean[]) e.isControllable().clone());
 
   }
 
@@ -3019,7 +3019,7 @@ public class Automaton {
       Event event2 = getEvent(event1.getLabel());
 
       if (event2 == null)
-        addEvent(event1.getLabel(), event1.isObservable(), event1.isControllable());
+        addEvent(event1.getLabel(), (boolean[]) event1.isObservable().clone(), (boolean[]) event1.isControllable().clone());
       else if (!Arrays.equals(event1.isObservable(), event2.isObservable()) || !Arrays.equals(event1.isControllable(), event2.isControllable()))
         throw new IncompatibleAutomataException();
 
