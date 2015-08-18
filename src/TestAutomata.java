@@ -50,16 +50,16 @@ public class TestAutomata {
 
   		/* Run tests */
 
-    // counter.add(runHelperMethodTestRoutine());
-    // counter.add(runEventCreationTestRoutine());
-    // counter.add(runStateCreationTestRoutine());
-    // counter.add(runAutomatonCapacityTestRoutine());
-    // counter.add(runGuiInputTestRoutine());
-    // counter.add(runAutomataStandardOperationsTestRoutine());
-    // counter.add(runAutomataSpecialOperationsTestRoutine());
-    // counter.add(runSpecialTransitionsTestRoutine());
+    counter.add(runHelperMethodTestRoutine());
+    counter.add(runEventCreationTestRoutine());
+    counter.add(runStateCreationTestRoutine());
+    counter.add(runAutomatonCapacityTestRoutine());
+    counter.add(runGuiInputTestRoutine());
+    counter.add(runAutomataStandardOperationsTestRoutine());
+    counter.add(runAutomataSpecialOperationsTestRoutine());
+    counter.add(runSpecialTransitionsTestRoutine());
     counter.add(runAutomataPropertiesTestRoutine());
-  	// counter.add(runExceptionHandlingTestRoutine());
+  	counter.add(runExceptionHandlingTestRoutine());
 
   		/* Print summary of all tests */
 
@@ -1126,6 +1126,14 @@ public class TestAutomata {
     printTestCase("Ensuring that coalition [1, 3] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>(Arrays.asList(1, 3))), 2), counter);
     printTestCase("Ensuring that coalition [2, 3] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>(Arrays.asList(2, 3))), 3), counter);
     printTestCase("Ensuring that coalition [1, 2, 3] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>(Arrays.asList(1, 2, 3))), 3), counter);
+
+    printTestOutput("Modifying one coalition value to match the error in the paper...", 3);
+    shapleyValues.put(new HashSet<Integer>(Arrays.asList(1, 3)), 3);    
+
+    printTestOutput("Find Shapley values for each controller comparing against answers in the paper...", 3);
+    printTestCase("Ensuring that value for controller 1 is correct", new TestResult(uStructure.findShapleyValueForController(shapleyValues, 1), 0.5), counter);
+    printTestCase("Ensuring that value for controller 2 is correct", new TestResult(uStructure.findShapleyValueForController(shapleyValues, 2), 1.5), counter);
+    printTestCase("Ensuring that value for controller 3 is correct", new TestResult(uStructure.findShapleyValueForController(shapleyValues, 3), 1.0), counter);
 
       /* Print summary of this test routine */
 

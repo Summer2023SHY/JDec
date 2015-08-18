@@ -579,6 +579,8 @@ public class Automaton {
 
       /* Setup */
 
+    // NOTE: A JDec user cannot mess up this operation by adding a fake dump state, since spaces are not
+    //       considered part of a valid state label
     final String DUMP_STATE_LABEL = "Dump State";
 
     // Add events

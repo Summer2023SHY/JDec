@@ -1,6 +1,6 @@
 HOURS:
-Saturday, August 15: 1 hour 30 minutes
-Monday, August 17: 3 hours, 20 minutes, 9:46 - 
+Monday, August 17: 5 hours 30 minutes
+Tuesday, August 18: 30 minutes, 8:50 -
 
 JAVADOC TO-DO LIST:
   
@@ -8,7 +8,6 @@ JAVADOC TO-DO LIST:
 
 QUESTIONS:
 
-  -"I have a counter-example for the crush when there the system is not co-observable...the crush contains repeated states." can I see?
   -how far into the program can a user get with an uncontrollable system?
 
 SHORT-TERM:
@@ -23,8 +22,6 @@ SHORT-TERM:
 
 POTENTIAL/MINOR:
 
-  -find counter-example for Dr. ricker
-  -prevent user from picking the label reserved for the dump state in the complement operation
   -why are Events in a set instead of a map??????? unqiueness is already being guaranteed by JDec
   -add buttons to add events, add states, and add transitions (maybe little plus icons?)
   -warn user when they've specified more than one initial state (only the last one is considered anyway)
@@ -36,4 +33,5 @@ POTENTIAL/MINOR:
   -There are 3 tooltips left to go in the XML file (from the buttons to generate the image, view image, and generate automaton)
   -Co-acessible warning message if there are no marked states
   -Allow modifications to automaton without regenerating the entire thing (example: adding a state or a transition)
+  -Consider using Files.createTempDirectory() and Files.createTempFile() instead of creating our own temporary directories, look at File.deleteOnExit()
   -What about if multiple JDec processes are being run at the same time?? Create temporary folder based on PID (NOTE: PID can't easily be found)

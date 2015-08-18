@@ -835,6 +835,67 @@ public class UStructure extends Automaton {
 
   }
 
+  /**
+   * Given the Shapley values for each coalition, and the index of a controller, calculate its Shapley value.
+   * NOTE: This calculation is specified in the paper 'Coalitions of the willing: Decentralized discrete-event
+   *       control as a cooperative game', in section 3.
+   * @param shapleyValues     The mappings between the coalitions and their associated Shapley values
+   * @param indexOfController The index of the controller
+   * @return                  The Shapley value of the specified controller
+   **/
+  public double findShapleyValueForController(Map<Set<Integer>, Integer> shapleyValues, int indexOfController) {
+
+    int sum = 0;
+
+    // Iterate through each coalition
+    for (Map.Entry<Set<Integer>, Integer> entry : shapleyValues.entrySet()) {
+      Set<Integer> coalition = entry.getKey();
+
+      // Skip this coalition if it contains the controller
+      if (coalition.contains(indexOfController))
+        continue;
+
+      Integer shapleyValueWithoutController = entry.getValue();
+
+      // Find the Shapley value of this coalition if the controller were to be added
+      Set<Integer> coalitionWithController = new HashSet<Integer>(coalition);
+      coalitionWithController.add(indexOfController);
+      Integer shapleyValueWithController = shapleyValues.get(coalitionWithController);
+
+      // Add calculated value to summation
+      sum += factorial(coalition.size())
+             * factorial(getNumberOfControllers() - coalition.size() - 1)
+             * (shapleyValueWithController - shapleyValueWithoutController);
+
+    }
+
+    return (double) sum / (double) factorial(getNumberOfControllers());
+
+  }
+
+
+  /**
+   * Recursively find the factorial of the specified number.
+   * @param n The number to take the factorial of, must be in the range [0,12]
+   * @return  The factorial value
+   **/
+  private int factorial(int n) {
+
+    // Error checking
+    if (n < 0 || n > 12) {
+      System.err.println("ERROR: Factorial value of " + n + " is outside allowed range.");
+      return -1;
+    }
+    
+    // Base case
+    if (n == 0)
+      return 1;
+
+    // Recursive case
+    return n * factorial(n - 1);
+
+  }
+
     /* AUTOMATA OPERATION HELPER METHODS */
 
   @Override protected <T extends Automaton> void copyOverSpecialTransitions(T automaton) {
