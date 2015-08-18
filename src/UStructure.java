@@ -751,10 +751,11 @@ public class UStructure extends Automaton {
   }
 
   /**
-   * Find the Shapley values, printing them out to the console.
-   * NOTE: This is not currently not set designed to handle violations.
+   * Find the Shapley values for each coalitiion.
+   * NOTE: This is currently not designed to handle violations.
+   * @return  The mapping between the coalitions and their respective values
    **/
-  public void findShapleyValues() {
+  public Map<Set<Integer>, Integer> findShapleyValues() {
 
     // Generate crushes for each component (including the 0th component)
     Crush[] crushes = new Crush[nControllers + 1]; // 1-based
@@ -815,6 +816,7 @@ public class UStructure extends Automaton {
     powerSet(coalitions, elements);
 
     // Count the number of disablement decisions that are detected by each coalition
+    Map<Set<Integer>, Integer> shapleyValueMappings = new HashMap<Set<Integer>, Integer>();
     for (Set<Integer> coalition : coalitions) {
 
       // The integers in this set represent disablement decisions (since we gave them unique IDs)
@@ -825,9 +827,11 @@ public class UStructure extends Automaton {
           if (data.controllers[controller - 1])
             countedDisablements.add(disablementIDs.get(controller - 1).get(data));
 
-      System.out.println(coalition.toString() + " : " + countedDisablements.size());
+      shapleyValueMappings.put(coalition, countedDisablements.size());
 
     }
+
+    return shapleyValueMappings;
 
   }
 

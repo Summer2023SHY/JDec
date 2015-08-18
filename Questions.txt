@@ -1,6 +1,6 @@
 HOURS:
 Saturday, August 15: 1 hour 30 minutes
-Monday, August 17: 8:47 - 
+Monday, August 17: 3 hours, 20 minutes, 9:46 - 
 
 JAVADOC TO-DO LIST:
   
@@ -12,12 +12,9 @@ QUESTIONS:
   -how far into the program can a user get with an uncontrollable system?
 
 SHORT-TERM:
-  -change text color for edge labels of violations
-  -when generating U-Structure, display warning if there are any unmarked states (we are assuming pre-fixed closed)
+  -work on shapley values - still need to calculate one shapley value for each controller (adding test too)
   -hasViolations() - waiting on Dr.Ricker's reply, already has been implemented though
-  -work on shapley values
   -GUI Tests?? - http://abbot.sourceforge.net/doc/quick-start.shtml
-  -what happens if a bad transition is a self-loop??
   -NSGA-II algorithm:
     -Code algorithms 3 and 4
   -add buttons to mark special transitions in GUI? (menu options would work great for this! With checkboxes), specifically marking Bad Transitions is useful

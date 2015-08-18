@@ -117,7 +117,7 @@ public class Automaton {
   protected StringBuilder eventInputBuilder;
   protected StringBuilder stateInputBuilder;
   protected StringBuilder transitionInputBuilder;
- 
+
     /* AUTOMATON TYPE ENUM */
 
   /** The automaton type is directly correlated to the class of the instantiated Automaton */
@@ -3134,6 +3134,21 @@ public class Automaton {
    **/
   public State getStateExcludingTransitions(long id) {
     return State.readFromFileExcludingTransitions(this, bodyRAFile, id);
+  }
+
+  /**
+   * Check to see whether or not this automaton has any unmarked states.
+   * NOTE: This can be an expensive method.
+   * @return  Whether or not this automaton has at least one unmarked state
+   **/
+  public boolean hasUnmarkedState() {
+
+    for (long s = 1; s <= getNumberOfStates(); s++)
+      if (!getStateExcludingTransitions(s).isMarked())
+        return true;
+
+    return false;
+
   }
 
   /**

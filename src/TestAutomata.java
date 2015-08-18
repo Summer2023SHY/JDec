@@ -50,16 +50,16 @@ public class TestAutomata {
 
   		/* Run tests */
 
-    counter.add(runHelperMethodTestRoutine());
-    counter.add(runEventCreationTestRoutine());
-    counter.add(runStateCreationTestRoutine());
-    counter.add(runAutomatonCapacityTestRoutine());
-    counter.add(runGuiInputTestRoutine());
-    counter.add(runAutomataStandardOperationsTestRoutine());
-    counter.add(runAutomataSpecialOperationsTestRoutine());
-    counter.add(runSpecialTransitionsTestRoutine());
+    // counter.add(runHelperMethodTestRoutine());
+    // counter.add(runEventCreationTestRoutine());
+    // counter.add(runStateCreationTestRoutine());
+    // counter.add(runAutomatonCapacityTestRoutine());
+    // counter.add(runGuiInputTestRoutine());
+    // counter.add(runAutomataStandardOperationsTestRoutine());
+    // counter.add(runAutomataSpecialOperationsTestRoutine());
+    // counter.add(runSpecialTransitionsTestRoutine());
     counter.add(runAutomataPropertiesTestRoutine());
-  	counter.add(runExceptionHandlingTestRoutine());
+  	// counter.add(runExceptionHandlingTestRoutine());
 
   		/* Print summary of all tests */
 
@@ -102,6 +102,14 @@ public class TestAutomata {
     expected = new boolean[] { true, false, true };
     actual = AutomatonGenerator.isTrueArray("TFt");
     printTestCase("Ensuring that 'TFt' is parsed correctly", new TestResult(actual, expected), counter);
+
+      /* isValidLabel() Tests */
+
+    printTestOutput("GUI Parsing - isValidLabel(): ", 2);
+    
+    printTestCase("Ensuring that a label with a bad vector is considered invalid", new TestResult(AutomatonGenerator.isValidLabel("<a,b"), false), counter);
+    printTestCase("Ensuring that a label with a bad vector is considered invalid", new TestResult(AutomatonGenerator.isValidLabel("a,b>"), false), counter);
+    printTestCase("Ensuring that a label with a good vector is considered valid", new TestResult(AutomatonGenerator.isValidLabel("<a,b>"), true), counter);
 
       /* createCombinedIDWithOrderedSet() Tests */
 
@@ -1060,7 +1068,6 @@ public class TestAutomata {
 
       /* Controllability Tests */
 
-
     printTestOutput("Instantiating automaton...", 3);
     Automaton a = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
       new Automaton(null, null, 2),
@@ -1100,6 +1107,25 @@ public class TestAutomata {
       "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD" // Transitions
     ));
     printTestCase("Ensuring that the automaton is not observable", new TestResult(a.testObservability(), false), counter);
+
+      /* Shapley Value Tests */
+
+    printTestOutput("FINDING SHAPLEY VALUES: ", 2);
+
+    printTestOutput("Loading pre-generated U-Structure...", 3);
+    UStructure uStructure = new UStructure(new File("saved automata/shapleyUStructure.hdr"), new File("saved automata/shapleyUStructure.bdy"));
+
+    printTestOutput("Finding Shapley values...", 3);
+    Map<Set<Integer>, Integer> shapleyValues = uStructure.findShapleyValues();
+
+    printTestCase("Ensuring that coalition [] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>()), 0), counter);
+    printTestCase("Ensuring that coalition [1] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>(Arrays.asList(1))), 1), counter);
+    printTestCase("Ensuring that coalition [2] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>(Arrays.asList(2))), 3), counter);
+    printTestCase("Ensuring that coalition [3] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>(Arrays.asList(3))), 2), counter);
+    printTestCase("Ensuring that coalition [1, 2] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>(Arrays.asList(1, 2))), 3), counter);
+    printTestCase("Ensuring that coalition [1, 3] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>(Arrays.asList(1, 3))), 2), counter);
+    printTestCase("Ensuring that coalition [2, 3] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>(Arrays.asList(2, 3))), 3), counter);
+    printTestCase("Ensuring that coalition [1, 2, 3] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>(Arrays.asList(1, 2, 3))), 3), counter);
 
       /* Print summary of this test routine */
 

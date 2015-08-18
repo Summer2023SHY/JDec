@@ -865,12 +865,14 @@ public abstract class AutomatonGenerator<T> {
   }
 
   /**
-   * Label must consist of only letters, digits, and/or a small set of other special characters.
-   * NOTE: Special characters have special meaning attached to them so it is advised not to use them when naming states and events.
+   * Label must consist of only letters, digits, and/or a small set of other special characters. If the
+   * label is a vector, then it must also be a valid vector.
+   * NOTE: Special characters have special meaning attached to them so it is advised not to use them when
+   * naming states and events.
    * @param label The label to validate
    * @return      Whether or not the label is valid
    **/
-  private static boolean isValidLabel(String label) {
+  public static boolean isValidLabel(String label) {
 
     // Must be at least one character long
     if (label.length() < 1)
