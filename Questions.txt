@@ -1,6 +1,6 @@
 HOURS:
 Monday, August 17: 5 hours 30 minutes
-Tuesday, August 18: 30 minutes, 8:50 -
+Tuesday, August 18: 30 minutes, 8:50 - 10:14
 
 JAVADOC TO-DO LIST:
   
@@ -11,7 +11,6 @@ QUESTIONS:
   -how far into the program can a user get with an uncontrollable system?
 
 SHORT-TERM:
-  -work on shapley values - still need to calculate one shapley value for each controller (adding test too)
   -hasViolations() - waiting on Dr.Ricker's reply, already has been implemented though
   -GUI Tests?? - http://abbot.sourceforge.net/doc/quick-start.shtml
   -NSGA-II algorithm:

@@ -840,7 +840,7 @@ public class UStructure extends Automaton {
    * NOTE: This calculation is specified in the paper 'Coalitions of the willing: Decentralized discrete-event
    *       control as a cooperative game', in section 3.
    * @param shapleyValues     The mappings between the coalitions and their associated Shapley values
-   * @param indexOfController The index of the controller
+   * @param indexOfController The index of the controller (1-based)
    * @return                  The Shapley value of the specified controller
    **/
   public double findShapleyValueForController(Map<Set<Integer>, Integer> shapleyValues, int indexOfController) {

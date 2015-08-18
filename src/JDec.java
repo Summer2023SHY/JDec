@@ -756,8 +756,7 @@ public class JDec extends JFrame implements ActionListener {
           break;
         }
 
-        uStructure.findShapleyValues();
-
+        new ShapleyValuesOutput(this, uStructure, "Shapley Values");
         break;
 
       case "Random Automaton":

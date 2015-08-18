@@ -156,8 +156,8 @@ public class FeasibleProtocolOutput extends JDialog {
     JButton dismissedButton = new JButton("Dismiss");
     dismissedButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-          FeasibleProtocolOutput.this.dispose();
-        }
+        FeasibleProtocolOutput.this.dispose();
+      }
     });
     add(dismissedButton, BorderLayout.SOUTH);
 

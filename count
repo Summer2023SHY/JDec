@@ -1,13 +1,13 @@
 #!/bin/sh
 
-echo "Including empty lines:"
-cat src/* | wc -l
+echo "All lines:"
+cat src/*.java | wc
 
 echo "Excluding empty lines:"
-cat src/* | grep -v -e '^$' | wc -l
+cat src/*.java | grep -v -e '^$' | wc
 
 echo "Excluding empty lines and comments"
-cat src/* | grep -v -e '^$' | grep -v '^[[:space:]]*//' | grep -v '^[[:space:]]*/*[[:space:]]*\*' | wc -l
+cat src/*.java | grep -v -e '^$' | grep -v '^[[:space:]]*//' | grep -v '^[[:space:]]*/*[[:space:]]*\*' | wc
 
 echo "Excluding empty lines, comments, and lines containing a single bracket"
-cat src/* | grep -v -e '^$' | grep -v '^[[:space:]]*//' | grep -v '^[[:space:]]*/*[[:space:]]*\*' | grep -v '^[[:space:]]*[{}][[:space:]]*$' | wc -l
+cat src/*.java | grep -v -e '^$' | grep -v '^[[:space:]]*//' | grep -v '^[[:space:]]*/*[[:space:]]*\*' | grep -v '^[[:space:]]*[{}][[:space:]]*$' | wc
