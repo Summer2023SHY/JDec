@@ -103,7 +103,7 @@ public class JDec extends JFrame implements ActionListener {
   }
 
     /* CONSTRUCTOR */
-
+ 
   /**
    * Construct and display the GUI.
    **/
@@ -130,7 +130,6 @@ public class JDec extends JFrame implements ActionListener {
     });
     createTab(true, Automaton.Type.AUTOMATON);
     add(tabbedPane);
-
       /* Add menu */
 
     addMenu();
@@ -165,9 +164,15 @@ public class JDec extends JFrame implements ActionListener {
       "Clear[TAB]",
       "Close Tab[TAB]",
       null,
-      "View in Browser[AUTOMATON]",
-      null,
       "Quit"
+    ));
+
+    // View menu
+    menuBar.add(createMenu("View",
+      "Previous Tab[TAB]",
+      "Next Tab[TAB]",
+      null,
+      "View in Browser[AUTOMATON]"
     ));
 
     // Standard operations menu
@@ -187,12 +192,9 @@ public class JDec extends JFrame implements ActionListener {
       null,
       "Add Communications[U_STRUCTURE]",
       "Feasible Protocols->Generate All[U_STRUCTURE],Make Protocol Feasible[U_STRUCTURE],Find Smallest[U_STRUCTURE]",
-      "Crush[ANY_U_STRUCTURE]"
-    ));
-
-    // Quantitative communication menu
-    menuBar.add(createMenu("Quantitative Communication",
-      "Nash[U_STRUCTURE]"
+      "Crush[ANY_U_STRUCTURE]",
+      null,
+      "Quantitative Communication->Nash[U_STRUCTURE]"
     ));
 
     // Properties menu
@@ -309,6 +311,14 @@ public class JDec extends JFrame implements ActionListener {
 
       case "Save As...":
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, shortcutKey));
+        break;
+
+      case "Previous Tab":
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, shortcutKey | InputEvent.ALT_DOWN_MASK));
+        break;
+
+      case "Next Tab":
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, shortcutKey | InputEvent.ALT_DOWN_MASK));
         break;
 
       case "View in Browser":
@@ -504,11 +514,6 @@ public class JDec extends JFrame implements ActionListener {
         refresh(index);
         break;
 
-      case "View in Browser":
-
-        viewInBrowser();
-        break;
-
       case "Close Tab":
 
         closeCurrentTab();
@@ -517,6 +522,29 @@ public class JDec extends JFrame implements ActionListener {
       case "Quit":
 
         dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+        break;
+
+        /* VIEW*/
+
+      case "Previous Tab":
+
+        if (--index < 0)
+          index += tabbedPane.getTabCount();
+
+        tabbedPane.setSelectedIndex(index);
+        break;
+
+      case "Next Tab":
+
+        if (++index == tabbedPane.getTabCount())
+          index = 0;
+
+        tabbedPane.setSelectedIndex(index);
+        break;
+
+      case "View in Browser":
+
+        viewInBrowser();
         break;
 
         /* AUTOMATA OPERATIONS */

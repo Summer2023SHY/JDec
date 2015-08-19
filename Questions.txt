@@ -1,13 +1,16 @@
 HOURS:
 Monday, August 17: 5 hours 30 minutes
-Tuesday, August 18: 30 minutes, 8:50 - 10:14
-
+Tuesday, August 18: 3 hours 42 minutes, 8:34 - = ~10
+                                       = ~16
+                                       = ~26
+                                       = ~35 (probably won't hit 35 this week..)
 JAVADOC TO-DO LIST:
   
   TestAutomata.java
 
 QUESTIONS:
 
+  -show Dr. Ricker the lemke-howson program
   -how far into the program can a user get with an uncontrollable system?
 
 SHORT-TERM:
