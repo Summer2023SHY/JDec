@@ -1,7 +1,7 @@
 HOURS:
 Monday, August 17: 5 hours 30 minutes
-Tuesday, August 18: 4 hours 25 minutes = ~10
-Wednesday, August 19: 8:37 - = ~16
+Tuesday, August 18: 4 hours 30 minutes
+Wednesday, August 19: 8:50 - = ~16
                                        = ~26
                                        = ~35 (probably won't hit 35 this week..)
 JAVADOC TO-DO LIST:
@@ -24,7 +24,6 @@ SHORT-TERM:
 
 POTENTIAL/MINOR:
 
-  -create hashmap for events from String to ID
   -add buttons to add events, add states, and add transitions (maybe little plus icons?)
   -warn user when they've specified more than one initial state (only the last one is considered anyway)
   -tooltips dissapear when button is clicked
