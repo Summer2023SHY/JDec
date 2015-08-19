@@ -431,9 +431,17 @@ public abstract class AutomatonGenerator<T> {
 
         boolean isInitialState = (label.charAt(0) == '@');
 
-        // Ensure the user didn't only have a '@' symbol as the name of the label (since '@' gets removed, we are left with an empty string)
         if (isInitialState) {
           
+          // Ensure that there isn't already an initial state specified
+          if (automaton.getInitialStateID() != 0) {
+            if (stateInputPane != null)
+              stateInputPane.getStyledDocument().setCharacterAttributes(startIndex, 1, errorStyle, false);
+            hasErrors = true;
+            continue;
+          }
+
+          // Ensure the user didn't only have a '@' symbol as the name of the label (since '@' gets removed, we are left with an empty string)
           if (label.length() == 1) {
             System.err.println("ERROR: Could not parse '" + line + "' as a state (state name must be at least 1 character long).");
             if (stateInputPane != null)

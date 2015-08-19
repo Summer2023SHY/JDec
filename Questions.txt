@@ -23,8 +23,6 @@ SHORT-TERM:
 
 POTENTIAL/MINOR:
 
-  -add buttons to add events, add states, and add transitions (maybe little plus icons?)
-  -warn user when they've specified more than one initial state (only the last one is considered anyway)
   -tooltips dissapear when button is clicked
   -In Automaton::addState(), there is the potential for 3 calls to recreateBinaryFile. This should be combined into one call.
   -Currently regenerating uStructures when clicking "Generate Automaton" button (but they were already generated before when testing for feasibility, so we should store them). NOTE: While this would be more efficient, I do not see a clean way of implementing it
@@ -32,4 +30,3 @@ POTENTIAL/MINOR:
   -Warning message when saving in GUI to overwrite files
   -There are 3 tooltips left to go in the XML file (from the buttons to generate the image, view image, and generate automaton)
   -Co-acessible warning message if there are no marked states
-  -Allow modifications to automaton without regenerating the entire thing (example: adding a state or a transition)
