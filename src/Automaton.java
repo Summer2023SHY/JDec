@@ -72,9 +72,6 @@ public class Automaton {
   /** This is the fixed amount of space needed to hold the main variables in the .hdr file, which apply to all automaton types. */
   private static final int HEADER_SIZE = 45; 
 
-  /** This is the directory used to hold all temporary files. */
-  protected static final File TEMPORARY_DIRECTORY = new File("Automaton_Temporary_Files");
-
     /* CLASS VARIABLES */
 
   protected static int temporaryFileIndex = 1;
@@ -2065,21 +2062,6 @@ public class Automaton {
   }
 
   /**
-   * Delete the temporary header and body files (if they exist).
-   **/
-  public static void clearTemporaryFiles() {
-
-    if (!TEMPORARY_DIRECTORY.exists())
-      return;
-
-    for (String file : TEMPORARY_DIRECTORY.list())
-      new File(TEMPORARY_DIRECTORY, file).delete();
-
-    TEMPORARY_DIRECTORY.delete();
-
-  }
-
-  /**
    * Write all of the header information to file.
    **/
   public final void writeHeaderFile() {
@@ -2439,29 +2421,40 @@ public class Automaton {
    **/
   public static File getTemporaryFile() {
 
-    // Create temporary directory if it does not exist
-    if (!TEMPORARY_DIRECTORY.exists())
-      TEMPORARY_DIRECTORY.mkdirs();
 
-    // Continue to try getting a temporary file until we've found one that hasn't been used
-    while (true) {
+    try {
 
-      File file = new File(TEMPORARY_DIRECTORY + "/tmp" + temporaryFileIndex++);
+      File file = Files.createTempFile(null, null).toFile();
+      file.deleteOnExit();
+      return file;
 
-      if (!file.exists()) {
+    } catch (Exception e1) {
 
-        try {
-          if (!file.createNewFile())
+      // Continue to try getting a temporary file until we've found one that hasn't been used
+      while (true) {
+
+        File file = new File(".tmp" + temporaryFileIndex++);
+        System.out.println("WARNING: Temporary file had to be manually created.");
+
+        if (!file.exists()) {
+
+          try {
+            if (!file.createNewFile())
+              System.err.println("ERROR: Could not create empty temporary file.");
+          } catch (IOException e2) {
             System.err.println("ERROR: Could not create empty temporary file.");
-        } catch (IOException e) {
-          System.err.println("ERROR: Could not create empty temporary file.");
-          e.printStackTrace();
+            e2.printStackTrace();
+          }
+
+          file.deleteOnExit();
+          return file;
         }
 
-        return file;
-      }
+      } // while
 
-    } // while
+    } // catch
+
+    
 
   }
 

@@ -1,7 +1,6 @@
 /**
  * JDec - A Java application for Decentralized Control. This application has been design to build
  *        and manipulate various structures such as Automata, U-Structures, and Crushes.
- *        NOTE: There should only ever be one instance of this class running at one time.
  *
  * @author Micah Stairs
  *
@@ -42,9 +41,17 @@ public class JDec extends JFrame implements ActionListener {
 
   private static final String applicationTitle = "JDec (v1.0 beta 1) - A Java application for Decentralized Control";
   private static final String GUI_DATA_FILE_NAME  = "gui.data";
-  private static final File TEMPORARY_DIRECTORY   = new File("JDec_Temporary_Files");
   public static final int PREFERRED_DIALOG_WIDTH  = 500;
   public static final int PREFERRED_DIALOG_HEIGHT = 500;
+  private static File TEMPORARY_DIRECTORY;
+  static {
+    try {
+      TEMPORARY_DIRECTORY = Files.createTempDirectory(null).toFile();
+    } catch (Exception e) {
+      System.out.println("WARNING: Temporary directory could not be created.");
+      TEMPORARY_DIRECTORY = new File("JDec_Temporary_Files");
+    }
+  }
 
     /* INSTANCE VARIABLES */
 
@@ -109,10 +116,6 @@ public class JDec extends JFrame implements ActionListener {
    **/
   public JDec() {
 
-      /* Clear temporary files */
-
-    Automaton.clearTemporaryFiles();
-
       /* Create message to dislay when there are no tabs */
 
     noTabsMessage = new JLabel("You do not have any tabs open.");
@@ -130,6 +133,7 @@ public class JDec extends JFrame implements ActionListener {
     });
     createTab(true, Automaton.Type.AUTOMATON);
     add(tabbedPane);
+
       /* Add menu */
 
     addMenu();

@@ -2,8 +2,8 @@ HOURS:
 Monday, August 17: 5 hours 30 minutes
 Tuesday, August 18: 4 hours 30 minutes
 Wednesday, August 19: 8:50 - = ~16
-                                       = ~26
-                                       = ~35 (probably won't hit 35 this week..)
+                             = ~26
+                             = ~35 (probably won't hit 35 this week..)
 JAVADOC TO-DO LIST:
   
   TestAutomata.java
@@ -14,7 +14,6 @@ QUESTIONS:
   -how far into the program can a user get with an uncontrollable system?
 
 SHORT-TERM:
-  -hasViolations() - waiting on Dr.Ricker's reply, already has been implemented though
   -GUI Tests?? - http://abbot.sourceforge.net/doc/quick-start.shtml
   -NSGA-II algorithm:
     -Code algorithms 3 and 4
@@ -34,5 +33,3 @@ POTENTIAL/MINOR:
   -There are 3 tooltips left to go in the XML file (from the buttons to generate the image, view image, and generate automaton)
   -Co-acessible warning message if there are no marked states
   -Allow modifications to automaton without regenerating the entire thing (example: adding a state or a transition)
-  -Consider using Files.createTempDirectory() and Files.createTempFile() instead of creating our own temporary directories, look at File.deleteOnExit()
-  -What about if multiple JDec processes are being run at the same time?? Create temporary folder based on PID (NOTE: PID can't easily be found)
