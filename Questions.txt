@@ -24,7 +24,7 @@ SHORT-TERM:
 
 POTENTIAL/MINOR:
 
-  -why are Events in a set instead of a map??????? unqiueness is already being guaranteed by JDec
+  -create hashmap for events from String to ID
   -add buttons to add events, add states, and add transitions (maybe little plus icons?)
   -warn user when they've specified more than one initial state (only the last one is considered anyway)
   -tooltips dissapear when button is clicked

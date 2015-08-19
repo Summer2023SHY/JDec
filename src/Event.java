@@ -16,7 +16,7 @@
 
 import java.util.*;
 
-public class Event implements Comparable<Event> {
+public class Event {
     
     /* INSTANCE VARIABLES */
 
@@ -103,14 +103,6 @@ public class Event implements Comparable<Event> {
   }
 
     /* OVERRIDDEN METHODS */
-
-  @Override public int hashCode() {
-    return label.hashCode();
-  }
-
-  @Override public int compareTo(Event other) {
-    return (new Integer(id)).compareTo(other.id);
-  }
 
   @Override public boolean equals(Object obj) {
     Event other = (Event) obj;

@@ -188,7 +188,7 @@ public class PrunedUStructure extends UStructure {
    **/
   private boolean removeEvent(int id) {
 
-    Iterator iterator = events.iterator();
+    Iterator iterator = getEvents().iterator();
 
     while (iterator.hasNext()) {
 

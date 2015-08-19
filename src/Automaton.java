@@ -82,7 +82,7 @@ public class Automaton {
     /* INSTANCE VARIABLES */
 
   // Events
-  protected Set<Event> events = new TreeSet<Event>(); // Due to Event's compareTo and equals implementations, a TreeSet cannot not guarantee that it is actually a set (I am considering changing this to an ArrayList)
+  protected List<Event> events = new ArrayList<Event>();
 
   // Special transitions
   private List<TransitionData> badTransitions;
@@ -849,11 +849,11 @@ public class Automaton {
       /* Build automata by parallel composition */
 
     // Create two sets containing each automata's private events
-    Set<Event> privateEvents1 = new HashSet<Event>();
+    List<Event> privateEvents1 = new ArrayList<Event>();
     privateEvents1.addAll(first.getEvents());
     for (Event e : second.getEvents())
       privateEvents1.remove(e);
-    Set<Event> privateEvents2 = new HashSet<Event>();
+    List<Event> privateEvents2 = new ArrayList<Event>();
     privateEvents2.addAll(second.getEvents());
     for (Event e : first.getEvents())
       privateEvents2.remove(e);
@@ -2999,10 +2999,10 @@ public class Automaton {
   }
 
   /**
-   * Add the entire set of events to the automaton.
-   * @param newEvents The set of events to add
+   * Add the entire list of events to the automaton.
+   * @param newEvents The list of events to add
    **/
-  protected void addAllEvents(Set<Event> newEvents) {
+  protected void addAllEvents(List<Event> newEvents) {
 
     for (Event e : newEvents)
       addEvent(e.getLabel(), (boolean[]) e.isObservable().clone(), (boolean[]) e.isControllable().clone());
@@ -3010,11 +3010,11 @@ public class Automaton {
   }
 
   /**
-   * Add the entire set of events to the automaton (ensuring that no duplicates are added).
-   * @param newEvents                       The set of events to add
+   * Add the entire list of events to the automaton (ensuring that no duplicates are added).
+   * @param newEvents                       The list of events to add
    * @throws IncompatibleAutomataException  If one of the events to be added is incompatible with an existing event
    **/
-  protected void addEventsWithErrorChecking(Set<Event> newEvents) throws IncompatibleAutomataException {
+  protected void addEventsWithErrorChecking(List<Event> newEvents) throws IncompatibleAutomataException {
 
     for (Event event1 : newEvents) {
 
@@ -3155,15 +3155,28 @@ public class Automaton {
 
   /**
    * Given the ID number of an event, get the event information.
+   * NOTE: Using this method to check for a non-existent event is inefficient, since it checks each
+   *       event one by one if it wasn't able to locate the event directly. This behaviour is required
+   *       since there are cases where the event list is incomplete (for example,
+   *       in PrunedUStructure.removeInactiveEvents()).
    * @param id  The unique identifier corresponding to the requested event
    * @return    The requested event (or null if it does not exist)
    **/
   public Event getEvent(int id) {
 
-    for (Event e : events)
-      if (e.getID() == id)
-        return e;
+    // Try to get the event by directly indexing it, and return it if it exists
+    try {
+      Event event = getEvents().get(id - 1);
+      if (event.getID() == id)
+        return event;  
+    } catch (IndexOutOfBoundsException e) { }
 
+    // Search each event one by one, looking for it
+    for (Event event : getEvents())
+      if (event.getID() == id)
+        return event;
+
+    // Return null if it did not exist
     return null;
 
   }
@@ -3184,10 +3197,10 @@ public class Automaton {
   }
 
   /**
-   * Return the set of all events (in order by ID).
-   * @return  The set of all events
+   * Return the list of all events (ordered by ID, where event with an ID of 1 is in position 0).
+   * @return  The list of all events
    **/
-  public Set<Event> getEvents() {
+  public List<Event> getEvents() {
     return events;
   }
 
