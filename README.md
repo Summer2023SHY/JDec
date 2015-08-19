@@ -26,6 +26,7 @@
 <b>Dependencies:</b>
 
 <ul>
+<li>Java 1.7</li>
 <li>GraphViz (Tested using v2.14.1 from http://www.ryandesign.com/graphviz/). The directory of the installed program must be added to the PATH variable.</li>
 <li>X11 (Can be downloaded from http://xquartz.macosforge.org/landing/) NOTE: Upgrading to a new release of OSX may actually uninstall this application, which will require you to reinstall it.</li>
 </ul>
