@@ -125,22 +125,23 @@ public class UStructure extends Automaton {
     return accessibleHelper(new UStructure(newHeaderFile, newBodyFile, nControllers));
   }
 
-  @Override public UStructure complement(File newHeaderFile, File newBodyFile) throws OperationFailedException {
+  // NOTE: This commented method works, but it is simply unnecessary
+  // @Override public UStructure complement(File newHeaderFile, File newBodyFile) throws OperationFailedException {
 
-    UStructure uStructure = new UStructure(
-      newHeaderFile,
-      newBodyFile,
-      eventCapacity,
-      stateCapacity,
-      events.size(), // This is the new number of transitions that will be required for each state
-      labelLength,
-      nControllers,
-      true
-    );
+  //   UStructure uStructure = new UStructure(
+  //     newHeaderFile,
+  //     newBodyFile,
+  //     eventCapacity,
+  //     stateCapacity,
+  //     events.size(), // This is the new number of transitions that will be required for each state
+  //     labelLength,
+  //     nControllers,
+  //     true
+  //   );
 
-    return complementHelper(uStructure);
+  //   return complementHelper(uStructure);
 
-  }
+  // }
 
   @Override protected UStructure invert() {
     return invertHelper(new UStructure(null, null, eventCapacity, stateCapacity, transitionCapacity, labelLength, nControllers, true));
@@ -240,10 +241,6 @@ public class UStructure extends Automaton {
       }
 
     }
-
-      /* Copy over all of the special transitions */
-
-    copyOverSpecialTransitions(uStructure);
 
       /* Ensure that the header file has been written to disk */
 
@@ -427,7 +424,7 @@ public class UStructure extends Automaton {
 
   /**
    * Duplicate this U-Structure as a pruned U-Structure.
-   * NOTE: This only works because the pruned U-Structure has identical .bdy and .hdr formats.
+   * NOTE: This only works because the pruned U-Structure currently has identical .bdy and .hdr formats.
    * @param newHeaderFile The header file where the pruned U-Structure should be stored
    * @param newBodyFile   The body file where the pruned U-Structure should be stored
    * @return              The duplicated U-Structure (as a pruned U-Structure)
@@ -572,7 +569,7 @@ public class UStructure extends Automaton {
    * Take the crush with respect to a particular controller.
    * NOTE: A HashMap is used instead of a mapping file to map the IDs, under the assumption that
    *       a crush will not contain billions of states.
-   * NOTE: All communications in the pruned U-Structure should be Nash communications.
+   * NOTE: All communications in the U-Structure should be Nash communications with this method.
    * @param newHeaderFile         The file where the header should be stored
    * @param newBodyFile           The file where the body should be stored
    * @param indexOfController     The index of the controller in which the crush is taken with respect to (1-based)
@@ -588,7 +585,7 @@ public class UStructure extends Automaton {
                      Crush.CombiningCosts combiningCostsMethod) {
 
     if (potentialCommunications.size() > 0)
-      System.err.println("WARNING: " + potentialCommunications.size() + " communications were ignored. Only Nash communications are being considered in the Crush operation.");
+      System.err.println("WARNING: " + potentialCommunications.size() + " communications were ignored. Only Nash communications are being considered.");
 
       /* Setup */
 
@@ -751,16 +748,156 @@ public class UStructure extends Automaton {
   }
 
   /**
-   * Find the Shapley values for each coalitiion.
-   * NOTE: This is currently not designed to handle violations.
-   * @return  The mapping between the coalitions and their respective values
+   * Take the crush with respect to a particular controller.
+   * NOTE: All Nash information (cost and probability) will be ignored by this method.
+   * @param newHeaderFile         The file where the header should be stored
+   * @param newBodyFile           The file where the body should be stored
+   * @param indexOfController     The index of the controller in which the crush is taken with respect to (1-based)
+   * @return                      The crush
+   **/
+  public Crush crush(File newHeaderFile,
+                     File newBodyFile,
+                     int indexOfController) {
+
+    if (nashCommunications.size() > 0)
+      System.err.println("WARNING: Nash information was ignored.");
+
+      /* Setup */
+
+    // Invert this U-Structure (so that we can travel backwards over transitions)
+    UStructure invertedUStructure = invert();
+
+    // Create empty crush, copy over events oberservable by the controller
+    Crush crush = new Crush(newHeaderFile, newBodyFile, nControllers);
+    for (Event e : events)
+      if (!e.getVector().isUnobservableToController(indexOfController))
+        crush.addEvent(e.getLabel(), e.isObservable(), e.isControllable());
+
+    // Maps the combined IDs to the ID of the state in the crush, meaning we do not need to re-number states afterwards
+    HashMap<BigInteger, Long> mappings = new HashMap<BigInteger, Long>();
+    long nextID = 1;
+
+    // Find all connecting states
+    Stack<Set<State>> stackOfConnectedStates = new Stack<Set<State>>();
+    HashSet<BigInteger> crushedStatesAlreadyPushed = new HashSet<BigInteger>();
+    Set<State> connectingStates = new HashSet<State>();
+    findConnectingStates(this, connectingStates, getState(initialState), indexOfController);
+    Set<State> connectingStatesFromInverted = new HashSet<State>();
+    findConnectingStates(invertedUStructure, connectingStatesFromInverted, invertedUStructure.getState(initialState), indexOfController);
+    connectingStates.addAll(connectingStatesFromInverted);
+    stackOfConnectedStates.push(connectingStates);
+    crushedStatesAlreadyPushed.add(combineStateIDs(connectingStates));
+
+    boolean isInitialState = true;
+
+      /* Build Crush */
+
+    while (stackOfConnectedStates.size() > 0) {
+
+      // Get set from stack and generate unique ID for that collection of states
+      Set<State> setOfStates = stackOfConnectedStates.pop();
+      BigInteger combinedID = combineStateIDs(setOfStates);
+      Long mappedID = mappings.get(combinedID);
+      if (mappedID == null) {
+        mappings.put(combinedID, mappedID = nextID++);
+        addStateToCrush(crush, setOfStates, isInitialState, mappedID);
+      }
+
+      isInitialState = false;
+
+      // Loop through each event
+      outer: for (Event e : crush.events) {
+
+        // Setup
+        Set<State> reachableStates = new HashSet<State>();
+        CommunicationData communicationToBeCopied = null;
+        boolean isDisablementDecision = false;
+        boolean[] disablementControllers = new boolean[nControllers];
+        Arrays.fill(disablementControllers, true);
+        
+        // Generate list of all reachable states from the current event        
+        for (State s : setOfStates)
+          for (Transition t : s.getTransitions())
+            if (t.getEvent().equals(e)) {
+
+              // Find reachable states
+              findConnectingStates(this, reachableStates, getState(t.getTargetStateID()), indexOfController);
+              findConnectingStates(invertedUStructure, reachableStates, invertedUStructure.getState(t.getTargetStateID()), indexOfController);
+
+              TransitionData transitionData = new TransitionData(s.getID(), t.getEvent().getID(), t.getTargetStateID());
+              
+              // Check to see if there are any communications that need to be copied over
+              for (CommunicationData communication : getPotentialCommunications())
+                if (transitionData.equals(communication)) {
+                  communicationToBeCopied = communication;
+                  break;
+                }
+              
+              // Check to see if there is a disablement decision to be copied over
+              for (DisablementData disablementData : disablementDecisions)
+                if (transitionData.equals(disablementData)) {
+                  isDisablementDecision = true;
+                  for (int i = 0; i < nControllers; i++)
+                    if (!disablementData.controllers[i])
+                      disablementControllers[i] = false;
+                  break;
+                }
+
+            }
+
+        // Add the transition (if applicable)
+        if (reachableStates.size() > 0) {
+
+          BigInteger combinedTargetID = combineStateIDs(reachableStates);
+          if (!crushedStatesAlreadyPushed.contains(combinedTargetID)) {
+            stackOfConnectedStates.push(reachableStates);
+            crushedStatesAlreadyPushed.add(combinedTargetID);
+          }
+          Long mappedTargetID = mappings.get(combinedTargetID);
+          if (mappedTargetID == null) {
+            mappings.put(combinedTargetID, mappedTargetID = nextID++);
+            addStateToCrush(crush, reachableStates, false, mappedTargetID);
+          }
+          
+          crush.addTransition(mappedID, e.getID(), mappedTargetID);
+
+          // Add disablement decision
+          if (isDisablementDecision)
+            crush.addDisablementDecision(mappedID, e.getID(), mappedTargetID, disablementControllers);
+
+          // Add combined communication
+          if (communicationToBeCopied != null)
+            crush.addPotentialCommunication(mappedID, e.getID(), mappedTargetID, communicationToBeCopied.roles);
+
+        } // if
+
+      } // outer for
+
+    } // while 
+
+      /* Ensure that the header file has been written to disk */
+
+    crush.writeHeaderFile();
+
+    return crush;
+
+  }
+
+  /**
+   * Find the Shapley values for each coalition.
+   * NOTE: This can also be used to find the Myerson values once the U-Structure has been pruned.
+   * @return  The mapping between the coalitions and their respective values (or null if there were violations)
    **/
   public Map<Set<Integer>, Integer> findShapleyValues() {
+
+    // Ensure that there are no violations
+    if (hasViolations())
+      return null;
 
     // Generate crushes for each component (including the 0th component)
     Crush[] crushes = new Crush[nControllers + 1]; // 1-based
     for (int i = 0; i <= nControllers; i++)
-      crushes[i] = crush(null, null, i, null, null);
+      crushes[i] = crush(null, null, i);
 
     // Get the event and states needed in the crush of the 0th component (because we will use them often)
     List<State> initialStates  = new ArrayList<State>();

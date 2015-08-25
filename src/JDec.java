@@ -176,15 +176,15 @@ public class JDec extends JFrame implements ActionListener {
       "Previous Tab[TAB]",
       "Next Tab[TAB]",
       null,
-      "View in Browser[AUTOMATON]"
+      "View in Browser[ANY_AUTOMATON]"
     ));
 
     // Standard operations menu
     menuBar.add(createMenu("Standard Operations",
-      "Accessible[AUTOMATON]",
+      "Accessible[ANY_AUTOMATON]",
       "Co-Accessible[BASIC_AUTOMATON]",
       "Trim[BASIC_AUTOMATON]",
-      "Complement[AUTOMATON]",
+      "Complement[BASIC_AUTOMATON]",
       null,
       "Intersection[BASIC_AUTOMATON]",
       "Union[BASIC_AUTOMATON]"
@@ -205,7 +205,9 @@ public class JDec extends JFrame implements ActionListener {
     menuBar.add(createMenu("Properties",
       "Test Observability[BASIC_AUTOMATON]",
       "Test Controllability[BASIC_AUTOMATON]",
-      "Shapley Values[U_STRUCTURE]"
+      null,
+      "Shapley Values[U_STRUCTURE]",
+      "Myerson Values[U_STRUCTURE]"
     ));
     
     // Generate menu
@@ -268,9 +270,9 @@ public class JDec extends JFrame implements ActionListener {
       str = str.replace("[TAB]", "");
 
     // Check to see if this menu item requires any type of automaton
-    boolean requiresAnyAutomaton = str.contains("[AUTOMATON]");
+    boolean requiresAnyAutomaton = str.contains("[ANY_AUTOMATON]");
     if (requiresAnyAutomaton)
-      str = str.replace("[AUTOMATON]", "");
+      str = str.replace("[ANY_AUTOMATON]", "");
 
     // Check to see if this menu item requires a basic automaton (so not a U-Structure)
     boolean requiresBasicAutomaton = str.contains("[BASIC_AUTOMATON]");
@@ -346,7 +348,6 @@ public class JDec extends JFrame implements ActionListener {
         break;
 
     }
-
 
     // Add menu items into the appropriate lists
     if (requiresTab)
@@ -599,13 +600,14 @@ public class JDec extends JFrame implements ActionListener {
         fileName = getTemporaryFileName();
         headerFile = new File(fileName + ".hdr");
         bodyFile = new File(fileName + ".bdy");
-        try {
+        // try {
           // Create new tab with the complement
-          createTab(tab.automaton.complement(headerFile, bodyFile));
-        } catch(OperationFailedException e) {
-          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
-          displayErrorMessage("Operation Failed", "There already exists a dump state, so the complement could not be taken again.");
-        }
+          createTab(tab.automaton.generateTwinPlant(headerFile, bodyFile));
+          // createTab(tab.automaton.complement(headerFile, bodyFile));
+        // } catch(OperationFailedException e) {
+          // temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
+          // displayErrorMessage("Operation Failed", "There already exists a dump state, so the complement could not be taken again.");
+        // }
         break;
 
       case "Intersection":
@@ -677,19 +679,33 @@ public class JDec extends JFrame implements ActionListener {
 
         UStructure uStructure = ((UStructure) tab.automaton);
 
-        if (tab.type == Automaton.Type.U_STRUCTURE) {
-          if (uStructure.getSizeOfPotentialAndNashCommunications() > 0) {
-            displayErrorMessage("Operation Aborted", "You must choose a communication protocol before taking the Crush.");
-            break;
-          }
-        }
-
         if (uStructure.hasViolations()) {
           displayErrorMessage("Operation Aborted", "This structure contains one or more violations.");
           break;
         }
 
-        new NashInfoForCrushPrompt(this, tab, "Cost and Probability Values", "Specify costs and probabilities for each communication.");
+        // With Nash communications
+        if (uStructure.getPotentialCommunications().size() == 0)
+          new NashInfoForCrushPrompt(this, tab, "Cost and Probability Values", "Specify costs and probabilities for each communication.");
+
+        // Without Nash communications
+        // NOTE: If there are a mix of potential and Nash communications, all Nash information will be ignored
+        else {
+        
+          // Select controller to take the crush with respect to
+          int selectedController = pickController("Which component would you like to take the crush with respect to?", true);
+          if (selectedController == -1)
+            return;
+
+          // Get temporary files to store the crush in
+          fileName = getTemporaryFileName();
+          headerFile = new File(fileName + ".hdr");
+          bodyFile = new File(fileName + ".bdy");
+
+          // Create new tab with the generated crush
+          createTab(uStructure.crush(headerFile, bodyFile, selectedController));
+
+        }
 
         break;
 
@@ -788,7 +804,12 @@ public class JDec extends JFrame implements ActionListener {
           break;
         }
 
-        new ShapleyValuesOutput(this, uStructure, "Shapley Values");
+        new ShapleyValuesOutput(this, uStructure, "Shapley Values", "Shapley values by controller:", "Shapley values by coalition:");
+        break;
+
+      case "Myerson Values":
+
+        new ChooseCommunicatorsForMyersonPrompt(this, (UStructure) tab.automaton, "Myerson Values", " Specify whether or not a controller is allowed to send to or receive from a particular controller (NOTE: Communications are allowed to be relayed): ");
         break;
 
       case "Random Automaton":
@@ -1943,7 +1964,7 @@ public class JDec extends JFrame implements ActionListener {
       generateAutomatonButton.setToolTipText(
         "<html>Create a new automaton from the above input, saving it to file. For small automata, an image of the graph is automatically generated.<br>"
           + "<b><u>NOTE</u></b>: The generated automaton is saved to file, not the GUI input code itself. "
-          + "The means that your automaton is not saved until you have generated it.</html>"
+          + "This means that your automaton is not saved until you have generated it.</html>"
       );
       generateAutomatonButton.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {

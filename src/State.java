@@ -105,7 +105,7 @@ public class State {
       // Target state
       ByteManipulator.writeLongAsBytes(bytesToWrite, index, t.getTargetStateID(), nBytesPerStateID);
       index += nBytesPerStateID;
-      
+
     }
 
       /* Try writing to file */

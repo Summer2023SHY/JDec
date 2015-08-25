@@ -1,24 +1,19 @@
 HOURS:
-Monday, August 17: 5 hours 30 minutes
-Tuesday, August 18: 4 hours 30 minutes = 10
-Wednesday, August 19: 3 hours 34 minutes, =  TARGET: 7
-                             = TARGET: 10
-                             = TARGET: 8
-JAVADOC TO-DO LIST:
-  
-  TestAutomata.java
+Monday, August 24: 1 hour 30 minutes
+Tuesday, August 25: 2 hours 32 minutes, 11:51 - 
 
-QUESTIONS:
-
-  -show Dr. Ricker the lemke-howson program
-  -how far into the program can a user get with an uncontrollable system?
 
 TO-DO:
-  -GUI Tests?? - http://abbot.sourceforge.net/doc/quick-start.shtml
+
+  -change JDec back from twin plant to complement
+  -Add test case for crush without nash
+  -finish implementing myerson values
+  -add test case for myerson values
+  -add 'busy cursor'
+  -if twin plant operation stays, make sure it works well with the complement operation (since they both use a dump state), it likely shouldn't remain in the GUI anyway
   -NSGA-II algorithm:
     -Code algorithms 3 and 4
   -Warning message when saving in GUI to overwrite files
-  -There are 3 tooltips left to go in the XML file (from the buttons to generate the image, view image, and generate automaton)
-  -Co-acessible warning message if there are no marked states
-  -Multiple violations on the same transition are not properly drawn in graphviz (we should draw them as two separate transitions). Is it even possible for multiple violations to be in the same place??
+  -test how far into the program can a user get with an uncontrollable system?
   -Documentation for each operation on website
+  -how are we handling the case where .bdy file is missing?

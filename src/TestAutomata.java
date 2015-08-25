@@ -50,6 +50,7 @@ public class TestAutomata {
 
   		/* Run tests */
 
+    counter.add(runByteManipulatorTestRoutine());
     counter.add(runHelperMethodTestRoutine());
     counter.add(runEventCreationTestRoutine());
     counter.add(runStateCreationTestRoutine());
@@ -67,6 +68,46 @@ public class TestAutomata {
   		System.out.println(String.format("\n%s*** FAILED %d/%d TESTS ***%s", RED, counter.getFailedTests(), counter.getTotalTests(), RESET));
     else
       System.out.println(String.format("\n%sPASSED ALL %d TESTS%s", GREEN, counter.getTotalTests(), RESET));
+
+  }
+
+  private static TestCounter runByteManipulatorTestRoutine() {
+
+    String testRoutineName = "BYTE MANIPULATOR";
+
+    printTestOutput("RUNNING " + testRoutineName + " TESTS...", 1);
+
+    TestCounter counter = new TestCounter();
+
+    printTestOutput("Ensuring that values being written can be read again: ", 2);
+
+    boolean passed = true;
+    for (int i = 0; i <= 255; i++) {
+      byte[] arr = new byte[1];
+      ByteManipulator.writeLongAsBytes(arr, 0, i, 1);
+      if (ByteManipulator.readBytesAsLong(arr, 0, 1) != i) {
+        passed = false;
+        break;
+      }
+    }
+    printTestCase("Ensuring that one byte values were written and read properly", new TestResult(passed), counter);
+
+    passed = true;
+    for (int i = 256; i <= 65535; i++) {
+      byte[] arr = new byte[2];
+      ByteManipulator.writeLongAsBytes(arr, 0, i, 2);
+      if (ByteManipulator.readBytesAsLong(arr, 0, 2) != i) {
+        passed = false;
+        break;
+      }
+    }
+    printTestCase("Ensuring that two byte values were written and read properly", new TestResult(passed), counter);
+   
+      /* Print summary of this test routine */
+
+    printTestRoutineSummary(testRoutineName, counter);
+
+    return counter;
 
   }
 

@@ -72,6 +72,13 @@ public class Automaton {
   /** This is the fixed amount of space needed to hold the main variables in the .hdr file, which apply to all automaton types. */
   private static final int HEADER_SIZE = 45; 
 
+  /**
+   * The label used to indicate a dump state.
+   * NOTE: A JDec user cannot mess up the complement operation by adding a fake dump state, since spaces
+   *       are not considered part of a valid state label.
+   **/
+  public static final String DUMP_STATE_LABEL = "Dump State";
+
     /* CLASS VARIABLES */
 
   protected static int temporaryFileIndex = 1;
@@ -419,13 +426,13 @@ public class Automaton {
       for (Transition t : transitions) {
 
         // Add the target state to the stack
-        stack.add(t.getTargetStateID());
+        stack.push(t.getTargetStateID());
 
         // Add transition to the new automaton
         automaton.addTransition(id, t.getEvent().getID(), t.getTargetStateID());
 
       }
-
+    
     }
 
       /* Add special transitions if they still appear in the accessible part */
@@ -574,13 +581,8 @@ public class Automaton {
    **/
   protected final <T extends Automaton> T complementHelper(T automaton) throws OperationFailedException {
 
-      /* Setup */
-
-    // NOTE: A JDec user cannot mess up this operation by adding a fake dump state, since spaces are not
-    //       considered part of a valid state label
-    final String DUMP_STATE_LABEL = "Dump State";
-
-    // Add events
+      /* Add events */
+    
     automaton.addAllEvents(events);
 
       /* Build complement of this automaton */
@@ -683,7 +685,7 @@ public class Automaton {
     automaton.addAllEvents(events);
 
     // Add states
-    for (long s = 1; s <= nStates; s++) {
+    for (long s = 1; s <= getNumberOfStates(); s++) {
 
       State state = getStateExcludingTransitions(s);
       automaton.addState(state.getLabel(), state.isMarked(), s == initialState);
@@ -691,7 +693,7 @@ public class Automaton {
     }
 
     // Add transitions
-    for (long s = 1; s <= nStates; s++) {
+    for (long s = 1; s <= getNumberOfStates(); s++) {
 
       State state = getState(s);
 
@@ -833,7 +835,7 @@ public class Automaton {
 
       /* Setup */
 
-    Automaton automaton = new Automaton(newHeaderFile, newBodyFile, true);
+    Automaton automaton = new Automaton(newHeaderFile, newBodyFile, first.getNumberOfControllers());
 
     // These two stacks should always have the same size
     Stack<Long> stack1 = new Stack<Long>(); 
@@ -1295,6 +1297,99 @@ public class Automaton {
 
   }
 
+  /**
+   * Generate the twin plant by combining this automaton w.r.t. G_{Sigma*}.
+   * NOTE: The technique used here is similar to how the complement works. This would not work
+   *       in all cases, but G_{Sigma*} is a special case.
+   * @param newHeaderFile The header file where the new automaton should be stored
+   * @param newBodyFile   The body file where the new automaton should be stored
+   * @return              The twin plant
+   **/
+  public final Automaton generateTwinPlant(File newHeaderFile, File newBodyFile) {
+
+    Automaton automaton = new Automaton(
+      newHeaderFile,
+      newBodyFile,
+      getEventCapacity(),
+      getStateCapacity(),
+      getTransitionCapacity(),
+      getLabelLength(),
+      getNumberOfControllers(),
+      true
+    );
+
+      /* Add events */
+    
+    automaton.addAllEvents(getEvents());
+
+      /* Build twin plant */
+
+    long dumpStateID           = getNumberOfStates() + 1;
+    boolean needToAddDumpState = false;
+
+    // Add each state to the new automaton
+    for (long s = 1; s <= getNumberOfStates(); s++) {
+
+      State state = getState(s);
+
+      long id = automaton.addState(state.getLabel(), !state.isMarked(), s == initialState);
+
+      // Try to add transitions for each event
+      for (Event e : events) {
+
+        boolean foundMatch = false;
+
+        // Search through each transition for the event
+        for (Transition t : state.getTransitions())
+          if (t.getEvent().equals(e)) {
+            automaton.addTransition(id, e.getID(), t.getTargetStateID());
+            foundMatch = true;
+          }
+
+        // Check to see if this event is controllable by at least one controller
+        boolean controllable = false;
+        for (boolean b : e.isControllable())
+          if (b) {
+            controllable = true;
+            break;
+          }
+
+        // Add new transition leading to dump state if this event if undefined at this state and is controllable
+        if (!foundMatch && controllable) {
+          automaton.addTransition(id, e.getID(), dumpStateID);
+          automaton.markTransitionAsBad(id, e.getID(), dumpStateID);
+          needToAddDumpState = true;
+        }
+
+      }
+
+    }
+
+      /* Create dump state if it needs to be made */
+
+    if (needToAddDumpState) {
+    
+      long id = automaton.addState(DUMP_STATE_LABEL, false, false);
+
+      if (id != dumpStateID)
+        System.err.println("ERROR: Dump state ID did not match expected ID.");
+    
+    }
+
+      /* Add special transitions */
+
+    copyOverSpecialTransitions(automaton);
+
+      /* Ensure that the header file has been written to disk */
+      
+    automaton.writeHeaderFile();
+
+      /* Return generated automaton */
+
+    return automaton;
+
+  }
+
     /* AUTOMATA OPERATION HELPER METHODS */
 
   /**
@@ -1320,18 +1415,22 @@ public class Automaton {
 
     try {
 
+      byte[] buffer = new byte[nBytesPerStateID];
+
         /* Create a file containing the mappings (where the new IDs can be indexed using the old IDs) */
 
       File mappingFile = getTemporaryFile();
       RandomAccessFile mappingRAFile = new RandomAccessFile(mappingFile, "rw");
 
       long newID = 1;
-      for (long s = 1; s <= stateCapacity; s++)
+      for (long s = 1; s <= getStateCapacity(); s++)
         if (stateExists(s)) {
-          byte[] buffer = new byte[nBytesPerStateID];
+          
+          Arrays.fill(buffer, (byte) 0);
           mappingRAFile.seek(nBytesPerStateID * s);
           ByteManipulator.writeLongAsBytes(buffer, 0, newID++, nBytesPerStateID);
           mappingRAFile.write(buffer);
+
         }
 
         /* Create new .bdy file with renumbered states */
@@ -1339,19 +1438,20 @@ public class Automaton {
       File newBodyFile = getTemporaryFile();
       RandomAccessFile newBodyRAFile = new RandomAccessFile(newBodyFile, "rw");
 
-      for (long s = 1; s <= stateCapacity; s++) {
+      for (long s = 1; s <= getStateCapacity(); s++) {
 
         State state = null;
 
-        if ( (state = getState(s)) != null ) {
+        if ((state = getState(s)) != null) {
           
           // Get new ID of state
-          byte[] buffer = new byte[nBytesPerStateID];
+          Arrays.fill(buffer, (byte) 0);
           mappingRAFile.seek(nBytesPerStateID * s);
           mappingRAFile.read(buffer);
           long newStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
 
           // Update initial state ID (if applicable)
+          // NOTE: This works since 'newStateID' will be <= 's'
           if (initialState == s)
             initialState = newStateID;
 
@@ -1362,12 +1462,17 @@ public class Automaton {
           for (Transition t : state.getTransitions()) {
 
             // Get new ID of state
-            buffer = new byte[nBytesPerStateID];
+            Arrays.fill(buffer, (byte) 0);
             mappingRAFile.seek(nBytesPerStateID * t.getTargetStateID());
             mappingRAFile.read(buffer);
             long newTargetStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
 
-            t.setTargetStateID(newTargetStateID);
+            if (newTargetStateID == 0) {
+              System.out.println("ERROR: Target state does not exist, deleting transitions in an attempt to recover.");
+              state.getTransitions().clear();
+              break;
+            } else 
+              t.setTargetStateID(newTargetStateID);
           }
 
           // Write the updated state to the new file
@@ -2421,7 +2526,6 @@ public class Automaton {
    **/
   public static File getTemporaryFile() {
 
-
     try {
 
       File file = Files.createTempFile(null, null).toFile();
@@ -2630,6 +2734,35 @@ public class Automaton {
 
     }
 
+      /* Increase the number of allowed states */
+
+    if (targetStateID > getStateCapacity()) {
+
+      if (targetStateID > MAX_STATE_CAPACITY) {
+        System.err.println("ERROR: Could not add transition (reached maximum state capacity).");
+        return false;
+      }
+
+      // Determine how much stateCapacity and nBytesPerStateID need to be increased by
+      long newStateCapacity = stateCapacity;
+      int newNBytesPerStateID = nBytesPerStateID;
+      while (newStateCapacity < targetStateID) {
+        newStateCapacity = ((newStateCapacity + 1) << 8) - 1;
+        newNBytesPerStateID++;
+      }
+
+      // Re-create binary file
+      recreateBodyFile(
+        eventCapacity,
+        newStateCapacity,
+        transitionCapacity,
+        labelLength,
+        nBytesPerEventID,
+        newNBytesPerStateID
+      );
+
+    }
+
       /* Add transition and update the file */
 
     Event event = getEvent(eventID);
@@ -2766,7 +2899,7 @@ public class Automaton {
 
     }
 
-      /* Check to see if we need to re-write the entire binary file */
+      /* Increase the number of allowed states */
     
     if (nStates == stateCapacity) {
 
@@ -2870,7 +3003,7 @@ public class Automaton {
 
     }
 
-      /* Check to see if we need to re-write the entire binary file */
+      /* Increase the number of allowed states */
 
     if (id > stateCapacity) {
 
@@ -3265,7 +3398,7 @@ public class Automaton {
   /**
    * Get the amount of space needed to store a state.
    * @return  Number of bytes required to store each state
-   **/
+   **/ 
   public long getSizeOfState() {
     return nBytesPerState;
   }
@@ -3357,5 +3490,32 @@ public class Automaton {
 
   }
 
+  /**
+   * Check to see if all states and transtions in this automaton actually exist.
+   * NOTE: Does not check special transition data.
+   * NOTE: This method has been added purely as a testing mechanism.
+   * @return  Whether or not this automaton is deterministic
+   **/
+  public boolean isValid() {
+
+    for (long s = 1; s <= getNumberOfStates(); s++) {
+      
+      State state = getState(s);
+
+      if (state == null)
+        return false;
+
+      for (Transition t : state.getTransitions()) {
+        if (getEvent(t.getEvent().getID()) == null)
+          return false;
+        if (!stateExists(t.getTargetStateID()))
+          return false;
+      }
+
+    }
+
+    return true;
+
+  }
 
 }

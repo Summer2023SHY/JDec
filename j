@@ -3,15 +3,12 @@
 # compile
 javac -d bin src/*.java
 
-cd bin
-
 # remove old jar
 rm JDec.jar
 
-# create new jar
+# create new jar (and move to top directory)
+cd bin
 jar cfm JDec.jar manifest.txt *.class
-
-# move jar to top directory
 mv JDec.jar ../JDec.jar
 cd ..
 

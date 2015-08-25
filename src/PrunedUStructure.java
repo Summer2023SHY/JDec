@@ -128,28 +128,28 @@ public class PrunedUStructure extends UStructure {
 
       /* Determine which events are active */
 
-    boolean[] active = new boolean[events.size() + 1];
-    for (long s = 1; s <= nStates; s++) 
+    boolean[] active = new boolean[getNumberOfEvents() + 1];
+    for (long s = 1; s <= getNumberOfStates(); s++) 
       for (Transition t : getState(s).getTransitions())
         active[t.getEvent().getID()] = true;
     
       /* Remove the inactive events */
-    
+
     Map<Integer, Integer> mapping = new HashMap<Integer, Integer>();
-    int maxID = events.size();
     int newID = 1;
+    int maxID = getNumberOfEvents();
     for (int id = 1; id <= maxID; id++) {
       if (!active[id]) {
         if (!removeEvent(id))
           System.err.println("ERROR: Failed to remove inactive event.");
-      } else
+      } else 
         mapping.put(id, newID++);
     }
 
       /* Re-number event IDs */
 
     // Update event IDs in body file
-    for (long s = 1; s <= nStates; s++) {
+    for (long s = 1; s <= getNumberOfStates(); s++) {
       
       State state = getState(s);
       
@@ -166,13 +166,14 @@ public class PrunedUStructure extends UStructure {
     }
 
     // Update event IDs in header file
-    for (Event e : events)
+    for (Event e : getEvents())
       e.setID(mapping.get(e.getID()));
     renumberEventsInTransitionData(mapping, unconditionalViolations);
     renumberEventsInTransitionData(mapping, conditionalViolations);
     renumberEventsInTransitionData(mapping, potentialCommunications);
     renumberEventsInTransitionData(mapping, invalidCommunications);
     renumberEventsInTransitionData(mapping, nashCommunications);
+    renumberEventsInTransitionData(mapping, disablementDecisions);
 
       /* Indicate that the header file needs to be updated */
     

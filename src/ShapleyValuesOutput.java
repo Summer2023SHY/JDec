@@ -21,23 +21,30 @@ public class ShapleyValuesOutput extends JDialog {
 
   private JDec gui;
   private UStructure uStructure;
+  private String controllerText;
+  private String coalitionText;
 
     /* CONSTRUCTOR */
 
   /**
-   * Construct a ShapleyValuesOutput object.
+   * Construct a dialog used to calculate and display the Shapley values.
+   * NOTE: This can also be used to display the Myerson values since they work much the same.
    * @param gui               A reference to the GUI
    * @param uStructure        The U-Structure that is being worked with
    * @param title             The title of the popup box
    **/
   public ShapleyValuesOutput(JDec gui,
                              UStructure uStructure,
-                             String title) {
+                             String title,
+                             String controllerText,
+                             String coalitionText) {
 
     super(gui, true);
 
-    this.gui = gui;
-    this.uStructure = uStructure;
+    this.gui            = gui;
+    this.uStructure     = uStructure;
+    this.controllerText = controllerText;
+    this.coalitionText  = coalitionText;
 
     addComponents();
     setGUIproperties(title);
@@ -67,11 +74,11 @@ public class ShapleyValuesOutput extends JDialog {
 
     StringBuilder stringBuilder = new StringBuilder();
     
-    stringBuilder.append("Shapley values by controller:\n");
+    stringBuilder.append(controllerText + "\n");
     for (int i = 0; i < shapleyValuesByController.length; i++)
       stringBuilder.append(String.format("\t%d: %.4f\n", i + 1, shapleyValuesByController[i]));
     
-    stringBuilder.append("\nShapley values by coalition:\n");
+    stringBuilder.append("\n" + coalitionText + "\n");
     for (Map.Entry<Set<Integer>, Integer> entry : shapleyValues.entrySet())
       stringBuilder.append(String.format("\t%s: %d\n", entry.getKey(), entry.getValue()));
 
