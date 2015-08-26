@@ -1025,7 +1025,7 @@ public class TestAutomata {
       "1_1_1,<c,*,c>,1_1_1\n1_1_1,<*,c,*>,1_1_1\n1_1_1,<a,a,*>,2_2_1\n1_1_1,<a,a,*>,1_1_2\n1_1_2,<*,c,*>,1_1_2\n2_2_1,<*,*,a>,2_2_2\n1_1_2,<a,a,*>,2_2_2\n2_2_2,<b,b,b>,1_1_1" // Transitions
     ));
 
-    crush = crushExample2.crush(null, null, 2, null, null);
+    crush = crushExample2.crush(null, null, 2);
 
     crush.generateInputForGUI();
     printTestCase("Ensuring the events are correct", new TestResult(crush.getEventInput(), "<b,b,b>,TT,FF\n<c,*,c>,FT,FF"), counter);
@@ -1100,7 +1100,7 @@ public class TestAutomata {
     printTestCase("Ensuring the transitions are correct", new TestResult(uStructure.getTransitionInput(), "0_0_0,<a,a,*>,1_1_0\n0_0_0,<b,*,b>,2_0_2\n0_0_0,<*,b,*>,0_2_0\n0_0_0,<*,*,a>,0_0_1\n0_0_1,<a,a,*>,1_1_1\n0_0_1,<*,b,*>,0_2_1\n0_2_0,<b,*,b>,2_2_2\n0_2_0,<*,*,a>,0_2_1\n1_1_0,<*,*,a>,1_1_1\n1_1_1,<c,c,c>,3_3_3\n2_0_2,<*,b,*>,2_2_2\n2_2_2,<c,c,c>,4_4_4:DISABLEMENT_DECISION-FT"), counter);
 
     printTestOutput("Taking the crush of the U-Structure...", 3);
-    Crush crush = uStructure.crush(null, null, 1, null, null);
+    Crush crush = uStructure.crush(null, null, 1);
     crush.generateInputForGUI();
     printTestCase("Ensuring the events are correct", new TestResult(crush.getEventInput(), "<a,a,*>,TF,FF\n<c,c,c>,TT,FT"), counter);
     printTestCase("Ensuring the states are correct", new TestResult(crush.getStateInput(), "@<0_0_0,0_0_1,0_2_0,0_2_1,2_0_2,2_2_2>\n<1_1_0,1_1_1>\n<3_3_3>\n<4_4_4>"), counter);

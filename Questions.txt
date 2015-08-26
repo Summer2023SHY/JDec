@@ -1,15 +1,16 @@
 HOURS:
 Monday, August 24: 1 hour 30 minutes
-Tuesday, August 25: 2 hours 32 minutes, 11:51 - 
-
+Tuesday, August 25: 3 hours 39 minutes
+Wednesday, August 26: 7:33 - 
 
 TO-DO:
 
-  -change JDec back from twin plant to complement
-  -Add test case for crush without nash
-  -finish implementing myerson values
+  -fix observability test to account for cases where a controller can disable an event due to the prefix it has observed so far
+  -how does the GUI handle duplicate transitions??
   -add test case for myerson values
-  -add 'busy cursor'
+  -finish implementing myerson values
+  -add 'busy cursor' in operations which do not have some other kind of progress indicator
+  -change JDec back from twin plant to complement
   -if twin plant operation stays, make sure it works well with the complement operation (since they both use a dump state), it likely shouldn't remain in the GUI anyway
   -NSGA-II algorithm:
     -Code algorithms 3 and 4
@@ -17,3 +18,4 @@ TO-DO:
   -test how far into the program can a user get with an uncontrollable system?
   -Documentation for each operation on website
   -how are we handling the case where .bdy file is missing?
+  -NOTE: progressbarpopup class is not currently used

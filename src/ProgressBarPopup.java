@@ -87,7 +87,8 @@ public class ProgressBarPopup extends JDialog {
     pack();
 
     // Make it so that the user canot close this dialog box
-    // NOTE: If we did not do this, then we would have to make sure that the thread is killed
+    // NOTE: If we did not do this, then we would have to make sure that the thread governing
+    //       the process that is being executed is killed (which is not managed by this class)
     setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
     // Ensure that the dialog cannot be resized
