@@ -1,12 +1,11 @@
 HOURS:
 Monday, August 24: 1 hour 30 minutes
-Tuesday, August 25: 3 hours 39 minutes
-Wednesday, August 26: 7:33 - 
+Tuesday, August 25: 3 hours 35 minutes
+Wednesday, August 26: 1 hour, 8:13 - 
 
 TO-DO:
 
   -fix observability test to account for cases where a controller can disable an event due to the prefix it has observed so far
-  -how does the GUI handle duplicate transitions??
   -add test case for myerson values
   -finish implementing myerson values
   -add 'busy cursor' in operations which do not have some other kind of progress indicator
@@ -17,5 +16,4 @@ TO-DO:
   -Warning message when saving in GUI to overwrite files
   -test how far into the program can a user get with an uncontrollable system?
   -Documentation for each operation on website
-  -how are we handling the case where .bdy file is missing?
   -NOTE: progressbarpopup class is not currently used

@@ -2,7 +2,7 @@
  * AutomatonGenerator - Abstract class used to generate automata. Automata can be generated using GUI input
  *                      code, or they can be randomly generated (with a number of specified properties).
  *
- *                      NOTE: This class could realistically be split into two unrelated classes.
+ *                      NOTE: This class should realistically be split into two unrelated classes.
  *
  * @author Micah Stairs
  *
@@ -128,7 +128,7 @@ public abstract class AutomatonGenerator<T> {
 
         // If possible, flip one random transition between the new states and the accessible automaton
         // NOTE: A new event will be generated for the flipped transition
-        updateProgressIndicator(progressIndicator, "Flipping transitions...", nAttempts);
+        updateProgressIndicator(progressIndicator, "Flipping a transition...", nAttempts);
         if (nPreExistingStates > 0)
           outer: for (int s1 = nPreExistingStates + 1; s1 <= nStates; s1++) {
 
@@ -611,6 +611,14 @@ public abstract class AutomatonGenerator<T> {
           hasErrors = true;
           continue;
 
+        // Ensure that the transition does not already exist
+        } else if (automaton.transitionExists(initialStateID, eventID, targetStateID)) {
+
+          System.err.println("ERROR: Transition was a duplicate, so it was not added again.");
+          if (transitionInputPane != null)
+            transitionInputPane.getStyledDocument().setCharacterAttributes(startIndex, line.length(), errorStyle, false);
+          hasErrors = true;
+
         // Add transition
         } else {
          
@@ -622,6 +630,7 @@ public abstract class AutomatonGenerator<T> {
                 hasErrors = true;
               }
           } else {
+            System.err.println("ERROR: Transition could not be added.");
             if (gui != null)
               gui.displayErrorMessage("Error", "'" + line + "' could not be added as a transition. Please ensure that there are not more than " + Automaton.MAX_TRANSITION_CAPACITY + " transitions.");
             if (transitionInputPane != null)
