@@ -655,7 +655,7 @@ public class Automaton {
    * @param newBodyFile    The body file where the new automaton should be stored
    * @return               The trim automaton, or null if there was no initial state specified
    **/
-  public final Automaton trim(File newHeaderFile, File newBodyFile) {
+  public Automaton trim(File newHeaderFile, File newBodyFile) {
     return accessible(null, null).coaccessible(newHeaderFile, newBodyFile);
   }
 
@@ -686,21 +686,14 @@ public class Automaton {
 
     // Add states
     for (long s = 1; s <= getNumberOfStates(); s++) {
-
       State state = getStateExcludingTransitions(s);
       automaton.addState(state.getLabel(), state.isMarked(), s == initialState);
-
     }
 
     // Add transitions
-    for (long s = 1; s <= getNumberOfStates(); s++) {
-
-      State state = getState(s);
-
-      for (Transition t : state.getTransitions())
+    for (long s = 1; s <= getNumberOfStates(); s++)
+      for (Transition t : getState(s).getTransitions())
         automaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), s);
-
-    }
 
       /* Ensure that the header file has been written to disk */
       
@@ -1634,6 +1627,39 @@ public class Automaton {
     }
 
     return list;
+
+  }
+
+  /**
+   * Check to see if this automaton accepts the specified counter-example.
+   * @param sequences The list of sequences of event labels which represent the counter-example
+   * @return          Whether or not the autmaton accepts the counter-example
+   **/
+  public boolean acceptsCounterExample(List<List<String>> sequences) {
+
+    // Ensure that all sequences can be matched
+    for (List<String> sequence : sequences) {
+
+      State currentState = getState(getInitialStateID());
+
+      outer: for (String label : sequence) {
+        
+        // Check all transitions for a match
+        for (Transition t : currentState.getTransitions()) {
+          if (t.getEvent().getLabel().equals(label)) {
+            currentState = getState(t.getTargetStateID());
+            continue outer;
+          }
+        }
+
+        // If we got this far, then this automaton does not accept the counter-example
+        return false;
+
+      }
+
+    }
+
+    return true;
 
   }
 
@@ -3346,6 +3372,21 @@ public class Automaton {
     return getEvents().size();
   }
 
+  /**
+   * Return the list of all inactive events.
+   * NOTE: This is an expensive operation.
+   * @return  The list of all inactive events
+   **/
+  public List<Event> getInactiveEvents() {
+
+    List<Event> inactiveEvents = new ArrayList<Event>(events);
+
+    for (long s = 1; s <= getNumberOfStates(); s++)
+      for (Transition t : getState(s).getTransitions())
+        inactiveEvents.remove(t.getEvent());
+
+    return inactiveEvents;
+  }
 
   /**
    * Get the number of states that are currently in this automaton.
@@ -3515,6 +3556,26 @@ public class Automaton {
     }
 
     return true;
+
+  }
+
+  /**
+   * Add self-loops to all states for all inactive events.
+   * NOTE: This is being used for Liu's thesis implementation.
+   * @param newHeaderFile The new header file where the automaton is being copied to (cannot be null)
+   * @param newBodyFile   The new body file where the automaton is being copied to (cannot be null)
+   * @return              A copy of this automaton, with self-loops added
+   **/
+  public Automaton addSelfLoopsForInactiveEvents(File newHeaderFile, File newBodyFile) {
+
+    Automaton automaton  = duplicate(newHeaderFile, newBodyFile);
+    List<Event> inactiveEvents = getInactiveEvents();
+
+    for (long s = 1; s <= getNumberOfStates(); s++)
+      for (Event e : inactiveEvents)
+        automaton.addTransition(s, e.getID(), s);
+
+    return automaton;
 
   }
 

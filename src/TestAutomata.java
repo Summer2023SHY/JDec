@@ -119,6 +119,36 @@ public class TestAutomata {
 
     TestCounter counter = new TestCounter();
 
+      /* findCounterExample() Tests */
+
+    printTestOutput("Liu's Thesis - findCounterExample(): ", 2);
+    
+    printTestOutput("Instantiating an automaton...", 3);
+    Automaton automaton = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+      new Automaton(null, null, 2),
+      "a,TF,TF\nb,FT,FT\no,TT,TT", // Events
+      "@1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T", // States
+      "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD" // Transitions
+    ));
+
+    printTestOutput("Taking the U-Structure of the automaton...", 3);
+    UStructure uStructure = saveAndLoadUStructure(automaton.synchronizedComposition(null, null));
+    
+    printTestOutput("Finding the counter-example...", 3);
+    List<List<String>> labelSequences = uStructure.findCounterExample();
+    printTestCase("Ensuring that the 0th sequence is correct", new TestResult(labelSequences.get(0), new ArrayList<String>() {{ add("b"); add("a"); add("o"); }} ), counter);
+    printTestCase("Ensuring that the 1st sequence is correct", new TestResult(labelSequences.get(1), new ArrayList<String>() {{ add("a"); add("b"); add("o"); }} ), counter);
+    printTestCase("Ensuring that the 2nd sequence is correct", new TestResult(labelSequences.get(2), new ArrayList<String>() {{ add("a"); add("b"); add("o"); }} ), counter);
+
+      /* acceptsCounterExample() Tests */
+
+    printTestOutput("Liu's Thesis - acceptsCounterExample(): ", 2);
+    
+    printTestCase("Ensuring that the original automaton can accept the counter-example", new TestResult(automaton.acceptsCounterExample(labelSequences), true), counter);
+    labelSequences.add(new ArrayList<String>() {{ add("b"); add("o"); add("o"); }});
+    printTestOutput("Adding a bad sequence to the list...", 3);
+    printTestCase("Ensuring that the original automaton can no longer accept the counter-example", new TestResult(automaton.acceptsCounterExample(labelSequences), false), counter);
+
       /* isTrue() Tests */
 
     printTestOutput("GUI Parsing - isTrue(): ", 2);
@@ -198,7 +228,7 @@ public class TestAutomata {
     // NOTE: These tests do not check each individual cost to make sure it is correct,
     //       but instead, the costs are simply added together and compared to the expected sum.
 
-    UStructure uStructure = saveAndLoadUStructure(AutomatonGenerator.generateFromGUICode(
+    uStructure = saveAndLoadUStructure(AutomatonGenerator.generateFromGUICode(
       new UStructure(null, null, 2),
       "<a,a,*>,TF,TF\n<b,*,b>,FT,FT\n<*,b,*>,FF,FF\n<*,*,a>,FF,FF\n<o,o,o>,TT,TT\n<*,b,a>,FF,FF\n<b,b,b>,FT,FT\n<a,a,a>,TF,TF", // Events
       "@1_1_1\n1_1_2\n1_3_1\n1_3_2\n2_2_1\n2_2_2\n2_4_1\n2_4_2\n2_5_1\n2_5_2\n3_1_3\n3_1_4\n3_1_5\n3_3_3\n3_3_4\n3_3_5\n4_2_3\n4_2_4\n4_2_5\n4_4_3\n4_4_4\n4_4_5\n4_5_3\n4_5_4\n4_5_5\n5_2_3\n5_2_4\n5_2_5\n5_4_3\n5_4_4\n5_4_5\n5_5_3\n5_5_4\n5_5_5\n6_6_6\n6_6_7\n6_7_6\n6_7_7\n7_6_6\n7_6_7\n7_7_6\n7_7_7", // States
@@ -910,6 +940,21 @@ public class TestAutomata {
     printTestCase("Ensuring the states are correct", new TestResult(uStructureSelfLoopExtended.getStateInput(), "@1_1_1\n1_2_1\n2_1_2\n2_2_2"), counter);
     printTestCase("Ensuring the transitions are correct", new TestResult(uStructureSelfLoopExtended.getTransitionInput(), "1_1_1,<b,*,b>,2_1_2\n1_1_1,<a,a,*>,1_1_1\n1_1_1,<*,b,*>,1_2_1\n1_1_1,<*,*,a>,1_1_1\n1_2_1,<b,*,b>,2_2_2\n1_2_1,<*,*,a>,1_2_1\n2_1_2,<*,b,*>,2_2_2"), counter);
 
+    printTestOutput("Instantiating an automaton which brings out the special observability case...", 3);
+    Automaton automaton = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+      new Automaton(null, null, 1),
+      "a,T,F\nb,F,F\no,F,T", // Events
+      "@1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T", // States
+      "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD" // Transitions
+    ));
+
+    printTestOutput("Taking the synchronized composition of the automaton...", 3);
+    UStructure uStructure2 = saveAndLoadUStructure(automaton.synchronizedComposition(null, null));
+    uStructure2.generateInputForGUI();
+    printTestCase("Ensuring the events are correct", new TestResult(uStructure2.getEventInput(), "<a,a>,T,F\n<b,*>,F,F\n<*,b>,F,F\n<o,*>,F,F\n<*,o>,F,T"), counter);
+    printTestCase("Ensuring the states are correct", new TestResult(uStructure2.getStateInput(), "@1_1\n1_3\n2_2\n2_4\n2_5\n2_6\n2_7\n3_1\n3_3\n4_2\n4_4\n4_5\n4_6\n4_7\n5_2\n5_4\n5_5\n5_6\n5_7\n6_2\n6_4\n6_5\n6_6\n6_7\n7_2\n7_4\n7_5\n7_6\n7_7"), counter);
+    printTestCase("Ensuring the transitions are correct", new TestResult(uStructure2.getTransitionInput(), "1_1,<a,a>,2_2\n1_1,<b,*>,3_1\n1_1,<*,b>,1_3\n1_3,<a,a>,2_5\n1_3,<b,*>,3_3\n2_2,<b,*>,4_2\n2_2,<*,b>,2_4\n2_4,<b,*>,4_4\n2_4,<*,o>,2_6\n2_5,<b,*>,4_5\n2_5,<*,o>,2_7\n2_6,<b,*>,4_6\n2_7,<b,*>,4_7\n3_1,<a,a>,5_2\n3_1,<*,b>,3_3\n3_3,<a,a>,5_5\n4_2,<o,*>,6_2\n4_2,<*,b>,4_4\n4_4,<o,*>,6_4\n4_4,<*,o>,4_6\n4_5,<o,*>,6_5\n4_5,<*,o>,4_7\n4_6,<o,*>,6_6\n4_7,<o,*>,6_7\n5_2,<o,*>,7_2\n5_2,<*,b>,5_4\n5_4,<o,*>,7_4:UNCONDITIONAL_VIOLATION\n5_4,<*,o>,5_6:UNCONDITIONAL_VIOLATION\n5_5,<o,*>,7_5\n5_5,<*,o>,5_7\n5_6,<o,*>,7_6:UNCONDITIONAL_VIOLATION\n5_7,<o,*>,7_7\n6_2,<*,b>,6_4\n6_4,<*,o>,6_6\n6_5,<*,o>,6_7\n7_2,<*,b>,7_4\n7_4,<*,o>,7_6:UNCONDITIONAL_VIOLATION\n7_5,<*,o>,7_7"), counter);
+
       /* Add Communications Operation Tests */
 
     printTestOutput("ADD COMMUNICATIONS OPERATION: ", 2);
@@ -1073,7 +1118,7 @@ public class TestAutomata {
   
   private static TestCounter runSpecialTransitionsTestRoutine() {
 
-    String testRoutineName = "SPEICAL TRANSITIONS";
+    String testRoutineName = "SPECIAL TRANSITIONS";
 
     printTestOutput("RUNNING " + testRoutineName + " TESTS...", 1);
 
@@ -1592,6 +1637,15 @@ class TestResult {
   }
 
   public TestResult(ArrayList<Integer> actual, ArrayList<Integer> expected) {
+    
+    passed = (actual.equals(expected));
+    
+    if (!passed)
+      summary = "\nEXPECTED:\n" + expected + "\n\nACTUAL:\n" + actual + "\n";
+
+  }
+
+  public TestResult(List<String> actual, ArrayList<String> expected) {
     
     passed = (actual.equals(expected));
     

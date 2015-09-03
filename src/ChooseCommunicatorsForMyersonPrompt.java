@@ -43,17 +43,17 @@ public class ChooseCommunicatorsForMyersonPrompt extends ChooseSendersAndRecieve
       return false;
     }
 
-    // Generated the pruned U-Structure
-    PrunedUStructure prunedUStructure = uStructure.applyProtocol(getProtocol(), null, null);
-
-    gui.createTab(prunedUStructure);
-
     // Hide this screen, since we will not need to go back to it
     SwingUtilities.invokeLater(new Runnable() {
       public void run() {
         setVisible(false);
       }
     });
+
+    // Generated the pruned U-Structure
+    PrunedUStructure prunedUStructure = uStructure.applyProtocol(getProtocol(), null, null);
+
+    // gui.createTab(prunedUStructure);
 
     // Display Myerson values
     new ShapleyValuesOutput(gui, prunedUStructure, "Myerson Values", "Myerson values by controller:", "Myerson values by coalition:");

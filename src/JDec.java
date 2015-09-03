@@ -43,13 +43,15 @@ public class JDec extends JFrame implements ActionListener {
    * When debug mode is on some processes will take longer since extra checks are being done.
    * If any problems are found, then they will be printed out on the console.
    **/
-  public static final boolean DEBUG = true;
+  public static final boolean DEBUG_MODE = true;
 
   public static final int PREFERRED_DIALOG_WIDTH  = 500;
   public static final int PREFERRED_DIALOG_HEIGHT = 500;
   
   private static final String applicationTitle = "JDec (v1.0 beta 1) - A Java application for Decentralized Control";
   private static final String GUI_DATA_FILE_NAME  = "gui.data";
+
+  private static final int N_STATES_TO_AUTOMATICALLY_DRAW = 20;
 
     /* INSTANCE VARIABLES */
 
@@ -194,6 +196,7 @@ public class JDec extends JFrame implements ActionListener {
       "Co-Accessible[BASIC_AUTOMATON]",
       "Trim[BASIC_AUTOMATON]",
       "Complement[BASIC_AUTOMATON]",
+      "Self Loops[BASIC_AUTOMATON]",
       null,
       "Intersection[BASIC_AUTOMATON]",
       "Union[BASIC_AUTOMATON]"
@@ -619,6 +622,15 @@ public class JDec extends JFrame implements ActionListener {
         // }
         break;
 
+      case "Self Loops":
+
+        fileName = getTemporaryFileName();
+        headerFile = new File(fileName + ".hdr");
+        bodyFile = new File(fileName + ".bdy");
+
+        createTab(tab.automaton.addSelfLoopsForInactiveEvents(headerFile, bodyFile));
+        break;
+
       case "Intersection":
 
         // Allow user to pick other automaton
@@ -910,7 +922,7 @@ public class JDec extends JFrame implements ActionListener {
 
       /* Generate an image (unless it's quite large) */
 
-    if (tab.automaton.getNumberOfStates() <= 100) {
+    if (tab.automaton.getNumberOfStates() <= N_STATES_TO_AUTOMATICALLY_DRAW) {
       generateImage();
       tab.generateImageButton.setEnabled(false);
     } else
@@ -1094,11 +1106,13 @@ public class JDec extends JFrame implements ActionListener {
     tab.setSaved(true);
 
     // Generate an image (unless it's quite large)
-    if (tab.automaton.getNumberOfStates() <= 50) {
+    if (tab.automaton.getNumberOfStates() <= N_STATES_TO_AUTOMATICALLY_DRAW) {
       generateImage();
       tab.generateImageButton.setEnabled(false);
-    } else
+    } else {
       tab.generateImageButton.setEnabled(true);
+      tab.canvas.setImage(null);
+    }
 
     // Refresh GUI
     updateComponentsWhichRequireAutomaton(); 
@@ -1238,7 +1252,7 @@ public class JDec extends JFrame implements ActionListener {
         tab.refreshGUI();
 
         // Generate an image (unless it's quite large)
-        if (tab.automaton.getNumberOfStates() <= 50) {
+        if (tab.automaton.getNumberOfStates() <= N_STATES_TO_AUTOMATICALLY_DRAW) {
           generateImage();
           tab.generateImageButton.setEnabled(false);
         } else

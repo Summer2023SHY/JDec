@@ -304,6 +304,14 @@ public class State {
   }
 
   /**
+   * Change the marked status of this state.
+   * @param marked  Whether or not this state should be marked
+   **/
+  public void setMarked(boolean marked) {
+    this.marked = marked;
+  }
+
+  /**
    * Add a transition to the list.
    * @param transition  The new transition
    **/

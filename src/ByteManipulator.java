@@ -41,7 +41,7 @@ public abstract class ByteManipulator {
       arr[index++] = (byte) (n >> (i*8));
 
     // Error-checking
-    if (JDec.DEBUG && readBytesAsLong(arr, index - nBytes, nBytes) != n)
+    if (JDec.DEBUG_MODE && readBytesAsLong(arr, index - nBytes, nBytes) != n)
       System.err.println("CRUCIAL ERROR: Byte manipulator wrote a value which will not be read properly.");
 
   }

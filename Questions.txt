@@ -1,19 +1,31 @@
 HOURS:
-Monday, August 24: 1 hour 30 minutes
-Tuesday, August 25: 3 hours 35 minutes
-Wednesday, August 26: 1 hour, 8:13 - 
+Thursday: 40 minutes, 11:10 - 
 
-TO-DO:
+NOTES:
+-fix synchronized composition (special case) - add test case  n = 2 (and add test case for n=2 which reduces down to something similar to n=1)
+-put bad transitions under only one bad transition when possible
+-gui validation deterministic check (perhaps check if the transition already exists?)??
+-investigate
+  Exception in thread "AWT-EventQueue-0" java.lang.OutOfMemoryError: can't create offscreen surface
+        at sun.java2d.opengl.OGLSurfaceData.initSurfaceNow(OGLSurfaceData.java:298)
+        at sun.java2d.opengl.OGLSurfaceData.access$000(OGLSurfaceData.java:98)
+        at sun.java2d.opengl.OGLSurfaceData$1.run(OGLSurfaceData.java:324)
+        at sun.java2d.opengl.OGLRenderQueue$QueueFlusher.run(OGLRenderQueue.java:232)
+-write algorithm to find counterexample (mark state and use trim?)
 
-  -fix observability test to account for cases where a controller can disable an event due to the prefix it has observed so far
-  -add test case for myerson values
-  -finish implementing myerson values
-  -add 'busy cursor' in operations which do not have some other kind of progress indicator
-  -change JDec back from twin plant to complement
-  -if twin plant operation stays, make sure it works well with the complement operation (since they both use a dump state), it likely shouldn't remain in the GUI anyway
-  -NSGA-II algorithm:
-    -Code algorithms 3 and 4
-  -Warning message when saving in GUI to overwrite files
-  -test how far into the program can a user get with an uncontrollable system?
-  -Documentation for each operation on website
-  -NOTE: progressbarpopup class is not currently used
+-MYERSON: in the example in the paper, they are picking the communication protocol that is cheapest? It doesn't look the exact same as our 'simplified' algorithm?? Where we add all communications then prune the excess ones
+
+-fix observability test to account for cases where a controller can disable an event due to the prefix it has observed so far
+  -this special case happens for all bad transitions where there a controller cannot observe the event but it can control it??
+
+-add test case for myerson values
+-finish implementing myerson values
+-add 'busy cursor' in operations which do not have some other kind of progress indicator
+-change JDec back from twin plant to complement
+-if twin plant operation stays, make sure it works well with the complement operation (since they both use a dump state), it likely shouldn't remain in the GUI anyway
+-NSGA-II algorithm:
+  -Code algorithms 3 and 4
+-Warning message when saving in GUI to overwrite files
+-test how far into the program can a user get with an uncontrollable system?
+-Documentation for each operation on website - what about help system?? How was it implemented in DESUMA?
+-NOTE: progressbarpopup class is not currently used
