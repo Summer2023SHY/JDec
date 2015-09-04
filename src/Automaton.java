@@ -792,7 +792,11 @@ public class Automaton {
 
             // Add transition to the new automaton
             long targetID = combineTwoIDs(t1.getTargetStateID(), first, t2.getTargetStateID(), second);
-            automaton.addTransition(newStateID, t1.getEvent().getID(), targetID);
+            int eventID   = automaton.addTransition(newStateID, t1.getEvent().getLabel(), targetID);
+
+            // Mark as bad transition if both of them are bad
+            if (first.isBadTransition(id1, t1.getEvent().getID(), t1.getTargetStateID()) && second.isBadTransition(id2, t2.getEvent().getID(), t2.getTargetStateID()))
+              automaton.markTransitionAsBad(newStateID, eventID, targetID);
 
           }
 
@@ -901,7 +905,11 @@ public class Automaton {
 
             // Add transition to the new automaton
             long targetID = combineTwoIDs(t1.getTargetStateID(), first, t2.getTargetStateID(), second);
-            automaton.addTransition(newStateID, t1.getEvent().getLabel(), targetID);
+            int eventID   = automaton.addTransition(newStateID, t1.getEvent().getLabel(), targetID);
+
+            // Mark as bad transition if either of them are bad
+            if (first.isBadTransition(id1, t1.getEvent().getID(), t1.getTargetStateID()) || second.isBadTransition(id2, t2.getEvent().getID(), t2.getTargetStateID()))
+              automaton.markTransitionAsBad(newStateID, eventID, targetID);
 
           }
 
@@ -909,13 +917,17 @@ public class Automaton {
       for (Transition t : transitions1)
         if (privateEvents1.contains(t.getEvent())) {
         
-        // Add the pair of states to the stack
-        stack1.add(t.getTargetStateID());
-        stack2.add(id2);
+          // Add the pair of states to the stack
+          stack1.add(t.getTargetStateID());
+          stack2.add(id2);
 
-        // Add transition to the new automaton
-        long targetID = combineTwoIDs(t.getTargetStateID(), first, id2, second);
-        automaton.addTransition(newStateID, t.getEvent().getLabel(), targetID);
+          // Add transition to the new automaton
+          long targetID = combineTwoIDs(t.getTargetStateID(), first, id2, second);
+          int eventID = automaton.addTransition(newStateID, t.getEvent().getLabel(), targetID);
+
+          // Mark as bad transition if it is bad
+          if (first.isBadTransition(id1, t.getEvent().getID(), t.getTargetStateID()))
+            automaton.markTransitionAsBad(newStateID, eventID, targetID);
 
         }
 
@@ -923,13 +935,17 @@ public class Automaton {
       for (Transition t : transitions2)
         if (privateEvents2.contains(t.getEvent())) {
         
-        // Add the pair of states to the stack
-        stack1.add(id1);
-        stack2.add(t.getTargetStateID());
+          // Add the pair of states to the stack
+          stack1.add(id1);
+          stack2.add(t.getTargetStateID());
 
-        // Add transition to the new automaton
-        long targetID = combineTwoIDs(id1, first, t.getTargetStateID(), second);
-        automaton.addTransition(newStateID, t.getEvent().getLabel(), targetID);
+          // Add transition to the new automaton
+          long targetID = combineTwoIDs(id1, first, t.getTargetStateID(), second);
+          int eventID = automaton.addTransition(newStateID, t.getEvent().getLabel(), targetID);
+
+          // Mark as bad transition if it is bad
+          if (second.isBadTransition(id2, t.getEvent().getID(), t.getTargetStateID()))
+            automaton.markTransitionAsBad(newStateID, eventID, targetID);
 
         }
 
@@ -1730,9 +1746,11 @@ public class Automaton {
   /**
    * Check to see if this automaton accepts the specified counter-example.
    * @param sequences The list of sequences of event labels which represent the counter-example
-   * @return          Whether or not the autmaton accepts the counter-example
+   * @return          -1 if the autmaton accepts the counter-example, or the number of steps it took to reject the counter-example
    **/
-  public boolean acceptsCounterExample(List<List<String>> sequences) {
+  public int acceptsCounterExample(List<List<String>> sequences) {
+
+    int nSteps = 0;
 
     // Ensure that all sequences can be matched
     for (List<String> sequence : sequences) {
@@ -1740,6 +1758,8 @@ public class Automaton {
       State currentState = getState(getInitialStateID());
 
       outer: for (String label : sequence) {
+        
+        nSteps++;
         
         // Check all transitions for a match
         for (Transition t : currentState.getTransitions()) {
@@ -1750,13 +1770,13 @@ public class Automaton {
         }
 
         // If we got this far, then this automaton does not accept the counter-example
-        return false;
+        return nSteps;
 
       }
 
     }
 
-    return true;
+    return -1;
 
   }
 

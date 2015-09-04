@@ -144,10 +144,10 @@ public class TestAutomata {
 
     printTestOutput("Liu's Thesis - acceptsCounterExample(): ", 2);
     
-    printTestCase("Ensuring that the original automaton can accept the counter-example", new TestResult(automaton.acceptsCounterExample(labelSequences), true), counter);
+    printTestCase("Ensuring that the original automaton can accept the counter-example", new TestResult(automaton.acceptsCounterExample(labelSequences), -1), counter);
     labelSequences.add(new ArrayList<String>() {{ add("b"); add("o"); add("o"); }});
     printTestOutput("Adding a bad sequence to the list...", 3);
-    printTestCase("Ensuring that the original automaton can no longer accept the counter-example", new TestResult(automaton.acceptsCounterExample(labelSequences), false), counter);
+    printTestCase("Ensuring that the original automaton can no longer accept the counter-example", new TestResult(automaton.acceptsCounterExample(labelSequences), 2), counter);
 
       /* isTrue() Tests */
 

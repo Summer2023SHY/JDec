@@ -3,7 +3,7 @@ import java.util.*;
 
 public class Liu {
 
-  static JDec jdec = new JDec();
+  // static JDec jdec = new JDec();
 
   public static void main(String[] args) throws IncompatibleAutomataException {
     perms();
@@ -33,22 +33,25 @@ public class Liu {
       // All perms
       List<List<Automaton>> plantPerms = generatePerm(plants);
       List<List<Automaton>> specPerms = generatePerm(specs);
-      int nWays = plantPerms.size()*specPerms.size()*2*2;
+      int nWays = plantPerms.size()*specPerms.size()*2*2*2;
       int counter = 0;
       for (List<Automaton> plantPerm : plantPerms)
         for (List<Automaton> specPerm : specPerms)
-          for (int i = 0; i < 1; i++)
-            for (int j = 0; j < 1; j++) {
-              System.out.printf("Trial %d/%d:\n", ++counter, nWays);
-              System.out.println("\tOrder of plants: " + plantPerm);
-              System.out.println("\tOrder of specifications: " + specPerm);
-              boolean choosePlantFirst = (i==1);
-              boolean insertSpecAtStart = (j==1);
-              System.out.println("\tChoose plant before specification: " + choosePlantFirst);
-              System.out.println("\tInsert specification at start of list: " + insertSpecAtStart);
-              System.out.println("\tResult: " + incrementalVerification(new ArrayList<Automaton>(plantPerm), new ArrayList<Automaton>(specPerm), gSigmaStar, choosePlantFirst, insertSpecAtStart));
-              System.out.println();
-            }
+          for (int i = 0; i < 2; i++)
+            for (int j = 0; j < 2; j++)
+              for (int k = 0; k < 2; k++) {
+                System.out.printf("Trial %d/%d:\n", ++counter, nWays);
+                System.out.println("\tOrder of plants: " + plantPerm);
+                System.out.println("\tOrder of specifications: " + specPerm);
+                boolean choosePlantFirst = (i==1);
+                boolean insertSpecAtStart = (j==1);
+                boolean smallestNumberOfStepsToCounterExample = (k==1);
+                System.out.println("\tChoose plant before specification: " + choosePlantFirst);
+                System.out.println("\tInsert specification at start of list: " + insertSpecAtStart);
+                System.out.println("\tChoosing automata with smallest number of steps needed to reject counter-example: " + smallestNumberOfStepsToCounterExample);
+                System.out.println("\tResult: " + incrementalVerification(new ArrayList<Automaton>(plantPerm), new ArrayList<Automaton>(specPerm), gSigmaStar, choosePlantFirst, insertSpecAtStart, smallestNumberOfStepsToCounterExample));
+                System.out.println();
+              }
 
     } catch (IncompatibleAutomataException e) {
       e.printStackTrace();
@@ -83,7 +86,7 @@ public class Liu {
    *       in that particular automaton. This is not currently being checked for.
    * NOTE: Duplicates are being made in temporary files so as to not modify the originals.
    **/
-  public static boolean incrementalVerification(List<Automaton> plants, List<Automaton> specs, Automaton gSigmaStar, boolean choosePlantFirst, boolean insertSpecAtStart) throws IncompatibleAutomataException {
+  public static boolean incrementalVerification(List<Automaton> plants, List<Automaton> specs, Automaton gSigmaStar, boolean choosePlantFirst, boolean insertSpecAtStart, boolean smallestNumberOfStepsToCounterExample) throws IncompatibleAutomataException {
 
     // Create duplicates in order to prevent the originals from being modified
     plants = duplicateList(plants);
@@ -115,84 +118,72 @@ public class Liu {
         iterationInner++;
         System.out.printf("\t\t\tStarting inner loop iteration #%d.\n", iterationInner);
 
-        // Print out our options
-        for (Automaton automaton : plants) {
-          if (automataInLPrime.contains(automaton))
-            continue;
-          if (!automaton.acceptsCounterExample(counterExample))
-            System.out.println("\t\t\t\tCan choose the following from L\\L': " + automaton);
+        // Print out our options (and store them)
+        int[] stepsForPlants = new int[plants.size()];
+        Integer shortestStepsForPlants = null;
+        Integer longestStepsForPlants  = null;
+        for (int i = 0; i < plants.size(); i++) {
+          Automaton automaton = plants.get(i);
+          if (!automataInLPrime.contains(automaton)) {
+            stepsForPlants[i] = automaton.acceptsCounterExample(counterExample);
+            if (stepsForPlants[i] != -1) {
+              System.out.println("\t\t\t\tCan choose the following from L\\L': " + automaton);
+              if (shortestStepsForPlants == null || stepsForPlants[i] < stepsForPlants[shortestStepsForPlants])
+                shortestStepsForPlants = i;
+              if (longestStepsForPlants  == null || stepsForPlants[i] > stepsForPlants[longestStepsForPlants] )
+                longestStepsForPlants = i;
+            }
+          }
         }
-        for (Automaton automaton : specs) {
-          if (automataInKPrime.contains(automaton))
-            continue;
-          if (!automaton.acceptsCounterExample(counterExample))
-            System.out.println("\t\t\t\tCan choose the following from K\\K': " + automaton);
+        int[] stepsForSpecs = new int[specs.size()];
+        Integer shortestStepsForSpecs = null;
+        Integer longestStepsForSpecs  = null;
+        for (int i = 0; i < specs.size(); i++) {
+          Automaton automaton = specs.get(i);
+          if (!automataInKPrime.contains(automaton)) {
+            stepsForSpecs[i] = automaton.acceptsCounterExample(counterExample);
+            if (stepsForSpecs[i] != -1) {
+              System.out.println("\t\t\t\tCan choose the following from K\\K': " + automaton);
+              if (shortestStepsForSpecs == null || stepsForSpecs[i] < stepsForSpecs[shortestStepsForSpecs])
+                shortestStepsForSpecs = i;
+              if (longestStepsForSpecs  == null || stepsForSpecs[i] > stepsForSpecs[longestStepsForSpecs] )
+                longestStepsForSpecs = i;
+            }
+          }
         }
-        
+
+        Integer chosenPlant = (smallestNumberOfStepsToCounterExample ? shortestStepsForPlants : longestStepsForPlants);
+        Integer chosenSpec  = (smallestNumberOfStepsToCounterExample ? shortestStepsForSpecs  : longestStepsForSpecs );
+
         // Choose one
         if (choosePlantFirst) {
-          for (Automaton automaton : plants) {
-          
-            // Only considering L\L'
-            if (automataInLPrime.contains(automaton))
-              continue;
-
-            if (!automaton.acceptsCounterExample(counterExample)) {
-              lPrime = Automaton.intersection(lPrime, automaton, null, null);
-              System.out.println("\t\t\t\tPicking automaton from L\\L': " + automaton);
-              automataInLPrime.add(automaton);
-              continue loop;
-            }
-
+          if (chosenPlant != null) {
+            Automaton automaton = plants.get(chosenPlant);
+            lPrime = Automaton.intersection(lPrime, automaton, null, null);
+            System.out.println("\t\t\t\tPicking automaton from L\\L': " + automaton);
+            automataInLPrime.add(automaton);
+            continue loop;
+          } else if (chosenSpec != null) {
+            Automaton automaton = specs.get(chosenSpec);
+            kPrime = Automaton.intersection(kPrime, automaton, null, null);
+            System.out.println("\t\t\t\tPicking automaton from K\\K': " + automaton);
+            automataInKPrime.add(automaton);
+            continue loop;
           }
-
-          for (Automaton automaton : specs) {
-            
-            // Only considering K\K'
-            if (automataInKPrime.contains(automaton))
-              continue;
-
-            if (!automaton.acceptsCounterExample(counterExample)) {
-              kPrime = Automaton.intersection(kPrime, automaton, null, null);
-              System.out.println("\t\t\t\tPicking automaton from K\\K': " + automaton);
-              automataInKPrime.add(automaton);
-              continue loop;
-            }
-
-          }
-
         } else {
-
-          for (Automaton automaton : specs) {
-            
-            // Only considering K\K'
-            if (automataInKPrime.contains(automaton))
-              continue;
-
-            if (!automaton.acceptsCounterExample(counterExample)) {
-              kPrime = Automaton.intersection(kPrime, automaton, null, null);
-              System.out.println("\t\t\t\tPicking automaton from K\\K': " + automaton);
-              automataInKPrime.add(automaton);
-              continue loop;
-            }
-
+          if (chosenSpec != null) {
+            Automaton automaton = specs.get(chosenSpec);
+            kPrime = Automaton.intersection(kPrime, automaton, null, null);
+            System.out.println("\t\t\t\tPicking automaton from K\\K': " + automaton);
+            automataInKPrime.add(automaton);
+            continue loop;
+          } else if (chosenPlant != null) {
+            Automaton automaton = plants.get(chosenPlant);
+            lPrime = Automaton.intersection(lPrime, automaton, null, null);
+            System.out.println("\t\t\t\tPicking automaton from L\\L': " + automaton);
+            automataInLPrime.add(automaton);
+            continue loop;
           }
-
-          for (Automaton automaton : plants) {
-          
-            // Only considering L\L'
-            if (automataInLPrime.contains(automaton))
-              continue;
-
-            if (!automaton.acceptsCounterExample(counterExample)) {
-              lPrime = Automaton.intersection(lPrime, automaton, null, null);
-              System.out.println("\t\t\t\tPicking automaton from L\\L': " + automaton);
-              automataInLPrime.add(automaton);
-              continue loop;
-            }
-
-          }
-
         }
 
         System.out.printf("\tRequired %d outer iterations and a total of %d inner iterations.\n", iterationOuter, iterationInner);
@@ -200,7 +191,6 @@ public class Liu {
 
       }
 
-    
       for (Automaton a : automataInKPrime)
         if (!plants.contains(a)) {
           if (insertSpecAtStart)
@@ -247,15 +237,18 @@ public class Liu {
 
   public static List<List<String>> hasCounterExample(Automaton lPrime, Automaton kPrime) throws IncompatibleAutomataException {
 
-    Automaton automaton = Automaton.intersection(lPrime, kPrime, null, null);
-    automaton = automaton.generateTwinPlant(null, null);
-    jdec.createTab(automaton);
-    UStructure uStructure = automaton.synchronizedComposition(null, null);
+    Automaton automaton = kPrime.generateTwinPlant2(null, null);
+    // jdec.createTab(automaton);
+    UStructure uStructure = Automaton.union(lPrime, automaton, null, null).synchronizedComposition(null, null);
     
     System.out.println("\n\t\t\t\t# States in U: " + uStructure.getNumberOfStates());
     System.out.println("\t\t\t\t# Transitions in U: " + uStructure.getNumberOfTransitions());
 
-    return uStructure.findCounterExample();
+    List<List<String>> counterExample = uStructure.findCounterExample();
+
+    System.out.println("\t\t\t\tUsing shortest counter-example: " + counterExample);
+
+    return counterExample;
 
   }
 
