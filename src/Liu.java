@@ -1,13 +1,315 @@
 import java.io.*;
+import java.util.*;
+
 public class Liu {
-	
-	public static void main(String[] args) {
-		
-    Automaton channel = new Automaton(new File("aut/Thesis/CHANNEL.hdr"), new File("aut/Thesis/CHANNEL.bdy"), false);
-    System.out.println(cha);
-    System.out.println(cha);
 
+  static JDec jdec = new JDec();
 
-	}
+  public static void main(String[] args) throws IncompatibleAutomataException {
+    perms();
+    // first();
+    // second();
+  }
+
+	public static void perms() {
+
+    // Plants
+    List<Automaton> plants = new ArrayList<Automaton>();
+    plants.add(new Automaton(new File("aut/Thesis/SENDER.hdr"), new File("aut/Thesis/SENDER.bdy"), false));
+    plants.add(new Automaton(new File("aut/Thesis/RECEIVER.hdr"), new File("aut/Thesis/RECEIVER.bdy"), false));
+    plants.add(new Automaton(new File("aut/Thesis/CHANNEL.hdr"), new File("aut/Thesis/CHANNEL.bdy"), false));
+
+    // Specifications
+    List<Automaton> specs = new ArrayList<Automaton>();
+    specs.add(new Automaton(new File("aut/Thesis/SpecSNDR.hdr"), new File("aut/Thesis/SpecSNDR.bdy"), false));
+    specs.add(new Automaton(new File("aut/Thesis/SpecRCVR.hdr"), new File("aut/Thesis/SpecRCVR.bdy"), false));
+    specs.add(new Automaton(new File("aut/Thesis/SpecSEQ.hdr"), new File("aut/Thesis/SpecSEQ.bdy"), false));
+
+    // G{Sigma*}
+    Automaton gSigmaStar = new Automaton(new File("aut/Thesis/G_SIGMA_STAR.hdr"), new File("aut/Thesis/G_SIGMA_STAR.bdy"), false);
+
+    try {
+      
+      // All perms
+      List<List<Automaton>> plantPerms = generatePerm(plants);
+      List<List<Automaton>> specPerms = generatePerm(specs);
+      int nWays = plantPerms.size()*specPerms.size()*2*2;
+      int counter = 0;
+      for (List<Automaton> plantPerm : plantPerms)
+        for (List<Automaton> specPerm : specPerms)
+          for (int i = 0; i < 1; i++)
+            for (int j = 0; j < 1; j++) {
+              System.out.printf("Trial %d/%d:\n", ++counter, nWays);
+              System.out.println("\tOrder of plants: " + plantPerm);
+              System.out.println("\tOrder of specifications: " + specPerm);
+              boolean choosePlantFirst = (i==1);
+              boolean insertSpecAtStart = (j==1);
+              System.out.println("\tChoose plant before specification: " + choosePlantFirst);
+              System.out.println("\tInsert specification at start of list: " + insertSpecAtStart);
+              System.out.println("\tResult: " + incrementalVerification(new ArrayList<Automaton>(plantPerm), new ArrayList<Automaton>(specPerm), gSigmaStar, choosePlantFirst, insertSpecAtStart));
+              System.out.println();
+            }
+
+    } catch (IncompatibleAutomataException e) {
+      e.printStackTrace();
+    }
+
+  }
+
+  public static <E> List<List<E>> generatePerm(List<E> original) {
+
+    if (original.size() == 0) { 
+      List<List<E>> result = new ArrayList<List<E>>();
+      result.add(new ArrayList<E>());
+      return result;
+    }
+
+    E firstElement = original.remove(0);
+    List<List<E>> returnValue = new ArrayList<List<E>>();
+    List<List<E>> permutations = generatePerm(original);
+    for (List<E> smallerPermutated : permutations) {
+      for (int index = 0; index <= smallerPermutated.size(); index++) {
+        List<E> temp = new ArrayList<E>(smallerPermutated);
+        temp.add(index, firstElement);
+        returnValue.add(temp);
+      }
+    }
+    
+    return returnValue;
+ }
+
+  /**
+   * NOTE: All plants and specs must have the entire alphabet of events listed (even if they are inactive
+   *       in that particular automaton. This is not currently being checked for.
+   * NOTE: Duplicates are being made in temporary files so as to not modify the originals.
+   **/
+  public static boolean incrementalVerification(List<Automaton> plants, List<Automaton> specs, Automaton gSigmaStar, boolean choosePlantFirst, boolean insertSpecAtStart) throws IncompatibleAutomataException {
+
+    // Create duplicates in order to prevent the originals from being modified
+    plants = duplicateList(plants);
+    specs = duplicateList(specs);
+
+    // Add self-loops to all plants and specifications
+    addSelfLoops(plants);
+    addSelfLoops(specs);
+
+    int iterationOuter = 0;
+    int iterationInner = 0;
+    while (specs.size() > 0) {
+
+      iterationOuter++;
+      System.out.printf("\t\tStarting outer loop iteration #%d.\n", iterationOuter);
+
+      Automaton kPrime = specs.get(0);
+      Automaton lPrime = gSigmaStar.duplicate();
+
+      // Temporary
+      List<Automaton> automataInKPrime = new ArrayList<Automaton>();
+      automataInKPrime.add(kPrime);
+      List<Automaton> automataInLPrime = new ArrayList<Automaton>();
+      automataInLPrime.add(lPrime);
+
+      List<List<String>> counterExample;
+      loop: while ( (counterExample = hasCounterExample(lPrime, kPrime)) != null ) {
+        
+        iterationInner++;
+        System.out.printf("\t\t\tStarting inner loop iteration #%d.\n", iterationInner);
+
+        // Print out our options
+        for (Automaton automaton : plants) {
+          if (automataInLPrime.contains(automaton))
+            continue;
+          if (!automaton.acceptsCounterExample(counterExample))
+            System.out.println("\t\t\t\tCan choose the following from L\\L': " + automaton);
+        }
+        for (Automaton automaton : specs) {
+          if (automataInKPrime.contains(automaton))
+            continue;
+          if (!automaton.acceptsCounterExample(counterExample))
+            System.out.println("\t\t\t\tCan choose the following from K\\K': " + automaton);
+        }
+        
+        // Choose one
+        if (choosePlantFirst) {
+          for (Automaton automaton : plants) {
+          
+            // Only considering L\L'
+            if (automataInLPrime.contains(automaton))
+              continue;
+
+            if (!automaton.acceptsCounterExample(counterExample)) {
+              lPrime = Automaton.intersection(lPrime, automaton, null, null);
+              System.out.println("\t\t\t\tPicking automaton from L\\L': " + automaton);
+              automataInLPrime.add(automaton);
+              continue loop;
+            }
+
+          }
+
+          for (Automaton automaton : specs) {
+            
+            // Only considering K\K'
+            if (automataInKPrime.contains(automaton))
+              continue;
+
+            if (!automaton.acceptsCounterExample(counterExample)) {
+              kPrime = Automaton.intersection(kPrime, automaton, null, null);
+              System.out.println("\t\t\t\tPicking automaton from K\\K': " + automaton);
+              automataInKPrime.add(automaton);
+              continue loop;
+            }
+
+          }
+
+        } else {
+
+          for (Automaton automaton : specs) {
+            
+            // Only considering K\K'
+            if (automataInKPrime.contains(automaton))
+              continue;
+
+            if (!automaton.acceptsCounterExample(counterExample)) {
+              kPrime = Automaton.intersection(kPrime, automaton, null, null);
+              System.out.println("\t\t\t\tPicking automaton from K\\K': " + automaton);
+              automataInKPrime.add(automaton);
+              continue loop;
+            }
+
+          }
+
+          for (Automaton automaton : plants) {
+          
+            // Only considering L\L'
+            if (automataInLPrime.contains(automaton))
+              continue;
+
+            if (!automaton.acceptsCounterExample(counterExample)) {
+              lPrime = Automaton.intersection(lPrime, automaton, null, null);
+              System.out.println("\t\t\t\tPicking automaton from L\\L': " + automaton);
+              automataInLPrime.add(automaton);
+              continue loop;
+            }
+
+          }
+
+        }
+
+        System.out.printf("\tRequired %d outer iterations and a total of %d inner iterations.\n", iterationOuter, iterationInner);
+        return false;
+
+      }
+
+    
+      for (Automaton a : automataInKPrime)
+        if (!plants.contains(a)) {
+          if (insertSpecAtStart)
+            plants.add(0, a);
+          else
+            plants.add(a);
+        }
+      specs.removeAll(automataInKPrime);
+
+      System.out.println("\t\t# States in L': " + lPrime.getNumberOfStates());
+      System.out.println("\t\t# Transitions in L': " + lPrime.getNumberOfTransitions());
+    
+    }
+    
+    System.out.printf("\tRequired %d outer iterations and a total of %d inner iterations.\n", iterationOuter, iterationInner);
+    return true;
+
+  }
+
+  public static List<Automaton> duplicateList(List<Automaton> automata) {
+
+    List<Automaton> duplicatedAutomata = new ArrayList<Automaton>();
+
+    for (Automaton a : automata) {
+      File newHeaderFile = append(a.getHeaderFile(), "d");
+      File newBodyFile = append(a.getBodyFile(), "d");
+      duplicatedAutomata.add(a.duplicate(newHeaderFile, newBodyFile));
+    }
+
+    return duplicatedAutomata;
+
+  }
+
+  public static void addSelfLoops(List<Automaton> automata) {
+
+    for (Automaton a : automata)
+      a.addSelfLoopsForInactiveEvents();
+
+  }
+
+  public static File append(File file, String suffix) {
+    return new File(file.getAbsolutePath() + suffix);
+  }
+
+  public static List<List<String>> hasCounterExample(Automaton lPrime, Automaton kPrime) throws IncompatibleAutomataException {
+
+    Automaton automaton = Automaton.intersection(lPrime, kPrime, null, null);
+    automaton = automaton.generateTwinPlant(null, null);
+    jdec.createTab(automaton);
+    UStructure uStructure = automaton.synchronizedComposition(null, null);
+    
+    System.out.println("\n\t\t\t\t# States in U: " + uStructure.getNumberOfStates());
+    System.out.println("\t\t\t\t# Transitions in U: " + uStructure.getNumberOfTransitions());
+
+    return uStructure.findCounterExample();
+
+  }
+
+  // public static void first() throws IncompatibleAutomataException {
+
+  //   // Plants
+  //   List<Automaton> plants = new ArrayList<Automaton>();
+  //   plants.add(new Automaton(new File("aut/Thesis/RECEIVER.hdr"), new File("aut/Thesis/RECEIVER.bdy"), false));
+  //   plants.add(new Automaton(new File("aut/Thesis/SENDER.hdr"), new File("aut/Thesis/SENDER.bdy"), false));
+  //   plants.add(new Automaton(new File("aut/Thesis/CHANNEL.hdr"), new File("aut/Thesis/CHANNEL.bdy"), false));
+
+  //   // Specifications
+  //   List<Automaton> specs = new ArrayList<Automaton>();
+  //   specs.add(new Automaton(new File("aut/Thesis/SpecRCVR.hdr"), new File("aut/Thesis/SpecRCVR.bdy"), false));
+  //   specs.add(new Automaton(new File("aut/Thesis/SpecSEQ.hdr"), new File("aut/Thesis/SpecSEQ.bdy"), false));
+  //   specs.add(new Automaton(new File("aut/Thesis/SpecSNDR.hdr"), new File("aut/Thesis/SpecSNDR.bdy"), false));
+
+  //   // G{Sigma*}
+  //   Automaton gSigmaStar = new Automaton(new File("aut/Thesis/G_SIGMA_STAR.hdr"), new File("aut/Thesis/G_SIGMA_STAR.bdy"), false);
+
+  //   System.out.println("\tOrder of plants: " + plants);
+  //   System.out.println("\tOrder of specifications: " + specs);
+  //   boolean choosePlantFirst = true;
+  //   System.out.println("\tChoose plant before specification: " + choosePlantFirst);
+  //   System.out.println("\tResult: " + incrementalVerification(new ArrayList<Automaton>(plants), new ArrayList<Automaton>(specs), gSigmaStar, choosePlantFirst));
+  //   System.out.println();
+
+  // }
+
+  // public static void second() throws IncompatibleAutomataException {
+
+  //   // Plants
+  //   List<Automaton> plants = new ArrayList<Automaton>();
+  //   plants.add(new Automaton(new File("aut/Thesis/RECEIVER.hdr"), new File("aut/Thesis/RECEIVER.bdy"), false));
+  //   plants.add(new Automaton(new File("aut/Thesis/SENDER.hdr"), new File("aut/Thesis/SENDER.bdy"), false));
+  //   plants.add(new Automaton(new File("aut/Thesis/CHANNEL.hdr"), new File("aut/Thesis/CHANNEL.bdy"), false));
+
+  //   // Specifications
+  //   List<Automaton> specs = new ArrayList<Automaton>();
+  //   specs.add(new Automaton(new File("aut/Thesis/SpecSNDR.hdr"), new File("aut/Thesis/SpecSNDR.bdy"), false));
+  //   specs.add(new Automaton(new File("aut/Thesis/SpecSEQ.hdr"), new File("aut/Thesis/SpecSEQ.bdy"), false));
+  //   specs.add(new Automaton(new File("aut/Thesis/SpecRCVR.hdr"), new File("aut/Thesis/SpecRCVR.bdy"), false));
+
+  //   // G{Sigma*}
+  //   Automaton gSigmaStar = new Automaton(new File("aut/Thesis/G_SIGMA_STAR.hdr"), new File("aut/Thesis/G_SIGMA_STAR.bdy"), false);
+
+  //   System.out.println("\tOrder of plants: " + plants);
+  //   System.out.println("\tOrder of specifications: " + specs);
+  //   boolean choosePlantFirst = true;
+  //   System.out.println("\tChoose plant before specification: " + choosePlantFirst);
+  //   System.out.println("\tResult: " + incrementalVerification(new ArrayList<Automaton>(plants), new ArrayList<Automaton>(specs), gSigmaStar, choosePlantFirst));
+  //   System.out.println();
+
+  // }
 
 }
+

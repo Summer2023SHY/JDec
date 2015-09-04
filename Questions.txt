@@ -1,7 +1,64 @@
 HOURS:
-Thursday: 40 minutes, 11:10 - 
+Thursday, September 3: 6 hours
+Friday, September 4: 8:30 - 
 
 NOTES:
+
+  FIX THIS:
+  ____________________________
+  9/36
+  Order of plants: [RECEIVER.hdr/RECEIVER.bdy, SENDER.hdr/SENDER.bdy, CHANNEL.hdr/CHANNEL.bdy]
+  Order of specifications: [SpecRCVR.hdr/SpecRCVR.bdy, SpecSEQ.hdr/SpecSEQ.bdy, SpecSNDR.hdr/SpecSNDR.bdy]
+    Starting outer loop iteration #1.
+    Size of L': 1
+    Starting outer loop iteration #2.
+      Starting inner loop iteration #1.
+        Picking automaton from L\L': RECEIVER.hdrd/RECEIVER.bdyd
+      Starting inner loop iteration #2.
+        Picking automaton from L\L': CHANNEL.hdrd/CHANNEL.bdyd
+      Starting inner loop iteration #3.
+        Picking automaton from L\L': SENDER.hdrd/SENDER.bdyd
+      Starting inner loop iteration #4.
+        Picking automaton from K\K': SpecSNDR.hdrd/SpecSNDR.bdyd
+      Starting inner loop iteration #5.
+        Picking automaton from L\L': SpecRCVR.hdrd/SpecRCVR.bdyd
+    Size of L': 22
+  Required 2 outer iterations and a total of 5 inner iterations.
+
+10/36
+  Order of plants: [RECEIVER.hdr/RECEIVER.bdy, SENDER.hdr/SENDER.bdy, CHANNEL.hdr/CHANNEL.bdy]
+  Order of specifications: [SpecSNDR.hdr/SpecSNDR.bdy, SpecSEQ.hdr/SpecSEQ.bdy, SpecRCVR.hdr/SpecRCVR.bdy]
+    Starting outer loop iteration #1.
+    Size of L': 1
+    Starting outer loop iteration #2.
+      Starting inner loop iteration #1.
+        Picking automaton from L\L': RECEIVER.hdrd/RECEIVER.bdyd
+      Starting inner loop iteration #2.
+        Picking automaton from L\L': CHANNEL.hdrd/CHANNEL.bdyd
+      Starting inner loop iteration #3.
+        Picking automaton from L\L': SENDER.hdrd/SENDER.bdyd
+      Starting inner loop iteration #4.
+        Picking automaton from L\L': SpecSNDR.hdrd/SpecSNDR.bdyd
+      Starting inner loop iteration #5.
+        Picking automaton from K\K': SpecRCVR.hdrd/SpecRCVR.bdyd
+    Size of L': 20
+  Required 2 outer iterations and a total of 5 inner iterations.
+  ________________________
+
+-also output the number of states and number of transitions in the U-Structure
+
+-variations: (576 combinations - est. 4 hours)
+  2-pick plant first / pick spec first
+  2-put specs at start or end of list of plants at end of outer while loop
+
+-new variations:
+  2-shortest vs longest counter-example rejection speed (not implemented yet)
+  2-shortest vs longest length of counter-example (not implemented yet)
+
+-build monolithic intersection/union of all 6 automata (and build U-Structure)
+
+------------------------------------------------------------------------------------------
+
 -fix synchronized composition (special case) - add test case  n = 2 (and add test case for n=2 which reduces down to something similar to n=1)
 -put bad transitions under only one bad transition when possible
 -gui validation deterministic check (perhaps check if the transition already exists?)??
@@ -21,8 +78,6 @@ NOTES:
 -add test case for myerson values
 -finish implementing myerson values
 -add 'busy cursor' in operations which do not have some other kind of progress indicator
--change JDec back from twin plant to complement
--if twin plant operation stays, make sure it works well with the complement operation (since they both use a dump state), it likely shouldn't remain in the GUI anyway
 -NSGA-II algorithm:
   -Code algorithms 3 and 4
 -Warning message when saving in GUI to overwrite files

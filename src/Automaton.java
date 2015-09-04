@@ -20,6 +20,7 @@
  *  -GUI Input Code Generation
  *  -Working with Files
  *  -Miscellaneous
+ *  -Overridden Method
  *  -Mutator Methods
  *  -Accessor Methods
  **/
@@ -1065,11 +1066,11 @@ public class Automaton {
 
               // Check to see if this controller can prevent an unconditional violation
               if (isUnconditionalViolation && badTransitions.contains(data))
-                  isUnconditionalViolation = false;
+                isUnconditionalViolation = false;
 
               // Check to see if this controller can prevent a conditional violation
               if (isConditionalViolation && !badTransitions.contains(data))
-                  isConditionalViolation = false;
+                isConditionalViolation = false;
 
               // Check to see if this controller causes a disablement decision
               if (isBadTransition && badTransitions.contains(data)) {
@@ -1349,6 +1350,102 @@ public class Automaton {
 
         // Add new transition leading to dump state if this event if undefined at this state and is controllable
         if (!foundMatch && controllable) {
+          automaton.addTransition(id, e.getID(), dumpStateID);
+          automaton.markTransitionAsBad(id, e.getID(), dumpStateID);
+          needToAddDumpState = true;
+        }
+
+      }
+
+    }
+
+      /* Create dump state if it needs to be made */
+
+    if (needToAddDumpState) {
+    
+      long id = automaton.addState(DUMP_STATE_LABEL, false, false);
+
+      if (id != dumpStateID)
+        System.err.println("ERROR: Dump state ID did not match expected ID.");
+    
+    }
+
+      /* Add special transitions */
+
+    copyOverSpecialTransitions(automaton);
+
+      /* Ensure that the header file has been written to disk */
+      
+    automaton.writeHeaderFile();
+
+      /* Return generated automaton */
+
+    return automaton;
+
+  }
+
+
+  /**
+   // * Generate the twin plant by combining this automaton w.r.t. G_{Sigma*}.
+   // * NOTE: The technique used here is similar to how the complement works. This would not work
+   // *       in all cases, but G_{Sigma*} is a special case.
+   // * @param newHeaderFile The header file where the new automaton should be stored
+   // * @param newBodyFile   The body file where the new automaton should be stored
+   // * @return              The twin plant
+   **/
+  public final Automaton generateTwinPlant2(File newHeaderFile, File newBodyFile) {
+
+    Automaton automaton = new Automaton(
+      newHeaderFile,
+      newBodyFile,
+      getEventCapacity(),
+      getStateCapacity(),
+      getTransitionCapacity(),
+      getLabelLength(),
+      getNumberOfControllers(),
+      true
+    );
+
+      /* Add events */
+    
+    automaton.addAllEvents(getEvents());
+
+      /* Build twin plant */
+
+    long dumpStateID           = getNumberOfStates() + 1;
+    boolean needToAddDumpState = false;
+
+    List<Event> activeEvents = getActiveEvents();
+
+    // Add each state to the new automaton
+    for (long s = 1; s <= getNumberOfStates(); s++) {
+
+      State state = getState(s);
+
+      long id = automaton.addState(state.getLabel(), !state.isMarked(), s == initialState);
+
+      // Try to add transitions for each event
+      for (Event e : events) {
+
+        boolean foundMatch = false;
+
+        // Search through each transition for the event
+        for (Transition t : state.getTransitions())
+          if (t.getEvent().equals(e)) {
+            automaton.addTransition(id, e.getID(), t.getTargetStateID());
+            foundMatch = true;
+          }
+
+        // Check to see if this event is controllable by at least one controller
+        boolean controllable = false;
+        for (boolean b : e.isControllable())
+          if (b) {
+            controllable = true;
+            break;
+          }
+
+        // Add new transition leading to dump state if this event if undefined at this state and is controllable and active
+        if (!foundMatch && controllable && activeEvents.contains(e)) {
           automaton.addTransition(id, e.getID(), dumpStateID);
           automaton.markTransitionAsBad(id, e.getID(), dumpStateID);
           needToAddDumpState = true;
@@ -2693,6 +2790,11 @@ public class Automaton {
 
   }
 
+    /* OVERRIDDEN METHOD */
+
+  @Override public String toString() {
+    return getHeaderFile().getName() + "/" + getBodyFile().getName();
+  }
     /* MUTATOR METHODS */
 
   /**
@@ -3389,6 +3491,21 @@ public class Automaton {
   }
 
   /**
+   * Return the list of all active events.
+   * NOTE: This is an expensive operation.
+   * @return  The list of all active events
+   **/
+  public List<Event> getActiveEvents() {
+
+    List<Event> activeEvents = new ArrayList<Event>(events);
+
+    for (Event e : getInactiveEvents())
+      activeEvents.remove(e);
+
+    return activeEvents;
+  }
+
+  /**
    * Get the number of states that are currently in this automaton.
    * @return  Number of states
    **/
@@ -3402,6 +3519,22 @@ public class Automaton {
    **/
   public long getStateCapacity() {
     return stateCapacity;
+  }
+
+  /**
+   * Get the number of transitions that are currently in this automaton.
+   * NOTE: This is an expensive method.
+   * @return  Number of transitions
+   **/
+  public long getNumberOfTransitions() {
+
+    long nTransitions = 0;
+
+    for (long s = 1; s <= getNumberOfStates(); s++)
+      nTransitions += getState(s).getNumberOfTransitions();
+  
+    return nTransitions;
+
   }
 
   /**
@@ -3560,22 +3693,16 @@ public class Automaton {
   }
 
   /**
-   * Add self-loops to all states for all inactive events.
+   * Mutate this automaton by adding self-loops to all states for all inactive events.
    * NOTE: This is being used for Liu's thesis implementation.
-   * @param newHeaderFile The new header file where the automaton is being copied to (cannot be null)
-   * @param newBodyFile   The new body file where the automaton is being copied to (cannot be null)
-   * @return              A copy of this automaton, with self-loops added
    **/
-  public Automaton addSelfLoopsForInactiveEvents(File newHeaderFile, File newBodyFile) {
+  public void addSelfLoopsForInactiveEvents() {
 
-    Automaton automaton  = duplicate(newHeaderFile, newBodyFile);
     List<Event> inactiveEvents = getInactiveEvents();
 
     for (long s = 1; s <= getNumberOfStates(); s++)
       for (Event e : inactiveEvents)
-        automaton.addTransition(s, e.getID(), s);
-
-    return automaton;
+        addTransition(s, e.getID(), s);
 
   }
 

@@ -196,7 +196,7 @@ public class JDec extends JFrame implements ActionListener {
       "Co-Accessible[BASIC_AUTOMATON]",
       "Trim[BASIC_AUTOMATON]",
       "Complement[BASIC_AUTOMATON]",
-      "Self Loops[BASIC_AUTOMATON]",
+      "Generate Twin Plant[BASIC_AUTOMATON]",
       null,
       "Intersection[BASIC_AUTOMATON]",
       "Union[BASIC_AUTOMATON]"
@@ -612,23 +612,23 @@ public class JDec extends JFrame implements ActionListener {
         fileName = getTemporaryFileName();
         headerFile = new File(fileName + ".hdr");
         bodyFile = new File(fileName + ".bdy");
-        // try {
+        try {
           // Create new tab with the complement
-          createTab(tab.automaton.generateTwinPlant(headerFile, bodyFile));
-          // createTab(tab.automaton.complement(headerFile, bodyFile));
-        // } catch(OperationFailedException e) {
-          // temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
-          // displayErrorMessage("Operation Failed", "There already exists a dump state, so the complement could not be taken again.");
-        // }
+          createTab(tab.automaton.complement(headerFile, bodyFile));
+        } catch(OperationFailedException e) {
+          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
+          displayErrorMessage("Operation Failed", "There already exists a dump state, so the complement could not be taken again.");
+        }
         break;
 
-      case "Self Loops":
+      case "Generate Twin Plant":
 
         fileName = getTemporaryFileName();
         headerFile = new File(fileName + ".hdr");
         bodyFile = new File(fileName + ".bdy");
-
-        createTab(tab.automaton.addSelfLoopsForInactiveEvents(headerFile, bodyFile));
+        
+        // Create new tab with the twin plant
+        createTab(tab.automaton.generateTwinPlant2(headerFile, bodyFile));
         break;
 
       case "Intersection":

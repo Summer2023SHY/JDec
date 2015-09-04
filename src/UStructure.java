@@ -1714,6 +1714,7 @@ public class UStructure extends Automaton {
 
           }
 
+          System.out.println("\t\t\t\tCounter-example: " + sequences);
 
           return sequences;
 
