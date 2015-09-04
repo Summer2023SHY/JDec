@@ -15,18 +15,18 @@ public class Liu {
 
     // Plants
     List<Automaton> plants = new ArrayList<Automaton>();
-    plants.add(new Automaton(new File("aut/Thesis/SENDER.hdr"), new File("aut/Thesis/SENDER.bdy"), false));
-    plants.add(new Automaton(new File("aut/Thesis/RECEIVER.hdr"), new File("aut/Thesis/RECEIVER.bdy"), false));
-    plants.add(new Automaton(new File("aut/Thesis/CHANNEL.hdr"), new File("aut/Thesis/CHANNEL.bdy"), false));
+    plants.add(new Automaton(new File("Thesis/SENDER.hdr"), new File("Thesis/SENDER.bdy"), false));
+    plants.add(new Automaton(new File("Thesis/RECEIVER.hdr"), new File("Thesis/RECEIVER.bdy"), false));
+    plants.add(new Automaton(new File("Thesis/CHANNEL.hdr"), new File("Thesis/CHANNEL.bdy"), false));
 
     // Specifications
     List<Automaton> specs = new ArrayList<Automaton>();
-    specs.add(new Automaton(new File("aut/Thesis/SpecSNDR.hdr"), new File("aut/Thesis/SpecSNDR.bdy"), false));
-    specs.add(new Automaton(new File("aut/Thesis/SpecRCVR.hdr"), new File("aut/Thesis/SpecRCVR.bdy"), false));
-    specs.add(new Automaton(new File("aut/Thesis/SpecSEQ.hdr"), new File("aut/Thesis/SpecSEQ.bdy"), false));
+    specs.add(new Automaton(new File("Thesis/SpecSNDR.hdr"), new File("Thesis/SpecSNDR.bdy"), false));
+    specs.add(new Automaton(new File("Thesis/SpecRCVR.hdr"), new File("Thesis/SpecRCVR.bdy"), false));
+    specs.add(new Automaton(new File("Thesis/SpecSEQ.hdr"), new File("Thesis/SpecSEQ.bdy"), false));
 
     // G{Sigma*}
-    Automaton gSigmaStar = new Automaton(new File("aut/Thesis/G_SIGMA_STAR.hdr"), new File("aut/Thesis/G_SIGMA_STAR.bdy"), false);
+    Automaton gSigmaStar = new Automaton(new File("Thesis/G_SIGMA_STAR.hdr"), new File("Thesis/G_SIGMA_STAR.bdy"), false);
 
     try {
       
