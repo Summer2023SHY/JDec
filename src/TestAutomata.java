@@ -135,7 +135,7 @@ public class TestAutomata {
     UStructure uStructure = saveAndLoadUStructure(automaton.synchronizedComposition(null, null));
     
     printTestOutput("Finding the counter-example...", 3);
-    List<List<String>> labelSequences = uStructure.findCounterExample();
+    List<List<String>> labelSequences = uStructure.findCounterExample(true);
     printTestCase("Ensuring that the 0th sequence is correct", new TestResult(labelSequences.get(0), new ArrayList<String>() {{ add("b"); add("a"); add("o"); }} ), counter);
     printTestCase("Ensuring that the 1st sequence is correct", new TestResult(labelSequences.get(1), new ArrayList<String>() {{ add("a"); add("b"); add("o"); }} ), counter);
     printTestCase("Ensuring that the 2nd sequence is correct", new TestResult(labelSequences.get(2), new ArrayList<String>() {{ add("a"); add("b"); add("o"); }} ), counter);

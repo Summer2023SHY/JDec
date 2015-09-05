@@ -244,9 +244,11 @@ public class Liu {
     System.out.println("\n\t\t\t\t# States in U: " + uStructure.getNumberOfStates());
     System.out.println("\t\t\t\t# Transitions in U: " + uStructure.getNumberOfTransitions());
 
-    List<List<String>> counterExample = uStructure.findCounterExample();
+    List<List<String>> counterExample = uStructure.findCounterExample(false);
+    System.out.println("\t\t\t\tUsing 'longest' shortest counter-example: " + counterExample);
 
-    System.out.println("\t\t\t\tUsing shortest counter-example: " + counterExample);
+    // List<List<String>> counterExample = uStructure.findCounterExample(true);
+    // System.out.println("\t\t\t\tUsing shortest counter-example: " + counterExample);
 
     return counterExample;
 

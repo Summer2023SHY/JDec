@@ -1623,11 +1623,12 @@ public class UStructure extends Automaton {
    * Find a counter-example, if one exists. The counter-example is returned in the form of a list
    * of sequences of event labels. There will be one sequence for the system, plus one more for each
    * controller that can control the final event.
-   * NOTE: One of the unconditional violations closest to the initial state will be selected as a
-   *       counter-example.
-   * @return  The list of sequences of event labels (or null if there are no counter-examples)
+   * @param findShortest  If true, the first path to a unconditional violation found will be selected as a
+   *                      counter-example. If false, then the shortest paths to all unconditional violations
+   *                      will be found, and then the longest one will be returned 
+   * @return              The list of sequences of event labels (or null if there are no counter-examples)
    **/
-  public List<List<String>> findCounterExample() {
+  public List<List<String>> findCounterExample(boolean findShortest) {
 
     if (!hasViolations())
       return null;
@@ -1635,7 +1636,7 @@ public class UStructure extends Automaton {
     if (nStates + 1 > Integer.MAX_VALUE)
       System.err.println("ERROR: Integer overflow due to too many states.");
 
-      /* Find a counter-example using a breadth-first search */
+      /* Find counter-examples using a breadth-first search */
     
     // Setup
     Set<List<State>> paths = new HashSet<List<State>>();
@@ -1643,9 +1644,11 @@ public class UStructure extends Automaton {
     initialPath.add(getState(initialState));
     paths.add(initialPath);
     boolean[] visited = new boolean[(int) (nStates + 1)];
+    List<State> longestPath = null;
+    TransitionData longestViolation = null;
 
-    // Continue until we find a counter-example
-    while (true) {
+    // Continue until we have checked all of the paths
+    outer: while (paths.size() > 0) {
 
       Set<List<State>> newPaths = new HashSet<List<State>>(); 
 
@@ -1655,70 +1658,22 @@ public class UStructure extends Automaton {
         State lastState = path.get(path.size() - 1);
         TransitionData violation = findUnconditionalViolation(lastState);
 
-        // A counter-example has been found
+        // A counter-example has been found, so let's store it
         if (violation != null) {
 
-            /* Build sequence of events and event labels for this counter-example */
-          
-          // Setup
-          List<Event> eventSequence = new ArrayList<Event>();
-          List<String> labelSequence = new ArrayList<String>();
-          Iterator<State> iterator = path.iterator();
-          State currentState = iterator.next();
-          
-          // Build sequence
-          while (iterator.hasNext()) {
-            State nextState = iterator.next();
+          // Stop early if we only wanted the shortest one
+          if (findShortest)
+            return generateSequences(path, violation);
 
-            // Find the transition that was followed, and add the event to the sequence
-            for (Transition t : currentState.getTransitions()) {
-              if (t.getTargetStateID() == nextState.getID()) {
-                eventSequence.add(t.getEvent());
-                String label = t.getEvent().getVector().getLabelAtIndex(0);
-                if (!label.equals("*"))
-                  labelSequence.add(label);
-                break;
-              }
-            }
-
-            currentState = nextState;
+          // Store the path if it is the longest path to a violation so far
+          if (longestPath == null || longestPath.size() < path.size()) {
+            longestPath = path;
+            longestViolation = violation;
           }
-
-          // Add final event
-          Event finalEvent = getEvent(violation.eventID);
-          String finalEventLabel = finalEvent.getVector().getLabelAtIndex(0);
-          if (!finalEventLabel.equals("*"))
-            labelSequence.add(finalEventLabel);
-          eventSequence.add(finalEvent);
-
-            /* Create event label sequences for each controller as well */
-
-          List<List<String>> sequences = new ArrayList<List<String>>();
-          sequences.add(labelSequence);
-
-          for (int i = 0; i < getNumberOfControllers(); i++) {
-
-            // In counter-example notation, we put a dash if the controller cannot control the final event
-            if (!finalEvent.isControllable()[i])
-              continue;
-
-            // Build sequence
-            List<String> sequence = new ArrayList<String>();
-            for (Event e : eventSequence) {
-              String label = e.getVector().getLabelAtIndex(i + 1);
-              if (!label.equals("*"))
-                sequence.add(label);
-            }
-
-            sequences.add(sequence);
-
-          }
-
-          return sequences;
-
+            
         }
 
-        // No counter-example was found, so add the new paths
+        // Add the new paths
         for (Transition t : lastState.getTransitions()) {
           int targetStateID = (int) t.getTargetStateID();
           if (!visited[targetStateID]) {
@@ -1734,6 +1689,78 @@ public class UStructure extends Automaton {
       paths = newPaths;
 
     }
+
+    // Generate the list of sequences for the longest path to a counter-example and return it
+    return generateSequences(longestPath, longestViolation);
+    
+
+  }
+
+  /**
+   * Generate the list of event label sequences for the counter-example represented by the path of states.
+   * @param path      The path of states leading to the counter-example
+   * @param violation The relevant violation
+   * @return          The list of event label sequences
+   **/
+  private List<List<String>> generateSequences(List<State> path, TransitionData violation) {
+
+      /* Build sequence of events and event labels for this counter-example */
+              
+    // Setup
+    List<Event> eventSequence = new ArrayList<Event>();
+    List<String> labelSequence = new ArrayList<String>();
+    Iterator<State> iterator = path.iterator();
+    State currentState = iterator.next();
+    
+    // Build sequence
+    while (iterator.hasNext()) {
+      State nextState = iterator.next();
+
+      // Find the transition that was followed, and add the event to the sequence
+      for (Transition t : currentState.getTransitions()) {
+        if (t.getTargetStateID() == nextState.getID()) {
+          eventSequence.add(t.getEvent());
+          String label = t.getEvent().getVector().getLabelAtIndex(0);
+          if (!label.equals("*"))
+            labelSequence.add(label);
+          break;
+        }
+      }
+
+      currentState = nextState;
+    }
+
+    // Add final event
+    Event finalEvent = getEvent(violation.eventID);
+    String finalEventLabel = finalEvent.getVector().getLabelAtIndex(0);
+    if (!finalEventLabel.equals("*"))
+      labelSequence.add(finalEventLabel);
+    eventSequence.add(finalEvent);
+
+      /* Create event label sequences for each controller as well */
+
+    List<List<String>> sequences = new ArrayList<List<String>>();
+    sequences.add(labelSequence);
+
+    for (int i = 0; i < getNumberOfControllers(); i++) {
+
+      // In counter-example notation, we put a dash if the controller cannot control the final event
+      if (!finalEvent.isControllable()[i])
+        continue;
+
+      // Build sequence
+      List<String> sequence = new ArrayList<String>();
+      for (Event e : eventSequence) {
+        String label = e.getVector().getLabelAtIndex(i + 1);
+        if (!label.equals("*"))
+          sequence.add(label);
+      }
+
+      sequences.add(sequence);
+
+    }
+
+    return sequences;
 
   }
 

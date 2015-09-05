@@ -1,6 +1,7 @@
 HOURS:
 Thursday, September 3: 6 hours
-Friday, September 4: 7 hours 30 minutes 
+Friday, September 4: 7 hours 30 minutes
+Saturday, September 5: 1 hour 30 minutes, 10:55 - 
 
 NOTES:
 
@@ -11,8 +12,8 @@ NOTES:
   2-put specs at start or end of list of plants at end of outer while loop
 
 -new variations:
-  2-shortest vs longest counter-example rejection speed (not implemented yet, sum the steps)
-  2-shortest vs longest length of counter-example (not implemented yet -- THIS WILL REQUIRE SOME THOUGHT!)
+  2-shortest vs longest counter-example rejection speed
+  2-shortest vs longest length of counter-example (not implemented yet)
 
 -build monolithic intersection/union of all 6 automata (and build U-Structure)
 
