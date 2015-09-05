@@ -1,7 +1,7 @@
 HOURS:
 Thursday, September 3: 6 hours
 Friday, September 4: 7 hours 30 minutes
-Saturday, September 5: 3 hours 30 minutes, 5:17 - 
+Saturday, September 5: 4 hours 30 minutes, 6:17 - 
 
 NOTES:
 
@@ -9,6 +9,7 @@ NOTES:
 
 -parse and compile results from output
 
+-test case: try building monolithic thing in all 6! orders using the general procedure in Liu.java, ensuring that all the results are the same!
 -build monolithic intersection/union of all 6 automata (and build U-Structure)
 
 -variations:
@@ -24,7 +25,7 @@ NOTES:
 -bug: .dot file doesn't seem to be generated if there are no states in the automaton (double-check this)
 -fix synchronized composition (special case) - add test case  n = 2 (and add test case for n=2 which reduces down to something similar to n=1)
 -put bad transitions under only one bad transition when possible
--gui validation deterministic check (perhaps check if the transition already exists?)??
+-gui validation deterministic check (check when adding a transition)??
 -investigate
   Exception in thread "AWT-EventQueue-0" java.lang.OutOfMemoryError: can't create offscreen surface
         at sun.java2d.opengl.OGLSurfaceData.initSurfaceNow(OGLSurfaceData.java:298)
