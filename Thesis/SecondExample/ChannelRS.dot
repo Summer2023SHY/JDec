@@ -1,0 +1,1 @@
+digraph Image {overlap=scale;node [shape=circle, style=bold, constraint=false];"_1" [peripheries=1,label="1"];"_1" -> "_2" [label="sk"]"_2" [peripheries=1,label="2"];"_2" -> "_1" [label="rk,l,ck"]node [shape=plaintext];" "-> "_1" [color=blue];}
