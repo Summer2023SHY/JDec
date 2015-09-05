@@ -21,6 +21,7 @@ public class Liu {
 
     // Specifications
     List<Automaton> specs = new ArrayList<Automaton>();
+    specs.add(new Automaton(new File("Thesis/SecondExample/Specification.hdr"), new File("Thesis/SecondExample/Specification.bdy"), false));
 
     // // Plants
     // List<Automaton> plants = new ArrayList<Automaton>();
