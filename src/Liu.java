@@ -57,7 +57,7 @@ public class Liu {
                 boolean insertSpecAtStart = (j==1);
                 boolean smallestNumberOfStepsToCounterExample = (k==1);
                 System.out.println("\tChoose plant before specification: " + choosePlantFirst);
-                System.out.println("\tFirst automaton will be chosen");
+                // System.out.println("\tFirst automaton will be chosen");
                 System.out.println("\tInsert specification at start of list: " + insertSpecAtStart);
                 System.out.println("\tChoosing automata with smallest number of steps needed to reject counter-example: " + smallestNumberOfStepsToCounterExample);
                 System.out.println("\tResult: " + incrementalVerification(new ArrayList<Automaton>(plantPerm), new ArrayList<Automaton>(specPerm), gSigmaStar, choosePlantFirst, insertSpecAtStart, smallestNumberOfStepsToCounterExample));
