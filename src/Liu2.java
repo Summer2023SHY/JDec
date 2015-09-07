@@ -72,9 +72,9 @@ public class Liu2 {
 
     List<List<Automaton>> plantPerms = generatePerm(plants);
     List<List<Automaton>> specPerms = generatePerm(specs);
-    int firstSize = FirstCriteria.values().length;
+    int firstSize  = FirstCriteria.values().length;
     int secondSize = SecondCriteria.values().length;
-    int thirdSize = ThirdCriteria.values().length;
+    int thirdSize  = ThirdCriteria.values().length;
     int fourthSize = FourthCriteria.values().length;
     int nCombinations = plantPerms.size()*specPerms.size();
 
@@ -86,13 +86,15 @@ public class Liu2 {
     int counter = 0;
     int combinationIndex = 0;
 
+    System.out.println("!!!" + nCombinations);
+
     try {
       
       for (List<Automaton> plantPerm : plantPerms) {
         for (List<Automaton> specPerm : specPerms) {
-          for (int first = 0; first < firstSize; first++)
-            for (int second = 0; second < secondSize; second++)
-              for (int third = 0; third < thirdSize; third++)
+          for (int first = 0; first < firstSize; first++) {
+            for (int second = 0; second < secondSize; second++) {
+              for (int third = 0; third < thirdSize; third++) {
                 for (int fourth = 0; fourth < fourthSize; fourth++) {
                   System.out.printf("Trial %d/%d:\n", ++counter, nWays);
                   System.out.println("\tOrder of plants: " + plantPerm);
@@ -123,6 +125,9 @@ public class Liu2 {
 
                   System.out.println();
                 }
+              }
+            }
+          }
           combinationIndex++;
         }
         combinationIndex++;
@@ -480,7 +485,7 @@ public class Liu2 {
 
     List<List<String>> counterExample;
 
-    if (secondCriteria == SecondCriteria.SHORTEST_COUNTER_EXAMPLE) {
+    if (secondCriteria == SecondCriteria.LONGEST_COUNTER_EXAMPLE) {
       counterExample = uStructure.findCounterExample(false);
       System.out.println("\t\t\t\tUsing 'longest' shortest counter-example: " + counterExample);
     } else {
