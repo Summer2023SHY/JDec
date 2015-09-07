@@ -5,9 +5,9 @@ public class Liu2 {
 
   enum FirstCriteria {
 
-    PLANT_OVER_SPEC,
-    SPEC_OVER_PLANT,
-    ALTERNATING;
+    PLANT_OVER_SPEC
+    // SPEC_OVER_PLANT, DON'T FORGET TO FIX BELOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // ALTERNATING;
   
   }
 
@@ -373,8 +373,8 @@ public class Liu2 {
         choosePlantFirst = !choosePlantFirst;
         if (firstCritera == FirstCriteria.PLANT_OVER_SPEC)
           choosePlantFirst = true;
-        else if (firstCritera == FirstCriteria.SPEC_OVER_PLANT)
-          choosePlantFirst = false;
+        // else if (firstCritera == FirstCriteria.SPEC_OVER_PLANT)
+        //   choosePlantFirst = false;
 
         // Choose one
         if (choosePlantFirst) {
