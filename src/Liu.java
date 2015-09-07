@@ -5,6 +5,8 @@ public class Liu {
 
   // static JDec jdec = new JDec();
 
+  static Map<String, UStructure> storedUStructures = new HashMap<String, UStructure>();
+
   public static void main(String[] args) throws IncompatibleAutomataException {
     perms();
     // permsFirstAutomaton();
@@ -125,7 +127,7 @@ public class Liu {
       automataInLPrime.add(lPrime);
 
       List<List<String>> counterExample;
-      loop: while ( (counterExample = hasCounterExample(lPrime, kPrime)) != null ) {
+      loop: while ( (counterExample = hasCounterExample(lPrime, kPrime, automataInLPrime, automataInKPrime)) != null ) {
         
         iterationInner++;
         System.out.printf("\t\t\tStarting inner loop iteration #%d.\n", iterationInner);
@@ -247,11 +249,20 @@ public class Liu {
     return new File(file.getAbsolutePath() + suffix);
   }
 
-  public static List<List<String>> hasCounterExample(Automaton lPrime, Automaton kPrime) throws IncompatibleAutomataException {
+  public static List<List<String>> hasCounterExample(Automaton lPrime, Automaton kPrime, List<Automaton> automataInLPrime, List<Automaton> automataInKPrime) throws IncompatibleAutomataException {
 
-    Automaton automaton = kPrime.generateTwinPlant2(null, null);
-    // jdec.createTab(automaton);
-    UStructure uStructure = Automaton.union(lPrime, automaton, null, null).synchronizedComposition(null, null);
+    UStructure uStructure;
+
+    String encoded = encode(automataInLPrime, automataInKPrime);
+    UStructure stored = storedUStructures.get(encoded);
+    if (stored != null) {
+      System.out.println("already calculated!");
+      uStructure = stored;
+    } else {
+      Automaton automaton = kPrime.generateTwinPlant2(null, null);
+      uStructure = Automaton.union(lPrime, automaton, null, null).synchronizedComposition(null, null);
+      storedUStructures.put(encoded, uStructure);
+    }
     
     System.out.println("\n\t\t\t\t# States in U: " + uStructure.getNumberOfStates());
     System.out.println("\t\t\t\t# Transitions in U: " + uStructure.getNumberOfTransitions());
@@ -343,7 +354,7 @@ public class Liu {
    *       in that particular automaton. This is not currently being checked for.
    * NOTE: Duplicates are being made in temporary files so as to not modify the originals.
    **/
-  public static boolean incrementalVerificationChooseFirstAutomaton(List<Automaton> plants, List<Automaton> specs, Automaton gSigmaStar, /*boolean pickShortestCounterExample, */boolean insertSpecAtStart/*, boolean smallestNumberOfStepsToCounterExample*/) throws IncompatibleAutomataException {
+  public static boolean incrementalVerificationChooseFirstAutomaton(List<Automaton> plants, List<Automaton> specs, Automaton gSigmaStar, boolean insertSpecAtStart) throws IncompatibleAutomataException {
 
     // Create duplicates in order to prevent the originals from being modified
     plants = duplicateList(plants);
@@ -372,7 +383,7 @@ public class Liu {
       automataInLPrime.add(lPrime);
 
       List<List<String>> counterExample;
-      loop: while ( (counterExample = hasCounterExample(lPrime, kPrime)) != null ) {
+      loop: while ( (counterExample = hasCounterExample(lPrime, kPrime, automataInLPrime, automataInKPrime)) != null ) {
         
         iterationInner++;
         System.out.printf("\t\t\tStarting inner loop iteration #%d.\n", iterationInner);
@@ -443,6 +454,25 @@ public class Liu {
     
     System.out.printf("\tRequired %d outer iterations and a total of %d inner iterations.\n", iterationOuter, iterationInner);
     return true;
+
+  }
+
+  public static String encode(List<Automaton> list1, List<Automaton> list2) {
+
+    List<String> fileNames = new ArrayList<String>();
+
+    for (Automaton a : list1)
+      if (a.getHeaderFile().getName().indexOf(".hdr") > -1)
+        fileNames.add(a.getHeaderFile().getName());
+    for (Automaton a : list2)
+      if (a.getHeaderFile().getName().indexOf(".hdr") > -1)
+        fileNames.add(a.getHeaderFile().getName());
+
+    Collections.sort(fileNames);
+
+    System.out.println("encoded: " + fileNames.toString());
+
+    return fileNames.toString();
 
   }
 
