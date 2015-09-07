@@ -96,6 +96,7 @@ public class Liu2 {
             for (int second = 0; second < secondSize; second++) {
               for (int third = 0; third < thirdSize; third++) {
                 for (int fourth = 0; fourth < fourthSize; fourth++) {
+                  System.out.println(combinationIndex);
                   System.out.printf("Trial %d/%d:\n", ++counter, nWays);
                   System.out.println("\tOrder of plants: " + plantPerm);
                   System.out.println("\tOrder of specifications: " + specPerm);
