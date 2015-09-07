@@ -1,13 +1,15 @@
 HOURS:
 Thursday, September 3: 6 hours
 Friday, September 4: 7 hours 30 minutes
-Saturday, September 5: 4 hours 30 minutes, 6:17 - 
+Saturday, September 5: 5 hours 30 minutes
+Monday, September 7: 8:30 - 
 
 NOTES:
 
--when counting the states and transitions should the dump state and the transitions to the dump state be included? probably?  
+don't include # transitions in data output
 
--parse and compile results from output
+take automaton with min states
+take automaton with min transitions
 
 -test case: try building monolithic thing in all 6! orders using the general procedure in Liu.java, ensuring that all the results are the same!
 -build monolithic intersection/union of all 6 automata (and build U-Structure)

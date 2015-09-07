@@ -3,8 +3,6 @@ import java.util.*;
 
 public class Liu {
 
-  // static JDec jdec = new JDec();
-
   static Map<String, UStructure> storedUStructures = new HashMap<String, UStructure>();
 
   public static void main(String[] args) throws IncompatibleAutomataException {
