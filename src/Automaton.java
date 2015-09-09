@@ -1011,6 +1011,8 @@ public class Automaton {
 
     while (stack.size() > 0) {
 
+      System.out.println("SS: " + stack.size());
+
       long combinedID = stack.pop();
       valuesInStack.remove(combinedID);
 

@@ -2,20 +2,12 @@ HOURS:
 Thursday, September 3: 6 hours
 Friday, September 4: 7 hours 30 minutes
 Saturday, September 5: 5 hours 30 minutes
-Monday, September 7: 4 hours 20 minutes
+Monday, September 7: 7 hours
+Tuesday, September 8: 2 hours, 10:17 - 
 
 NOTES:
 
--test case: try building monolithic thing in all 6! orders using the general procedure in Liu.java, ensuring that all the results are the same!
 -build monolithic intersection/union of all 6 automata (and build U-Structure)
-
--variations:
-  2-pick plant first / pick spec first
-  2-put specs at start or end of list of plants at end of outer while loop
-  2-shortest vs longest counter-example rejection speed
-  2-shortest vs longest length of counter-example
-
--create the automata for the second example and run similar tests
 
 ------------------------------------------------------------------------------------------
 
