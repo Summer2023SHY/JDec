@@ -1,16 +1,22 @@
 HOURS:
 Thursday, September 3: 6 hours
-Friday, September 4: 7 hours 30 minutes
-Saturday, September 5: 5 hours 30 minutes
-Monday, September 7: 7 hours
-Tuesday, September 8: 2 hours, 10:17 - 
+Friday, September 4: 7 hours 30 minutes = 13h30
+Saturday, September 5: 5 hours 30 minutes = 19h
+Monday, September 7: 7 hours = 26h
+Tuesday, September 8: 2 hours 30 minutes = 28h30
+Wednesday, September 9: 2 hours 33 minutes, 6:52 -  
 
 NOTES:
 
--build monolithic intersection/union of all 6 automata (and build U-Structure)
+-enter new automata
+-buid monolithic structure
+-run tests
 
 ------------------------------------------------------------------------------------------
 
+-feature: add menu option and shortcut for generate automaton from code
+-feature: autocompletion for event and state names in the transitions
+-feature: duplicate tab (creates new tab with the same text, as 'untitled' automaton)
 -bug: .dot file doesn't seem to be generated if there are no states in the automaton (double-check this)
 -fix synchronized composition (special case) - add test case  n = 2 (and add test case for n=2 which reduces down to something similar to n=1)
 -put bad transitions under only one bad transition when possible

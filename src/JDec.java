@@ -2012,11 +2012,11 @@ public class JDec extends JFrame implements ActionListener {
 
         /* Generate Automaton Button */
 
-      generateAutomatonButton = new JButton("Generate Automaton From GUI Code");
+      generateAutomatonButton = new JButton("Generate Automaton From Code");
       generateAutomatonButton.setFocusable(false);
       generateAutomatonButton.setToolTipText(
         "<html>Create a new automaton from the above input, saving it to file. For small automata, an image of the graph is automatically generated.<br>"
-          + "<b><u>NOTE</u></b>: The generated automaton is saved to file, not the GUI input code itself. "
+          + "<b><u>NOTE</u></b>: The generated automaton is saved to file, not the code itself. "
           + "This means that your automaton is not saved until you have generated it.</html>"
       );
       generateAutomatonButton.addActionListener(new ActionListener() {
@@ -2069,6 +2069,18 @@ public class JDec extends JFrame implements ActionListener {
     private JTextPane createTextPaneWithTraversal() {
 
       JTextPane pane = new JTextPane();
+
+      // String[] words = {"about","after","again","against","alone","along","another","around",
+      //   "because","before","below","between","Hello","heritage","happiness","goodbye","cruel","car","war","will",
+      //   "world","wall"};
+      
+      // final Completer completer = new TrieCompleter(Arrays.asList(words));
+      // final AutoTyper typer = new AutoTyper(pane, completer);
+      // final Keymap keymap = JTextComponent.addKeymap(null, pane.getKeymap());
+      // pane.setKeymap(keymap);
+      // // keymap.addActionForKeyStroke(KeyStroke.getKeyStroke("TAB"), typer.completeAction);
+      // keymap.addActionForKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK), typer.completeAction);
+
       pane.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
       pane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
 

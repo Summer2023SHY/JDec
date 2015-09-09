@@ -44,15 +44,15 @@ public class Liu2 {
   public static void main(String[] args) throws IncompatibleAutomataException {
 
     // First Example
-    List<Automaton> plants = new ArrayList<Automaton>();
-    plants.add(duplicate(new Automaton(new File("Thesis/RECEIVER.hdr"), new File("Thesis/RECEIVER.bdy"), false)));
-    plants.add(duplicate(new Automaton(new File("Thesis/CHANNEL.hdr"), new File("Thesis/CHANNEL.bdy"), false)));
-    plants.add(duplicate(new Automaton(new File("Thesis/SENDER.hdr"), new File("Thesis/SENDER.bdy"), false)));
-    List<Automaton> specs = new ArrayList<Automaton>();
-    specs.add(duplicate(new Automaton(new File("Thesis/SpecRCVR.hdr"), new File("Thesis/SpecRCVR.bdy"), false)));
-    specs.add(duplicate(new Automaton(new File("Thesis/SpecSEQ.hdr"), new File("Thesis/SpecSEQ.bdy"), false)));
-    specs.add(duplicate(new Automaton(new File("Thesis/SpecSNDR.hdr"), new File("Thesis/SpecSNDR.bdy"), false)));
-    Automaton gSigmaStar = new Automaton(new File("Thesis/G_SIGMA_STAR.hdr"), new File("Thesis/G_SIGMA_STAR.bdy"), false);
+    // List<Automaton> plants = new ArrayList<Automaton>();
+    // plants.add(duplicate(new Automaton(new File("Thesis/RECEIVER.hdr"), new File("Thesis/RECEIVER.bdy"), false)));
+    // plants.add(duplicate(new Automaton(new File("Thesis/CHANNEL.hdr"), new File("Thesis/CHANNEL.bdy"), false)));
+    // plants.add(duplicate(new Automaton(new File("Thesis/SENDER.hdr"), new File("Thesis/SENDER.bdy"), false)));
+    // List<Automaton> specs = new ArrayList<Automaton>();
+    // specs.add(duplicate(new Automaton(new File("Thesis/SpecRCVR.hdr"), new File("Thesis/SpecRCVR.bdy"), false)));
+    // specs.add(duplicate(new Automaton(new File("Thesis/SpecSEQ.hdr"), new File("Thesis/SpecSEQ.bdy"), false)));
+    // specs.add(duplicate(new Automaton(new File("Thesis/SpecSNDR.hdr"), new File("Thesis/SpecSNDR.bdy"), false)));
+    // Automaton gSigmaStar = new Automaton(new File("Thesis/G_SIGMA_STAR.hdr"), new File("Thesis/G_SIGMA_STAR.bdy"), false);
 
     // // Second Example
     // List<Automaton> plants = new ArrayList<Automaton>();
@@ -63,6 +63,27 @@ public class Liu2 {
     // List<Automaton> specs = new ArrayList<Automaton>();
     // specs.add(duplicate(new Automaton(new File("Thesis/SecondExample/Specification.hdr"), new File("Thesis/SecondExample/Specification.bdy"), false)));
     // Automaton gSigmaStar = new Automaton(new File("Thesis/SecondExample/G_SIGMA_STAR.hdr"), new File("Thesis/SecondExample/G_SIGMA_STAR.bdy"), false);
+
+    // Third example
+    List<Automaton> plants = new ArrayList<Automaton>();
+    plants.add(duplicate(new Automaton(new File("Example3/PackagingSystem.hdr"), new File("Example3/PackagingSystem.bdy"), false)));
+    plants.add(duplicate(new Automaton(new File("Example3/Source.hdr"), new File("Example3/Source.bdy"), false)));
+    plants.add(duplicate(new Automaton(new File("Example3/Sink.hdr"), new File("Example3/Sink.bdy"), false)));
+    plants.add(duplicate(new Automaton(new File("Example3/TestUnit.hdr"), new File("Example3/TestUnit.bdy"), false)));
+    plants.add(duplicate(new Automaton(new File("Example3/PathFlowModel.hdr"), new File("Example3/PathFlowModel.bdy"), false)));
+    plants.add(duplicate(new Automaton(new File("Example3/AttachPartToAssembly.hdr"), new File("Example3/AttachPartToAssembly.bdy"), false)));
+    plants.add(duplicate(new Automaton(new File("Example3/DefineNewEvent.hdr"), new File("Example3/DefineNewEvent.bdy"), false)));
+    plants.add(duplicate(new Automaton(new File("Example3/PolishPart.hdr"), new File("Example3/PolishPart.bdy"), false)));
+    plants.add(duplicate(new Automaton(new File("Example3/AttachCaseToAssembly.hdr"), new File("Example3/AttachCaseToAssembly.bdy"), false)));
+    List<Automaton> specs = new ArrayList<Automaton>();
+    specs.add(duplicate(new Automaton(new File("Example3/InBuffer.hdr"), new File("Example3/InBuffer.bdy"), false)));
+    specs.add(duplicate(new Automaton(new File("Example3/OutBuffer.hdr"), new File("Example3/OutBuffer.bdy"), false)));
+    specs.add(duplicate(new Automaton(new File("Example3/PackageBuffer.hdr"), new File("Example3/PackageBuffer.bdy"), false)));
+    specs.add(duplicate(new Automaton(new File("Example3/EnsureMatFb.hdr"), new File("Example3/EnsureMatFb.bdy"), false)));
+    specs.add(duplicate(new Automaton(new File("Example3/PolishingSequence.hdr"), new File("Example3/PolishingSequence.bdy"), false)));
+    specs.add(duplicate(new Automaton(new File("Example3/SequenceTasks.hdr"), new File("Example3/SequenceTasks.bdy"), false)));
+    specs.add(duplicate(new Automaton(new File("Example3/AffixPart.hdr"), new File("Example3/AffixPart.bdy"), false)));
+    Automaton gSigmaStar = new Automaton(new File("Example3/G_SIGMA_STAR.hdr"), new File("Example3/G_SIGMA_STAR.bdy"), false);
 
     // Add self-loops to all plants and specifications
     addSelfLoops(plants);

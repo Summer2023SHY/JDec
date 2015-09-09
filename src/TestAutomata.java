@@ -147,7 +147,7 @@ public class TestAutomata {
     printTestCase("Ensuring that the original automaton can accept the counter-example", new TestResult(automaton.acceptsCounterExample(labelSequences), -1), counter);
     labelSequences.add(new ArrayList<String>() {{ add("b"); add("o"); add("o"); }});
     printTestOutput("Adding a bad sequence to the list...", 3);
-    printTestCase("Ensuring that the original automaton can no longer accept the counter-example", new TestResult(automaton.acceptsCounterExample(labelSequences), 2), counter);
+    printTestCase("Ensuring that the original automaton can no longer accept the counter-example", new TestResult(automaton.acceptsCounterExample(labelSequences), 11), counter);
 
       /* isTrue() Tests */
 
@@ -948,7 +948,7 @@ public class TestAutomata {
       "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD" // Transitions
     ));
 
-    printTestOutput("Taking the synchronized composition of the automaton...", 3);
+   printTestOutput("Taking the synchronized composition of the automaton...", 3);
     UStructure uStructure2 = saveAndLoadUStructure(automaton.synchronizedComposition(null, null));
     uStructure2.generateInputForGUI();
     printTestCase("Ensuring the events are correct", new TestResult(uStructure2.getEventInput(), "<a,a>,T,F\n<b,*>,F,F\n<*,b>,F,F\n<o,*>,F,F\n<*,o>,F,T"), counter);
