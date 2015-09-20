@@ -1011,8 +1011,6 @@ public class Automaton {
 
     while (stack.size() > 0) {
 
-      System.out.println("SS: " + stack.size());
-
       long combinedID = stack.pop();
       valuesInStack.remove(combinedID);
 
@@ -2291,6 +2289,11 @@ public class Automaton {
       }
 
   }
+
+  @Override protected void finalize() throws Throwable {
+    closeFiles();
+    super.finalize();
+  } 
 
   /**
    * Delete the current header and body files.
