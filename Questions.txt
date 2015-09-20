@@ -1,18 +1,7 @@
 HOURS:
-Thursday, September 3: 6 hours
-Friday, September 4: 7 hours 30 minutes = 13h30
-Saturday, September 5: 5 hours 30 minutes = 19h
-Monday, September 7: 7 hours = 26h
-Tuesday, September 8: 2 hours 30 minutes = 28h30
-Wednesday, September 9: 4 hours 33 minutes, 8:52 -  
+Thursday, September 10: 1 hour 30 minutes
 
 NOTES:
-
--enter new automata
--buid monolithic structure
--run tests
-
-------------------------------------------------------------------------------------------
 
 -feature: add menu option and shortcut for generate automaton from code
 -feature: autocompletion for event and state names in the transitions
