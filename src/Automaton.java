@@ -1010,7 +1010,7 @@ public class Automaton {
       /* Continue until the stack is empty */
 
     while (stack.size() > 0) {
-
+      
       long combinedID = stack.pop();
       valuesInStack.remove(combinedID);
 

@@ -110,102 +110,100 @@ public class Liu2 {
     plants.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/PackagingSystem.hdr"), new File("Thesis/ThirdExampleSimplified/PackagingSystem.bdy"), false)));
     plants.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/Interface.hdr"), new File("Thesis/ThirdExampleSimplified/Interface.bdy"), false)));
     plants.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/PolishPart.hdr"), new File("Thesis/ThirdExampleSimplified/PolishPart.bdy"), false)));
-    // plants.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/AttachCaseToAssembly.hdr"), new File("Thesis/ThirdExampleSimplified/AttachCaseToAssembly.bdy"), false)));
+    plants.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/AttachCaseToAssembly.hdr"), new File("Thesis/ThirdExampleSimplified/AttachCaseToAssembly.bdy"), false)));
     List<Automaton> specs = new ArrayList<Automaton>();
     specs.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/PolishingSequence.hdr"), new File("Thesis/ThirdExampleSimplified/PolishingSequence.bdy"), false)));
     specs.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/PackageBuffer.hdr"), new File("Thesis/ThirdExampleSimplified/PackageBuffer.bdy"), false)));
-    // specs.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/OutBuffer.hdr"), new File("Thesis/ThirdExampleSimplified/OutBuffer.bdy"), false)));
+    specs.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/OutBuffer.hdr"), new File("Thesis/ThirdExampleSimplified/OutBuffer.bdy"), false)));
     Automaton gSigmaStar = new Automaton(new File("Thesis/ThirdExampleSimplified/G_SIGMA_STAR.hdr"), new File("Thesis/ThirdExampleSimplified/G_SIGMA_STAR.bdy"), false);
 
     // Add self-loops to all plants and specifications
     addSelfLoops(plants);
     addSelfLoops(specs);
 
-    // List<List<Automaton>> plantPerms = generatePerm(plants);
-    // List<List<Automaton>> specPerms = generatePerm(specs);
-    // int firstSize  = FirstCriteria.values().length;
-    // int secondSize = SecondCriteria.values().length;
-    // int thirdSize  = ThirdCriteria.values().length;
-    // int fourthSize = FourthCriteria.values().length;
-    // int nCombinations = plantPerms.size()*specPerms.size();
+    List<List<Automaton>> plantPerms = generatePerm(plants);
+    List<List<Automaton>> specPerms = generatePerm(specs);
+    int firstSize  = FirstCriteria.values().length;
+    int secondSize = SecondCriteria.values().length;
+    int thirdSize  = ThirdCriteria.values().length;
+    int fourthSize = FourthCriteria.values().length;
+    int nCombinations = plantPerms.size()*specPerms.size();
 
-    // System.out.println("nCombinations: " + nCombinations);
+    System.out.println("nCombinations: " + nCombinations);
 
-    // nInnerLoops      = new int[firstSize][secondSize][thirdSize][fourthSize][nCombinations];
-    // uStructureStates = new long[firstSize][secondSize][thirdSize][fourthSize][nCombinations];
-    // automatonStates  = new long[firstSize][secondSize][thirdSize][fourthSize][nCombinations];
-    // timeElapsed      = new long[firstSize][secondSize][thirdSize][fourthSize][nCombinations];
+    nInnerLoops      = new int[firstSize][secondSize][thirdSize][fourthSize][nCombinations];
+    uStructureStates = new long[firstSize][secondSize][thirdSize][fourthSize][nCombinations];
+    automatonStates  = new long[firstSize][secondSize][thirdSize][fourthSize][nCombinations];
+    timeElapsed      = new long[firstSize][secondSize][thirdSize][fourthSize][nCombinations];
 
-    // int nWays = nCombinations*firstSize*secondSize*thirdSize*fourthSize;
-    // int counter = 0;
-    // int combinationIndex = 0;
+    int nWays = nCombinations*firstSize*secondSize*thirdSize*fourthSize;
+    int counter = 0;
+    int combinationIndex = 0;
 
     try {
 
-      Automaton lPrime = gSigmaStar.duplicate();
-      for (Automaton a : plants) {
-        System.out.println("starting " + a);
-        lPrime = Automaton.union(lPrime, a.generateTwinPlant2(null, null), null, null);
-        System.out.println(lPrime.getNumberOfStates());
-        // System.out.println(lPrime.synchronizedComposition(null, null).getNumberOfStates());
-      }
-
-      for (Automaton a : specs) {
-        System.out.println("starting " + a);
-        lPrime = Automaton.union(lPrime, a.generateTwinPlant2(null, null), null, null);
-        System.out.println(lPrime.getNumberOfStates());
-        // System.out.println(lPrime.synchronizedComposition(null, null).getNumberOfStates());
-      }
-
-      System.out.println("RESULT: " + lPrime.synchronizedComposition(null, null).getNumberOfStates());
-      
-      // for (List<Automaton> plantPerm : plantPerms) {
-      //   for (List<Automaton> specPerm : specPerms) {
-      //     for (int first = 0; first < firstSize; first++) {
-      //       for (int second = 0; second < secondSize; second++) {
-      //         for (int third = 0; third < thirdSize; third++) {
-      //           for (int fourth = 0; fourth < fourthSize; fourth++) {
-      //             System.out.printf("Trial %d/%d:\n", ++counter, nWays);
-      //             System.out.println("\tOrder of plants: " + plantPerm);
-      //             System.out.println("\tOrder of specifications: " + specPerm);
-      //             FirstCriteria firstCritera = FirstCriteria.values()[first];
-      //             System.out.println("\tFirst: " + firstCritera);
-      //             SecondCriteria secondCriteria = SecondCriteria.values()[second];
-      //             System.out.println("\tSecond: " + secondCriteria);
-      //             ThirdCriteria thirdCriteria = ThirdCriteria.values()[third];
-      //             System.out.println("\tThird: " + thirdCriteria);
-      //             FourthCriteria fourthCriteria = FourthCriteria.values()[fourth];
-      //             System.out.println("\tFourth: " + fourthCriteria);
-                  
-      //             long startTime = System.nanoTime();
-      //             boolean result = incrementalVerification(
-      //               new ArrayList<Automaton>(plantPerm),
-      //               new ArrayList<Automaton>(specPerm),
-      //               gSigmaStar,
-      //               firstCritera,
-      //               secondCriteria,
-      //               thirdCriteria,
-      //               fourthCriteria,
-      //               nInnerLoops[first][second][third][fourth],
-      //               uStructureStates[first][second][third][fourth],
-      //               automatonStates[first][second][third][fourth],
-      //               timeElapsed[first][second][third][fourth],
-      //               combinationIndex
-      //             );
-      //             long endTime = System.nanoTime();
-      //             long totalTime = endTime - startTime;
-      //             timeElapsed[first][second][third][fourth][combinationIndex] += totalTime;
-      //             System.out.print("TIME: " + timeElapsed[first][second][third][fourth][combinationIndex]);
-      //             System.out.println("\tResult: " + result);
-
-      //             System.out.println();
-      //           }
-      //         }
-      //       }
-      //     }
-      //     combinationIndex++;
-      //   }
+      // Automaton lPrime = gSigmaStar.duplicate();
+      // for (Automaton a : plants) {
+      //   System.out.println("starting " + a);
+      //   lPrime = Automaton.union(lPrime, a.generateTwinPlant2(null, null), null, null);
+      //   System.out.println(lPrime.getNumberOfStates());
+      //   // System.out.println(lPrime.synchronizedComposition(null, null).getNumberOfStates());
       // }
+      // for (Automaton a : specs) {
+      //   System.out.println("starting " + a);
+      //   lPrime = Automaton.union(lPrime, a.generateTwinPlant2(null, null), null, null);
+      //   System.out.println(lPrime.getNumberOfStates());
+      //   // System.out.println(lPrime.synchronizedComposition(null, null).getNumberOfStates());
+      // }
+      // System.out.println("RESULT: " + lPrime.synchronizedComposition(null, null).getNumberOfStates());
+      
+      for (List<Automaton> plantPerm : plantPerms) {
+        for (List<Automaton> specPerm : specPerms) {
+          for (int first = 0; first < firstSize; first++) {
+            for (int second = 0; second < secondSize; second++) {
+              for (int third = 0; third < thirdSize; third++) {
+                for (int fourth = 0; fourth < fourthSize; fourth++) {
+                  System.out.printf("Trial %d/%d:\n", ++counter, nWays);
+                  System.out.println("\tOrder of plants: " + plantPerm);
+                  System.out.println("\tOrder of specifications: " + specPerm);
+                  FirstCriteria firstCritera = FirstCriteria.values()[first];
+                  System.out.println("\tFirst: " + firstCritera);
+                  SecondCriteria secondCriteria = SecondCriteria.values()[second];
+                  System.out.println("\tSecond: " + secondCriteria);
+                  ThirdCriteria thirdCriteria = ThirdCriteria.values()[third];
+                  System.out.println("\tThird: " + thirdCriteria);
+                  FourthCriteria fourthCriteria = FourthCriteria.values()[fourth];
+                  System.out.println("\tFourth: " + fourthCriteria);
+                  
+                  long startTime = System.nanoTime();
+                  boolean result = incrementalVerification(
+                    new ArrayList<Automaton>(plantPerm),
+                    new ArrayList<Automaton>(specPerm),
+                    gSigmaStar,
+                    firstCritera,
+                    secondCriteria,
+                    thirdCriteria,
+                    fourthCriteria,
+                    nInnerLoops[first][second][third][fourth],
+                    uStructureStates[first][second][third][fourth],
+                    automatonStates[first][second][third][fourth],
+                    timeElapsed[first][second][third][fourth],
+                    combinationIndex
+                  );
+                  long endTime = System.nanoTime();
+                  long totalTime = endTime - startTime;
+                  timeElapsed[first][second][third][fourth][combinationIndex] += totalTime;
+                  System.out.print("TIME: " + timeElapsed[first][second][third][fourth][combinationIndex]);
+                  System.out.println("\tResult: " + result);
+
+                  System.out.println();
+                }
+              }
+            }
+          }
+          combinationIndex++;
+        }
+      }
 
     } catch (IncompatibleAutomataException e) {
       e.printStackTrace();
@@ -213,75 +211,75 @@ public class Liu2 {
 
 
     // PRINT RESULTS
-    // for (int first = 0; first < firstSize; first++)
-    //   for (int second = 0; second < secondSize; second++)
-    //     for (int third = 0; third < thirdSize; third++)
-    //       for (int fourth = 0; fourth < fourthSize; fourth++) {
+    for (int first = 0; first < firstSize; first++)
+      for (int second = 0; second < secondSize; second++)
+        for (int third = 0; third < thirdSize; third++)
+          for (int fourth = 0; fourth < fourthSize; fourth++) {
 
-    //         long minUStructureStates = Long.MAX_VALUE;
-    //         long maxUStructureStates = Long.MIN_VALUE;
-    //         long totalUStructureStates = 0;
+            long minUStructureStates = Long.MAX_VALUE;
+            long maxUStructureStates = Long.MIN_VALUE;
+            long totalUStructureStates = 0;
 
-    //         long minAutomatonStates = Long.MAX_VALUE;
-    //         long maxAutomatonStates = Long.MIN_VALUE;
-    //         long totalAutomatonStates = 0;
+            long minAutomatonStates = Long.MAX_VALUE;
+            long maxAutomatonStates = Long.MIN_VALUE;
+            long totalAutomatonStates = 0;
 
-    //         long minNInnerLoops = Long.MAX_VALUE;
-    //         long maxNInnerLoops = Long.MIN_VALUE;
-    //         long totalNInnerLoops = 0;
+            long minNInnerLoops = Long.MAX_VALUE;
+            long maxNInnerLoops = Long.MIN_VALUE;
+            long totalNInnerLoops = 0;
 
-    //         long minTime = Long.MAX_VALUE;
-    //         long maxTime = Long.MIN_VALUE;
-    //         long totalTime = 0;
+            long minTime = Long.MAX_VALUE;
+            long maxTime = Long.MIN_VALUE;
+            long totalTime = 0;
 
-    //         for (int i = 0; i < nCombinations; i++) {
+            for (int i = 0; i < nCombinations; i++) {
 
-    //           minUStructureStates = Math.min(minUStructureStates, uStructureStates[first][second][third][fourth][i]);
-    //           maxUStructureStates = Math.max(maxUStructureStates, uStructureStates[first][second][third][fourth][i]);
-    //           totalUStructureStates += uStructureStates[first][second][third][fourth][i];
+              minUStructureStates = Math.min(minUStructureStates, uStructureStates[first][second][third][fourth][i]);
+              maxUStructureStates = Math.max(maxUStructureStates, uStructureStates[first][second][third][fourth][i]);
+              totalUStructureStates += uStructureStates[first][second][third][fourth][i];
 
-    //           minAutomatonStates = Math.min(minAutomatonStates, automatonStates[first][second][third][fourth][i]);
-    //           maxAutomatonStates = Math.max(maxAutomatonStates, automatonStates[first][second][third][fourth][i]);
-    //           totalAutomatonStates += automatonStates[first][second][third][fourth][i];
+              minAutomatonStates = Math.min(minAutomatonStates, automatonStates[first][second][third][fourth][i]);
+              maxAutomatonStates = Math.max(maxAutomatonStates, automatonStates[first][second][third][fourth][i]);
+              totalAutomatonStates += automatonStates[first][second][third][fourth][i];
 
-    //           minNInnerLoops = Math.min(minNInnerLoops, nInnerLoops[first][second][third][fourth][i]);
-    //           maxNInnerLoops = Math.max(maxNInnerLoops, nInnerLoops[first][second][third][fourth][i]);
-    //           totalNInnerLoops += nInnerLoops[first][second][third][fourth][i];
+              minNInnerLoops = Math.min(minNInnerLoops, nInnerLoops[first][second][third][fourth][i]);
+              maxNInnerLoops = Math.max(maxNInnerLoops, nInnerLoops[first][second][third][fourth][i]);
+              totalNInnerLoops += nInnerLoops[first][second][third][fourth][i];
 
-    //           minTime = Math.min(minTime, timeElapsed[first][second][third][fourth][i]);
-    //           maxTime = Math.max(maxTime, timeElapsed[first][second][third][fourth][i]);
-    //           totalTime += timeElapsed[first][second][third][fourth][i];
+              minTime = Math.min(minTime, timeElapsed[first][second][third][fourth][i]);
+              maxTime = Math.max(maxTime, timeElapsed[first][second][third][fourth][i]);
+              totalTime += timeElapsed[first][second][third][fourth][i];
 
-    //         }
+            }
 
-    //         System.out.println(FirstCriteria.values()[first] + " " +
-    //                            SecondCriteria.values()[second] + " " +
-    //                            ThirdCriteria.values()[third] + " " +
-    //                            FourthCriteria.values()[fourth]);
+            System.out.println(FirstCriteria.values()[first] + " " +
+                               SecondCriteria.values()[second] + " " +
+                               ThirdCriteria.values()[third] + " " +
+                               FourthCriteria.values()[fourth]);
 
-    //         System.out.println("# Inner Iterations:");
-    //         System.out.println("\tMinimum: " + minNInnerLoops);
-    //         System.out.println("\tAverage: " + ((double)totalNInnerLoops)/((double)nCombinations));
-    //         System.out.println("\tMaximum: " + maxNInnerLoops);
+            System.out.println("# Inner Iterations:");
+            System.out.println("\tMinimum: " + minNInnerLoops);
+            System.out.println("\tAverage: " + ((double)totalNInnerLoops)/((double)nCombinations));
+            System.out.println("\tMaximum: " + maxNInnerLoops);
 
-    //         System.out.println("# States in largest U-Structure:");
-    //         System.out.println("\tMinimum: " + minUStructureStates);
-    //         System.out.println("\tAverage: " + ((double)totalUStructureStates)/((double)nCombinations));
-    //         System.out.println("\tMaximum: " + maxUStructureStates);
+            System.out.println("# States in largest U-Structure:");
+            System.out.println("\tMinimum: " + minUStructureStates);
+            System.out.println("\tAverage: " + ((double)totalUStructureStates)/((double)nCombinations));
+            System.out.println("\tMaximum: " + maxUStructureStates);
 
-    //         System.out.println("# States in largest Automaton:");
-    //         System.out.println("\tMinimum: " + minAutomatonStates);
-    //         System.out.println("\tAverage: " + ((double)totalAutomatonStates)/((double)nCombinations));
-    //         System.out.println("\tMaximum: " + maxAutomatonStates);
+            System.out.println("# States in largest Automaton:");
+            System.out.println("\tMinimum: " + minAutomatonStates);
+            System.out.println("\tAverage: " + ((double)totalAutomatonStates)/((double)nCombinations));
+            System.out.println("\tMaximum: " + maxAutomatonStates);
 
-    //         System.out.println("Time Elasped:");
-    //         System.out.println("\tMinimum: " + minTime);
-    //         System.out.println("\tAverage: " + ((double)totalTime)/((double)nCombinations));
-    //         System.out.println("\tMaximum: " + maxTime);
+            System.out.println("Time Elasped:");
+            System.out.println("\tMinimum: " + minTime);
+            System.out.println("\tAverage: " + ((double)totalTime)/((double)nCombinations));
+            System.out.println("\tMaximum: " + maxTime);
             
-    //         System.out.println();
+            System.out.println();
 
-    //       }
+          }
 
   }
 
