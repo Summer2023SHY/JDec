@@ -87,6 +87,21 @@ public class Liu2 {
     // specs.add(duplicate(new Automaton(new File("Thesis/ThirdExample/AffixPart.hdr"), new File("Thesis/ThirdExample/AffixPart.bdy"), false)));
     // Automaton gSigmaStar = new Automaton(new File("Thesis/ThirdExample/G_SIGMA_STAR.hdr"), new File("Thesis/ThirdExample/G_SIGMA_STAR.bdy"), false);
 
+    // Third example - try #2
+    List<Automaton> plants = new ArrayList<Automaton>();
+    plants.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/PackagingSystem.hdr"), new File("Thesis/ThirdExample2/PackagingSystem.bdy"), false)));
+    plants.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/Source.hdr"), new File("Thesis/ThirdExample2/Source.bdy"), false)));
+    plants.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/Sink.hdr"), new File("Thesis/ThirdExample2/Sink.bdy"), false)));
+    plants.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/TestUnit.hdr"), new File("Thesis/ThirdExample2/TestUnit.bdy"), false)));
+    plants.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/Interface.hdr"), new File("Thesis/ThirdExample2/Interface.bdy"), false)));
+    List<Automaton> specs = new ArrayList<Automaton>();
+    specs.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/InBuffer.hdr"), new File("Thesis/ThirdExample2/InBuffer.bdy"), false)));
+    specs.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/OutBuffer.hdr"), new File("Thesis/ThirdExample2/OutBuffer.bdy"), false)));
+    specs.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/PackageBuffer.hdr"), new File("Thesis/ThirdExample2/PackageBuffer.bdy"), false)));
+    specs.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/EnsureMatFb.hdr"), new File("Thesis/ThirdExample2/EnsureMatFb.bdy"), false)));
+    Automaton gSigmaStar = new Automaton(new File("Thesis/ThirdExample2/G_SIGMA_STAR.hdr"), new File("Thesis/ThirdExample2/G_SIGMA_STAR.bdy"), false);
+
+
     // Third example simplified - high level
     // List<Automaton> plants = new ArrayList<Automaton>();
     // plants.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/PackagingSystem.hdr"), new File("Thesis/ThirdExampleSimplified/PackagingSystem.bdy"), false)));
@@ -106,16 +121,16 @@ public class Liu2 {
     // Automaton gSigmaStar = new Automaton(new File("Thesis/ThirdExampleSimplified/G_SIGMA_STAR.hdr"), new File("Thesis/ThirdExampleSimplified/G_SIGMA_STAR.bdy"), false);
 
     // Third example simplified - monolithic
-    List<Automaton> plants = new ArrayList<Automaton>();
-    plants.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/PackagingSystem.hdr"), new File("Thesis/ThirdExampleSimplified/PackagingSystem.bdy"), false)));
-    plants.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/Interface.hdr"), new File("Thesis/ThirdExampleSimplified/Interface.bdy"), false)));
-    plants.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/PolishPart.hdr"), new File("Thesis/ThirdExampleSimplified/PolishPart.bdy"), false)));
-    plants.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/AttachCaseToAssembly.hdr"), new File("Thesis/ThirdExampleSimplified/AttachCaseToAssembly.bdy"), false)));
-    List<Automaton> specs = new ArrayList<Automaton>();
-    specs.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/PolishingSequence.hdr"), new File("Thesis/ThirdExampleSimplified/PolishingSequence.bdy"), false)));
-    specs.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/PackageBuffer.hdr"), new File("Thesis/ThirdExampleSimplified/PackageBuffer.bdy"), false)));
-    specs.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/OutBuffer.hdr"), new File("Thesis/ThirdExampleSimplified/OutBuffer.bdy"), false)));
-    Automaton gSigmaStar = new Automaton(new File("Thesis/ThirdExampleSimplified/G_SIGMA_STAR.hdr"), new File("Thesis/ThirdExampleSimplified/G_SIGMA_STAR.bdy"), false);
+    // List<Automaton> plants = new ArrayList<Automaton>();
+    // plants.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/PackagingSystem.hdr"), new File("Thesis/ThirdExampleSimplified/PackagingSystem.bdy"), false)));
+    // plants.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/Interface.hdr"), new File("Thesis/ThirdExampleSimplified/Interface.bdy"), false)));
+    // plants.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/PolishPart.hdr"), new File("Thesis/ThirdExampleSimplified/PolishPart.bdy"), false)));
+    // plants.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/AttachCaseToAssembly.hdr"), new File("Thesis/ThirdExampleSimplified/AttachCaseToAssembly.bdy"), false)));
+    // List<Automaton> specs = new ArrayList<Automaton>();
+    // specs.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/PolishingSequence.hdr"), new File("Thesis/ThirdExampleSimplified/PolishingSequence.bdy"), false)));
+    // specs.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/PackageBuffer.hdr"), new File("Thesis/ThirdExampleSimplified/PackageBuffer.bdy"), false)));
+    // specs.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/OutBuffer.hdr"), new File("Thesis/ThirdExampleSimplified/OutBuffer.bdy"), false)));
+    // Automaton gSigmaStar = new Automaton(new File("Thesis/ThirdExampleSimplified/G_SIGMA_STAR.hdr"), new File("Thesis/ThirdExampleSimplified/G_SIGMA_STAR.bdy"), false);
 
     // Add self-loops to all plants and specifications
     addSelfLoops(plants);
@@ -157,12 +172,14 @@ public class Liu2 {
       // }
       // System.out.println("RESULT: " + lPrime.synchronizedComposition(null, null).getNumberOfStates());
       
-      for (List<Automaton> plantPerm : plantPerms) {
+      outer: for (List<Automaton> plantPerm : plantPerms) {
         for (List<Automaton> specPerm : specPerms) {
           for (int first = 0; first < firstSize; first++) {
             for (int second = 0; second < secondSize; second++) {
               for (int third = 0; third < thirdSize; third++) {
                 for (int fourth = 0; fourth < fourthSize; fourth++) {
+                  if (counter == 1000)
+                    break outer;
                   System.out.printf("Trial %d/%d:\n", ++counter, nWays);
                   System.out.println("\tOrder of plants: " + plantPerm);
                   System.out.println("\tOrder of specifications: " + specPerm);
