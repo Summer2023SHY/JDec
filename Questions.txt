@@ -3,12 +3,44 @@ Thursday, September 10: 1 hour 30 minutes
 Sunday, September 20: 1 hour 30 minutes
 Monday, September 21: 1 hour 5 minutes, 3:48 -
 
-TO-DO:
+CHOSEN EVENTS (WITH ORIGINAL PROPERTIES)
+take_item,TF,TF
+package,TF,FF
+allow_exit,TF,TF
+part_f_obuff,TF,TF
+deposit_part,TF,TF
+part_ent,TT,TT
+fin_exit,TT,FF
+start_pol,FT,FT
+start_case,FT,FT
+comp_pol,FT,FF
+compl_case,FT,FF
+dip_acid,FT,FT
+polish,FT,FT
+str_rlse,FT,FT
+attch_case,FT,FF
 
+BEFORE DIVISION:
+take_item, TFF,TTFF
+package, TFF,FFFF
+allow_exit, TFF,TTFF
+part_f_obuff, TFF,TTFF
+deposit_part, TFF,TTFF
+part_ent, T T,TTTT
+fin_exit, T T,FFFF
 
+start_pol,FF T,FFTT
+start_case,FF T,FFTT
+comp_pol,FF T,FFFF
+compl_case,FF T,FFFF
+dip_acid,FF T,FFTT
+polish,FF T,FFTT
+str_rlse,FF T,FFTT
+attch_case,FF T,FFFF
 
 NOTES:
 
+-apparently synchronization in Java is not a thing by default..
 -feature: add menu option and shortcut for generate automaton from code
 -feature: autocompletion for event and state names in the transitions
 -feature: duplicate tab (creates new tab with the same text, as 'untitled' automaton)
