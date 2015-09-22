@@ -2,6 +2,7 @@ HOURS:
 Thursday, September 10: 1 hour 30 minutes
 Sunday, September 20: 1 hour 30 minutes
 Monday, September 21: 4 hours 30 minutes
+Tuesday, September 22: 2 hours 35 minutes
 
 CHOSEN EVENTS (WITH ORIGINAL PROPERTIES)
 take_item,TF,TF

@@ -88,49 +88,33 @@ public class Liu2 {
     // Automaton gSigmaStar = new Automaton(new File("Thesis/ThirdExample/G_SIGMA_STAR.hdr"), new File("Thesis/ThirdExample/G_SIGMA_STAR.bdy"), false);
 
     // Third example - try #2
+    // List<Automaton> plants = new ArrayList<Automaton>();
+    // plants.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/PackagingSystem.hdr"), new File("Thesis/ThirdExample2/PackagingSystem.bdy"), false)));
+    // plants.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/Source.hdr"), new File("Thesis/ThirdExample2/Source.bdy"), false)));
+    // plants.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/Sink.hdr"), new File("Thesis/ThirdExample2/Sink.bdy"), false)));
+    // plants.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/TestUnit.hdr"), new File("Thesis/ThirdExample2/TestUnit.bdy"), false)));
+    // plants.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/Interface.hdr"), new File("Thesis/ThirdExample2/Interface.bdy"), false)));
+    // List<Automaton> specs = new ArrayList<Automaton>();
+    // specs.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/InBuffer.hdr"), new File("Thesis/ThirdExample2/InBuffer.bdy"), false)));
+    // specs.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/OutBuffer.hdr"), new File("Thesis/ThirdExample2/OutBuffer.bdy"), false)));
+    // specs.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/PackageBuffer.hdr"), new File("Thesis/ThirdExample2/PackageBuffer.bdy"), false)));
+    // specs.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/EnsureMatFb.hdr"), new File("Thesis/ThirdExample2/EnsureMatFb.bdy"), false)));
+    // Automaton gSigmaStar = new Automaton(new File("Thesis/ThirdExample2/G_SIGMA_STAR.hdr"), new File("Thesis/ThirdExample2/G_SIGMA_STAR.bdy"), false);
+
+
+    // Project 1A
     List<Automaton> plants = new ArrayList<Automaton>();
-    plants.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/PackagingSystem.hdr"), new File("Thesis/ThirdExample2/PackagingSystem.bdy"), false)));
-    plants.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/Source.hdr"), new File("Thesis/ThirdExample2/Source.bdy"), false)));
-    plants.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/Sink.hdr"), new File("Thesis/ThirdExample2/Sink.bdy"), false)));
-    plants.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/TestUnit.hdr"), new File("Thesis/ThirdExample2/TestUnit.bdy"), false)));
-    plants.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/Interface.hdr"), new File("Thesis/ThirdExample2/Interface.bdy"), false)));
+    plants.add(duplicate(new Automaton(new File("Thesis/Project1A/PackagingSystem.hdr"), new File("Thesis/Project1A/PackagingSystem.bdy"), false)));
+    plants.add(duplicate(new Automaton(new File("Thesis/Project1A/Source.hdr"), new File("Thesis/Project1A/Source.bdy"), false)));
+    plants.add(duplicate(new Automaton(new File("Thesis/Project1A/Sink.hdr"), new File("Thesis/Project1A/Sink.bdy"), false)));
+    plants.add(duplicate(new Automaton(new File("Thesis/Project1A/TestUnit.hdr"), new File("Thesis/Project1A/TestUnit.bdy"), false)));
+    plants.add(duplicate(new Automaton(new File("Thesis/Project1A/Interface.hdr"), new File("Thesis/Project1A/Interface.bdy"), false)));
     List<Automaton> specs = new ArrayList<Automaton>();
-    specs.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/InBuffer.hdr"), new File("Thesis/ThirdExample2/InBuffer.bdy"), false)));
-    specs.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/OutBuffer.hdr"), new File("Thesis/ThirdExample2/OutBuffer.bdy"), false)));
-    specs.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/PackageBuffer.hdr"), new File("Thesis/ThirdExample2/PackageBuffer.bdy"), false)));
-    specs.add(duplicate(new Automaton(new File("Thesis/ThirdExample2/EnsureMatFb.hdr"), new File("Thesis/ThirdExample2/EnsureMatFb.bdy"), false)));
-    Automaton gSigmaStar = new Automaton(new File("Thesis/ThirdExample2/G_SIGMA_STAR.hdr"), new File("Thesis/ThirdExample2/G_SIGMA_STAR.bdy"), false);
-
-
-    // Third example simplified - high level
-    // List<Automaton> plants = new ArrayList<Automaton>();
-    // plants.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/PackagingSystem.hdr"), new File("Thesis/ThirdExampleSimplified/PackagingSystem.bdy"), false)));
-    // plants.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/Interface.hdr"), new File("Thesis/ThirdExampleSimplified/Interface.bdy"), false)));
-    // List<Automaton> specs = new ArrayList<Automaton>();
-    // specs.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/OutBuffer.hdr"), new File("Thesis/ThirdExampleSimplified/OutBuffer.bdy"), false)));
-    // specs.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/PackageBuffer.hdr"), new File("Thesis/ThirdExampleSimplified/PackageBuffer.bdy"), false)));
-    // Automaton gSigmaStar = new Automaton(new File("Thesis/ThirdExampleSimplified/G_SIGMA_STAR.hdr"), new File("Thesis/ThirdExampleSimplified/G_SIGMA_STAR.bdy"), false);
-
-    // // Third example simplified - low level
-    // List<Automaton> plants = new ArrayList<Automaton>();
-    // plants.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/PolishPart.hdr"), new File("Thesis/ThirdExampleSimplified/PolishPart.bdy"), false)));
-    // plants.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/AttachCaseToAssembly.hdr"), new File("Thesis/ThirdExampleSimplified/AttachCaseToAssembly.bdy"), false)));
-    // List<Automaton> specs = new ArrayList<Automaton>();
-    // specs.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/PolishingSequence.hdr"), new File("Thesis/ThirdExampleSimplified/PolishingSequence.bdy"), false)));
-    // specs.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/Interface.hdr"), new File("Thesis/ThirdExampleSimplified/Interface.bdy"), false)));
-    // Automaton gSigmaStar = new Automaton(new File("Thesis/ThirdExampleSimplified/G_SIGMA_STAR.hdr"), new File("Thesis/ThirdExampleSimplified/G_SIGMA_STAR.bdy"), false);
-
-    // Third example simplified - monolithic
-    // List<Automaton> plants = new ArrayList<Automaton>();
-    // plants.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/PackagingSystem.hdr"), new File("Thesis/ThirdExampleSimplified/PackagingSystem.bdy"), false)));
-    // plants.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/Interface.hdr"), new File("Thesis/ThirdExampleSimplified/Interface.bdy"), false)));
-    // plants.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/PolishPart.hdr"), new File("Thesis/ThirdExampleSimplified/PolishPart.bdy"), false)));
-    // plants.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/AttachCaseToAssembly.hdr"), new File("Thesis/ThirdExampleSimplified/AttachCaseToAssembly.bdy"), false)));
-    // List<Automaton> specs = new ArrayList<Automaton>();
-    // specs.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/PolishingSequence.hdr"), new File("Thesis/ThirdExampleSimplified/PolishingSequence.bdy"), false)));
-    // specs.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/PackageBuffer.hdr"), new File("Thesis/ThirdExampleSimplified/PackageBuffer.bdy"), false)));
-    // specs.add(duplicate(new Automaton(new File("Thesis/ThirdExampleSimplified/OutBuffer.hdr"), new File("Thesis/ThirdExampleSimplified/OutBuffer.bdy"), false)));
-    // Automaton gSigmaStar = new Automaton(new File("Thesis/ThirdExampleSimplified/G_SIGMA_STAR.hdr"), new File("Thesis/ThirdExampleSimplified/G_SIGMA_STAR.bdy"), false);
+    specs.add(duplicate(new Automaton(new File("Thesis/Project1A/OutBuffer.hdr"), new File("Thesis/Project1A/OutBuffer.bdy"), false)));
+    specs.add(duplicate(new Automaton(new File("Thesis/Project1A/InBuffer.hdr"), new File("Thesis/Project1A/InBuffer.bdy"), false)));
+    specs.add(duplicate(new Automaton(new File("Thesis/Project1A/PackageBuffer.hdr"), new File("Thesis/Project1A/PackageBuffer.bdy"), false)));
+    specs.add(duplicate(new Automaton(new File("Thesis/Project1A/EnsureMatFb.hdr"), new File("Thesis/Project1A/EnsureMatFb.bdy"), false)));
+    Automaton gSigmaStar = new Automaton(new File("Thesis/Project1A/G_SIGMA_STAR.hdr"), new File("Thesis/Project1A/G_SIGMA_STAR.bdy"), false);
 
     // Add self-loops to all plants and specifications
     addSelfLoops(plants);
@@ -144,7 +128,7 @@ public class Liu2 {
     int fourthSize = FourthCriteria.values().length;
     int nCombinations = plantPerms.size()*specPerms.size();
 
-    System.out.println("nCombinations: " + nCombinations);
+    System.err.println("nCombinations: " + nCombinations);
 
     nInnerLoops      = new int[firstSize][secondSize][thirdSize][fourthSize][nCombinations];
     uStructureStates = new long[firstSize][secondSize][thirdSize][fourthSize][nCombinations];
@@ -178,19 +162,18 @@ public class Liu2 {
             for (int second = 0; second < secondSize; second++) {
               for (int third = 0; third < thirdSize; third++) {
                 for (int fourth = 0; fourth < fourthSize; fourth++) {
-                  if (counter == 1000)
-                    break outer;
-                  System.out.printf("Trial %d/%d:\n", ++counter, nWays);
-                  System.out.println("\tOrder of plants: " + plantPerm);
-                  System.out.println("\tOrder of specifications: " + specPerm);
+
+                  System.err.printf("Trial %d/%d:\n", ++counter, nWays);
+                  System.err.println("\tOrder of plants: " + plantPerm);
+                  System.err.println("\tOrder of specifications: " + specPerm);
                   FirstCriteria firstCritera = FirstCriteria.values()[first];
-                  System.out.println("\tFirst: " + firstCritera);
+                  System.err.println("\tFirst: " + firstCritera);
                   SecondCriteria secondCriteria = SecondCriteria.values()[second];
-                  System.out.println("\tSecond: " + secondCriteria);
+                  System.err.println("\tSecond: " + secondCriteria);
                   ThirdCriteria thirdCriteria = ThirdCriteria.values()[third];
-                  System.out.println("\tThird: " + thirdCriteria);
+                  System.err.println("\tThird: " + thirdCriteria);
                   FourthCriteria fourthCriteria = FourthCriteria.values()[fourth];
-                  System.out.println("\tFourth: " + fourthCriteria);
+                  System.err.println("\tFourth: " + fourthCriteria);
                   
                   long startTime = System.nanoTime();
                   boolean result = incrementalVerification(
@@ -210,10 +193,10 @@ public class Liu2 {
                   long endTime = System.nanoTime();
                   long totalTime = endTime - startTime;
                   timeElapsed[first][second][third][fourth][combinationIndex] += totalTime;
-                  System.out.print("TIME: " + timeElapsed[first][second][third][fourth][combinationIndex]);
-                  System.out.println("\tResult: " + result);
+                  System.err.print("TIME: " + timeElapsed[first][second][third][fourth][combinationIndex]);
+                  System.err.println("\tResult: " + result);
 
-                  System.out.println();
+                  System.err.println();
                 }
               }
             }
@@ -228,6 +211,7 @@ public class Liu2 {
 
 
     // PRINT RESULTS
+    System.out.println("Heuristics,,,,min iter,avg iter,max iter,min states in U,avg states in U,max states in U,min states in A,avg states in A,max states in A,min time (s),avg time (s),max time (s)");
     for (int first = 0; first < firstSize; first++)
       for (int second = 0; second < secondSize; second++)
         for (int third = 0; third < thirdSize; third++)
@@ -269,32 +253,48 @@ public class Liu2 {
 
             }
 
-            System.out.println(FirstCriteria.values()[first] + " " +
-                               SecondCriteria.values()[second] + " " +
-                               ThirdCriteria.values()[third] + " " +
-                               FourthCriteria.values()[fourth]);
+            // System.out.println(FirstCriteria.values()[first] + " " +
+            //                    SecondCriteria.values()[second] + " " +
+            //                    ThirdCriteria.values()[third] + " " +
+            //                    FourthCriteria.values()[fourth]);
+            // System.out.println("# Inner Iterations:");
+            // System.out.println("\tMinimum: " + minNInnerLoops);
+            // System.out.println("\tAverage: " + ((double)totalNInnerLoops)/((double)nCombinations));
+            // System.out.println("\tMaximum: " + maxNInnerLoops);
+            // System.out.println("# States in largest U-Structure:");
+            // System.out.println("\tMinimum: " + minUStructureStates);
+            // System.out.println("\tAverage: " + ((double)totalUStructureStates)/((double)nCombinations));
+            // System.out.println("\tMaximum: " + maxUStructureStates);
+            // System.out.println("# States in largest Automaton:");
+            // System.out.println("\tMinimum: " + minAutomatonStates);
+            // System.out.println("\tAverage: " + ((double)totalAutomatonStates)/((double)nCombinations));
+            // System.out.println("\tMaximum: " + maxAutomatonStates);
+            // System.out.println("Time Elasped:");
+            // System.out.println("\tMinimum: " + minTime);
+            // System.out.println("\tAverage: " + ((double)totalTime)/((double)nCombinations));
+            // System.out.println("\tMaximum: " + maxTime);
+            // System.out.println();
 
-            System.out.println("# Inner Iterations:");
-            System.out.println("\tMinimum: " + minNInnerLoops);
-            System.out.println("\tAverage: " + ((double)totalNInnerLoops)/((double)nCombinations));
-            System.out.println("\tMaximum: " + maxNInnerLoops);
+            System.out.print(FirstCriteria.values()[first] + "," +
+                               SecondCriteria.values()[second] + "," +
+                               ThirdCriteria.values()[third] + "," +
+                               FourthCriteria.values()[fourth] + ",");
 
-            System.out.println("# States in largest U-Structure:");
-            System.out.println("\tMinimum: " + minUStructureStates);
-            System.out.println("\tAverage: " + ((double)totalUStructureStates)/((double)nCombinations));
-            System.out.println("\tMaximum: " + maxUStructureStates);
+            System.out.printf("%.2f,", ((double)minNInnerLoops)/1000000000.0);
+            System.out.printf("%.2f,", (((double)totalNInnerLoops)/((double)nCombinations)));
+            System.out.printf("%.2f,", ((double)maxNInnerLoops)/1000000000.0);
 
-            System.out.println("# States in largest Automaton:");
-            System.out.println("\tMinimum: " + minAutomatonStates);
-            System.out.println("\tAverage: " + ((double)totalAutomatonStates)/((double)nCombinations));
-            System.out.println("\tMaximum: " + maxAutomatonStates);
+            System.out.printf("%.2f,", ((double)minUStructureStates)/1000000000.0);
+            System.out.printf("%.2f,", (((double)totalUStructureStates)/((double)nCombinations)));
+            System.out.printf("%.2f,", ((double)maxUStructureStates)/1000000000.0);
 
-            System.out.println("Time Elasped:");
-            System.out.println("\tMinimum: " + minTime);
-            System.out.println("\tAverage: " + ((double)totalTime)/((double)nCombinations));
-            System.out.println("\tMaximum: " + maxTime);
-            
-            System.out.println();
+            System.out.printf("%.2f,", ((double)minAutomatonStates)/1000000000.0);
+            System.out.printf("%.2f,", (((double)totalAutomatonStates)/((double)nCombinations))/1000000000.0);
+            System.out.printf("%.2f,", ((double)maxAutomatonStates)/1000000000.0);
+
+            System.out.printf("%.2f,", ((double)minTime)/1000000000.0);
+            System.out.printf("%.2f,", (((double)totalTime)/((double)nCombinations))/1000000000.0);
+            System.out.printf("%.2f,", ((double)maxTime)/1000000000.0);
 
           }
 
@@ -352,7 +352,7 @@ public class Liu2 {
     while (specs.size() > 0) {
 
       iterationOuter++;
-      System.out.printf("\t\tStarting outer loop iteration #%d.\n", iterationOuter);
+      System.err.printf("\t\tStarting outer loop iteration #%d.\n", iterationOuter);
 
       Automaton kPrime = specs.get(0);
       Automaton lPrime = gSigmaStar.duplicate();
@@ -368,7 +368,7 @@ public class Liu2 {
         
         iterationInner++;
         nInnerLoopData[combinationIndex] = iterationInner;
-        System.out.printf("\t\t\tStarting inner loop iteration #%d.\n", iterationInner);
+        System.err.printf("\t\t\tStarting inner loop iteration #%d.\n", iterationInner);
 
         Integer firstMatch = null;
 
@@ -386,7 +386,7 @@ public class Liu2 {
           if (!automataInLPrime.contains(automaton)) {
             stepsForPlants[i] = automaton.acceptsCounterExample(counterExample);
             if (stepsForPlants[i] != -1) {
-              System.out.println("\t\t\t\tCan choose the following from L\\L': " + automaton);
+              System.err.println("\t\t\t\tCan choose the following from L\\L': " + automaton);
 
               if (shortestStepsForPlants == null || stepsForPlants[i] < stepsForPlants[shortestStepsForPlants])
                 shortestStepsForPlants = i;
@@ -420,7 +420,7 @@ public class Liu2 {
           if (!automataInKPrime.contains(automaton)) {
             stepsForSpecs[i] = automaton.acceptsCounterExample(counterExample);
             if (stepsForSpecs[i] != -1) {
-              System.out.println("\t\t\t\tCan choose the following from K\\K': " + automaton);
+              System.err.println("\t\t\t\tCan choose the following from K\\K': " + automaton);
               
               if (shortestStepsForSpecs == null || stepsForSpecs[i] < stepsForSpecs[shortestStepsForSpecs])
                 shortestStepsForSpecs = i;
@@ -491,14 +491,14 @@ public class Liu2 {
           if (chosenPlant != null) {
             Automaton automaton = plants.get(chosenPlant);
             lPrime = Automaton.intersection(lPrime, automaton, null, null);
-            System.out.println("\t\t\t\tPicking automaton from L\\L': " + automaton);
+            System.err.println("\t\t\t\tPicking automaton from L\\L': " + automaton);
             automataInLPrime.add(automaton);
             automatonStateData[combinationIndex] = Math.max(automatonStateData[combinationIndex], lPrime.getNumberOfStates());
             continue loop;
           } else if (chosenSpec != null) {
             Automaton automaton = specs.get(chosenSpec);
             kPrime = Automaton.intersection(kPrime, automaton, null, null);
-            System.out.println("\t\t\t\tPicking automaton from K\\K': " + automaton);
+            System.err.println("\t\t\t\tPicking automaton from K\\K': " + automaton);
             automataInKPrime.add(automaton);
             automatonStateData[combinationIndex] = Math.max(automatonStateData[combinationIndex], kPrime.getNumberOfStates());
             continue loop;
@@ -507,21 +507,21 @@ public class Liu2 {
           if (chosenSpec != null) {
             Automaton automaton = specs.get(chosenSpec);
             kPrime = Automaton.intersection(kPrime, automaton, null, null);
-            System.out.println("\t\t\t\tPicking automaton from K\\K': " + automaton);
+            System.err.println("\t\t\t\tPicking automaton from K\\K': " + automaton);
             automataInKPrime.add(automaton);
             automatonStateData[combinationIndex] = Math.max(automatonStateData[combinationIndex], kPrime.getNumberOfStates());
             continue loop;
           } else if (chosenPlant != null) {
             Automaton automaton = plants.get(chosenPlant);
             lPrime = Automaton.intersection(lPrime, automaton, null, null);
-            System.out.println("\t\t\t\tPicking automaton from L\\L': " + automaton);
+            System.err.println("\t\t\t\tPicking automaton from L\\L': " + automaton);
             automataInLPrime.add(automaton);
             automatonStateData[combinationIndex] = Math.max(automatonStateData[combinationIndex], lPrime.getNumberOfStates());
             continue loop;
           }
         }
 
-        System.out.printf("\tRequired %d outer iterations and a total of %d inner iterations.\n", iterationOuter, iterationInner);
+        System.err.printf("\tRequired %d outer iterations and a total of %d inner iterations.\n", iterationOuter, iterationInner);
         return false;
 
       }
@@ -535,8 +535,8 @@ public class Liu2 {
         }
       specs.removeAll(automataInKPrime);
 
-      System.out.println("\t\t# States in L': " + lPrime.getNumberOfStates());
-      System.out.println("\t\t# Transitions in L': " + lPrime.getNumberOfTransitions());
+      System.err.println("\t\t# States in L': " + lPrime.getNumberOfStates());
+      System.err.println("\t\t# Transitions in L': " + lPrime.getNumberOfTransitions());
 
       // Close files since we are finished with these automata
       // kPrime.closeFiles();
@@ -544,7 +544,7 @@ public class Liu2 {
     
     }
     
-    System.out.printf("\tRequired %d outer iterations and a total of %d inner iterations.\n", iterationOuter, iterationInner);
+    System.err.printf("\tRequired %d outer iterations and a total of %d inner iterations.\n", iterationOuter, iterationInner);
     return true;
 
   }
@@ -602,16 +602,16 @@ public class Liu2 {
 
     long nStates = uStructure.getNumberOfStates();
     uStructureStateData[combinationIndex] = Math.max(uStructureStateData[combinationIndex], nStates);
-    System.out.println("\n\t\t\t\t# States in U: " + nStates);
+    System.err.println("\n\t\t\t\t# States in U: " + nStates);
 
     List<List<String>> counterExample;
 
     if (secondCriteria == SecondCriteria.LONGEST_COUNTER_EXAMPLE) {
       counterExample = uStructure.findCounterExample(false);
-      System.out.println("\t\t\t\tUsing 'longest' shortest counter-example: " + counterExample);
+      System.err.println("\t\t\t\tUsing 'longest' shortest counter-example: " + counterExample);
     } else {
       counterExample = uStructure.findCounterExample(true);
-      System.out.println("\t\t\t\tUsing shortest counter-example: " + counterExample);
+      System.err.println("\t\t\t\tUsing shortest counter-example: " + counterExample);
     }
 
     return counterExample;
@@ -630,8 +630,6 @@ public class Liu2 {
         fileNames.add(a.getHeaderFile().getName());
 
     Collections.sort(fileNames);
-
-    // System.out.println("encoded: " + fileNames.toString());
 
     return fileNames.toString();
 
