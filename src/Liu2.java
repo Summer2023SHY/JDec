@@ -35,6 +35,8 @@ public class Liu2 {
 
   }
 
+  // static JDec jdec = new JDec();
+
   static int[][][][][] nInnerLoops;
   static long[][][][][] uStructureStates;
   static long[][][][][] automatonStates;
@@ -103,18 +105,46 @@ public class Liu2 {
 
 
     // Project 1A
+    // List<Automaton> plants = new ArrayList<Automaton>();
+    // plants.add(duplicate(new Automaton(new File("Thesis/Project1A/PackagingSystem.hdr"), new File("Thesis/Project1A/PackagingSystem.bdy"), false)));
+    // plants.add(duplicate(new Automaton(new File("Thesis/Project1A/Source.hdr"), new File("Thesis/Project1A/Source.bdy"), false)));
+    // plants.add(duplicate(new Automaton(new File("Thesis/Project1A/Sink.hdr"), new File("Thesis/Project1A/Sink.bdy"), false)));
+    // plants.add(duplicate(new Automaton(new File("Thesis/Project1A/TestUnit.hdr"), new File("Thesis/Project1A/TestUnit.bdy"), false)));
+    // plants.add(duplicate(new Automaton(new File("Thesis/Project1A/Interface.hdr"), new File("Thesis/Project1A/Interface.bdy"), false)));
+    // List<Automaton> specs = new ArrayList<Automaton>();
+    // specs.add(duplicate(new Automaton(new File("Thesis/Project1A/OutBuffer.hdr"), new File("Thesis/Project1A/OutBuffer.bdy"), false)));
+    // specs.add(duplicate(new Automaton(new File("Thesis/Project1A/InBuffer.hdr"), new File("Thesis/Project1A/InBuffer.bdy"), false)));
+    // specs.add(duplicate(new Automaton(new File("Thesis/Project1A/PackageBuffer.hdr"), new File("Thesis/Project1A/PackageBuffer.bdy"), false)));
+    // specs.add(duplicate(new Automaton(new File("Thesis/Project1A/EnsureMatFb.hdr"), new File("Thesis/Project1A/EnsureMatFb.bdy"), false)));
+    // Automaton gSigmaStar = new Automaton(new File("Thesis/Project1A/G_SIGMA_STAR.hdr"), new File("Thesis/Project1A/G_SIGMA_STAR.bdy"), false);
+
+    // High Level
     List<Automaton> plants = new ArrayList<Automaton>();
-    plants.add(duplicate(new Automaton(new File("Thesis/Project1A/PackagingSystem.hdr"), new File("Thesis/Project1A/PackagingSystem.bdy"), false)));
-    plants.add(duplicate(new Automaton(new File("Thesis/Project1A/Source.hdr"), new File("Thesis/Project1A/Source.bdy"), false)));
-    plants.add(duplicate(new Automaton(new File("Thesis/Project1A/Sink.hdr"), new File("Thesis/Project1A/Sink.bdy"), false)));
-    plants.add(duplicate(new Automaton(new File("Thesis/Project1A/TestUnit.hdr"), new File("Thesis/Project1A/TestUnit.bdy"), false)));
-    plants.add(duplicate(new Automaton(new File("Thesis/Project1A/Interface.hdr"), new File("Thesis/Project1A/Interface.bdy"), false)));
+    plants.add(duplicate(new Automaton(new File("Thesis/Project1AOne/PackagingSystem.hdr"), new File("Thesis/Project1AOne/PackagingSystem.bdy"), false)));
+    plants.add(duplicate(new Automaton(new File("Thesis/Project1AOne/Source.hdr"), new File("Thesis/Project1AOne/Source.bdy"), false)));
+    plants.add(duplicate(new Automaton(new File("Thesis/Project1AOne/Sink.hdr"), new File("Thesis/Project1AOne/Sink.bdy"), false)));
+    plants.add(duplicate(new Automaton(new File("Thesis/Project1AOne/TestUnit.hdr"), new File("Thesis/Project1AOne/TestUnit.bdy"), false)));
+    plants.add(duplicate(new Automaton(new File("Thesis/Project1AOne/Interface.hdr"), new File("Thesis/Project1AOne/Interface.bdy"), false)));
     List<Automaton> specs = new ArrayList<Automaton>();
-    specs.add(duplicate(new Automaton(new File("Thesis/Project1A/OutBuffer.hdr"), new File("Thesis/Project1A/OutBuffer.bdy"), false)));
-    specs.add(duplicate(new Automaton(new File("Thesis/Project1A/InBuffer.hdr"), new File("Thesis/Project1A/InBuffer.bdy"), false)));
-    specs.add(duplicate(new Automaton(new File("Thesis/Project1A/PackageBuffer.hdr"), new File("Thesis/Project1A/PackageBuffer.bdy"), false)));
-    specs.add(duplicate(new Automaton(new File("Thesis/Project1A/EnsureMatFb.hdr"), new File("Thesis/Project1A/EnsureMatFb.bdy"), false)));
-    Automaton gSigmaStar = new Automaton(new File("Thesis/Project1A/G_SIGMA_STAR.hdr"), new File("Thesis/Project1A/G_SIGMA_STAR.bdy"), false);
+    specs.add(duplicate(new Automaton(new File("Thesis/Project1AOne/OutBuffer.hdr"), new File("Thesis/Project1AOne/OutBuffer.bdy"), false)));
+    specs.add(duplicate(new Automaton(new File("Thesis/Project1AOne/InBuffer.hdr"), new File("Thesis/Project1AOne/InBuffer.bdy"), false)));
+    specs.add(duplicate(new Automaton(new File("Thesis/Project1AOne/PackageBuffer.hdr"), new File("Thesis/Project1AOne/PackageBuffer.bdy"), false)));
+    specs.add(duplicate(new Automaton(new File("Thesis/Project1AOne/EnsureMatFb.hdr"), new File("Thesis/Project1AOne/EnsureMatFb.bdy"), false)));
+    Automaton gSigmaStar = new Automaton(new File("Thesis/Project1AOne/G_SIGMA_STAR.hdr"), new File("Thesis/Project1AOne/G_SIGMA_STAR.bdy"), false);
+
+    // Low Level
+    // List<Automaton> plants = new ArrayList<Automaton>();
+    // plants.add(duplicate(new Automaton(new File("Thesis/LowLevel/PathFlowModel.hdr"), new File("Thesis/LowLevel/PathFlowModel.bdy"), false)));
+    // plants.add(duplicate(new Automaton(new File("Thesis/LowLevel/AttachPartToAssembly.hdr"), new File("Thesis/LowLevel/AttachPartToAssembly.bdy"), false)));
+    // plants.add(duplicate(new Automaton(new File("Thesis/LowLevel/DefineNewEvents.hdr"), new File("Thesis/LowLevel/DefineNewEvents.bdy"), false)));
+    // plants.add(duplicate(new Automaton(new File("Thesis/LowLevel/PolishPart.hdr"), new File("Thesis/LowLevel/PolishPart.bdy"), false)));
+    // plants.add(duplicate(new Automaton(new File("Thesis/LowLevel/AttachCaseToAssembly.hdr"), new File("Thesis/LowLevel/AttachCaseToAssembly.bdy"), false)));
+    // List<Automaton> specs = new ArrayList<Automaton>();
+    // specs.add(duplicate(new Automaton(new File("Thesis/LowLevel/Interface.hdr"), new File("Thesis/LowLevel/Interface.bdy"), false)));
+    // specs.add(duplicate(new Automaton(new File("Thesis/LowLevel/PolishingSequence.hdr"), new File("Thesis/LowLevel/PolishingSequence.bdy"), false)));
+    // specs.add(duplicate(new Automaton(new File("Thesis/LowLevel/SequenceTasks.hdr"), new File("Thesis/LowLevel/SequenceTasks.bdy"), false)));
+    // specs.add(duplicate(new Automaton(new File("Thesis/LowLevel/AffixPart.hdr"), new File("Thesis/LowLevel/AffixPart.bdy"), false)));
+    // Automaton gSigmaStar = new Automaton(new File("Thesis/LowLevel/G_SIGMA_STAR.hdr"), new File("Thesis/LowLevel/G_SIGMA_STAR.bdy"), false);
 
     // Add self-loops to all plants and specifications
     addSelfLoops(plants);
@@ -294,7 +324,7 @@ public class Liu2 {
 
             System.out.printf("%.2f,", ((double)minTime)/1000000000.0);
             System.out.printf("%.2f,", (((double)totalTime)/((double)nCombinations))/1000000000.0);
-            System.out.printf("%.2f,", ((double)maxTime)/1000000000.0);
+            System.out.printf("%.2f\n", ((double)maxTime)/1000000000.0);
 
           }
 
@@ -573,8 +603,10 @@ public class Liu2 {
 
   public static void addSelfLoops(List<Automaton> automata) {
 
-    for (Automaton a : automata)
+    for (Automaton a : automata) {
       a.addSelfLoopsForInactiveEvents();
+      // jdec.createTab(a);
+    }
 
   }
 

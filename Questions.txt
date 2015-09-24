@@ -2,42 +2,21 @@ HOURS:
 Thursday, September 10: 1 hour 30 minutes
 Sunday, September 20: 1 hour 30 minutes
 Monday, September 21: 4 hours 30 minutes
-Tuesday, September 22: 2 hours 35 minutes
+Tuesday, September 22: 6 hours
+Wednesday, September 23: 3 hours 5 minutes
 
-CHOSEN EVENTS (WITH ORIGINAL PROPERTIES)
-take_item,TF,TF
-package,TF,FF
-allow_exit,TF,TF
-part_f_obuff,TF,TF
-deposit_part,TF,TF
-part_ent,TT,TT
-fin_exit,TT,FF
-start_pol,FT,FT
-start_case,FT,FT
-comp_pol,FT,FF
-compl_case,FT,FF
-dip_acid,FT,FT
-polish,FT,FT
-str_rlse,FT,FT
-attch_case,FT,FF
-
-BEFORE DIVISION:
-take_item, TFF,TTFF
-package, TFF,FFFF
-allow_exit, TFF,TTFF
-part_f_obuff, TFF,TTFF
-deposit_part, TFF,TTFF
-part_ent, T T,TTTT
-fin_exit, T T,FFFF
-
-start_pol,FF T,FFTT
-start_case,FF T,FFTT
-comp_pol,FF T,FFFF
-compl_case,FF T,FFFF
-dip_acid,FF T,FFTT
-polish,FF T,FFTT
-str_rlse,FF T,FFTT
-attch_case,FF T,FFFF
+H1:
+take_item,F,F
+package,F,F
+allow_exit,F,F
+new_part,T,F
+part_f_obuff,T,F
+part_passes,F,F
+part_fails,F,F
+ret_inbuff,T,F
+deposit_part,F,F
+part_ent,T,T
+fin_exit,T,F
 
 NOTES:
 
@@ -55,7 +34,6 @@ NOTES:
         at sun.java2d.opengl.OGLSurfaceData.access$000(OGLSurfaceData.java:98)
         at sun.java2d.opengl.OGLSurfaceData$1.run(OGLSurfaceData.java:324)
         at sun.java2d.opengl.OGLRenderQueue$QueueFlusher.run(OGLRenderQueue.java:232)
--write algorithm to find counterexample (mark state and use trim?)
 
 -MYERSON: in the example in the paper, they are picking the communication protocol that is cheapest? It doesn't look the exact same as our 'simplified' algorithm?? Where we add all communications then prune the excess ones
 
