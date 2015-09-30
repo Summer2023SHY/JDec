@@ -1,9 +1,5 @@
 HOURS:
-Thursday, September 10: 1 hour 30 minutes
-Sunday, September 20: 1 hour 30 minutes
-Monday, September 21: 4 hours 30 minutes
-Tuesday, September 22: 6 hours
-Wednesday, September 23: 3 hours 5 minutes
+Thursday, September 24: 20 minutes
 
 H1:
 take_item,F,F
