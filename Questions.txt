@@ -1,5 +1,5 @@
 HOURS:
-Thursday, September 24: 20 minutes
+Monday, October 5: 1 hour 30 minutes
 
 H1:
 take_item,F,F

@@ -47,6 +47,13 @@ public class Liu2 {
 
   public static void main(String[] args) throws IncompatibleAutomataException {
 
+    // Large Example
+    List<Automaton> plants = new ArrayList<Automaton>();
+    plants.add(duplicate(new Automaton(new File("Thesis/Large/NAME.hdr"), new File("Thesis/Large/NAME.bdy"), false)));
+    List<Automaton> specs = new ArrayList<Automaton>();
+    specs.add(duplicate(new Automaton(new File("Thesis/Large/NAME.hdr"), new File("Thesis/Large/NAME.bdy"), false)));
+    Automaton gSigmaStar = new Automaton(new File("Thesis/Large/G_SIGMA_STAR.hdr"), new File("Thesis/Large/G_SIGMA_STAR.bdy"), false);
+
     // First Example
     // List<Automaton> plants = new ArrayList<Automaton>();
     // plants.add(duplicate(new Automaton(new File("Thesis/SENDER.hdr"), new File("Thesis/SENDER.bdy"), false)));
@@ -119,18 +126,18 @@ public class Liu2 {
     // Automaton gSigmaStar = new Automaton(new File("Thesis/Project1A/G_SIGMA_STAR.hdr"), new File("Thesis/Project1A/G_SIGMA_STAR.bdy"), false);
 
     // High Level
-    List<Automaton> plants = new ArrayList<Automaton>();
-    plants.add(duplicate(new Automaton(new File("Thesis/Project1AOne/PackagingSystem.hdr"), new File("Thesis/Project1AOne/PackagingSystem.bdy"), false)));
-    plants.add(duplicate(new Automaton(new File("Thesis/Project1AOne/Source.hdr"), new File("Thesis/Project1AOne/Source.bdy"), false)));
-    plants.add(duplicate(new Automaton(new File("Thesis/Project1AOne/Sink.hdr"), new File("Thesis/Project1AOne/Sink.bdy"), false)));
-    plants.add(duplicate(new Automaton(new File("Thesis/Project1AOne/TestUnit.hdr"), new File("Thesis/Project1AOne/TestUnit.bdy"), false)));
-    plants.add(duplicate(new Automaton(new File("Thesis/Project1AOne/Interface.hdr"), new File("Thesis/Project1AOne/Interface.bdy"), false)));
-    List<Automaton> specs = new ArrayList<Automaton>();
-    specs.add(duplicate(new Automaton(new File("Thesis/Project1AOne/OutBuffer.hdr"), new File("Thesis/Project1AOne/OutBuffer.bdy"), false)));
-    specs.add(duplicate(new Automaton(new File("Thesis/Project1AOne/InBuffer.hdr"), new File("Thesis/Project1AOne/InBuffer.bdy"), false)));
-    specs.add(duplicate(new Automaton(new File("Thesis/Project1AOne/PackageBuffer.hdr"), new File("Thesis/Project1AOne/PackageBuffer.bdy"), false)));
-    specs.add(duplicate(new Automaton(new File("Thesis/Project1AOne/EnsureMatFb.hdr"), new File("Thesis/Project1AOne/EnsureMatFb.bdy"), false)));
-    Automaton gSigmaStar = new Automaton(new File("Thesis/Project1AOne/G_SIGMA_STAR.hdr"), new File("Thesis/Project1AOne/G_SIGMA_STAR.bdy"), false);
+    // List<Automaton> plants = new ArrayList<Automaton>();
+    // plants.add(duplicate(new Automaton(new File("Thesis/Project1AOne/PackagingSystem.hdr"), new File("Thesis/Project1AOne/PackagingSystem.bdy"), false)));
+    // plants.add(duplicate(new Automaton(new File("Thesis/Project1AOne/Source.hdr"), new File("Thesis/Project1AOne/Source.bdy"), false)));
+    // plants.add(duplicate(new Automaton(new File("Thesis/Project1AOne/Sink.hdr"), new File("Thesis/Project1AOne/Sink.bdy"), false)));
+    // plants.add(duplicate(new Automaton(new File("Thesis/Project1AOne/TestUnit.hdr"), new File("Thesis/Project1AOne/TestUnit.bdy"), false)));
+    // plants.add(duplicate(new Automaton(new File("Thesis/Project1AOne/Interface.hdr"), new File("Thesis/Project1AOne/Interface.bdy"), false)));
+    // List<Automaton> specs = new ArrayList<Automaton>();
+    // specs.add(duplicate(new Automaton(new File("Thesis/Project1AOne/InBuffer.hdr"), new File("Thesis/Project1AOne/InBuffer.bdy"), false)));
+    // specs.add(duplicate(new Automaton(new File("Thesis/Project1AOne/OutBuffer.hdr"), new File("Thesis/Project1AOne/OutBuffer.bdy"), false)));
+    // specs.add(duplicate(new Automaton(new File("Thesis/Project1AOne/PackageBuffer.hdr"), new File("Thesis/Project1AOne/PackageBuffer.bdy"), false)));
+    // specs.add(duplicate(new Automaton(new File("Thesis/Project1AOne/EnsureMatFb.hdr"), new File("Thesis/Project1AOne/EnsureMatFb.bdy"), false)));
+    // Automaton gSigmaStar = new Automaton(new File("Thesis/Project1AOne/G_SIGMA_STAR.hdr"), new File("Thesis/Project1AOne/G_SIGMA_STAR.bdy"), false);
 
     // Low Level
     // List<Automaton> plants = new ArrayList<Automaton>();
@@ -150,6 +157,8 @@ public class Liu2 {
     addSelfLoops(plants);
     addSelfLoops(specs);
 
+    // List<List<Automaton>> plantPerms = generateNoPerm(plants);
+    // List<List<Automaton>> specPerms = generateNoPerm(specs);
     List<List<Automaton>> plantPerms = generatePerm(plants);
     List<List<Automaton>> specPerms = generatePerm(specs);
     int firstSize  = FirstCriteria.values().length;
@@ -310,17 +319,17 @@ public class Liu2 {
                                ThirdCriteria.values()[third] + "," +
                                FourthCriteria.values()[fourth] + ",");
 
-            System.out.printf("%.2f,", ((double)minNInnerLoops)/1000000000.0);
+            System.out.printf("%.2f,", ((double)minNInnerLoops));
             System.out.printf("%.2f,", (((double)totalNInnerLoops)/((double)nCombinations)));
-            System.out.printf("%.2f,", ((double)maxNInnerLoops)/1000000000.0);
+            System.out.printf("%.2f,", ((double)maxNInnerLoops));
 
-            System.out.printf("%.2f,", ((double)minUStructureStates)/1000000000.0);
+            System.out.printf("%.2f,", ((double)minUStructureStates));
             System.out.printf("%.2f,", (((double)totalUStructureStates)/((double)nCombinations)));
-            System.out.printf("%.2f,", ((double)maxUStructureStates)/1000000000.0);
+            System.out.printf("%.2f,", ((double)maxUStructureStates));
 
-            System.out.printf("%.2f,", ((double)minAutomatonStates)/1000000000.0);
-            System.out.printf("%.2f,", (((double)totalAutomatonStates)/((double)nCombinations))/1000000000.0);
-            System.out.printf("%.2f,", ((double)maxAutomatonStates)/1000000000.0);
+            System.out.printf("%.2f,", ((double)minAutomatonStates));
+            System.out.printf("%.2f,", (((double)totalAutomatonStates)/((double)nCombinations)));
+            System.out.printf("%.2f,", ((double)maxAutomatonStates));
 
             System.out.printf("%.2f,", ((double)minTime)/1000000000.0);
             System.out.printf("%.2f,", (((double)totalTime)/((double)nCombinations))/1000000000.0);
@@ -350,6 +359,14 @@ public class Liu2 {
     }
     
     return returnValue;
+ }
+
+  public static <E> List<List<E>> generateNoPerm(List<E> original) {
+
+    List<List<E>> result = new ArrayList<List<E>>();
+    result.add(original);
+    return result;
+   
  }
 
   /**
@@ -523,6 +540,7 @@ public class Liu2 {
             lPrime = Automaton.intersection(lPrime, automaton, null, null);
             System.err.println("\t\t\t\tPicking automaton from L\\L': " + automaton);
             automataInLPrime.add(automaton);
+            System.err.println("\t\t\t\tSize of L': " + lPrime.getNumberOfStates());
             automatonStateData[combinationIndex] = Math.max(automatonStateData[combinationIndex], lPrime.getNumberOfStates());
             continue loop;
           } else if (chosenSpec != null) {
@@ -530,6 +548,7 @@ public class Liu2 {
             kPrime = Automaton.intersection(kPrime, automaton, null, null);
             System.err.println("\t\t\t\tPicking automaton from K\\K': " + automaton);
             automataInKPrime.add(automaton);
+            System.err.println("\t\t\t\tSize of K': " + kPrime.getNumberOfStates());
             automatonStateData[combinationIndex] = Math.max(automatonStateData[combinationIndex], kPrime.getNumberOfStates());
             continue loop;
           }
@@ -539,6 +558,7 @@ public class Liu2 {
             kPrime = Automaton.intersection(kPrime, automaton, null, null);
             System.err.println("\t\t\t\tPicking automaton from K\\K': " + automaton);
             automataInKPrime.add(automaton);
+            System.err.println("\t\t\t\tSize of K': " + kPrime.getNumberOfStates());
             automatonStateData[combinationIndex] = Math.max(automatonStateData[combinationIndex], kPrime.getNumberOfStates());
             continue loop;
           } else if (chosenPlant != null) {
@@ -546,6 +566,7 @@ public class Liu2 {
             lPrime = Automaton.intersection(lPrime, automaton, null, null);
             System.err.println("\t\t\t\tPicking automaton from L\\L': " + automaton);
             automataInLPrime.add(automaton);
+            System.err.println("\t\t\t\tSize of L': " + lPrime.getNumberOfStates());
             automatonStateData[combinationIndex] = Math.max(automatonStateData[combinationIndex], lPrime.getNumberOfStates());
             continue loop;
           }
