@@ -183,21 +183,20 @@ public class UStructure extends Automaton {
     UStructure uStructure = duplicate(newHeaderFile, newBodyFile);
 
       /* Add communications (marking the potential communications) */
-    // System.out.println("A:" + uStructure.getNumberOfStates());
-    // System.out.println("B:" + leastUpperBounds.size());
-    // System.out.println("events:" + getNumberOfEvents());
+
+    Map<String, State> memoization = new HashMap<String, State>();
     for (long s = 1; s <= uStructure.getNumberOfStates(); s++) {
-      // System.out.println(s + "/" + uStructure.getNumberOfStates());
 
       State startingState = uStructure.getState(s);
+      System.out.println(s + "/" + uStructure.getNumberOfStates() + " (size=" + memoization.size() + ") nTransitions:" + startingState.getNumberOfTransitions());
       int counter = 0;
       // Try each least upper bound
       for (LabelVector vector : leastUpperBounds) {
-        System.out.println(s + "/" + uStructure.getNumberOfStates() + ": " + (++counter) + "/" + leastUpperBounds.size());
-        // System.out.println("C: max(" + vector.getSize() + "," + potentialCommunications.size() + ")");
+        if (s == 1)
+          System.out.println("\t" + (++counter) + "/" + leastUpperBounds.size());
 
         boolean[] vectorElementsFound = new boolean[vector.getSize()];
-        State destinationState = uStructure.findWhereCommunicationLeads(vector, vectorElementsFound, startingState);
+        State destinationState = uStructure.findWhereCommunicationLeads(vector, vectorElementsFound, startingState, memoization);
         
         if (destinationState != null) {
 
@@ -1075,11 +1074,13 @@ public class UStructure extends Automaton {
    * @param communication       The event vector representing the communication
    * @param vectorElementsFound Indicates which elements of the vector have been found
    * @param currentState        The state that we are currently on
+   * @param memoization         A hash map used for dynamic programming purposes
    * @return                    The destination state (or null if the communication does not lead to a state)
    **/
   private State findWhereCommunicationLeads(LabelVector communication,
                                             boolean[] vectorElementsFound,
-                                            State currentState) {
+                                            State currentState,
+                                            Map<String, State> memoization) {
 
       /* Base case */
 
@@ -1091,9 +1092,14 @@ public class UStructure extends Automaton {
         break;
       }
 
-    if (finished) {
+    if (finished)
       return currentState;
-    }
+
+      /* Memoization */
+
+    String key = encodeString(communication, vectorElementsFound, currentState);
+    if (memoization.containsKey(key))
+      return memoization.get(key);
 
       /* Recursive case */
 
@@ -1125,16 +1131,45 @@ public class UStructure extends Automaton {
       }
 
       // Recursive call to the state where this transition leads
-      State destinationState = findWhereCommunicationLeads(communication, copy, getState(t.getTargetStateID()));
+      State destinationState = findWhereCommunicationLeads(communication, copy, getState(t.getTargetStateID()), memoization);
       
       // Return destination if it is found (there will only ever be one destination for a given communication from a given state, so we can stop as soon as we find it the first time)
-      if (destinationState != null)
+      if (destinationState != null) {
+        memoization.put(key, destinationState); // Save the answer (NOTE: Saving the dead-ends is more important than saving the answers)
         return destinationState;
+      }
 
     }
 
+    memoization.put(key, null); // Indicate that this is a dead-end
     return null;
 
+  }
+
+  /**
+   * Encode the current method's state in order to use it as a key in a hash map.
+   * NOTE: This makes the assumption that commas don't appear in event labels (which JDec prevents)
+   * @param communication       The event vector representing the communication
+   * @param vectorElementsFound Indicates which elements of the vector have been found
+   * @param currentState        The state that we are currently on
+   * @return                    The resulting string
+   **/
+  private String encodeString(LabelVector communication,
+                              boolean[] vectorElementsFound,
+                              State currentState) {
+
+    StringBuilder missingVectorElements = new StringBuilder();
+    for (int i = 0; i < communication.getSize(); i++) {
+      String element = communication.getLabelAtIndex(i);
+      if (!vectorElementsFound[i]) {
+        missingVectorElements.append("," + element);
+      } else {
+        missingVectorElements.append(",*");
+      }
+    }
+
+    return currentState.getID() + missingVectorElements.toString();
+  
   }
 
   /**

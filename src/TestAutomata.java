@@ -1426,8 +1426,8 @@ public class TestAutomata {
 
   /**
    * Helper method to print the results of a test routine.
-   * @param testRoutineName - The test routine's name is used as part of the output.
-   * @param counter - The counter contains the information about how many test cases passed and failed
+   * @param testRoutineName The test routine's name is used as part of the output.
+   * @param counter         The counter contains the information about how many test cases passed and failed
    **/
   private static void printTestRoutineSummary(String testRoutineName, TestCounter counter) {
 
@@ -1473,7 +1473,7 @@ public class TestAutomata {
   /**
    *
    * @param alreadyUsed An array of booleans indicating which individuals have already been used, and are
-   *                    no longer eligible to be considered as part of the pareto front
+   *                    no longer eligible to be considered as part of the pareto front.
    *                    NOTE: To consider all individuals, pass an array filled with false values
    **/
   private static ArrayList<Integer> getParetoFront(int[] objective1, int[] objective2, boolean[] alreadyUsed) {
