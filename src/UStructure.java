@@ -183,14 +183,19 @@ public class UStructure extends Automaton {
     UStructure uStructure = duplicate(newHeaderFile, newBodyFile);
 
       /* Add communications (marking the potential communications) */
-
-    for (long s = 1; s < uStructure.getNumberOfStates(); s++) {
+    // System.out.println("A:" + uStructure.getNumberOfStates());
+    // System.out.println("B:" + leastUpperBounds.size());
+    // System.out.println("events:" + getNumberOfEvents());
+    for (long s = 1; s <= uStructure.getNumberOfStates(); s++) {
+      // System.out.println(s + "/" + uStructure.getNumberOfStates());
 
       State startingState = uStructure.getState(s);
-
+      int counter = 0;
       // Try each least upper bound
       for (LabelVector vector : leastUpperBounds) {
-        
+        System.out.println(s + "/" + uStructure.getNumberOfStates() + ": " + (++counter) + "/" + leastUpperBounds.size());
+        // System.out.println("C: max(" + vector.getSize() + "," + potentialCommunications.size() + ")");
+
         boolean[] vectorElementsFound = new boolean[vector.getSize()];
         State destinationState = uStructure.findWhereCommunicationLeads(vector, vectorElementsFound, startingState);
         
@@ -1086,8 +1091,9 @@ public class UStructure extends Automaton {
         break;
       }
 
-    if (finished)
+    if (finished) {
       return currentState;
+    }
 
       /* Recursive case */
 

@@ -88,6 +88,7 @@ public class Automaton {
 
   // Events
   protected List<Event> events = new ArrayList<Event>();
+  protected Map<String, Event> eventsMap = new HashMap<String, Event>();
 
   // Special transitions
   private List<TransitionData> badTransitions;
@@ -2020,18 +2021,12 @@ public class Automaton {
    * @return          The image, or null if it could not be loaded
    **/
   public BufferedImage loadImageFromFile(String fileName) {
-
     try {
-
       return ImageIO.read(new File(fileName));
-
     } catch (IOException e) {
-
       e.printStackTrace();
       return null;  
-
     }
-
   }
 
     /* GUI INPUT CODE GENERATION */
@@ -3243,12 +3238,12 @@ public class Automaton {
 
       /* Add the event */
 
-    // NOTE: The implementation of Event.equals() and Event.compareTo() does not guarantee that
-    //       duplicates will always be detected with this method.
-    if (!events.add(event)) {
-      System.err.println("ERROR: Could not add event to set (detected a duplicate).");
+    if (!events.add(event) ) {
+      System.err.println("ERROR: Could not add event to list.");
       return 0;
     }
+
+    eventsMap.put(label, event);
 
       /* Update the header file */
 
@@ -3278,7 +3273,7 @@ public class Automaton {
   }
 
   /**
-   * Add the entire list of events to the automaton.
+   * Add the entire list of events to `the automaton.
    * @param newEvents The list of events to add
    **/
   protected void addAllEvents(List<Event> newEvents) {
@@ -3451,6 +3446,7 @@ public class Automaton {
     } catch (IndexOutOfBoundsException e) { }
 
     // Search each event one by one, looking for it
+    // NOTE: This is necessary in removeInactiveEvents(), since events are in the process of being re-numbered
     for (Event event : getEvents())
       if (event.getID() == id)
         return event;
@@ -3466,13 +3462,7 @@ public class Automaton {
    * @return       The requested event (or null if it does not exist)
    **/
   public Event getEvent(String label) {
-
-    for (Event e : events)
-      if (e.getLabel().equals(label))
-        return e;
-
-    return null;
-
+    return eventsMap.get(label);
   }
 
   /**

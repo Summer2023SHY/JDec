@@ -197,6 +197,8 @@ public class PrunedUStructure extends UStructure {
 
       // Remove the event if the ID matches
       if (e.getID() == id) {
+
+        eventsMap.remove(e.getLabel());
         
         iterator.remove();
         headerFileNeedsToBeWritten = true;

@@ -109,6 +109,10 @@ public class Event {
     return this.label.equals(other.label);
   }
 
+  @Override public int hashCode() {
+    return this.label.hashCode();
+  }
+
   @Override public String toString() {
     return "("
       + "\"" + label + "\",ID:"

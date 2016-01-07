@@ -1,5 +1,6 @@
 HOURS:
-Thursday, September 24: 20 minutes
+Monday, January 4: 1 hour 30 minutes
+Thursday, January 7: 3 hours 30 minutes
 
 H1:
 take_item,F,F
