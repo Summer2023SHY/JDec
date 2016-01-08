@@ -38,6 +38,7 @@ public class TestAutomata {
 		
 			/* Run the testing suite */
   	
+    UStructure.SUPPRESS_INVALID_COMMUNICATIONS = false;
   	runTests();
 
   }

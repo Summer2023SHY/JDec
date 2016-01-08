@@ -21,6 +21,11 @@ import java.math.*;
 
 public class UStructure extends Automaton {
 
+    /* CLASS CONSTANTS */
+
+  /** Whether or not invalid communications should be added for mathmatical completeness, or supressed for efficiency purposes */
+  public static boolean SUPPRESS_INVALID_COMMUNICATIONS = true;
+
     /* INSTANCE VARIABLES */
 
   // Special transitions
@@ -177,26 +182,26 @@ public class UStructure extends Automaton {
       leastUpperBounds.add(e.getVector());
     Set<CommunicationLabelVector> potentialCommunications = findPotentialCommunicationLabels(leastUpperBounds);
     
-    // Generate all least upper bounds
-    generateLeastUpperBounds(leastUpperBounds);
-    
+    // Generate all least upper bounds (if invalid communications are not being suppressed)
+    if (SUPPRESS_INVALID_COMMUNICATIONS)
+      leastUpperBounds.addAll(potentialCommunications);
+    else
+      generateLeastUpperBounds(leastUpperBounds);
+
     UStructure uStructure = duplicate(newHeaderFile, newBodyFile);
 
       /* Add communications (marking the potential communications) */
 
-    Map<String, State> memoization = new HashMap<String, State>();
+    // Map<String, State> memoization = new HashMap<String, State>();
     for (long s = 1; s <= uStructure.getNumberOfStates(); s++) {
 
       State startingState = uStructure.getState(s);
-      System.out.println(s + "/" + uStructure.getNumberOfStates() + " (size=" + memoization.size() + ") nTransitions:" + startingState.getNumberOfTransitions());
-      int counter = 0;
+
       // Try each least upper bound
       for (LabelVector vector : leastUpperBounds) {
-        if (s == 1)
-          System.out.println("\t" + (++counter) + "/" + leastUpperBounds.size());
 
         boolean[] vectorElementsFound = new boolean[vector.getSize()];
-        State destinationState = uStructure.findWhereCommunicationLeads(vector, vectorElementsFound, startingState, memoization);
+        State destinationState = uStructure.findWhereCommunicationLeads(vector, vectorElementsFound, startingState/*, memoization*/);
         
         if (destinationState != null) {
 
@@ -235,8 +240,11 @@ public class UStructure extends Automaton {
               }
 
             // If there were no potential communications, then it must be a invalid communication
-            if (!found)
+            if (!found) {
+              if (SUPPRESS_INVALID_COMMUNICATIONS)
+                System.err.println("ERROR: Invalid communication was not supressed: " + vector);
               uStructure.addInvalidCommunication(startingState.getID(), id, destinationState.getID());
+            }
     
           }
          
@@ -247,12 +255,8 @@ public class UStructure extends Automaton {
     }
 
       /* Ensure that the header file has been written to disk */
-    System.out.println("DEBUG: About to write header file");
+
     uStructure.writeHeaderFile();
-    System.out.println("DEBUG: Header file written");
-    System.out.println("DEBUG: " + uStructure.getNumberOfStates());
-    System.out.println("DEBUG: " + uStructure.getNumberOfTransitions() + " (potential: " + uStructure.getPotentialCommunications().size() + ", invalid: " + uStructure.invalidCommunications.size() + ")");
-    System.out.println("DEBUG: " + uStructure.getNumberOfEvents());
 
     return uStructure;
     
@@ -325,10 +329,9 @@ public class UStructure extends Automaton {
 
     List<Set<CommunicationData>> feasibleProtocols = new ArrayList<Set<CommunicationData>>();
     int minFeasibleSize = Integer.MAX_VALUE;
-    
     for (Set<CommunicationData> protocol : protocols) {
 
-      // We only want the smalelst feasible protocols
+      // We only want the smallest feasible protocols
       if (protocol.size() > minFeasibleSize)
         break;
 
@@ -347,6 +350,43 @@ public class UStructure extends Automaton {
     return feasibleProtocols;
 
   }
+
+  /**
+   * Greedily generate a feasible protocol (optimality is not guaranteed).
+   * @param communications  The communications to be considered (which should be a subset of the potentialCommunications list of this U-Structure)
+   * @return                The feasible protocol
+   **/
+  // public Set<CommunicationData> generateFeasibleProtocol(List<CommunicationData> communications) {
+
+  //   Set<CommunicationData> protocol = new HashSet<CommunicationData>();
+
+  //   UStructure uStructure = this;
+
+  //   // Continue until no more violations exist
+  //   while (uStructure.unconditionalViolations.size() > 0 || uStructure.conditionalViolations.size() > 0) {
+
+  //     // Choose an abitrary violation
+  //     TransitionData chosenViolation = (uStructure.conditionalViolations.size() > 0 ? uStructure.conditionalViolations.get(0) : uStructure.unconditionalViolations.get(0));
+
+  //     // Determine a communication which is necessary in order to help prevent this violation
+  //     // NOTE: It is possible that more than one communication will be neccessary, but this will
+  //     //       be taken care of in subsequent iterations
+  //     CommunicationData requiredCommunication = ;
+
+  //     // Add this communication to the protocol
+  //     protocol.add(requiredCommunication);
+
+  //     // Make the current protocol feasible
+  //     addCommunicationsToEnsureFeasibility(protocol);
+
+  //     // Apply the protocol, pruning as necessary
+  //     uStructure = applyProtocol(protocol, null, null);
+
+  //   }
+
+  //   return protocol;
+
+  // }
 
   /**
    * Find all feasible protocols which contain each communication in the requested protocol.
@@ -1078,13 +1118,12 @@ public class UStructure extends Automaton {
    * @param communication       The event vector representing the communication
    * @param vectorElementsFound Indicates which elements of the vector have been found
    * @param currentState        The state that we are currently on
-   * @param memoization         A hash map used for dynamic programming purposes
    * @return                    The destination state (or null if the communication does not lead to a state)
    **/
   private State findWhereCommunicationLeads(LabelVector communication,
                                             boolean[] vectorElementsFound,
-                                            State currentState,
-                                            Map<String, State> memoization) {
+                                            State currentState/*,
+                                            Map<String, State> memoization*/) {
 
       /* Base case */
 
@@ -1099,11 +1138,15 @@ public class UStructure extends Automaton {
     if (finished)
       return currentState;
 
-      /* Memoization */
+      /* Memoization
+
+    // NOTE: Memoziation is commented out since it is extremely memory intensive, and should not be used in the general case
 
     String key = encodeString(communication, vectorElementsFound, currentState);
     if (memoization.containsKey(key))
       return memoization.get(key);
+
+      */
 
       /* Recursive case */
 
@@ -1135,17 +1178,17 @@ public class UStructure extends Automaton {
       }
 
       // Recursive call to the state where this transition leads
-      State destinationState = findWhereCommunicationLeads(communication, copy, getState(t.getTargetStateID()), memoization);
+      State destinationState = findWhereCommunicationLeads(communication, copy, getState(t.getTargetStateID())/*, memoization*/);
       
       // Return destination if it is found (there will only ever be one destination for a given communication from a given state, so we can stop as soon as we find it the first time)
       if (destinationState != null) {
-        memoization.put(key, destinationState); // Save the answer (NOTE: Saving the dead-ends is more important than saving the answers)
+        // memoization.put(key, destinationState); // Save the answer (NOTE: Saving the dead-ends is more important than saving the answers)
         return destinationState;
       }
 
     }
 
-    memoization.put(key, null); // Indicate that this is a dead-end
+    // memoization.put(key, null); // Indicate that this is a dead-end
     return null;
 
   }

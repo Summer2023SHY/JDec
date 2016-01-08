@@ -42,6 +42,7 @@ public class JDec extends JFrame implements ActionListener {
   /**
    * When debug mode is on some processes will take longer since extra checks are being done.
    * If any problems are found, then they will be printed out on the console.
+   * NOTE: This hasn't been taken advantage of yet.
    **/
   public static final boolean DEBUG_MODE = true;
 
@@ -2158,12 +2159,14 @@ public class JDec extends JFrame implements ActionListener {
 
       // System.out.println("Starting refresh...");
       // long s = System.currentTimeMillis();
+
       automaton.generateInputForGUI();
 
       controllerInput.setValue(automaton.getNumberOfControllers());
       eventInput.setText(automaton.getEventInput());
       stateInput.setText(automaton.getStateInput());
       transitionInput.setText(automaton.getTransitionInput());
+      
       // System.out.println("Finished in " + (System.currentTimeMillis() - s) + "ms.");
 
     }

@@ -1,19 +1,7 @@
 HOURS:
 Monday, January 4: 2 hour 30 minutes
 Thursday, January 7: 6 hours 30 minutes
-
-H1:
-take_item,F,F
-package,F,F
-allow_exit,F,F
-new_part,T,F
-part_f_obuff,T,F
-part_passes,F,F
-part_fails,F,F
-ret_inbuff,T,F
-deposit_part,F,F
-part_ent,T,T
-fin_exit,T,F
+Friday, January 8: 3 hours 35 minutes, 2:05 - 
 
 NOTES:
 
