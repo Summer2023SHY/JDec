@@ -247,8 +247,12 @@ public class UStructure extends Automaton {
     }
 
       /* Ensure that the header file has been written to disk */
-
+    System.out.println("DEBUG: About to write header file");
     uStructure.writeHeaderFile();
+    System.out.println("DEBUG: Header file written");
+    System.out.println("DEBUG: " + uStructure.getNumberOfStates());
+    System.out.println("DEBUG: " + uStructure.getNumberOfTransitions() + " (potential: " + uStructure.getPotentialCommunications().size() + ", invalid: " + uStructure.invalidCommunications.size() + ")");
+    System.out.println("DEBUG: " + uStructure.getNumberOfEvents());
 
     return uStructure;
     
