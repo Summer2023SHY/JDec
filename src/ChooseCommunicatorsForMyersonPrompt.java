@@ -51,7 +51,7 @@ public class ChooseCommunicatorsForMyersonPrompt extends ChooseSendersAndRecieve
     });
 
     // Generated the pruned U-Structure
-    PrunedUStructure prunedUStructure = uStructure.applyProtocol(getProtocol(), null, null);
+    PrunedUStructure prunedUStructure = uStructure.applyProtocol(getProtocol(), null, null, true);
 
     // gui.createTab(prunedUStructure);
 

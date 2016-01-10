@@ -663,6 +663,7 @@ public class Automaton {
 
   /**
    * Create a new version of this automaton which has all of the transitions going the opposite direction.
+   * NOTE: An inverted automaton is needed when you want to efficiently determine which transitions lead to a particular state.
    * NOTE: This is just a shallow copy of the automaton (no special transition data is retained), which makes it slightly more efficient.
    * NOTE: This method should be overridden by subclasses, using the invertHelper() method.
    * @return  The inverted automaton
@@ -3400,6 +3401,23 @@ public class Automaton {
    **/
   public State getState(long id) {
     return State.readFromFile(this, bodyRAFile, id);
+  }
+
+  /**
+   * Given the label of a state, get the ID of the state.
+   * NOTE: This method is extremely expensive. It should only be used when abesolutely necessary.
+   * @param label The unique label corresponding to the requested state
+   * @return      The corresponding state ID (or null, if it was not found)
+   **/
+  public Long getStateID(String label) {
+  
+    for (long s = 1; s <= getNumberOfStates(); s++) {
+      State state = State.readFromFileExcludingTransitions(this, bodyRAFile, s);
+      if (state.getLabel().equals(label))
+        return s;
+    }
+
+    return null;
   }
 
   /**

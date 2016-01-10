@@ -208,7 +208,7 @@ public class JDec extends JFrame implements ActionListener {
       "Synchronized Composition[BASIC_AUTOMATON]",
       null,
       "Add Communications[U_STRUCTURE]",
-      "Feasible Protocols->Generate All[U_STRUCTURE],Make Protocol Feasible[U_STRUCTURE],Find Smallest[U_STRUCTURE]",
+      "Feasible Protocols->Generate All[U_STRUCTURE],Make Protocol Feasible[U_STRUCTURE],Find Smallest[U_STRUCTURE],Find First[U_STRUCTURE]",
       "Crush[ANY_U_STRUCTURE]",
       null,
       "Quantitative Communication->Nash[U_STRUCTURE]"
@@ -798,6 +798,20 @@ public class JDec extends JFrame implements ActionListener {
           java.util.List<Set<CommunicationData>> smallestFeasibleProtocols = uStructure.generateSmallestFeasibleProtocols(uStructure.getPotentialAndNashCommunications());
           setBusyCursor(false);
           new FeasibleProtocolOutput(this, uStructure, smallestFeasibleProtocols, "Smallest Feasible Protocols", " Protocol(s) with the fewest number of communications: ");
+        }
+        break;
+
+      case "Find First":
+
+        uStructure = ((UStructure) tab.automaton);
+
+        if (uStructure.getSizeOfPotentialAndNashCommunications() == 0)
+          displayErrorMessage("Operation Aborted", "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.");
+        else {
+          setBusyCursor(true);
+          Set<CommunicationData> feasibleProtocol = uStructure.generateFeasibleProtocol(uStructure.getPotentialAndNashCommunications());
+          setBusyCursor(false);
+          new FeasibleProtocolOutput(this, uStructure, Collections.singletonList(feasibleProtocol), "Feasible Protocol", " The first protocol found: ");
         }
         break;
 

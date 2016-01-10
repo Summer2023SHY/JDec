@@ -119,7 +119,7 @@ public class FeasibleProtocolOutput extends JDialog {
           String fileName = gui.getTemporaryFileName();
           File headerFile = new File(fileName + ".hdr");
           File bodyFile = new File(fileName + ".bdy");
-          Automaton generatedAutomaton = uStructure.applyProtocol(protocol, headerFile, bodyFile);
+          Automaton generatedAutomaton = uStructure.applyProtocol(protocol, headerFile, bodyFile, true);
           gui.createTab(generatedAutomaton);
 
         }

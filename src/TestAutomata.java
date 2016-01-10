@@ -1019,7 +1019,7 @@ public class TestAutomata {
     printTestCase("Ensuring that the protocol is correct", new TestResult(protocolsToString(addCommunications, smallestFeasibleProtocols).contains("1_1_1,<a,a,a>,2_2_2 (SR)\n1_1_1,<b,b,b>,3_3_3 (RS)\n")), counter);
     
     printTestOutput("Generating the pruned automaton for the feasible protocol with 2 communications...", 3);
-    uStructure = addCommunications.applyProtocol(smallestFeasibleProtocols.get(0), null, null);
+    uStructure = addCommunications.applyProtocol(smallestFeasibleProtocols.get(0), null, null, true);
     uStructure.generateInputForGUI();
     printTestCase("Ensuring the events are correct", new TestResult(uStructure.getEventInput(), "<a,a,*>,TF,TF\n<b,*,b>,FT,FT\n<*,b,*>,FF,FF\n<*,*,a>,FF,FF\n<o,o,o>,TT,TT\n<b,b,b>,FT,FT\n<a,a,a>,TF,TF"), counter);
     printTestCase("Ensuring the states are correct", new TestResult(uStructure.getStateInput(), "@1_1_1\n2_2_2\n2_4_2\n3_3_3\n3_3_5\n4_2_4\n4_4_4\n5_5_3\n5_5_5\n6_6_6\n7_7_7"), counter);

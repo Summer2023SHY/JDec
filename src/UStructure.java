@@ -130,7 +130,7 @@ public class UStructure extends Automaton {
     return accessibleHelper(new UStructure(newHeaderFile, newBodyFile, nControllers));
   }
 
-  // NOTE: This commented method works, but it is simply unnecessary
+  // NOTE: This method works, but it is simply unnecessary, so I commented it out.
   // @Override public UStructure complement(File newHeaderFile, File newBodyFile) throws OperationFailedException {
 
   //   UStructure uStructure = new UStructure(
@@ -152,7 +152,7 @@ public class UStructure extends Automaton {
     return invertHelper(new UStructure(null, null, eventCapacity, stateCapacity, transitionCapacity, labelLength, nControllers, true));
   }
 
-    /**
+  /**
    * Generate a new U-Structure, with all communications added (potential communications are marked).
    * @param newHeaderFile The header file where the new U-Structure should be stored
    * @param newBodyFile   The body file where the new U-Structure should be stored
@@ -183,9 +183,9 @@ public class UStructure extends Automaton {
     Set<CommunicationLabelVector> potentialCommunications = findPotentialCommunicationLabels(leastUpperBounds);
     
     // Generate all least upper bounds (if invalid communications are not being suppressed)
-    if (SUPPRESS_INVALID_COMMUNICATIONS)
+    if (SUPPRESS_INVALID_COMMUNICATIONS){
       leastUpperBounds.addAll(potentialCommunications);
-    else
+    } else
       generateLeastUpperBounds(leastUpperBounds);
 
     UStructure uStructure = duplicate(newHeaderFile, newBodyFile);
@@ -353,40 +353,56 @@ public class UStructure extends Automaton {
 
   /**
    * Greedily generate a feasible protocol (optimality is not guaranteed).
-   * @param communications  The communications to be considered (which should be a subset of the potentialCommunications list of this U-Structure)
+   * @param communications  The communications to be considered (which should be a subset of the potentialCommunications/nashCommunications lists of this U-Structure)
    * @return                The feasible protocol
    **/
-  // public Set<CommunicationData> generateFeasibleProtocol(List<CommunicationData> communications) {
+  public Set<CommunicationData> generateFeasibleProtocol(List<CommunicationData> communications) {
 
-  //   Set<CommunicationData> protocol = new HashSet<CommunicationData>();
+    Set<CommunicationData> protocol = new HashSet<CommunicationData>();
 
-  //   UStructure uStructure = this;
+    UStructure uStructure = this;
 
-  //   // Continue until no more violations exist
-  //   while (uStructure.unconditionalViolations.size() > 0 || uStructure.conditionalViolations.size() > 0) {
+    JDec jdec = new JDec();
 
-  //     // Choose an abitrary violation
-  //     TransitionData chosenViolation = (uStructure.conditionalViolations.size() > 0 ? uStructure.conditionalViolations.get(0) : uStructure.unconditionalViolations.get(0));
+    // Continue until no more violations exist
+    while (uStructure.unconditionalViolations.size() > 0 || uStructure.conditionalViolations.size() > 0) {
 
-  //     // Determine a communication which is necessary in order to help prevent this violation
-  //     // NOTE: It is possible that more than one communication will be neccessary, but this will
-  //     //       be taken care of in subsequent iterations
-  //     CommunicationData requiredCommunication = ;
+      System.out.println(uStructure.unconditionalViolations.size() + " " + uStructure.conditionalViolations.size() + " " + uStructure.getNumberOfStates());
 
-  //     // Add this communication to the protocol
-  //     protocol.add(requiredCommunication);
+      // Choose an abitrary violation
+      TransitionData chosenViolation = (uStructure.conditionalViolations.size() > 0 ? uStructure.conditionalViolations.get(0) : uStructure.unconditionalViolations.get(0));
+      System.out.println(chosenViolation.toString(uStructure));
+      System.out.println(uStructure.getState(chosenViolation.initialStateID));
 
-  //     // Make the current protocol feasible
-  //     addCommunicationsToEnsureFeasibility(protocol);
+      // Determine a communication which is necessary in order to help prevent this violation
+      // NOTE: It is possible that more than one communication will be neccessary, but this will
+      //       be taken care of in subsequent iterations
+      CommunicationData requiredCommunication = uStructure.findCommunicationToBeRemoved(chosenViolation);
 
-  //     // Apply the protocol, pruning as necessary
-  //     uStructure = applyProtocol(protocol, null, null);
+      // Find the associated communication in the original U-Structure (since the IDs may no longer match after a protocol is applied)
+      String initialStateLabel = uStructure.getState(requiredCommunication.initialStateID).getLabel();
+      String eventLabel        = uStructure.getEvent(requiredCommunication.eventID).getLabel();
+      String targetStateLabel  = uStructure.getState(requiredCommunication.targetStateID).getLabel();
+      CommunicationData associatedCommunication = new CommunicationData(getStateID(initialStateLabel), getEvent(eventLabel).getID(), getStateID(targetStateLabel), requiredCommunication.roles);
+      
+      System.out.println(requiredCommunication.toString(uStructure) + " " + associatedCommunication.toString(this));
 
-  //   }
+      // Add this communication to the protocol
+      protocol.add(associatedCommunication);
 
-  //   return protocol;
+      // Make the current protocol feasible
+      protocol = addCommunicationsToEnsureFeasibility(protocol);
 
-  // }
+      // Apply the protocol, pruning as necessary
+      uStructure = applyProtocol(protocol, null, null, false);
+
+      jdec.createTab(uStructure);
+
+    }
+
+    return protocol;
+
+  }
 
   /**
    * Find all feasible protocols which contain each communication in the requested protocol.
@@ -429,30 +445,36 @@ public class UStructure extends Automaton {
 
   /**
    * Refine this U-Structure by applying the specified communication protocol, and doing the necessary pruning.
-   * @param protocol      The chosen protocol
-   * @param newHeaderFile The header file where the new U-Structure should be stored
-   * @param newBodyFile   The body file where the new U-Structure should be stored
-   * @return              The pruned U-Structure that had the specified protocol applied
+   * @param protocol                    The chosen protocol
+   * @param newHeaderFile               The header file where the new U-Structure should be stored
+   * @param newBodyFile                 The body file where the new U-Structure should be stored
+   * @param discardUnusedCommunications Whether or not the unused communications should be discarded
+   * @return                            This pruned U-Structure that had the specified protocol applied
    **/
   public <T extends CommunicationData> PrunedUStructure applyProtocol(Set<T> protocol,
                                                                       File newHeaderFile,
-                                                                      File newBodyFile) {
+                                                                      File newBodyFile,
+                                                                      boolean discardUnusedCommunications) {
 
     PrunedUStructure prunedUStructure = duplicateAsPrunedUStructure(null, null);
 
       /* Remove all communications that are not part of the protocol */
 
-    for (TransitionData data : invalidCommunications)
-      prunedUStructure.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
+    if (discardUnusedCommunications) {
 
-    for (CommunicationData data : getPotentialAndNashCommunications())
-      if (!protocol.contains(data))
+      for (TransitionData data : invalidCommunications)
         prunedUStructure.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
+
+      for (CommunicationData data : getPotentialAndNashCommunications())
+        if (!protocol.contains(data))
+          prunedUStructure.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
+
+    }
 
       /* Prune (which removes more transitions) */
 
     for (CommunicationData data : protocol)
-      prunedUStructure.prune(protocol, getEvent(data.eventID).getVector(), data.initialStateID);
+      prunedUStructure.prune(protocol, getEvent(data.eventID).getVector(), data.initialStateID, discardUnusedCommunications);
     
       /* Get the accessible part of the U-Structure */
 
@@ -1058,6 +1080,90 @@ public class UStructure extends Automaton {
 
   }
 
+    /* AUTOMATA OPERATION HELPER METHODS */
+
+  /**
+   * Determine a communication to be removed in order to help prevent the specified violation.
+   * @param inverted  The inverse of this U-Structure
+   * @return          The communication which should be removed (null if nothing was found, which should not happen)
+   **/
+  private CommunicationData findCommunicationToBeRemoved(TransitionData violation) {
+
+      /* Setup */
+
+    UStructure inverted = invert();
+    Set<Long> visitedStates = new HashSet<Long>();
+    Queue<Long> stateQueue = new LinkedList<Long>();
+    Queue<Integer> eventQueue = new LinkedList<Integer>();
+    stateQueue.offer(violation.initialStateID);
+    eventQueue.offer(violation.eventID);
+
+      /* Do a breadth-first search until we find a communication which can be removed */
+
+    while (stateQueue.size() > 0) {
+      // System.out.println(stateQueue.size());
+
+      long stateID = stateQueue.poll();
+      int eventID  = eventQueue.poll();
+
+      // Check to see if we've found a communication which can prevent the specified violation
+      for (CommunicationData communication : getPotentialAndNashCommunications())
+        if (communication.initialStateID == stateID) {
+          System.out.println("matched: " + communication.toString(this) + " " + getEvent(eventID).getVector() + " " + getEvent(communication.eventID).getVector());
+          if (isStrictSubVector(getEvent(eventID).getVector(), getEvent(communication.eventID).getVector()))
+            return communication;
+        }
+
+      // State has already been visited
+      if (visitedStates.contains(stateID))
+        continue;
+
+      visitedStates.add(stateID);
+
+      // Traverse each transition backwards
+      State currentState = inverted.getState(stateID);
+      for (Transition transition : currentState.getTransitions()) {
+        // System.out.println(transition.getEvent());
+        stateQueue.offer(transition.getTargetStateID());
+        eventQueue.offer(transition.getEvent().getID());
+      }
+
+    }
+
+    System.err.println("ERROR: Could not locate communication to be removed.");
+
+    return null;
+
+  }
+
+  /**
+   * Add the necessary communications to the existing protocol in order to ensure that it is feasible.
+   * @param protocol  The communication protocol that needs to be made feasible
+   * @return          The feasible protocol
+   **/
+  private Set<CommunicationData> addCommunicationsToEnsureFeasibility(Set<CommunicationData> protocol) {
+
+    Set<CommunicationData> feasibleProtocol = new HashSet<CommunicationData>();
+    UStructure inverted = invert();
+
+    for (CommunicationData data1 : protocol) {
+
+      // Find indistinguishable states
+      Set<Long> reachableStates = new HashSet<Long>();
+      findReachableStates(this, inverted, reachableStates, data1.initialStateID, data1.getIndexOfSender() + 1);
+
+      // Add indistinguishable communications
+      for (Long stateID : reachableStates)
+        for (Transition transition : getState(stateID).getTransitions())
+          for (CommunicationData data2 : getPotentialAndNashCommunications())
+            if (data2.eventID == transition.getEvent().getID() && Arrays.deepEquals(data1.roles, data2.roles))
+              feasibleProtocol.add(data2);
+
+    }
+
+    return feasibleProtocol;
+
+  }
 
   /**
    * Recursively find the factorial of the specified number.
@@ -1080,8 +1186,6 @@ public class UStructure extends Automaton {
     return n * factorial(n - 1);
 
   }
-
-    /* AUTOMATA OPERATION HELPER METHODS */
 
   @Override protected <T extends Automaton> void copyOverSpecialTransitions(T automaton) {
 
@@ -1413,7 +1517,7 @@ public class UStructure extends Automaton {
   private boolean isFeasibleProtocol(Set<CommunicationData> protocol, boolean mustAlsoSolveControlProblem) {
 
     UStructure copy = duplicate();
-    copy = copy.applyProtocol(protocol, null, null);
+    copy = copy.applyProtocol(protocol, null, null, true);
 
     // If it must also solve the control problem, but there are still violations, then return false
     if (mustAlsoSolveControlProblem)
@@ -1517,7 +1621,7 @@ public class UStructure extends Automaton {
       return;
 
     // Generated the pruned U-Structure by applying the protocol
-    PrunedUStructure prunedUStructure = applyProtocol(feasibleProtocol, null, null);
+    PrunedUStructure prunedUStructure = applyProtocol(feasibleProtocol, null, null, true);
 
     // Determine which Crushes will need to be generated (we need to generate 1 or more)
     boolean[] crushNeedsToBeGenerated = new boolean[nControllers];
