@@ -362,7 +362,7 @@ public class UStructure extends Automaton {
 
     UStructure uStructure = this;
 
-    JDec jdec = new JDec();
+    // JDec jdec = new JDec();
 
     // Continue until no more violations exist
     while (uStructure.unconditionalViolations.size() > 0 || uStructure.conditionalViolations.size() > 0) {
@@ -393,12 +393,18 @@ public class UStructure extends Automaton {
       // Make the current protocol feasible
       protocol = addCommunicationsToEnsureFeasibility(protocol);
 
+      System.out.println("communications added");
+
       // Apply the protocol, pruning as necessary
       uStructure = applyProtocol(protocol, null, null, false);
 
-      jdec.createTab(uStructure);
+      System.out.println("protocol applied");
+
+      // jdec.createTab(uStructure);
 
     }
+
+    System.out.println("finished!");
 
     return protocol;
 
@@ -1148,10 +1154,12 @@ public class UStructure extends Automaton {
 
     for (CommunicationData data1 : protocol) {
 
+      System.out.println(data1 + " " + protocol.size());
+
       // Find indistinguishable states
       Set<Long> reachableStates = new HashSet<Long>();
       findReachableStates(this, inverted, reachableStates, data1.initialStateID, data1.getIndexOfSender() + 1);
-
+      System.out.println(reachableStates.size());
       // Add indistinguishable communications
       for (Long stateID : reachableStates)
         for (Transition transition : getState(stateID).getTransitions())
@@ -1589,6 +1597,10 @@ public class UStructure extends Automaton {
                                           Set<Long> reachableStates,
                                           long currentStateID,
                                           int vectorIndexOfSender) {
+    
+    // Base case
+    if (reachableStates.contains(currentStateID))
+      return;
 
     reachableStates.add(currentStateID);
 
