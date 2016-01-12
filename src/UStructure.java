@@ -362,10 +362,8 @@ public class UStructure extends Automaton {
 
     UStructure uStructure = this;
 
-    // JDec jdec = new JDec();
-
     // Continue until no more violations exist
-    while (uStructure.unconditionalViolations.size() > 0 || uStructure.conditionalViolations.size() > 0) {
+    while (uStructure.getSizeOfPotentialAndNashCommunications() > 0) {
 
       System.out.println(uStructure.unconditionalViolations.size() + " " + uStructure.conditionalViolations.size() + " " + uStructure.getNumberOfStates());
 
@@ -377,27 +375,21 @@ public class UStructure extends Automaton {
       // Determine a communication which is necessary in order to help prevent this violation
       // NOTE: It is possible that more than one communication will be neccessary, but this will
       //       be taken care of in subsequent iterations
-      CommunicationData requiredCommunication = uStructure.findCommunicationToBeRemoved(chosenViolation);
+      CommunicationData associatedCommunication = uStructure.findCommunicationToBeAdded(chosenViolation, this, protocol);
 
-      // Find the associated communication in the original U-Structure (since the IDs may no longer match after a protocol is applied)
-      String initialStateLabel = uStructure.getState(requiredCommunication.initialStateID).getLabel();
-      String eventLabel        = uStructure.getEvent(requiredCommunication.eventID).getLabel();
-      String targetStateLabel  = uStructure.getState(requiredCommunication.targetStateID).getLabel();
-      CommunicationData associatedCommunication = new CommunicationData(getStateID(initialStateLabel), getEvent(eventLabel).getID(), getStateID(targetStateLabel), requiredCommunication.roles);
-      
-      System.out.println(requiredCommunication.toString(uStructure) + " " + associatedCommunication.toString(this));
-
-      // Add the communication along with the other communications we need to ensure feasibility
+      if (protocol.contains(associatedCommunication)) {
+        System.out.println("infinite loop detected..");
+        break;
+      }
       protocol.addAll(addCommunicationsToEnsureFeasibility(associatedCommunication));
 
-      System.out.println("communications added");
+      System.out.println("communications added. protocol size is now: " + protocol.size());
 
       // Apply the protocol, pruning as necessary
       uStructure = applyProtocol(protocol, null, null, false);
 
-      System.out.println("protocol applied");
-
-      // jdec.createTab(uStructure);
+      System.out.println("protocol applied. number of states is now: " + uStructure.getNumberOfStates());
+      System.out.println("actual number of communications left in u-structure: " + uStructure.getSizeOfPotentialAndNashCommunications());
 
     }
 
@@ -1086,11 +1078,13 @@ public class UStructure extends Automaton {
     /* AUTOMATA OPERATION HELPER METHODS */
 
   /**
-   * Determine a communication to be removed in order to help prevent the specified violation.
-   * @param inverted  The inverse of this U-Structure
-   * @return          The communication which should be removed (null if nothing was found, which should not happen)
+   * Determine a communication to be added in order to help prevent the specified violation.
+   * @param violation           The violation that we are trying to avoid
+   * @param originalUStructure  The original U-Structure
+   * @param preExistingProtocol The protocol that we have currently found so far for the original U-Structure
+   * @return                    The communication which should be added (null if nothing was found, which should not happen)
    **/
-  private CommunicationData findCommunicationToBeRemoved(TransitionData violation) {
+  private CommunicationData findCommunicationToBeAdded(TransitionData violation, UStructure originalUStructure, Set<CommunicationData> preExistingProtocol) {
 
       /* Setup */
 
@@ -1101,21 +1095,35 @@ public class UStructure extends Automaton {
     stateQueue.offer(violation.initialStateID);
     eventQueue.offer(violation.eventID);
 
-      /* Do a breadth-first search until we find a communication which can be removed */
+      /* Do a breadth-first search until we find a communication which can be added that will prevent the violation */
 
     while (stateQueue.size() > 0) {
-      // System.out.println(stateQueue.size());
 
       long stateID = stateQueue.poll();
       int eventID  = eventQueue.poll();
 
       // Check to see if we've found a communication which can prevent the specified violation
       for (CommunicationData communication : getPotentialAndNashCommunications())
-        if (communication.initialStateID == stateID) {
-          System.out.println("matched: " + communication.toString(this) + " " + getEvent(eventID).getVector() + " " + getEvent(communication.eventID).getVector());
-          if (isStrictSubVector(getEvent(eventID).getVector(), getEvent(communication.eventID).getVector()))
-            return communication;
-        }
+        if (communication.initialStateID == stateID)
+          if (isStrictSubVector(getEvent(eventID).getVector(), getEvent(communication.eventID).getVector())) {
+
+            // Find the associated communication in the original U-Structure (since the IDs may no longer match after a protocol is applied)
+            String initialStateLabel = getState(communication.initialStateID).getLabel();
+            String eventLabel        = getEvent(communication.eventID).getLabel();
+            String targetStateLabel  = getState(communication.targetStateID).getLabel();
+            CommunicationData associatedCommunication = new CommunicationData(
+              originalUStructure.getStateID(initialStateLabel),
+              originalUStructure.getEvent(eventLabel).getID(),
+              originalUStructure.getStateID(targetStateLabel),
+              communication.roles
+            );
+
+            // Only return it, if it is not already in the protocol
+            if (!preExistingProtocol.contains(associatedCommunication))
+              return associatedCommunication;
+            else
+              System.out.println("skipped!");
+          }
 
       // State has already been visited
       if (visitedStates.contains(stateID))
@@ -1126,7 +1134,6 @@ public class UStructure extends Automaton {
       // Traverse each transition backwards
       State currentState = inverted.getState(stateID);
       for (Transition transition : currentState.getTransitions()) {
-        // System.out.println(transition.getEvent());
         stateQueue.offer(transition.getTargetStateID());
         eventQueue.offer(transition.getEvent().getID());
       }
@@ -1167,7 +1174,6 @@ public class UStructure extends Automaton {
     // Find indistinguishable states
     Set<Long> reachableStates = new HashSet<Long>();
     findReachableStates(this, inverted, reachableStates, initialCommunication.initialStateID, initialCommunication.getIndexOfSender() + 1);
-    System.out.println(reachableStates.size());
 
     // Add indistinguishable communications
     for (Long stateID : reachableStates) {
