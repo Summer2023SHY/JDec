@@ -53,8 +53,6 @@ public class ChooseCommunicatorsForMyersonPrompt extends ChooseSendersAndRecieve
     // Generated the pruned U-Structure
     PrunedUStructure prunedUStructure = uStructure.applyProtocol(getProtocol(), null, null, true);
 
-    // gui.createTab(prunedUStructure);
-
     // Display Myerson values
     new ShapleyValuesOutput(gui, prunedUStructure, "Myerson Values", "Myerson values by controller:", "Myerson values by coalition:");
 

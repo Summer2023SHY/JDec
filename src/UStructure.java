@@ -387,11 +387,8 @@ public class UStructure extends Automaton {
       
       System.out.println(requiredCommunication.toString(uStructure) + " " + associatedCommunication.toString(this));
 
-      // Add this communication to the protocol
-      protocol.add(associatedCommunication);
-
-      // Make the current protocol feasible
-      protocol = addCommunicationsToEnsureFeasibility(protocol);
+      // Add the communication along with the other communications we need to ensure feasibility
+      protocol.addAll(addCommunicationsToEnsureFeasibility(associatedCommunication));
 
       System.out.println("communications added");
 
@@ -1143,30 +1140,43 @@ public class UStructure extends Automaton {
   }
 
   /**
-   * Add the necessary communications to the existing protocol in order to ensure that it is feasible.
-   * @param protocol  The communication protocol that needs to be made feasible
-   * @return          The feasible protocol
+   * Find the communications needed in order to ensure that adding the specified communication is feasible.
+   * @param initialCommunication  The communication
+   * @return                      The feasible protocol
    **/
-  private Set<CommunicationData> addCommunicationsToEnsureFeasibility(Set<CommunicationData> protocol) {
+  private Set<CommunicationData> addCommunicationsToEnsureFeasibility(CommunicationData initialCommunication) {
 
     Set<CommunicationData> feasibleProtocol = new HashSet<CommunicationData>();
     UStructure inverted = invert();
 
-    for (CommunicationData data1 : protocol) {
+    // Group the communications so that they are accessible by state ID
+    // NOTE: We do this to reduce the time complexity of this method
+    Map<Long, List<CommunicationData>> map = new HashMap<Long, List<CommunicationData>>();
+    for (CommunicationData communication : getPotentialAndNashCommunications()) {
+      List<CommunicationData> list = map.get(communication.initialStateID);
+      if (list == null) {
+        list = new ArrayList<CommunicationData>();
+        list.add(communication);
+        map.put(communication.initialStateID, list);
+      } else {
+        list.add(communication);
+      }
 
-      System.out.println(data1 + " " + protocol.size());
+    }
 
-      // Find indistinguishable states
-      Set<Long> reachableStates = new HashSet<Long>();
-      findReachableStates(this, inverted, reachableStates, data1.initialStateID, data1.getIndexOfSender() + 1);
-      System.out.println(reachableStates.size());
-      // Add indistinguishable communications
-      for (Long stateID : reachableStates)
+    // Find indistinguishable states
+    Set<Long> reachableStates = new HashSet<Long>();
+    findReachableStates(this, inverted, reachableStates, initialCommunication.initialStateID, initialCommunication.getIndexOfSender() + 1);
+    System.out.println(reachableStates.size());
+
+    // Add indistinguishable communications
+    for (Long stateID : reachableStates) {
+      List<CommunicationData> communications = map.get(stateID);
+      if (communications != null)
         for (Transition transition : getState(stateID).getTransitions())
-          for (CommunicationData data2 : getPotentialAndNashCommunications())
-            if (data2.eventID == transition.getEvent().getID() && Arrays.deepEquals(data1.roles, data2.roles))
-              feasibleProtocol.add(data2);
-
+          for (CommunicationData data : communications)
+            if (data.eventID == transition.getEvent().getID() && Arrays.deepEquals(initialCommunication.roles, data.roles))
+              feasibleProtocol.add(data);
     }
 
     return feasibleProtocol;
