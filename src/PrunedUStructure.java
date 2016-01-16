@@ -46,15 +46,18 @@ public class PrunedUStructure extends UStructure {
    * @param protocol                    The chosen protocol (which must be feasible)
    * @param communication               The event vector representing the chosen communication
    * @param initialStateID              The ID of the state where the pruning begins at
-   * @param discardUnusedCommunications Whether or not the unused communications should be discarded
-   *                                    NOTE: Typically, this will be set to true
+   * @param indexOfSender               The index of the sender
    **/
   public <T extends CommunicationData> void prune(Set<T> protocol,
                                                   LabelVector communication,
                                                   long initialStateID,
-                                                  boolean discardUnusedCommunications) {
+                                                  int indexOfSender) {
 
-    pruneHelper(protocol, communication, new boolean[communication.getSize()], getState(initialStateID), 0, discardUnusedCommunications);
+    Set<Long> indistinguishableStates = new HashSet<Long>();
+    findConnectingStates((UStructure)this, (UStructure)this.invert(), indistinguishableStates, initialStateID, indexOfSender);
+    // System.out.println("communication: " + communication + ", index of sender: " + indexOfSender);
+    for (Long s : indistinguishableStates)
+      pruneHelper(protocol, communication, new boolean[communication.getSize()], getState(s), 0);
   
   }
 
@@ -65,14 +68,12 @@ public class PrunedUStructure extends UStructure {
    * @param vectorElementsFound         Indicates which elements of the vector have already been found
    * @param currentState                The state that we are currently on
    * @param depth                       The current depth of the recursion (first iteration has a depth of 0)
-   * @param discardUnusedCommunications Whether or not the unused communications should be discarded
    **/
   private <T extends CommunicationData> void pruneHelper(Set<T> protocol,
                                                          LabelVector communication,
                                                          boolean[] vectorElementsFound,
                                                          State currentState,
-                                                         int depth,
-                                                         boolean discardUnusedCommunications) {
+                                                         int depth) {
 
       /* Base case */
 
@@ -84,12 +85,16 @@ public class PrunedUStructure extends UStructure {
     // Try all transitions leading from this state
     outer: for (Transition t : currentState.getTransitions()) {
 
-      // We do not want to prune any of the chosen communications (or any remaining potential communications, if that behaviour has been set)
+      // We do not want to prune any of the chosen communications
       if (depth == 0) {
-        for (CommunicationData data : (discardUnusedCommunications ? protocol : getPotentialAndNashCommunications()))
-          if (currentState.getID() == data.initialStateID && t.getEvent().getID() == data.eventID && t.getTargetStateID() == data.targetStateID)
+        for (CommunicationData data : protocol)
+          if (currentState.getID() == data.initialStateID && t.getEvent().getID() == data.eventID && t.getTargetStateID() == data.targetStateID) {
+            // System.out.println("\t\tSkipped: " + t);
             continue outer;
+          }
       }
+
+      // System.out.println("\t\tProcessed: " + t);
 
       boolean[] copy = (boolean[]) vectorElementsFound.clone();
 
@@ -115,11 +120,13 @@ public class PrunedUStructure extends UStructure {
 
       }
 
+      // System.out.println("\t\tRemoved: " + t);
+
       // Prune this transition
       removeTransition(currentState.getID(), t.getEvent().getID(), t.getTargetStateID());
 
       // Recursive call to the state where this transition leads
-      pruneHelper(protocol, communication, copy, getState(t.getTargetStateID()), depth + 1, discardUnusedCommunications);
+      pruneHelper(protocol, communication, copy, getState(t.getTargetStateID()), depth + 1);
 
     }
 

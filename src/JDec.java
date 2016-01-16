@@ -719,7 +719,7 @@ public class JDec extends JFrame implements ActionListener {
         else {
         
           // Select controller to take the crush with respect to
-          int selectedController = pickController("Which component would you like to take the crush with respect to?", true);
+          int selectedController = pickController("Which component would you like to take the crush with respect to?", false);
           if (selectedController == -1)
             return;
 
