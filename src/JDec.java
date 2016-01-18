@@ -1895,7 +1895,7 @@ public class JDec extends JFrame implements ActionListener {
     public JSplitPane splitPane;
     public JTextPane eventInput, stateInput, transitionInput;
     public JSpinner controllerInput;
-    public JButton generateAutomatonButton, generateImageButton, viewImageInBrowserButton;
+    public JButton generateAutomatonButton, generateImageButton, viewImageInBrowserButton, exploreAutomatonButton;
     public Canvas canvas = null;
 
     // Automaton properties
@@ -2071,6 +2071,20 @@ public class JDec extends JFrame implements ActionListener {
       });
       c.ipady = 0; c.weightx = 0.5; c.weighty = 1.0; c.gridx = 0; c.gridy = 7;
       container.add(viewImageInBrowserButton, c);
+
+        /* Exaplore Automaton Button */
+
+      exploreAutomatonButton = new JButton("Explore");
+      exploreAutomatonButton.setFocusable(false);
+      exploreAutomatonButton.setToolTipText("<html>Interactively crawl through the structure, state by state.</html>");
+      exploreAutomatonButton.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          AutomatonTab tab = tabs.get(tabbedPane.getSelectedIndex());
+          new AutomataExplorer(JDec.this, tab.automaton, "Explore");
+        }
+      });
+      c.ipady = 0; c.weightx = 0.5; c.weighty = 1.0; c.gridx = 0; c.gridy = 8;
+      container.add(exploreAutomatonButton, c);
 
       return container;
 
