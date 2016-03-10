@@ -363,14 +363,14 @@ public class UStructure extends Automaton {
     UStructure uStructure = this;
 
     // Continue until no more violations exist
-    while (uStructure.getSizeOfPotentialAndNashCommunications() > 0) {
+    while (uStructure.unconditionalViolations.size() > 0 || uStructure.conditionalViolations.size() > 0) {
 
-      System.out.println(uStructure.unconditionalViolations.size() + " " + uStructure.conditionalViolations.size() + " " + uStructure.getNumberOfStates());
+      // System.out.println(uStructure.unconditionalViolations.size() + " " + uStructure.conditionalViolations.size() + " " + uStructure.getNumberOfStates());
 
       // Choose an abitrary violation
       TransitionData chosenViolation = (uStructure.conditionalViolations.size() > 0 ? uStructure.conditionalViolations.get(0) : uStructure.unconditionalViolations.get(0));
-      System.out.println(chosenViolation.toString(uStructure));
-      System.out.println(uStructure.getState(chosenViolation.initialStateID));
+      // System.out.println(chosenViolation.toString(uStructure));
+      // System.out.println(uStructure.getState(chosenViolation.initialStateID));
 
       // Determine a communication which is necessary in order to help prevent this violation
       // NOTE: It is possible that more than one communication will be neccessary, but this will
@@ -378,22 +378,22 @@ public class UStructure extends Automaton {
       CommunicationData associatedCommunication = uStructure.findCommunicationToBeAdded(chosenViolation, this, protocol);
 
       if (protocol.contains(associatedCommunication)) {
-        System.out.println("infinite loop detected..");
+        System.err.println("ERROR : There was an infinite loop detected.");
         break;
       }
       protocol.addAll(addCommunicationsToEnsureFeasibility(associatedCommunication));
 
-      System.out.println("communications added. protocol size is now: " + protocol.size());
+      // System.out.println("communications added. protocol size is now: " + protocol.size());
 
       // Apply the protocol, pruning as necessary
       uStructure = applyProtocol(protocol, null, null, false);
 
-      System.out.println("protocol applied. number of states is now: " + uStructure.getNumberOfStates());
-      System.out.println("actual number of communications left in u-structure: " + uStructure.getSizeOfPotentialAndNashCommunications());
+      // System.out.println("protocol applied. number of states is now: " + uStructure.getNumberOfStates());
+      // System.out.println("actual number of communications left in u-structure: " + uStructure.getSizeOfPotentialAndNashCommunications());
 
     }
 
-    System.out.println("finished!");
+    // System.out.println("finished!");
 
     return protocol;
 
@@ -469,7 +469,7 @@ public class UStructure extends Automaton {
       /* Prune (which removes more transitions) */
 
     for (CommunicationData data : protocol)
-      prunedUStructure.prune(protocol, getEvent(data.eventID).getVector(), data.initialStateID, discardUnusedCommunications);
+      prunedUStructure.prune(protocol, getEvent(data.eventID).getVector(), data.initialStateID, data.getIndexOfSender() + 1);
     
       /* Get the accessible part of the U-Structure */
 
@@ -661,20 +661,17 @@ public class UStructure extends Automaton {
     Crush crush = new Crush(newHeaderFile, newBodyFile, nControllers);
     for (Event e : events)
       if (!e.getVector().isUnobservableToController(indexOfController))
-        crush.addEvent(e.getLabel(), e.isObservable(), e.isControllable());
+        crush.addEvent(e.getLabel(), e. isObservable(), e.isControllable());
 
     // Maps the combined IDs to the ID of the state in the crush, meaning we do not need to re-number states afterwards
     HashMap<BigInteger, Long> mappings = new HashMap<BigInteger, Long>();
     long nextID = 1;
 
     // Find all connecting states
-    Stack<Set<State>> stackOfConnectedStates = new Stack<Set<State>>();
+    Stack<Set<Long>> stackOfConnectedStates = new Stack<Set<Long>>();
     HashSet<BigInteger> crushedStatesAlreadyPushed = new HashSet<BigInteger>();
-    Set<State> connectingStates = new HashSet<State>();
-    findConnectingStates(this, connectingStates, getState(initialState), indexOfController);
-    Set<State> connectingStatesFromInverted = new HashSet<State>();
-    findConnectingStates(invertedUStructure, connectingStatesFromInverted, invertedUStructure.getState(initialState), indexOfController);
-    connectingStates.addAll(connectingStatesFromInverted);
+    Set<Long> connectingStates = new HashSet<Long>();
+    findConnectingStates(this, invertedUStructure, connectingStates, initialState, indexOfController);
     stackOfConnectedStates.push(connectingStates);
     crushedStatesAlreadyPushed.add(combineStateIDs(connectingStates));
 
@@ -685,7 +682,7 @@ public class UStructure extends Automaton {
     while (stackOfConnectedStates.size() > 0) {
 
       // Get set from stack and generate unique ID for that collection of states
-      Set<State> setOfStates = stackOfConnectedStates.pop();
+      Set<Long> setOfStates = stackOfConnectedStates.pop();
       BigInteger combinedID = combineStateIDs(setOfStates);
       Long mappedID = mappings.get(combinedID);
       if (mappedID == null) {
@@ -699,20 +696,20 @@ public class UStructure extends Automaton {
       outer: for (Event e : crush.events) {
 
         // Setup
-        Set<State> reachableStates = new HashSet<State>();
+        Set<Long> reachableStates = new HashSet<Long>();
         Set<NashCommunicationData> communicationsToBeCopied = new HashSet<NashCommunicationData>();
         boolean isDisablementDecision = false;
         boolean[] disablementControllers = new boolean[nControllers];
         Arrays.fill(disablementControllers, true);
         
         // Generate list of all reachable states from the current event        
-        for (State s : setOfStates)
-          for (Transition t : s.getTransitions())
+        for (Long id : setOfStates) {
+          State s = getState(id);
+          for (Transition t : s.getTransitions()) {
             if (t.getEvent().equals(e)) {
 
               // Find reachable states
-              findConnectingStates(this, reachableStates, getState(t.getTargetStateID()), indexOfController);
-              findConnectingStates(invertedUStructure, reachableStates, invertedUStructure.getState(t.getTargetStateID()), indexOfController);
+              findConnectingStates(this, invertedUStructure, reachableStates, t.getTargetStateID(), indexOfController);
 
               TransitionData transitionData = new TransitionData(s.getID(), t.getEvent().getID(), t.getTargetStateID());
               
@@ -732,6 +729,8 @@ public class UStructure extends Automaton {
                 }
 
             }
+          }
+        }
 
         // Add the transition (if applicable)
         if (reachableStates.size() > 0) {
@@ -843,13 +842,10 @@ public class UStructure extends Automaton {
     long nextID = 1;
 
     // Find all connecting states
-    Stack<Set<State>> stackOfConnectedStates = new Stack<Set<State>>();
+    Stack<Set<Long>> stackOfConnectedStates = new Stack<Set<Long>>();
     HashSet<BigInteger> crushedStatesAlreadyPushed = new HashSet<BigInteger>();
-    Set<State> connectingStates = new HashSet<State>();
-    findConnectingStates(this, connectingStates, getState(initialState), indexOfController);
-    Set<State> connectingStatesFromInverted = new HashSet<State>();
-    findConnectingStates(invertedUStructure, connectingStatesFromInverted, invertedUStructure.getState(initialState), indexOfController);
-    connectingStates.addAll(connectingStatesFromInverted);
+    Set<Long> connectingStates = new HashSet<Long>();
+    findConnectingStates(this, invertedUStructure, connectingStates, initialState, indexOfController);
     stackOfConnectedStates.push(connectingStates);
     crushedStatesAlreadyPushed.add(combineStateIDs(connectingStates));
 
@@ -860,7 +856,7 @@ public class UStructure extends Automaton {
     while (stackOfConnectedStates.size() > 0) {
 
       // Get set from stack and generate unique ID for that collection of states
-      Set<State> setOfStates = stackOfConnectedStates.pop();
+      Set<Long> setOfStates = stackOfConnectedStates.pop();
       BigInteger combinedID = combineStateIDs(setOfStates);
       Long mappedID = mappings.get(combinedID);
       if (mappedID == null) {
@@ -874,22 +870,22 @@ public class UStructure extends Automaton {
       outer: for (Event e : crush.events) {
 
         // Setup
-        Set<State> reachableStates = new HashSet<State>();
+        Set<Long> reachableStates = new HashSet<Long>();
         CommunicationData communicationToBeCopied = null;
         boolean isDisablementDecision = false;
         boolean[] disablementControllers = new boolean[nControllers];
         Arrays.fill(disablementControllers, true);
         
         // Generate list of all reachable states from the current event        
-        for (State s : setOfStates)
-          for (Transition t : s.getTransitions())
+        for (Long s : setOfStates) {
+          State state = getState(s);
+          for (Transition t : state.getTransitions())
             if (t.getEvent().equals(e)) {
 
               // Find reachable states
-              findConnectingStates(this, reachableStates, getState(t.getTargetStateID()), indexOfController);
-              findConnectingStates(invertedUStructure, reachableStates, invertedUStructure.getState(t.getTargetStateID()), indexOfController);
+              findConnectingStates(this, invertedUStructure, reachableStates, t.getTargetStateID(), indexOfController);
 
-              TransitionData transitionData = new TransitionData(s.getID(), t.getEvent().getID(), t.getTargetStateID());
+              TransitionData transitionData = new TransitionData(s, t.getEvent().getID(), t.getTargetStateID());
               
               // Check to see if there are any communications that need to be copied over
               for (CommunicationData communication : getPotentialCommunications())
@@ -909,6 +905,7 @@ public class UStructure extends Automaton {
                 }
 
             }
+        }
 
         // Add the transition (if applicable)
         if (reachableStates.size() > 0) {
@@ -1121,8 +1118,6 @@ public class UStructure extends Automaton {
             // Only return it, if it is not already in the protocol
             if (!preExistingProtocol.contains(associatedCommunication))
               return associatedCommunication;
-            else
-              System.out.println("skipped!");
           }
 
       // State has already been visited
@@ -1688,12 +1683,14 @@ public class UStructure extends Automaton {
    * @param isInitialState  Whether or not this crushed state is the initial state
    * @param id              The ID of the crushed state
    **/
-  private void addStateToCrush(Crush crush, Set<State> setOfStates, boolean isInitialState, long id) {
+  private void addStateToCrush(Crush crush, Set<Long> setOfStates, boolean isInitialState, long id) {
 
     // Create a label for this state
     String label = "";
-    for (State s : setOfStates)
-      label += "," + s.getLabel();
+    for (Long s : setOfStates) {
+      State state = getState(s);
+      label += "," + state.getLabel();
+    }
     label = "<" + label.substring(1) + ">";
 
     // Add new state
@@ -1706,12 +1703,12 @@ public class UStructure extends Automaton {
    * @param setOfStates The set of states which are being combined
    * @return            The combined ID
    **/
-  private BigInteger combineStateIDs(Set<State> setOfStates) {
+  private BigInteger combineStateIDs(Set<Long> setOfStates) {
 
     List<Long> listOfIDs = new ArrayList<Long>();
 
-    for (State s : setOfStates)
-      listOfIDs.add(s.getID());
+    for (Long s : setOfStates)
+      listOfIDs.add(s);
 
     Collections.sort(listOfIDs);
 
@@ -1721,26 +1718,36 @@ public class UStructure extends Automaton {
 
   /**
    * Starting at the specified state, find all indistinguishable states with respect to a particular controller.
-   * @param uStructure        The relevant U-Structure
-   * @param set               The set of connected states, which will be populated by this method
-   * @param currentState      The current state
-   * @param indexOfController The index of the controller
+   * @param uStructure          The relevant U-Structure
+   * @param invertedUStructure  The relevant inverted U-Structure
+   * @param set                 The set of connected states, which will be populated by this method
+   * @param currentState        The current state ID
+   * @param indexOfController   The index of the controller
    **/
-  private static void findConnectingStates(UStructure uStructure, Set<State> set, State currentState, int indexOfController) {
+  protected static void findConnectingStates(UStructure uStructure, UStructure invertedUStructure, Set<Long> set, long currentStateID, int indexOfController) {
 
       /* Base Case */
     
-    if (set.contains(currentState))
+    if (set.contains(currentStateID))
       return;
 
       /* Recursive Case */
 
-    set.add(currentState);
+    set.add(currentStateID);
+
+    State currentState = uStructure.getState(currentStateID);
 
     // Find all unobservable events leading from this state, and add the target states to the set
     for (Transition t : currentState.getTransitions())
       if (t.getEvent().getVector().isUnobservableToController(indexOfController))
-        findConnectingStates(uStructure, set, uStructure.getState(t.getTargetStateID()), indexOfController);
+        findConnectingStates(uStructure, invertedUStructure, set, t.getTargetStateID(), indexOfController);
+
+    State currentInvertedState = invertedUStructure.getState(currentStateID);
+
+    // Find all unobservable events leading to this state, and add those states to the set
+    for (Transition t : currentInvertedState.getTransitions())
+      if (t.getEvent().getVector().isUnobservableToController(indexOfController))
+        findConnectingStates(uStructure, invertedUStructure, set, t.getTargetStateID(), indexOfController);
 
   }
 

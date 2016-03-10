@@ -1,14 +1,10 @@
-HOURS:
-Monday, January 4: 2 hour 30 minutes
-Thursday, January 7: 6 hours 30 minutes
-Friday, January 8: 5 hours 30 minutes
-Saturday, Janurary 9: 4 hours 30 minutes
-Sunday, January 10: 2 hours 30 minutes
-Monday, January 11: 1 hour 30 minutes
-Tuesday, January 12: 30 minutes
 
 
 NOTES:
+
+-Add ability to crawl automata
+-JDec function to re-assign state labels (1, 2, 3... etc. - particular useful in crushes)
+-JDec GUI code validation seems to be broken for crushes
 
 -finish debugging generateFeasibleProtocol
 -in generateFeasibleProtocol, pick the communication with the least number of recievers
