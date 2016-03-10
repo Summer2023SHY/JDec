@@ -1,7 +1,4 @@
-HOURS:
-Friday, Janurary 15: 30 minutes
-Saturday, Janurary 16: 4 hours
-Monday, January 18: 1 hour 40 minutes
+
 
 NOTES:
 
