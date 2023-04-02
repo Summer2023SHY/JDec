@@ -32,7 +32,7 @@ import java.nio.file.*;
 import java.awt.image.*;
 import javax.imageio.*;
 
-public class Automaton {
+public class Automaton implements AutoCloseable {
 
     /* PUBLIC CLASS CONSTANTS */
 
@@ -2286,9 +2286,9 @@ public class Automaton {
 
   }
 
-  @Override protected void finalize() throws Throwable {
+  @Override
+  public void close() {
     closeFiles();
-    super.finalize();
   } 
 
   /**

@@ -302,7 +302,7 @@ public class JDec extends JFrame implements ActionListener {
     JMenuItem menuItem = new JMenuItem(str);
     menuItem.addActionListener(this);
 
-    int shortcutKey = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+    int shortcutKey = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
 
     // Add the appropriate accelerator
     switch (str) {
