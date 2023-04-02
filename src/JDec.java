@@ -17,7 +17,6 @@
  *  -Inner Classes
  **/
 
-import com.apple.eawt.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
@@ -107,14 +106,6 @@ public class JDec extends JFrame implements ActionListener {
    * @param args  Any arguments are simply ignored
    **/  
   public static void main(String[] args) {
-    
-    // Use OSX's screen menu bar
-    System.setProperty("apple.laf.useScreenMenuBar", "true");
-    
-    // Set the icon
-    Application application = Application.getApplication();
-    Image image = Toolkit.getDefaultToolkit().getImage("icon.png");
-    application.setDockIconImage(image);
     
     // Start the application  
     new JDec();
