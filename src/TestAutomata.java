@@ -63,181 +63,217 @@ public class TestAutomata {
 
   }
 
-  @Test
+  @Nested
   @DisplayName("HELPER METHOD")
-  public void runHelperMethodTestRoutine() {
+  @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+  class HelperMethodTest {
 
-    String testRoutineName = "HELPER METHOD";
+    TestCounter counter;
+    Automaton automaton;
+    List<List<String>> labelSequences;
 
-    printTestOutput("RUNNING " + testRoutineName + " TESTS...", 1);
+    @BeforeEach
+    void setupCounter() {
+      counter = new TestCounter();
+    }
 
-    TestCounter counter = new TestCounter();
-
+    @Test
+    @DisplayName("findCounterExample() Tests")
+    @Order(1)
+    public void testFindCounterExample() {
       /* findCounterExample() Tests */
+      printTestOutput("Liu's Thesis - findCounterExample(): ", 2);
+      
+      printTestOutput("Instantiating an automaton...", 3);
+      automaton = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+        new Automaton(null, null, 2),
+        "a,TF,TF\nb,FT,FT\no,TT,TT", // Events
+        "@1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T", // States
+        "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD" // Transitions
+      ));
 
-    printTestOutput("Liu's Thesis - findCounterExample(): ", 2);
-    
-    printTestOutput("Instantiating an automaton...", 3);
-    Automaton automaton = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(null, null, 2),
-      "a,TF,TF\nb,FT,FT\no,TT,TT", // Events
-      "@1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T", // States
-      "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD" // Transitions
-    ));
+      printTestOutput("Taking the U-Structure of the automaton...", 3);
+      UStructure uStructure = saveAndLoadUStructure(automaton.synchronizedComposition(null, null));
+      
+      printTestOutput("Finding the counter-example...", 3);
+      labelSequences = uStructure.findCounterExample(true);
+      printTestCase("Ensuring that the 0th sequence is correct", new TestResult(labelSequences.get(0), new ArrayList<String>() {{ add("b"); add("a"); add("o"); }} ), counter);
+      printTestCase("Ensuring that the 1st sequence is correct", new TestResult(labelSequences.get(1), new ArrayList<String>() {{ add("a"); add("b"); add("o"); }} ), counter);
+      printTestCase("Ensuring that the 2nd sequence is correct", new TestResult(labelSequences.get(2), new ArrayList<String>() {{ add("a"); add("b"); add("o"); }} ), counter);
+    }
 
-    printTestOutput("Taking the U-Structure of the automaton...", 3);
-    UStructure uStructure = saveAndLoadUStructure(automaton.synchronizedComposition(null, null));
-    
-    printTestOutput("Finding the counter-example...", 3);
-    List<List<String>> labelSequences = uStructure.findCounterExample(true);
-    printTestCase("Ensuring that the 0th sequence is correct", new TestResult(labelSequences.get(0), new ArrayList<String>() {{ add("b"); add("a"); add("o"); }} ), counter);
-    printTestCase("Ensuring that the 1st sequence is correct", new TestResult(labelSequences.get(1), new ArrayList<String>() {{ add("a"); add("b"); add("o"); }} ), counter);
-    printTestCase("Ensuring that the 2nd sequence is correct", new TestResult(labelSequences.get(2), new ArrayList<String>() {{ add("a"); add("b"); add("o"); }} ), counter);
-
+    @Test
+    @DisplayName("acceptsCounterExample() Tests")
+    @Order(2)
+    public void testAcceptsCounterExample() {
       /* acceptsCounterExample() Tests */
 
-    printTestOutput("Liu's Thesis - acceptsCounterExample(): ", 2);
-    
-    printTestCase("Ensuring that the original automaton can accept the counter-example", new TestResult(automaton.acceptsCounterExample(labelSequences), -1), counter);
-    labelSequences.add(new ArrayList<String>() {{ add("b"); add("o"); add("o"); }});
-    printTestOutput("Adding a bad sequence to the list...", 3);
-    printTestCase("Ensuring that the original automaton can no longer accept the counter-example", new TestResult(automaton.acceptsCounterExample(labelSequences), 11), counter);
+      printTestOutput("Liu's Thesis - acceptsCounterExample(): ", 2);
+      
+      printTestCase("Ensuring that the original automaton can accept the counter-example", new TestResult(automaton.acceptsCounterExample(labelSequences), -1), counter);
+      labelSequences.add(new ArrayList<String>() {{ add("b"); add("o"); add("o"); }});
+      printTestOutput("Adding a bad sequence to the list...", 3);
+      printTestCase("Ensuring that the original automaton can no longer accept the counter-example", new TestResult(automaton.acceptsCounterExample(labelSequences), 11), counter);
+    }
 
+    @Test
+    @DisplayName("isTrue() Tests")
+    public void testIsTrue() {
       /* isTrue() Tests */
 
-    printTestOutput("GUI Parsing - isTrue(): ", 2);
+      printTestOutput("GUI Parsing - isTrue(): ", 2);
 
-    printTestCase("Ensuring that 'T' is parsed correctly", new TestResult(AutomatonGenerator.isTrue("T"), true), counter);
-    printTestCase("Ensuring that 't' is parsed correctly", new TestResult(AutomatonGenerator.isTrue("t"), true), counter);
-    printTestCase("Ensuring that 'F' is parsed correctly", new TestResult(AutomatonGenerator.isTrue("F"), false), counter);
-    printTestCase("Ensuring that 'f' is parsed correctly", new TestResult(AutomatonGenerator.isTrue("f"), false), counter);
+      printTestCase("Ensuring that 'T' is parsed correctly", new TestResult(AutomatonGenerator.isTrue("T"), true), counter);
+      printTestCase("Ensuring that 't' is parsed correctly", new TestResult(AutomatonGenerator.isTrue("t"), true), counter);
+      printTestCase("Ensuring that 'F' is parsed correctly", new TestResult(AutomatonGenerator.isTrue("F"), false), counter);
+      printTestCase("Ensuring that 'f' is parsed correctly", new TestResult(AutomatonGenerator.isTrue("f"), false), counter);
+    }
 
+    @Test
+    @DisplayName("isTrueArray() Tests")
+    public void testIsTrueArray() {
       /* isTrueArray() Tests */
 
-    printTestOutput("GUI Parsing - isTrueArray(): ", 2);
-    
-    boolean[] expected = new boolean[] { true };
-    boolean[] actual = AutomatonGenerator.isTrueArray("T");
-    printTestCase("Ensuring that 'T' is parsed correctly", new TestResult(actual, expected), counter);
+      printTestOutput("GUI Parsing - isTrueArray(): ", 2);
+      
+      boolean[] expected = new boolean[] { true };
+      boolean[] actual = AutomatonGenerator.isTrueArray("T");
+      printTestCase("Ensuring that 'T' is parsed correctly", new TestResult(actual, expected), counter);
 
-    expected = new boolean[] { false };
-    actual = AutomatonGenerator.isTrueArray("f");
-    printTestCase("Ensuring that 'f' is parsed correctly", new TestResult(actual, expected), counter);
+      expected = new boolean[] { false };
+      actual = AutomatonGenerator.isTrueArray("f");
+      printTestCase("Ensuring that 'f' is parsed correctly", new TestResult(actual, expected), counter);
 
-    expected = new boolean[] { true, false, true };
-    actual = AutomatonGenerator.isTrueArray("TFt");
-    printTestCase("Ensuring that 'TFt' is parsed correctly", new TestResult(actual, expected), counter);
+      expected = new boolean[] { true, false, true };
+      actual = AutomatonGenerator.isTrueArray("TFt");
+      printTestCase("Ensuring that 'TFt' is parsed correctly", new TestResult(actual, expected), counter);
+    }
 
+    @Test
+    @DisplayName("isValidLabel() Tests")
+    public void testIsValidLabel() {
       /* isValidLabel() Tests */
 
-    printTestOutput("GUI Parsing - isValidLabel(): ", 2);
-    
-    printTestCase("Ensuring that a label with a bad vector is considered invalid", new TestResult(AutomatonGenerator.isValidLabel("<a,b"), false), counter);
-    printTestCase("Ensuring that a label with a bad vector is considered invalid", new TestResult(AutomatonGenerator.isValidLabel("a,b>"), false), counter);
-    printTestCase("Ensuring that a label with a good vector is considered valid", new TestResult(AutomatonGenerator.isValidLabel("<a,b>"), true), counter);
+      printTestOutput("GUI Parsing - isValidLabel(): ", 2);
+      
+      printTestCase("Ensuring that a label with a bad vector is considered invalid", new TestResult(AutomatonGenerator.isValidLabel("<a,b"), false), counter);
+      printTestCase("Ensuring that a label with a bad vector is considered invalid", new TestResult(AutomatonGenerator.isValidLabel("a,b>"), false), counter);
+      printTestCase("Ensuring that a label with a good vector is considered valid", new TestResult(AutomatonGenerator.isValidLabel("<a,b>"), true), counter);
+    }
 
+    @Test
+    @DisplayName("createCombinedIDWithOrderedSet() Tests")
+    public void testCreateCombinedIDWithOrderedSet() {
       /* createCombinedIDWithOrderedSet() Tests */
 
-    printTestOutput("Combining IDs - combineIDs(): ", 2);
-    
-    ArrayList<Long> list = new ArrayList<Long>();
-    list.add(4L);
-    list.add(2L);
-    list.add(7L);
-    printTestCase("Ensuring that {4,2,7} with a max ID of 7 maps to 279", new TestResult(Automaton.combineIDs(list, 7), 279), counter);
+      printTestOutput("Combining IDs - combineIDs(): ", 2);
+      
+      ArrayList<Long> list = new ArrayList<Long>();
+      list.add(4L);
+      list.add(2L);
+      list.add(7L);
+      printTestCase("Ensuring that {4,2,7} with a max ID of 7 maps to 279", new TestResult(Automaton.combineIDs(list, 7), 279), counter);
 
-    printTestOutput("Separating IDs - separateIDs(): ", 2);
-    printTestCase("Ensuring that 279 with a max ID of 7 maps back to {4,2,7}", new TestResult(list, Automaton.separateIDs(279, 7)), counter);
+      printTestOutput("Separating IDs - separateIDs(): ", 2);
+      printTestCase("Ensuring that 279 with a max ID of 7 maps back to {4,2,7}", new TestResult(list, Automaton.separateIDs(279, 7)), counter);
+    }
 
+    @Test
+    @DisplayName("splitStringWithVectors() Tests")
+    public void testSplitStringWithVectors() {
       /* splitStringWithVectors() Tests */
 
-    printTestOutput("Splitting Strings that contain Vectors - splitStringWithVectors(): ", 2);
-    
-    printTestCase("Splitting a string with no vectors", new TestResult(AutomatonGenerator.splitStringWithVectors("One,Two"), new String[]{"One", "Two"}), counter);
-    printTestCase("Splitting a string containing vectors", new TestResult(AutomatonGenerator.splitStringWithVectors("<A,B>,C,<D,E,F>"), new String[]{"<A,B>", "C", "<D,E,F>"}), counter);
-    printTestCase("Splitting a string with mismatched angled brackets (expecting null)", new TestResult(AutomatonGenerator.splitStringWithVectors("<A,B>,C>") == null), counter);
+      printTestOutput("Splitting Strings that contain Vectors - splitStringWithVectors(): ", 2);
+      
+      printTestCase("Splitting a string with no vectors", new TestResult(AutomatonGenerator.splitStringWithVectors("One,Two"), new String[]{"One", "Two"}), counter);
+      printTestCase("Splitting a string containing vectors", new TestResult(AutomatonGenerator.splitStringWithVectors("<A,B>,C,<D,E,F>"), new String[]{"<A,B>", "C", "<D,E,F>"}), counter);
+      printTestCase("Splitting a string with mismatched angled brackets (expecting null)", new TestResult(AutomatonGenerator.splitStringWithVectors("<A,B>,C>") == null), counter);
+    }
+
+    @Test
+    @DisplayName("Pareto Helper Method Tests")
+    public void testParetoHelperMethod() {
 
       /* Pareto Helper Method Tests */
 
-    printTestOutput("Pareto Ranks - getParetoRanks(): ", 2);
+      printTestOutput("Pareto Ranks - getParetoRanks(): ", 2);
 
-    int[] x = {1, 2, 3, 3, 5, 5, 7, 8};
-    int[] y = {2, 6, 2, 7, 5, 2, 4, 1};
-    ArrayList<Integer> expectedIndexes = new ArrayList<Integer>();
-    expectedIndexes.add(4);
-    expectedIndexes.add(2);
-    expectedIndexes.add(3);
-    expectedIndexes.add(1);
-    expectedIndexes.add(1);
-    expectedIndexes.add(2);
-    expectedIndexes.add(1);
-    expectedIndexes.add(1);
-    printTestCase("Ensuring that the Pareto ranks could be generated", new TestResult(new ArrayList<Integer>(Arrays.asList(getParetoRanks(x, y))), expectedIndexes), counter);
+      int[] x = {1, 2, 3, 3, 5, 5, 7, 8};
+      int[] y = {2, 6, 2, 7, 5, 2, 4, 1};
+      ArrayList<Integer> expectedIndexes = new ArrayList<Integer>();
+      expectedIndexes.add(4);
+      expectedIndexes.add(2);
+      expectedIndexes.add(3);
+      expectedIndexes.add(1);
+      expectedIndexes.add(1);
+      expectedIndexes.add(2);
+      expectedIndexes.add(1);
+      expectedIndexes.add(1);
+      printTestCase("Ensuring that the Pareto ranks could be generated", new TestResult(new ArrayList<Integer>(Arrays.asList(getParetoRanks(x, y))), expectedIndexes), counter);
+    }
 
+    @Test
+    @DisplayName("combineCommunicationCosts() Tests")
+    public void testCombineCommunicationCosts() {
 
       /* combineCommunicationCosts() Tests */
 
-    printTestOutput("Combining Communication Costs - combineCommunicationCosts(): ", 2);
+      printTestOutput("Combining Communication Costs - combineCommunicationCosts(): ", 2);
 
-    // NOTE: These tests do not check each individual cost to make sure it is correct,
-    //       but instead, the costs are simply added together and compared to the expected sum.
+      // NOTE: These tests do not check each individual cost to make sure it is correct,
+      //       but instead, the costs are simply added together and compared to the expected sum.
 
-    uStructure = saveAndLoadUStructure(AutomatonGenerator.generateFromGUICode(
-      new UStructure(null, null, 2),
-      "<a,a,*>,TF,TF\n<b,*,b>,FT,FT\n<*,b,*>,FF,FF\n<*,*,a>,FF,FF\n<o,o,o>,TT,TT\n<*,b,a>,FF,FF\n<b,b,b>,FT,FT\n<a,a,a>,TF,TF", // Events
-      "@1_1_1\n1_1_2\n1_3_1\n1_3_2\n2_2_1\n2_2_2\n2_4_1\n2_4_2\n2_5_1\n2_5_2\n3_1_3\n3_1_4\n3_1_5\n3_3_3\n3_3_4\n3_3_5\n4_2_3\n4_2_4\n4_2_5\n4_4_3\n4_4_4\n4_4_5\n4_5_3\n4_5_4\n4_5_5\n5_2_3\n5_2_4\n5_2_5\n5_4_3\n5_4_4\n5_4_5\n5_5_3\n5_5_4\n5_5_5\n6_6_6\n6_6_7\n6_7_6\n6_7_7\n7_6_6\n7_6_7\n7_7_6\n7_7_7", // States
-      "1_1_1,<a,a,*>,2_2_1\n1_1_1,<b,*,b>,3_1_3\n1_1_1,<*,b,*>,1_3_1\n1_1_1,<*,*,a>,1_1_2\n1_1_1,<*,b,a>,1_3_2:INVALID_COMMUNICATION\n1_1_1,<b,b,b>,3_3_3:NASH_COMMUNICATION-RS-0.125-0.125\n1_1_1,<a,a,a>,2_2_2:NASH_COMMUNICATION-SR-0.125-0.125\n1_1_2,<a,a,*>,2_2_2\n1_1_2,<b,*,b>,3_1_4\n1_1_2,<*,b,*>,1_3_2\n1_1_2,<b,b,b>,3_3_4:NASH_COMMUNICATION-RS-0.125-0.125\n1_3_1,<a,a,*>,2_5_1\n1_3_1,<b,*,b>,3_3_3\n1_3_1,<*,*,a>,1_3_2\n1_3_1,<a,a,a>,2_5_2:NASH_COMMUNICATION-SR-0.625-0.125\n1_3_2,<a,a,*>,2_5_2\n1_3_2,<b,*,b>,3_3_4\n2_2_1,<b,*,b>,4_2_3\n2_2_1,<*,b,*>,2_4_1\n2_2_1,<*,*,a>,2_2_2\n2_2_1,<*,b,a>,2_4_2:INVALID_COMMUNICATION\n2_2_1,<b,b,b>,4_4_3:NASH_COMMUNICATION-RS-0.125-0.125\n2_2_2,<b,*,b>,4_2_4\n2_2_2,<*,b,*>,2_4_2\n2_2_2,<b,b,b>,4_4_4:NASH_COMMUNICATION-RS-0.125-0.125\n2_4_1,<b,*,b>,4_4_3\n2_4_1,<*,*,a>,2_4_2\n2_4_2,<b,*,b>,4_4_4\n2_5_1,<b,*,b>,4_5_3\n2_5_1,<*,*,a>,2_5_2\n2_5_2,<b,*,b>,4_5_4\n3_1_3,<a,a,*>,5_2_3\n3_1_3,<*,b,*>,3_3_3\n3_1_3,<*,*,a>,3_1_5\n3_1_3,<*,b,a>,3_3_5:INVALID_COMMUNICATION\n3_1_3,<a,a,a>,5_2_5:NASH_COMMUNICATION-SR-0.625-0.125\n3_1_4,<a,a,*>,5_2_4\n3_1_4,<*,b,*>,3_3_4\n3_1_5,<a,a,*>,5_2_5\n3_1_5,<*,b,*>,3_3_5\n3_3_3,<a,a,*>,5_5_3\n3_3_3,<*,*,a>,3_3_5\n3_3_3,<a,a,a>,5_5_5:NASH_COMMUNICATION-SR-0.125-0.125\n3_3_4,<a,a,*>,5_5_4\n3_3_5,<a,a,*>,5_5_5\n4_2_3,<*,b,*>,4_4_3\n4_2_3,<*,*,a>,4_2_5\n4_2_3,<*,b,a>,4_4_5:INVALID_COMMUNICATION\n4_2_4,<*,b,*>,4_4_4\n4_2_5,<*,b,*>,4_4_5\n4_4_3,<*,*,a>,4_4_5\n4_4_4,<o,o,o>,6_6_6\n4_4_5,<o,o,o>,6_6_7\n4_5_3,<*,*,a>,4_5_5\n4_5_4,<o,o,o>,6_7_6\n4_5_5,<o,o,o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*,b,*>,5_4_3\n5_2_3,<*,*,a>,5_2_5\n5_2_3,<*,b,a>,5_4_5:INVALID_COMMUNICATION\n5_2_4,<*,b,*>,5_4_4\n5_2_5,<*,b,*>,5_4_5\n5_4_3,<*,*,a>,5_4_5\n5_4_4,<o,o,o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o,o,o>,7_6_7\n5_5_3,<*,*,a>,5_5_5\n5_5_4,<o,o,o>,7_7_6\n5_5_5,<o,o,o>,7_7_7" // Transitions
-    ));
-    List<Set<NashCommunicationData>> feasibleProtocols = uStructure.generateAllFeasibleProtocols(uStructure.getNashCommunications(), true);
+      UStructure uStructure = saveAndLoadUStructure(AutomatonGenerator.generateFromGUICode(
+        new UStructure(null, null, 2),
+        "<a,a,*>,TF,TF\n<b,*,b>,FT,FT\n<*,b,*>,FF,FF\n<*,*,a>,FF,FF\n<o,o,o>,TT,TT\n<*,b,a>,FF,FF\n<b,b,b>,FT,FT\n<a,a,a>,TF,TF", // Events
+        "@1_1_1\n1_1_2\n1_3_1\n1_3_2\n2_2_1\n2_2_2\n2_4_1\n2_4_2\n2_5_1\n2_5_2\n3_1_3\n3_1_4\n3_1_5\n3_3_3\n3_3_4\n3_3_5\n4_2_3\n4_2_4\n4_2_5\n4_4_3\n4_4_4\n4_4_5\n4_5_3\n4_5_4\n4_5_5\n5_2_3\n5_2_4\n5_2_5\n5_4_3\n5_4_4\n5_4_5\n5_5_3\n5_5_4\n5_5_5\n6_6_6\n6_6_7\n6_7_6\n6_7_7\n7_6_6\n7_6_7\n7_7_6\n7_7_7", // States
+        "1_1_1,<a,a,*>,2_2_1\n1_1_1,<b,*,b>,3_1_3\n1_1_1,<*,b,*>,1_3_1\n1_1_1,<*,*,a>,1_1_2\n1_1_1,<*,b,a>,1_3_2:INVALID_COMMUNICATION\n1_1_1,<b,b,b>,3_3_3:NASH_COMMUNICATION-RS-0.125-0.125\n1_1_1,<a,a,a>,2_2_2:NASH_COMMUNICATION-SR-0.125-0.125\n1_1_2,<a,a,*>,2_2_2\n1_1_2,<b,*,b>,3_1_4\n1_1_2,<*,b,*>,1_3_2\n1_1_2,<b,b,b>,3_3_4:NASH_COMMUNICATION-RS-0.125-0.125\n1_3_1,<a,a,*>,2_5_1\n1_3_1,<b,*,b>,3_3_3\n1_3_1,<*,*,a>,1_3_2\n1_3_1,<a,a,a>,2_5_2:NASH_COMMUNICATION-SR-0.625-0.125\n1_3_2,<a,a,*>,2_5_2\n1_3_2,<b,*,b>,3_3_4\n2_2_1,<b,*,b>,4_2_3\n2_2_1,<*,b,*>,2_4_1\n2_2_1,<*,*,a>,2_2_2\n2_2_1,<*,b,a>,2_4_2:INVALID_COMMUNICATION\n2_2_1,<b,b,b>,4_4_3:NASH_COMMUNICATION-RS-0.125-0.125\n2_2_2,<b,*,b>,4_2_4\n2_2_2,<*,b,*>,2_4_2\n2_2_2,<b,b,b>,4_4_4:NASH_COMMUNICATION-RS-0.125-0.125\n2_4_1,<b,*,b>,4_4_3\n2_4_1,<*,*,a>,2_4_2\n2_4_2,<b,*,b>,4_4_4\n2_5_1,<b,*,b>,4_5_3\n2_5_1,<*,*,a>,2_5_2\n2_5_2,<b,*,b>,4_5_4\n3_1_3,<a,a,*>,5_2_3\n3_1_3,<*,b,*>,3_3_3\n3_1_3,<*,*,a>,3_1_5\n3_1_3,<*,b,a>,3_3_5:INVALID_COMMUNICATION\n3_1_3,<a,a,a>,5_2_5:NASH_COMMUNICATION-SR-0.625-0.125\n3_1_4,<a,a,*>,5_2_4\n3_1_4,<*,b,*>,3_3_4\n3_1_5,<a,a,*>,5_2_5\n3_1_5,<*,b,*>,3_3_5\n3_3_3,<a,a,*>,5_5_3\n3_3_3,<*,*,a>,3_3_5\n3_3_3,<a,a,a>,5_5_5:NASH_COMMUNICATION-SR-0.125-0.125\n3_3_4,<a,a,*>,5_5_4\n3_3_5,<a,a,*>,5_5_5\n4_2_3,<*,b,*>,4_4_3\n4_2_3,<*,*,a>,4_2_5\n4_2_3,<*,b,a>,4_4_5:INVALID_COMMUNICATION\n4_2_4,<*,b,*>,4_4_4\n4_2_5,<*,b,*>,4_4_5\n4_4_3,<*,*,a>,4_4_5\n4_4_4,<o,o,o>,6_6_6\n4_4_5,<o,o,o>,6_6_7\n4_5_3,<*,*,a>,4_5_5\n4_5_4,<o,o,o>,6_7_6\n4_5_5,<o,o,o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*,b,*>,5_4_3\n5_2_3,<*,*,a>,5_2_5\n5_2_3,<*,b,a>,5_4_5:INVALID_COMMUNICATION\n5_2_4,<*,b,*>,5_4_4\n5_2_5,<*,b,*>,5_4_5\n5_4_3,<*,*,a>,5_4_5\n5_4_4,<o,o,o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o,o,o>,7_6_7\n5_5_3,<*,*,a>,5_5_5\n5_5_4,<o,o,o>,7_7_6\n5_5_5,<o,o,o>,7_7_7" // Transitions
+      ));
+      List<Set<NashCommunicationData>> feasibleProtocols = uStructure.generateAllFeasibleProtocols(uStructure.getNashCommunications(), true);
 
-    printTestOutput("Using protocol with four <a,a,a> event vectors...", 3);
-    Set<NashCommunicationData> desiredProtocol = null;
-    outer: for (Set<NashCommunicationData> protocol : feasibleProtocols) {
-      for (NashCommunicationData communication : protocol)
-        if (!uStructure.getEvent(communication.eventID).getLabel().equals("<a,a,a>"))
-          continue outer;
-      desiredProtocol = protocol;
-      break;
-    }
-    
-    double total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.MAX);
-    printTestCase("Ensuring that the communication costs were correct when taking the max", new TestResult(total, 2.5), counter);
-    total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.AVERAGE);
-    printTestCase("Ensuring that the communication costs were correct when averaging", new TestResult(total, 1.5), counter);
-    total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.SUM);
-    printTestCase("Ensuring that the communication costs were correct when taking the sum", new TestResult(total, 6.0), counter);
-    total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.UNIT);
-    printTestCase("Ensuring that the communication costs were correct when using unit costs", new TestResult(total, 1.5), counter);
-
-    printTestOutput("Using protocol with two <a,a,a> and two <b,b,b> event vectors...", 3);
-    desiredProtocol = null;
-    outer: for (Set<NashCommunicationData> protocol : feasibleProtocols) {
-      int aaa = 0, bbb = 0;
-      for (NashCommunicationData communication : protocol)
-        if (uStructure.getEvent(communication.eventID).getLabel().equals("<a,a,a>"))
-          aaa++;
-        else if (uStructure.getEvent(communication.eventID).getLabel().equals("<b,b,b>"))
-          bbb++;
-      if (aaa == 2 && bbb == 2) {
+      printTestOutput("Using protocol with four <a,a,a> event vectors...", 3);
+      Set<NashCommunicationData> desiredProtocol = null;
+      outer: for (Set<NashCommunicationData> protocol : feasibleProtocols) {
+        for (NashCommunicationData communication : protocol)
+          if (!uStructure.getEvent(communication.eventID).getLabel().equals("<a,a,a>"))
+            continue outer;
         desiredProtocol = protocol;
         break;
       }
+      
+      double total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.MAX);
+      printTestCase("Ensuring that the communication costs were correct when taking the max", new TestResult(total, 2.5), counter);
+      total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.AVERAGE);
+      printTestCase("Ensuring that the communication costs were correct when averaging", new TestResult(total, 1.5), counter);
+      total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.SUM);
+      printTestCase("Ensuring that the communication costs were correct when taking the sum", new TestResult(total, 6.0), counter);
+      total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.UNIT);
+      printTestCase("Ensuring that the communication costs were correct when using unit costs", new TestResult(total, 1.5), counter);
+
+      printTestOutput("Using protocol with two <a,a,a> and two <b,b,b> event vectors...", 3);
+      desiredProtocol = null;
+      outer: for (Set<NashCommunicationData> protocol : feasibleProtocols) {
+        int aaa = 0, bbb = 0;
+        for (NashCommunicationData communication : protocol)
+          if (uStructure.getEvent(communication.eventID).getLabel().equals("<a,a,a>"))
+            aaa++;
+          else if (uStructure.getEvent(communication.eventID).getLabel().equals("<b,b,b>"))
+            bbb++;
+        if (aaa == 2 && bbb == 2) {
+          desiredProtocol = protocol;
+          break;
+        }
+      }
+
+      total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.MAX);
+      printTestCase("Ensuring that the communication costs were correct when taking the max", new TestResult(total, 0.5), counter);
+      total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.AVERAGE);
+      printTestCase("Ensuring that the communication costs were correct when averaging", new TestResult(total, 0.5), counter);
+      total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.SUM);
+      printTestCase("Ensuring that the communication costs were correct when taking the sum", new TestResult(total, 0.5), counter);
+      total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.UNIT);
+      printTestCase("Ensuring that the communication costs were correct when using unit costs", new TestResult(total, 0.5), counter);
     }
-
-    total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.MAX);
-    printTestCase("Ensuring that the communication costs were correct when taking the max", new TestResult(total, 0.5), counter);
-    total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.AVERAGE);
-    printTestCase("Ensuring that the communication costs were correct when averaging", new TestResult(total, 0.5), counter);
-    total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.SUM);
-    printTestCase("Ensuring that the communication costs were correct when taking the sum", new TestResult(total, 0.5), counter);
-    total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.UNIT);
-    printTestCase("Ensuring that the communication costs were correct when using unit costs", new TestResult(total, 0.5), counter);
-
-      /* Print summary of this test routine */
-
-    printTestRoutineSummary(testRoutineName, counter);
-
-    
 
   }
 
@@ -917,7 +953,7 @@ public class TestAutomata {
       "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD" // Transitions
     ));
 
-   printTestOutput("Taking the synchronized composition of the automaton...", 3);
+    printTestOutput("Taking the synchronized composition of the automaton...", 3);
     UStructure uStructure2 = saveAndLoadUStructure(automaton.synchronizedComposition(null, null));
     uStructure2.generateInputForGUI();
     printTestCase("Ensuring the events are correct", new TestResult(uStructure2.getEventInput(), "<a,a>,T,F\n<b,*>,F,F\n<*,b>,F,F\n<o,*>,F,F\n<*,o>,F,T"), counter);
