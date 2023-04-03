@@ -2646,8 +2646,8 @@ public class Automaton implements AutoCloseable {
       /* Rename new file */
 
     if (!newBodyFile.renameTo(new File(bodyFileName))) {
-      System.out.println("CRUCIAL ERROR: Could not rename .bdy file during re-creation process. Aborting program...");
-      System.exit(-1);
+      throw new UncheckedIOException(new IOException("CRUCIAL ERROR: Could not rename .bdy file during re-creation process."));
+      //System.exit(-1);
     }
       /* Update variables */
 
