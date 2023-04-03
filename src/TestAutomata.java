@@ -680,269 +680,278 @@ public class TestAutomata {
 
   }
 
-  @Test
+  @Nested
   @DisplayName("AUTOMATA STANDARD OPERATIONS")
-  public void runAutomataStandardOperationsTestRoutine() {
+  @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+  @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+  class AutomataStandardOperationsTest {
 
-    String testRoutineName = "AUTOMATA STANDARD OPERATIONS";
+    TestCounter counter;
+    Automaton fig2_12;
+    
+    @BeforeEach
+    void setupCounter() {
+      counter = new TestCounter();
+    }
 
-    printTestOutput("RUNNING " + testRoutineName + " TEST ROUTINE...", 1);
-
-    TestCounter counter = new TestCounter();
-
+    @Test
+    @DisplayName("Co-Accessible Operation Tests")
+    @Order(1)
+    public void testCoAccessibleOperation() {
       /* Co-Accessible Operation Tests */
 
-    printTestOutput("CO-ACCESSIBLE OPERATION: ", 2);
+      printTestOutput("CO-ACCESSIBLE OPERATION: ", 2);
 
-    printTestOutput("Instantiating automaton from Figure 2.1...", 3);
-    Automaton fig2_12 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(new File("aut/fig2_12.hdr"), new File("aut/fig2_12.bdy"), 1),
-      "a,T,T\nb,T,T\ng,T,T", // Events
-      "@zero,F\none,F\ntwo,T\nthree,F\nfour,F\nfive,F\nsix,F", // States 
-      "zero,a,one\none,a,three\none,b,two\none,g,five\ntwo,g,zero\nthree,b,four\nfour,g,four\nfour,a,three\nsix,a,three\nsix,b,two" // Transitions
-    ));
+      printTestOutput("Instantiating automaton from Figure 2.1...", 3);
+      fig2_12 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+        new Automaton(new File("aut/fig2_12.hdr"), new File("aut/fig2_12.bdy"), 1),
+        "a,T,T\nb,T,T\ng,T,T", // Events
+        "@zero,F\none,F\ntwo,T\nthree,F\nfour,F\nfive,F\nsix,F", // States 
+        "zero,a,one\none,a,three\none,b,two\none,g,five\ntwo,g,zero\nthree,b,four\nfour,g,four\nfour,a,three\nsix,a,three\nsix,b,two" // Transitions
+      ));
 
-    printTestOutput("Taking the co-accessible part of Figure 2.12 (and comparing the result to the automaton in Figure 2.13a)...", 3);
-    Automaton result = saveAndLoadAutomaton(fig2_12.coaccessible(new File("aut/coaccessible.hdr"), new File("aut/coaccessible.bdy")));
+      printTestOutput("Taking the co-accessible part of Figure 2.12 (and comparing the result to the automaton in Figure 2.13a)...", 3);
+      Automaton result = saveAndLoadAutomaton(fig2_12.coaccessible(new File("aut/coaccessible.hdr"), new File("aut/coaccessible.bdy")));
 
-    result.generateInputForGUI();
-    printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T\ng,T,T"), counter);
-    printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@zero,F\none,F\ntwo,T\nsix,F"), counter);
-    printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "zero,a,one\none,b,two\ntwo,g,zero\nsix,b,two"), counter);
-
-      /* Trim Operation Tests */
-
-    printTestOutput("TRIM OPERATION: ", 2);
-
-    printTestOutput("Trimming the automaton in Figure 2.12 (and comparing the result to the automaton in Figure 2.13b)...", 3);
-    result = saveAndLoadAutomaton(fig2_12.trim(new File("aut/trim.hdr"), new File("aut/trim.bdy")));
-
-    result.generateInputForGUI();
-    printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T\ng,T,T"), counter);
-    printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@zero,F\none,F\ntwo,T"), counter);
-    printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "zero,a,one\none,b,two\ntwo,g,zero"), counter);
-
-      /* Complement Operation Tests */
-
-    printTestOutput("COMPLEMENT OPERATION: ", 2);
-
-    printTestOutput("Instantiating an automaton...", 3);
-    Automaton complementExample = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(new File("aut/complementExample.hdr"), new File("aut/complementExample.bdy"), 3),
-      "a1,TFF,FFF\na2,TFF,FFF\nb1,FTF,FFF\nb2,FTF,FFF\nc1,FFT,FFF\nc2,FFT,FFF\no,FFF,TTT", // Events
-      "@0,F\n1,F\n2,F\n3,F\n4,F\n5,F\n6,F\n7,F\n8,F\n9,F\n10,F\n11,F\n12,F\n13,F\n14,F\n15,F\n16,F\n17,F\n18,F\n19,F", // States 
-      "0,a1,4\n0,b2,3\n0,b1,2\n0,c1,1\n1,b2,6\n1,a2,5\n2,a1,7\n3,c2,8\n4,b1,9\n5,b1,10\n6,a1,11\n7,c2,12\n8,a2,13\n9,c1,14\n10,o,15\n11,o,16\n12,o,17\n13,o,18:BAD\n14,o,19:BAD" // Transitions
-    ));
-
-    printTestOutput("Taking the complement of the automaton...", 3);
-
-    try {
-    
-      result = saveAndLoadAutomaton(complementExample.complement(new File("aut/complement.hdr"), new File("aut/complement.bdy")));
-      result.generateInputForGUI();
-      printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a1,TFF,FFF\na2,TFF,FFF\nb1,FTF,FFF\nb2,FTF,FFF\nc1,FFT,FFF\nc2,FFT,FFF\no,FFF,TTT"), counter);
-      printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@0,T\nDump State,F\n1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T\n8,T\n9,T\n10,T\n11,T\n12,T\n13,T\n14,T\n15,T\n16,T\n17,T\n18,T\n19,T"), counter);
-      printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "0,a1,4\n0,b2,3\n0,b1,2\n0,c1,1\n0,a2,Dump State\n0,c2,Dump State\n0,o,Dump State\n1,b2,6\n1,a2,5\n1,a1,Dump State\n1,b1,Dump State\n1,c1,Dump State\n1,c2,Dump State\n1,o,Dump State\n2,a1,7\n2,a2,Dump State\n2,b1,Dump State\n2,b2,Dump State\n2,c1,Dump State\n2,c2,Dump State\n2,o,Dump State\n3,c2,8\n3,a1,Dump State\n3,a2,Dump State\n3,b1,Dump State\n3,b2,Dump State\n3,c1,Dump State\n3,o,Dump State\n4,b1,9\n4,a2,Dump State\n4,a1,Dump State\n4,b2,Dump State\n4,c1,Dump State\n4,c2,Dump State\n4,o,Dump State\n5,b1,10\n5,a2,Dump State\n5,a1,Dump State\n5,b2,Dump State\n5,c1,Dump State\n5,c2,Dump State\n5,o,Dump State\n6,a1,11\n6,a2,Dump State\n6,b1,Dump State\n6,b2,Dump State\n6,c1,Dump State\n6,c2,Dump State\n6,o,Dump State\n7,c2,12\n7,a1,Dump State\n7,a2,Dump State\n7,b1,Dump State\n7,b2,Dump State\n7,c1,Dump State\n7,o,Dump State\n8,a2,13\n8,a1,Dump State\n8,c2,Dump State\n8,b1,Dump State\n8,b2,Dump State\n8,c1,Dump State\n8,o,Dump State\n9,c1,14\n9,a1,Dump State\n9,a2,Dump State\n9,b1,Dump State\n9,b2,Dump State\n9,c2,Dump State\n9,o,Dump State\n10,o,15\n10,a1,Dump State\n10,a2,Dump State\n10,b1,Dump State\n10,b2,Dump State\n10,c2,Dump State\n10,c1,Dump State\n11,o,16\n11,a1,Dump State\n11,a2,Dump State\n11,b1,Dump State\n11,b2,Dump State\n11,c2,Dump State\n11,c1,Dump State\n12,o,17\n12,a1,Dump State\n12,a2,Dump State\n12,b1,Dump State\n12,b2,Dump State\n12,c2,Dump State\n12,c1,Dump State\n13,o,18:BAD\n13,a1,Dump State\n13,a2,Dump State\n13,b1,Dump State\n13,b2,Dump State\n13,c2,Dump State\n13,c1,Dump State\n14,o,19:BAD\n14,a1,Dump State\n14,a2,Dump State\n14,b1,Dump State\n14,b2,Dump State\n14,c2,Dump State\n14,c1,Dump State\n15,o,Dump State\n15,a1,Dump State\n15,a2,Dump State\n15,b1,Dump State\n15,b2,Dump State\n15,c2,Dump State\n15,c1,Dump State\n16,o,Dump State\n16,a1,Dump State\n16,a2,Dump State\n16,b1,Dump State\n16,b2,Dump State\n16,c2,Dump State\n16,c1,Dump State\n17,o,Dump State\n17,a1,Dump State\n17,a2,Dump State\n17,b1,Dump State\n17,b2,Dump State\n17,c2,Dump State\n17,c1,Dump State\n18,o,Dump State\n18,a1,Dump State\n18,a2,Dump State\n18,b1,Dump State\n18,b2,Dump State\n18,c2,Dump State\n18,c1,Dump State\n19,o,Dump State\n19,a1,Dump State\n19,a2,Dump State\n19,b1,Dump State\n19,b2,Dump State\n19,c2,Dump State\n19,c1,Dump State\n"), counter);
-    
-    } catch(OperationFailedException e) {
-
-      e.printStackTrace();
-      counter.increment(false);
-      counter.increment(false);
-      counter.increment(false);
-      System.out.println(RED + "\t\t\t*** FAILED 3 TESTS DUE TO EXCEPTION ***" + RESET);
-    
-    }
-
-    printTestOutput("Instantiating an automaton...", 3);
-    Automaton complementExample2 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(new File("aut/complementExample.hdr"), new File("aut/complementExample.bdy"), 1),
-      "a,T,F\nb,T,T", // Events
-      "0,T\n1,F", // States 
-      "0,a,1\n0,b,0\n1,a,0\n1,b,0" // Transitions
-    ));
-
-    printTestOutput("Taking the complement of the automaton which will not need a dump state...", 3);
-
-    try {
-    
-      result = saveAndLoadAutomaton(complementExample2.complement(null, null));
-      result.generateInputForGUI();
-      printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,F\nb,T,T"), counter);
-      printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "0,F\n1,T"), counter);
-      printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "0,a,1\n0,b,0\n1,a,0\n1,b,0"), counter);
-    
-    } catch(OperationFailedException e) {
-
-      e.printStackTrace();
-      counter.increment(false);
-      counter.increment(false);
-      counter.increment(false);
-      System.out.println(RED + "\t\t\t*** FAILED 3 TESTS DUE TO EXCEPTION ***" + RESET);
-    
-    }
-
-      /* Intersection Operation Tests */
-
-    printTestOutput("INTERSECTION OPERATION: ", 2);
-
-    printTestOutput("Instantiating automaton from Figure 2.1...", 3);
-    Automaton fig2_1 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(new File("aut/fig2_1.hdr"), new File("aut/fig2_1.bdy"), 1),
-      "a,T,T\nb,T,T\ng,T,T", // Events
-      "@x,T\ny,F\nz,T", // States 
-      "x,a,x\nx,g,z\ny,b,y\ny,a,x\nz,b,z\nz,a,y\nz,g,y" // Transitions
-    ));
-    printTestOutput("Instantiating automaton from Figure 2.2...", 3);
-    Automaton fig2_2 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(new File("aut/fig2_2.hdr"), new File("aut/fig2_2.bdy"), 1),
-      "a,T,T\nb,T,T", // Events
-      "@zero,F\none,T", // States 
-      "zero,b,zero\nzero,a,one\none,a,one\none,b,zero" // Transitions
-    ));
-
-    printTestOutput("Taking the intersection of Figure 2.1 and Figure 2.2 (and comparing the result to the first automaton in Figure 2.15)...", 3);
-
-    try {
-      result = saveAndLoadAutomaton(Automaton.intersection(fig2_1, fig2_2, new File("aut/intersection.hdr"), new File("aut/intersection.bdy")));
-      result.generateInputForGUI();
-      printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T"), counter);
-      printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@x_zero,F\nx_one,T"), counter);
-      printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "x_zero,a,x_one\nx_one,a,x_one"), counter);
-    } catch(IncompatibleAutomataException e) {
-      e.printStackTrace();
-      counter.increment(false);
-      counter.increment(false);
-      counter.increment(false);
-      System.out.println(RED + "\t\t\t*** FAILED 3 TESTS DUE TO EXCEPTION ***" + RESET);
-    }
-
-    printTestOutput("Instantiating automaton from Figure 2.13(b)...", 3);
-    Automaton fig2_13b = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(new File("aut/fig2_13b.hdr"), new File("aut/fig2_13b.bdy"), 1),
-      "a,T,T\nb,T,T\ng,T,T", // Events
-      "@zero,F\none,F\ntwo,T", // States 
-      "zero,a,one\none,b,two\ntwo,g,zero" // Transitions
-    ));
-
-    printTestOutput("Taking the intersection of Figure 2.2 and Figure 2.13(b) (and comparing the result to the second automaton in Figure 2.15)...", 3);
-
-    try {
-      result = saveAndLoadAutomaton(Automaton.intersection(fig2_2, fig2_13b, new File("aut/intersection.hdr"), new File("aut/intersection.bdy")));
-      result.generateInputForGUI();
-      printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T"), counter);
-      printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@zero_zero,F\none_one,F\nzero_two,F"), counter);
-      printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "zero_zero,a,one_one\none_one,b,zero_two"), counter);
-    } catch(IncompatibleAutomataException e) {
-      e.printStackTrace();
-      counter.increment(false);
-      counter.increment(false);
-      counter.increment(false);
-      System.out.println(RED + "\t\t\t*** FAILED 3 TESTS DUE TO EXCEPTION ***" + RESET);
-    }
-
-    printTestOutput("Instantiating the first automaton from Figure 2.20...", 3);
-    Automaton fig2_20a = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(new File("aut/fig2_20a.hdr"), new File("aut/fig2_20a.bdy"), 1),
-      "a1\na2\nb\nr", // Events
-      "@x1,F\nx2,F\nx3,T", // States 
-      "x1,a1,x2\nx1,a2,x2\nx2,b,x3\nx3,r,x1" // Transitions
-    ));
-
-    printTestOutput("Instantiating the second automaton from Figure 2.20...", 3);
-    Automaton fig2_20b = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(new File("aut/fig2_20b.hdr"), new File("aut/fig2_20b.bdy"), 1),
-      "a1\nb\nc1\nr\na2\nc2", // Events
-      "@y1,F\ny2,F\ny3,F\ny4,F\ny5,F\ny6,F", // States 
-      "y1,a1,y2\ny2,b,y4\ny4,r,y1\ny4,c1,y6\ny6,r,y1\ny1,a2,y3\ny3,b,y5\ny5,c2,y6\ny5,r,y1" // Transitions
-    ));
-
-    printTestOutput("Taking the intersection of the first two automata in Figure 2.20 (and comparing the result to the third automaton in Figure 2.20)...", 3);
-    try {
-      result = saveAndLoadAutomaton(Automaton.intersection(fig2_20a, fig2_20b, new File("aut/intersection.hdr"), new File("aut/intersection.bdy")));
-      result.generateInputForGUI();
-      printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a1,T,T\na2,T,T\nb,T,T\nr,T,T"), counter);
-      printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@x1_y1,F\nx2_y2,F\nx2_y3,F\nx3_y4,F\nx3_y5,F"), counter);
-      printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "x1_y1,a1,x2_y2\nx1_y1,a2,x2_y3\nx2_y2,b,x3_y4\nx2_y3,b,x3_y5\nx3_y4,r,x1_y1\nx3_y5,r,x1_y1"), counter);
-    } catch(IncompatibleAutomataException e) {
-      e.printStackTrace();
-      counter.increment(false);
-      counter.increment(false);
-      counter.increment(false);
-      System.out.println(RED + "\t\t\t*** FAILED 3 TESTS DUE TO EXCEPTION ***" + RESET);
-    }
-
-      /* Union Operation Tests */
-
-    printTestOutput("UNION OPERATION: ", 2);
-
-    printTestOutput("Taking the union of Figure 2.1 and Figure 2.2 (and comparing the result to the automaton in Figure 2.16)...", 3);
-
-    try {
-      result = saveAndLoadAutomaton(Automaton.union(fig2_1, fig2_2, new File("aut/union.hdr"), new File("aut/union.bdy")));
       result.generateInputForGUI();
       printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T\ng,T,T"), counter);
-      printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@x_zero,F\ny_zero,F\nz_zero,F\nx_one,T\ny_one,F\nz_one,T"), counter);
-      printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "x_zero,a,x_one\nx_zero,g,z_zero\ny_zero,b,y_zero\ny_zero,a,x_one\nz_zero,b,z_zero\nz_zero,a,y_one\nz_zero,g,y_zero\nx_one,a,x_one\nx_one,g,z_one\ny_one,b,y_zero\ny_one,a,x_one\nz_one,b,z_zero\nz_one,a,y_one\nz_one,g,y_one"), counter);
-    } catch(IncompatibleAutomataException e) {
-      e.printStackTrace();
-      counter.increment(false);
-      counter.increment(false);
-      counter.increment(false);
-      System.out.println(RED + "\t\t\t*** FAILED 3 TESTS DUE TO EXCEPTION ***" + RESET);
+      printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@zero,F\none,F\ntwo,T\nsix,F"), counter);
+      printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "zero,a,one\none,b,two\ntwo,g,zero\nsix,b,two"), counter);
     }
 
-    printTestOutput("Instantiating the first automaton from Figure 2.17...", 3);
-    Automaton fig2_17a = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(new File("aut/fig2_17a.hdr"), new File("aut/fig2_17a.bdy"), 1),
-      "a,T,T\nb,T,T\nc,T,T", // Events
-      "@one,T\ntwo,F", // States 
-      "one,c,one\none,a,two\ntwo,b,two" // Transitions
-    ));
+    @Test
+    @DisplayName("Trim Operation Tests")
+    @Order(2)
+    public void testTrimOperation() {
+      /* Trim Operation Tests */
 
-    printTestOutput("Instantiating the second automaton from Figure 2.17...", 3);
-    Automaton fig2_17b = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(new File("aut/fig2_17b.hdr"), new File("aut/fig2_17b.bdy"), 1),
-      "b,T,T\na,T,T\nd,T,T", // Events
-      "@A,T\nB,F", // States 
-      "A,b,A\nA,a,B\nB,d,B" // Transitions
-    ));
+      printTestOutput("TRIM OPERATION: ", 2);
 
-    printTestOutput("Instantiating the third automaton from Figure 2.17...", 3);
-    Automaton fig2_17c = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(new File("aut/fig2_17c.hdr"), new File("aut/fig2_17c.bdy"), 1),
-      "c,T,T\nb,T,T\na,T,T", // Events
-      "@D,T\nE,F", // States 
-      "D,c,D\nD,b,E\nE,a,E" // Transitions
-    ));
+      printTestOutput("Trimming the automaton in Figure 2.12 (and comparing the result to the automaton in Figure 2.13b)...", 3);
+      Automaton result = saveAndLoadAutomaton(fig2_12.trim(new File("aut/trim.hdr"), new File("aut/trim.bdy")));
 
-    printTestOutput("Taking the union of the three automata in Figure 2.17 (and comparing the result to the automaton described in Example 2.17)...", 3);
-    
-    try {
-      result = saveAndLoadAutomaton(Automaton.union(
-        saveAndLoadAutomaton(Automaton.union(fig2_17a, fig2_17b, new File("aut/union1.hdr"), new File("aut/union1.bdy"))),
-        fig2_17c,
-        new File("aut/union2.hdr"),
-        new File("aut/union2.bdy")
-      ));
       result.generateInputForGUI();
-      printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T\nc,T,T\nd,T,T"), counter);
-      printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@one_A_D,T"), counter);
-      printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "one_A_D,c,one_A_D"), counter);
-    } catch(IncompatibleAutomataException e) {
-      e.printStackTrace();
-      counter.increment(false);
-      counter.increment(false);
-      counter.increment(false);
-      System.out.println(RED + "\t\t\t*** FAILED 3 TESTS DUE TO EXCEPTION ***" + RESET);
+      printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T\ng,T,T"), counter);
+      printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@zero,F\none,F\ntwo,T"), counter);
+      printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "zero,a,one\none,b,two\ntwo,g,zero"), counter);
     }
 
-    /* Print summary of this test routine */
+    @Test
+    @DisplayName("Complement Operation Tests")
+    @Order(3)
+    public void testComplementOperation() {
+      /* Complement Operation Tests */
+      Automaton result;
 
-    printTestRoutineSummary(testRoutineName, counter);
+      printTestOutput("COMPLEMENT OPERATION: ", 2);
 
-    
+      printTestOutput("Instantiating an automaton...", 3);
+      Automaton complementExample = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+        new Automaton(new File("aut/complementExample.hdr"), new File("aut/complementExample.bdy"), 3),
+        "a1,TFF,FFF\na2,TFF,FFF\nb1,FTF,FFF\nb2,FTF,FFF\nc1,FFT,FFF\nc2,FFT,FFF\no,FFF,TTT", // Events
+        "@0,F\n1,F\n2,F\n3,F\n4,F\n5,F\n6,F\n7,F\n8,F\n9,F\n10,F\n11,F\n12,F\n13,F\n14,F\n15,F\n16,F\n17,F\n18,F\n19,F", // States 
+        "0,a1,4\n0,b2,3\n0,b1,2\n0,c1,1\n1,b2,6\n1,a2,5\n2,a1,7\n3,c2,8\n4,b1,9\n5,b1,10\n6,a1,11\n7,c2,12\n8,a2,13\n9,c1,14\n10,o,15\n11,o,16\n12,o,17\n13,o,18:BAD\n14,o,19:BAD" // Transitions
+      ));
 
+      printTestOutput("Taking the complement of the automaton...", 3);
+
+      try {
+      
+        result = saveAndLoadAutomaton(complementExample.complement(new File("aut/complement.hdr"), new File("aut/complement.bdy")));
+        result.generateInputForGUI();
+        printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a1,TFF,FFF\na2,TFF,FFF\nb1,FTF,FFF\nb2,FTF,FFF\nc1,FFT,FFF\nc2,FFT,FFF\no,FFF,TTT"), counter);
+        printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@0,T\nDump State,F\n1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T\n8,T\n9,T\n10,T\n11,T\n12,T\n13,T\n14,T\n15,T\n16,T\n17,T\n18,T\n19,T"), counter);
+        printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "0,a1,4\n0,b2,3\n0,b1,2\n0,c1,1\n0,a2,Dump State\n0,c2,Dump State\n0,o,Dump State\n1,b2,6\n1,a2,5\n1,a1,Dump State\n1,b1,Dump State\n1,c1,Dump State\n1,c2,Dump State\n1,o,Dump State\n2,a1,7\n2,a2,Dump State\n2,b1,Dump State\n2,b2,Dump State\n2,c1,Dump State\n2,c2,Dump State\n2,o,Dump State\n3,c2,8\n3,a1,Dump State\n3,a2,Dump State\n3,b1,Dump State\n3,b2,Dump State\n3,c1,Dump State\n3,o,Dump State\n4,b1,9\n4,a2,Dump State\n4,a1,Dump State\n4,b2,Dump State\n4,c1,Dump State\n4,c2,Dump State\n4,o,Dump State\n5,b1,10\n5,a2,Dump State\n5,a1,Dump State\n5,b2,Dump State\n5,c1,Dump State\n5,c2,Dump State\n5,o,Dump State\n6,a1,11\n6,a2,Dump State\n6,b1,Dump State\n6,b2,Dump State\n6,c1,Dump State\n6,c2,Dump State\n6,o,Dump State\n7,c2,12\n7,a1,Dump State\n7,a2,Dump State\n7,b1,Dump State\n7,b2,Dump State\n7,c1,Dump State\n7,o,Dump State\n8,a2,13\n8,a1,Dump State\n8,c2,Dump State\n8,b1,Dump State\n8,b2,Dump State\n8,c1,Dump State\n8,o,Dump State\n9,c1,14\n9,a1,Dump State\n9,a2,Dump State\n9,b1,Dump State\n9,b2,Dump State\n9,c2,Dump State\n9,o,Dump State\n10,o,15\n10,a1,Dump State\n10,a2,Dump State\n10,b1,Dump State\n10,b2,Dump State\n10,c2,Dump State\n10,c1,Dump State\n11,o,16\n11,a1,Dump State\n11,a2,Dump State\n11,b1,Dump State\n11,b2,Dump State\n11,c2,Dump State\n11,c1,Dump State\n12,o,17\n12,a1,Dump State\n12,a2,Dump State\n12,b1,Dump State\n12,b2,Dump State\n12,c2,Dump State\n12,c1,Dump State\n13,o,18:BAD\n13,a1,Dump State\n13,a2,Dump State\n13,b1,Dump State\n13,b2,Dump State\n13,c2,Dump State\n13,c1,Dump State\n14,o,19:BAD\n14,a1,Dump State\n14,a2,Dump State\n14,b1,Dump State\n14,b2,Dump State\n14,c2,Dump State\n14,c1,Dump State\n15,o,Dump State\n15,a1,Dump State\n15,a2,Dump State\n15,b1,Dump State\n15,b2,Dump State\n15,c2,Dump State\n15,c1,Dump State\n16,o,Dump State\n16,a1,Dump State\n16,a2,Dump State\n16,b1,Dump State\n16,b2,Dump State\n16,c2,Dump State\n16,c1,Dump State\n17,o,Dump State\n17,a1,Dump State\n17,a2,Dump State\n17,b1,Dump State\n17,b2,Dump State\n17,c2,Dump State\n17,c1,Dump State\n18,o,Dump State\n18,a1,Dump State\n18,a2,Dump State\n18,b1,Dump State\n18,b2,Dump State\n18,c2,Dump State\n18,c1,Dump State\n19,o,Dump State\n19,a1,Dump State\n19,a2,Dump State\n19,b1,Dump State\n19,b2,Dump State\n19,c2,Dump State\n19,c1,Dump State\n"), counter);
+      
+      } catch(OperationFailedException e) {
+        fail(e);
+      }
+
+      printTestOutput("Instantiating an automaton...", 3);
+      Automaton complementExample2 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+        new Automaton(new File("aut/complementExample.hdr"), new File("aut/complementExample.bdy"), 1),
+        "a,T,F\nb,T,T", // Events
+        "0,T\n1,F", // States 
+        "0,a,1\n0,b,0\n1,a,0\n1,b,0" // Transitions
+      ));
+
+      printTestOutput("Taking the complement of the automaton which will not need a dump state...", 3);
+
+      try {
+      
+        result = saveAndLoadAutomaton(complementExample2.complement(null, null));
+        result.generateInputForGUI();
+        printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,F\nb,T,T"), counter);
+        printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "0,F\n1,T"), counter);
+        printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "0,a,1\n0,b,0\n1,a,0\n1,b,0"), counter);
+      
+      } catch(OperationFailedException e) {
+
+        fail(e);
+      }
+    }
+
+    @Test
+    @DisplayName("Intersection Operation Tests")
+    public void testIntersectionOperation() {
+
+      /* Intersection Operation Tests */
+      Automaton result;
+
+      printTestOutput("INTERSECTION OPERATION: ", 2);
+
+      printTestOutput("Instantiating automaton from Figure 2.1...", 3);
+      Automaton fig2_1 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+        new Automaton(new File("aut/fig2_1.hdr"), new File("aut/fig2_1.bdy"), 1),
+        "a,T,T\nb,T,T\ng,T,T", // Events
+        "@x,T\ny,F\nz,T", // States 
+        "x,a,x\nx,g,z\ny,b,y\ny,a,x\nz,b,z\nz,a,y\nz,g,y" // Transitions
+      ));
+      printTestOutput("Instantiating automaton from Figure 2.2...", 3);
+      Automaton fig2_2 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+        new Automaton(new File("aut/fig2_2.hdr"), new File("aut/fig2_2.bdy"), 1),
+        "a,T,T\nb,T,T", // Events
+        "@zero,F\none,T", // States 
+        "zero,b,zero\nzero,a,one\none,a,one\none,b,zero" // Transitions
+      ));
+
+      printTestOutput("Taking the intersection of Figure 2.1 and Figure 2.2 (and comparing the result to the first automaton in Figure 2.15)...", 3);
+
+      try {
+        result = saveAndLoadAutomaton(Automaton.intersection(fig2_1, fig2_2, new File("aut/intersection.hdr"), new File("aut/intersection.bdy")));
+        result.generateInputForGUI();
+        printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T"), counter);
+        printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@x_zero,F\nx_one,T"), counter);
+        printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "x_zero,a,x_one\nx_one,a,x_one"), counter);
+      } catch(IncompatibleAutomataException e) {
+        fail(e);;
+      }
+
+      printTestOutput("Instantiating automaton from Figure 2.13(b)...", 3);
+      Automaton fig2_13b = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+        new Automaton(new File("aut/fig2_13b.hdr"), new File("aut/fig2_13b.bdy"), 1),
+        "a,T,T\nb,T,T\ng,T,T", // Events
+        "@zero,F\none,F\ntwo,T", // States 
+        "zero,a,one\none,b,two\ntwo,g,zero" // Transitions
+      ));
+
+      printTestOutput("Taking the intersection of Figure 2.2 and Figure 2.13(b) (and comparing the result to the second automaton in Figure 2.15)...", 3);
+
+      try {
+        result = saveAndLoadAutomaton(Automaton.intersection(fig2_2, fig2_13b, new File("aut/intersection.hdr"), new File("aut/intersection.bdy")));
+        result.generateInputForGUI();
+        printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T"), counter);
+        printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@zero_zero,F\none_one,F\nzero_two,F"), counter);
+        printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "zero_zero,a,one_one\none_one,b,zero_two"), counter);
+      } catch(IncompatibleAutomataException e) {
+        fail(e);
+      }
+
+      printTestOutput("Instantiating the first automaton from Figure 2.20...", 3);
+      Automaton fig2_20a = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+        new Automaton(new File("aut/fig2_20a.hdr"), new File("aut/fig2_20a.bdy"), 1),
+        "a1\na2\nb\nr", // Events
+        "@x1,F\nx2,F\nx3,T", // States 
+        "x1,a1,x2\nx1,a2,x2\nx2,b,x3\nx3,r,x1" // Transitions
+      ));
+
+      printTestOutput("Instantiating the second automaton from Figure 2.20...", 3);
+      Automaton fig2_20b = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+        new Automaton(new File("aut/fig2_20b.hdr"), new File("aut/fig2_20b.bdy"), 1),
+        "a1\nb\nc1\nr\na2\nc2", // Events
+        "@y1,F\ny2,F\ny3,F\ny4,F\ny5,F\ny6,F", // States 
+        "y1,a1,y2\ny2,b,y4\ny4,r,y1\ny4,c1,y6\ny6,r,y1\ny1,a2,y3\ny3,b,y5\ny5,c2,y6\ny5,r,y1" // Transitions
+      ));
+
+      printTestOutput("Taking the intersection of the first two automata in Figure 2.20 (and comparing the result to the third automaton in Figure 2.20)...", 3);
+      try {
+        result = saveAndLoadAutomaton(Automaton.intersection(fig2_20a, fig2_20b, new File("aut/intersection.hdr"), new File("aut/intersection.bdy")));
+        result.generateInputForGUI();
+        printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a1,T,T\na2,T,T\nb,T,T\nr,T,T"), counter);
+        printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@x1_y1,F\nx2_y2,F\nx2_y3,F\nx3_y4,F\nx3_y5,F"), counter);
+        printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "x1_y1,a1,x2_y2\nx1_y1,a2,x2_y3\nx2_y2,b,x3_y4\nx2_y3,b,x3_y5\nx3_y4,r,x1_y1\nx3_y5,r,x1_y1"), counter);
+      } catch(IncompatibleAutomataException e) {
+        fail(e);
+      }
+    }
+
+    @Test
+    @DisplayName("Union Operation Tests")
+    public void testUnionOperation() {
+      /* Union Operation Tests */
+
+      printTestOutput("UNION OPERATION: ", 2);
+
+      printTestOutput("Instantiating automaton from Figure 2.1...", 3);
+      Automaton fig2_1 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+        new Automaton(new File("aut/fig2_1.hdr"), new File("aut/fig2_1.bdy"), 1),
+        "a,T,T\nb,T,T\ng,T,T", // Events
+        "@x,T\ny,F\nz,T", // States 
+        "x,a,x\nx,g,z\ny,b,y\ny,a,x\nz,b,z\nz,a,y\nz,g,y" // Transitions
+      ));
+      printTestOutput("Instantiating automaton from Figure 2.2...", 3);
+      Automaton fig2_2 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+        new Automaton(new File("aut/fig2_2.hdr"), new File("aut/fig2_2.bdy"), 1),
+        "a,T,T\nb,T,T", // Events
+        "@zero,F\none,T", // States 
+        "zero,b,zero\nzero,a,one\none,a,one\none,b,zero" // Transitions
+      ));
+
+      printTestOutput("Taking the union of Figure 2.1 and Figure 2.2 (and comparing the result to the automaton in Figure 2.16)...", 3);
+
+      Automaton result;
+
+      try {
+        result = saveAndLoadAutomaton(Automaton.union(fig2_1, fig2_2, new File("aut/union.hdr"), new File("aut/union.bdy")));
+        result.generateInputForGUI();
+        printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T\ng,T,T"), counter);
+        printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@x_zero,F\ny_zero,F\nz_zero,F\nx_one,T\ny_one,F\nz_one,T"), counter);
+        printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "x_zero,a,x_one\nx_zero,g,z_zero\ny_zero,b,y_zero\ny_zero,a,x_one\nz_zero,b,z_zero\nz_zero,a,y_one\nz_zero,g,y_zero\nx_one,a,x_one\nx_one,g,z_one\ny_one,b,y_zero\ny_one,a,x_one\nz_one,b,z_zero\nz_one,a,y_one\nz_one,g,y_one"), counter);
+      } catch(IncompatibleAutomataException e) {
+        fail(e);
+      }
+
+      printTestOutput("Instantiating the first automaton from Figure 2.17...", 3);
+      Automaton fig2_17a = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+        new Automaton(new File("aut/fig2_17a.hdr"), new File("aut/fig2_17a.bdy"), 1),
+        "a,T,T\nb,T,T\nc,T,T", // Events
+        "@one,T\ntwo,F", // States 
+        "one,c,one\none,a,two\ntwo,b,two" // Transitions
+      ));
+
+      printTestOutput("Instantiating the second automaton from Figure 2.17...", 3);
+      Automaton fig2_17b = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+        new Automaton(new File("aut/fig2_17b.hdr"), new File("aut/fig2_17b.bdy"), 1),
+        "b,T,T\na,T,T\nd,T,T", // Events
+        "@A,T\nB,F", // States 
+        "A,b,A\nA,a,B\nB,d,B" // Transitions
+      ));
+
+      printTestOutput("Instantiating the third automaton from Figure 2.17...", 3);
+      Automaton fig2_17c = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+        new Automaton(new File("aut/fig2_17c.hdr"), new File("aut/fig2_17c.bdy"), 1),
+        "c,T,T\nb,T,T\na,T,T", // Events
+        "@D,T\nE,F", // States 
+        "D,c,D\nD,b,E\nE,a,E" // Transitions
+      ));
+
+      printTestOutput("Taking the union of the three automata in Figure 2.17 (and comparing the result to the automaton described in Example 2.17)...", 3);
+      
+      try {
+        result = saveAndLoadAutomaton(Automaton.union(
+          saveAndLoadAutomaton(Automaton.union(fig2_17a, fig2_17b, new File("aut/union1.hdr"), new File("aut/union1.bdy"))),
+          fig2_17c,
+          new File("aut/union2.hdr"),
+          new File("aut/union2.bdy")
+        ));
+        result.generateInputForGUI();
+        printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T\nc,T,T\nd,T,T"), counter);
+        printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@one_A_D,T"), counter);
+        printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "one_A_D,c,one_A_D"), counter);
+      } catch(IncompatibleAutomataException e) {
+        fail(e);
+      }
+    }
   }
 
   @Test
