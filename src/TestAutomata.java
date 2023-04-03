@@ -414,63 +414,66 @@ public class TestAutomata {
 
   }
 
-  @Test
+  @Nested
   @DisplayName("STATE CREATION")
-  public void runStateCreationTestRoutine() {
+  class StateCreationTest {
 
-  	String testRoutineName = "STATE CREATION";
+  	TestCounter counter;
 
-    printTestOutput("RUNNING " + testRoutineName + " TESTS...", 1);
+    @BeforeEach
+    void setupCounter() {
+      counter = new TestCounter();
+    }
 
-  	TestCounter counter = new TestCounter();
-
+    @Test
+    @DisplayName("Basic State Creation Tests")
+    public void testStateCreation() {
   		/* Basic State Creation Tests */
 
-  	printTestOutput("BASIC STATE CREATION: ", 2);
+      printTestOutput("BASIC STATE CREATION: ", 2);
 
-  	printTestOutput("Instantiating empty automaton...", 3);
-  	Automaton automaton = new Automaton();
+      printTestOutput("Instantiating empty automaton...", 3);
+      Automaton automaton = new Automaton();
 
-  	printTestOutput("Adding a state that is marked...", 3);
-  	long id = automaton.addState("firstState", true, false);
-  	printTestCase("Ensuring that 'nStates' was incremented", new TestResult(automaton.getNumberOfStates(), 1), counter);
-  	printTestCase("Ensuring that 'stateCapacity' was not increased", new TestResult(automaton.getStateCapacity(), 255), counter);
-  	printTestCase("Ensuring that the added state exists", new TestResult(automaton.stateExists(id), true), counter);
-  	printTestCase("Ensuring that the added state was not labeled the initial state", new TestResult(automaton.getInitialStateID(), 0), counter);
-  	printTestCase("Ensuring that the added state has the proper label", new TestResult(automaton.getState(id).getLabel(), "firstState"), counter);
-  	printTestCase("Ensuring that the added state is marked", new TestResult(automaton.getState(id).isMarked(), true), counter);
+      printTestOutput("Adding a state that is marked...", 3);
+      long id = automaton.addState("firstState", true, false);
+      printTestCase("Ensuring that 'nStates' was incremented", new TestResult(automaton.getNumberOfStates(), 1), counter);
+      printTestCase("Ensuring that 'stateCapacity' was not increased", new TestResult(automaton.getStateCapacity(), 255), counter);
+      printTestCase("Ensuring that the added state exists", new TestResult(automaton.stateExists(id), true), counter);
+      printTestCase("Ensuring that the added state was not labeled the initial state", new TestResult(automaton.getInitialStateID(), 0), counter);
+      printTestCase("Ensuring that the added state has the proper label", new TestResult(automaton.getState(id).getLabel(), "firstState"), counter);
+      printTestCase("Ensuring that the added state is marked", new TestResult(automaton.getState(id).isMarked(), true), counter);
 
-  	printTestOutput("Adding an initial state that is unmarked...", 3);
-  	id = automaton.addState("secondState", false, true);
-  	printTestCase("Ensuring that 'nStates' was incremented", new TestResult(automaton.getNumberOfStates(), 2), counter);
-  	printTestCase("Ensuring that 'stateCapacity' was not increased", new TestResult(automaton.getStateCapacity(), 255), counter);
-  	printTestCase("Ensuring that the added state exists", new TestResult(automaton.stateExists(id), true), counter);
-  	printTestCase("Ensuring that the added state was labeled the initial state", new TestResult(automaton.getInitialStateID(), id), counter);
-  	printTestCase("Ensuring that the added state has the proper label", new TestResult(automaton.getState(id).getLabel(), "secondState"), counter);
-  	printTestCase("Ensuring that the added state is unmarked", new TestResult(automaton.getState(id).isMarked(), false), counter);
-    automaton.close();
+      printTestOutput("Adding an initial state that is unmarked...", 3);
+      id = automaton.addState("secondState", false, true);
+      printTestCase("Ensuring that 'nStates' was incremented", new TestResult(automaton.getNumberOfStates(), 2), counter);
+      printTestCase("Ensuring that 'stateCapacity' was not increased", new TestResult(automaton.getStateCapacity(), 255), counter);
+      printTestCase("Ensuring that the added state exists", new TestResult(automaton.stateExists(id), true), counter);
+      printTestCase("Ensuring that the added state was labeled the initial state", new TestResult(automaton.getInitialStateID(), id), counter);
+      printTestCase("Ensuring that the added state has the proper label", new TestResult(automaton.getState(id).getLabel(), "secondState"), counter);
+      printTestCase("Ensuring that the added state is unmarked", new TestResult(automaton.getState(id).isMarked(), false), counter);
+      automaton.close();
+    }
   	
+    @Test
+    @DisplayName("State ID Assignment Tests")
+    public void testStateIDAssignment() {
   		/* State ID Assignment Tests */
 
-  	printTestOutput("STATE ID ASSIGNMENTS: ", 2);
+      printTestOutput("STATE ID ASSIGNMENTS: ", 2);
 
-  	printTestOutput("Instantiating empty automaton...", 3);
-  	automaton = new Automaton();
+      printTestOutput("Instantiating empty automaton...", 3);
+      Automaton automaton = new Automaton();
 
-  	printTestOutput("Adding a state...", 3);
-  	id = automaton.addState("firstState", true, true);
-  	printTestCase("Ensuring that the state's ID is 1", new TestResult(id, 1), counter);
+      printTestOutput("Adding a state...", 3);
+      long id = automaton.addState("firstState", true, true);
+      printTestCase("Ensuring that the state's ID is 1", new TestResult(id, 1), counter);
 
-  	printTestOutput("Adding a second state...", 3);
-    id = automaton.addState("secondState", true, true);
-    printTestCase("Ensuring that the state's ID is 2", new TestResult(id, 2), counter);
-    automaton.close();
-
-  		/* Print summary of this test routine */
-
-  	printTestRoutineSummary(testRoutineName, counter);
-
-  	
+      printTestOutput("Adding a second state...", 3);
+      id = automaton.addState("secondState", true, true);
+      printTestCase("Ensuring that the state's ID is 2", new TestResult(id, 2), counter);
+      automaton.close();
+    }
 
   }
 
