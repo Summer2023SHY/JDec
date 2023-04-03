@@ -1134,11 +1134,16 @@ public class TestAutomata {
   @DisplayName("TESTING FOR AUTOMATA PROPERTIES")
   class AutomataPropertiesTest {
 
+    TestCounter counter;
+
+    @BeforeEach
+    void setupCounter()  {
+      counter = new TestCounter();
+    }
+
     @Test
     @DisplayName("Controllability Tests")
     public void controllabiltyTest() {
-      TestCounter counter = new TestCounter();
-
       /* Controllability Tests */
 
       printTestOutput("Instantiating automaton...", 3);
@@ -1163,13 +1168,11 @@ public class TestAutomata {
     @Test
     @DisplayName("Observability Tests")
     public void observabilityTest() {
-      TestCounter counter = new TestCounter();
-
       /* Observability Tests */
 
       printTestOutput("TESTING OBSERVABILITY: ", 2);
 
-    printTestOutput("Instantiating automaton...", 3);
+      printTestOutput("Instantiating automaton...", 3);
       Automaton a = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
         new Automaton(null, null, 2),
         "a,TF,TF\nb,FT,FT\no,TT,TT", // Events
@@ -1191,8 +1194,6 @@ public class TestAutomata {
     @Test
     @DisplayName("Shapley Value Test")
     public void shapleyValueTest() {
-      TestCounter counter = new TestCounter();
-
       /* Shapley Value Tests */
 
       printTestOutput("FINDING SHAPLEY VALUES: ", 2);
