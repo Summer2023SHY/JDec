@@ -19,6 +19,34 @@ permissions:
   pull-requests: write
 
 jobs:
+  build:
+    name: Build JAR File
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3.5.0
+    - name: Setup JDK
+      uses: actions/setup-java@v3.11.0
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+    - name: Compile Java
+      run: |
+        javac -d bin -cp src $(find src -name '*.java')
+    - name: Build JAR file
+      run: |
+        cd bin
+        jar cfm JDec.jar manifest.txt *.class
+      
+    - name: Build WARP-Java JAR file
+      run: |
+        cd bin
+        jar cfm JDec.jar manifest.txt $(find . -name '*.class')
+    - name: Upload JAR file
+      uses: actions/upload-artifact@v3.1.2
+      with:
+        name: JDec-JAR
+        path: bin/JDec.jar
   test:
     name: Unit Tests
     runs-on: ubuntu-latest
