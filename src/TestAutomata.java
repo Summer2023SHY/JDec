@@ -300,78 +300,117 @@ public class TestAutomata {
 
   }
 
-  @Test
+  @Nested
   @DisplayName("EVENT CREATION")
-  public void runEventCreationTestRoutine() {
+  class EventCreationTest {
 
-  	String testRoutineName = "EVENT CREATION";
+  	TestCounter counter;
+    
+    @BeforeEach
+    void setupCounter() {
+      counter = new TestCounter();
+    }
 
-    printTestOutput("RUNNING " + testRoutineName + " TESTS...", 1);
-
-  	TestCounter counter = new TestCounter();
+    @Nested
+    @DisplayName("Basic Event Creation Tests")
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+    class BasicEventCreationTest {
+      Automaton a;
 
   		/* Basic Event Creation Tests */
+      @BeforeAll
+      void setup() {
+        printTestOutput("BASIC EVENT CREATION: ", 2);
 
-  	printTestOutput("BASIC EVENT CREATION: ", 2);
+        printTestOutput("Instantiating empty automaton...", 3);
+        a = new Automaton();
+      }
 
-  	printTestOutput("Instantiating empty automaton...", 3);
-  	Automaton a = new Automaton();
+      @Test
+      @DisplayName("Adding an event that is controllable and observable")
+      @Order(1)
+      public void addFirstEvent() {
+        printTestOutput("Adding an event that is controllable and observable...", 3);
+        int id = a.addEventIfNonExisting("firstEvent", new boolean[] { true }, new boolean[] { true });
+        printTestCase("Ensuring that 'events' set was expanded", new TestResult(a.getEvents().size(), 1), counter);
+        printTestCase("Ensuring that the added event is observable", new TestResult(a.getEvent(id).isObservable()[0], true), counter);
+        printTestCase("Ensuring that the added event is controllable", new TestResult(a.getEvent(id).isControllable()[0], true), counter);
+      }
 
-  	printTestOutput("Adding an event that is controllable and observable...", 3);
-  	int id = a.addEventIfNonExisting("firstEvent", new boolean[] { true }, new boolean[] { true });
-  	printTestCase("Ensuring that 'events' set was expanded", new TestResult(a.getEvents().size(), 1), counter);
-    printTestCase("Ensuring that the added event is observable", new TestResult(a.getEvent(id).isObservable()[0], true), counter);
-  	printTestCase("Ensuring that the added event is controllable", new TestResult(a.getEvent(id).isControllable()[0], true), counter);
+      @Test
+      @DisplayName("Adding an event that is observable, but not controllable")
+      @Order(2)
+      public void addSecondEvent() {
+        printTestOutput("Adding an event that is observable, but not controllable...", 3);
+        int id = a.addEventIfNonExisting("secondEvent", new boolean[] { true }, new boolean[] { false });
+        printTestCase("Ensuring that 'events' set was expanded", new TestResult(a.getEvents().size(), 2), counter);
+        printTestCase("Ensuring that the added event is observable", new TestResult(a.getEvent(id).isObservable()[0], true), counter);
+        printTestCase("Ensuring that the added event is not controllable", new TestResult(a.getEvent(id).isControllable()[0], false), counter);
+      }
 
-  	printTestOutput("Adding an event that is observable, but not controllable...", 3);
-  	id = a.addEventIfNonExisting("secondEvent", new boolean[] { true }, new boolean[] { false });
-  	printTestCase("Ensuring that 'events' set was expanded", new TestResult(a.getEvents().size(), 2), counter);
-  	printTestCase("Ensuring that the added event is observable", new TestResult(a.getEvent(id).isObservable()[0], true), counter);
-    printTestCase("Ensuring that the added event is not controllable", new TestResult(a.getEvent(id).isControllable()[0], false), counter);
+      @Test
+      @DisplayName("Adding an event that is controllable, but not observable")
+      @Order(3)
+      public void addThirdEvent() {
+        printTestOutput("Adding an event that is controllable, but not observable...", 3);
+        int id = a.addEventIfNonExisting("thirdEvent", new boolean[] { false }, new boolean[] { true });
+        printTestCase("Ensuring that 'events' set was expanded", new TestResult(a.getEvents().size(), 3), counter);
+        printTestCase("Ensuring that the added event is not observable", new TestResult(a.getEvent(id).isObservable()[0], false), counter);
+        printTestCase("Ensuring that the added event is controllable", new TestResult(a.getEvent(id).isControllable()[0], true), counter);
+      }
 
-  	printTestOutput("Adding an event that is controllable, but not observable...", 3);
-  	id = a.addEventIfNonExisting("thirdEvent", new boolean[] { false }, new boolean[] { true });
-  	printTestCase("Ensuring that 'events' set was expanded", new TestResult(a.getEvents().size(), 3), counter);
-  	printTestCase("Ensuring that the added event is not observable", new TestResult(a.getEvent(id).isObservable()[0], false), counter);
-    printTestCase("Ensuring that the added event is controllable", new TestResult(a.getEvent(id).isControllable()[0], true), counter);
+      @Test
+      @DisplayName("Adding an event that neither controllable, nor observable")
+      @Order(4)
+      public void addFourthEvent() {
+        printTestOutput("Adding an event that neither controllable, nor observable...", 3);
+        int id = a.addEventIfNonExisting("fourthEvent", new boolean[] { false }, new boolean[] { false });
+        printTestCase("Ensuring that 'events' set was expanded", new TestResult(a.getEvents().size(), 4), counter);
+        printTestCase("Ensuring that the added event is not observable", new TestResult(a.getEvent(id).isObservable()[0], false), counter);
+        printTestCase("Ensuring that the added event is not controllable", new TestResult(a.getEvent(id).isControllable()[0], false), counter);
+      }
+      
+      @Test
+      @DisplayName("Adding a pre-existing event")
+      @Order(5)
+      public void addPreExistingEvent() {
+        printTestOutput("Adding a pre-existing event...", 3);
+        int id = a.addEventIfNonExisting("fourthEvent", new boolean[] { false }, new boolean[] { false });
+        printTestCase("Ensuring that 'events' set was not expanded", new TestResult(a.getEvents().size(), 4), counter);
+        printTestCase("Ensuring that the method returned proper negative value", new TestResult(id, -4), counter);
+      }
 
-  	printTestOutput("Adding an event that neither controllable, nor observable...", 3);
-  	id = a.addEventIfNonExisting("fourthEvent", new boolean[] { false }, new boolean[] { false });
-  	printTestCase("Ensuring that 'events' set was expanded", new TestResult(a.getEvents().size(), 4), counter);
-  	printTestCase("Ensuring that the added event is not observable", new TestResult(a.getEvent(id).isObservable()[0], false), counter);
-    printTestCase("Ensuring that the added event is not controllable", new TestResult(a.getEvent(id).isControllable()[0], false), counter);
+      @AfterAll
+      void cleanup() {
+        a.close();
+      }
+    }
 
-  	printTestOutput("Adding a pre-existing event...", 3);
-  	id = a.addEventIfNonExisting("fourthEvent", new boolean[] { false }, new boolean[] { false });
-  	printTestCase("Ensuring that 'events' set was not expanded", new TestResult(a.getEvents().size(), 4), counter);
-  	printTestCase("Ensuring that the method returned proper negative value", new TestResult(id, -4), counter);
-    a.close();
-
+    @Test
+    @DisplayName("Event ID Assignment Tests")
+    public void testEventIDAssignment() {
     	/* Event ID Assignment Tests */
 
-  	printTestOutput("EVENT ID ASSIGNMENTS: ", 2);
+      printTestOutput("EVENT ID ASSIGNMENTS: ", 2);
 
-  	printTestOutput("Instantiating empty automaton...", 3);
-  	a = new Automaton();
+      printTestOutput("Instantiating empty automaton...", 3);
+      Automaton a = new Automaton();
 
-  	printTestOutput("Adding an event...", 3);
-  	id = a.addEventIfNonExisting("firstEvent", new boolean[] { true }, new boolean[] { true });
-  	printTestCase("Ensuring that the event's ID is 1", new TestResult(id, 1), counter);
+      printTestOutput("Adding an event...", 3);
+      int id = a.addEventIfNonExisting("firstEvent", new boolean[] { true }, new boolean[] { true });
+      printTestCase("Ensuring that the event's ID is 1", new TestResult(id, 1), counter);
 
-  	printTestOutput("Adding a second event...", 3);
-  	id = a.addEventIfNonExisting("secondEvent", new boolean[] { true }, new boolean[] { true });
-  	printTestCase("Ensuring that the event's ID is 2", new TestResult(id, 2), counter);
+      printTestOutput("Adding a second event...", 3);
+      id = a.addEventIfNonExisting("secondEvent", new boolean[] { true }, new boolean[] { true });
+      printTestCase("Ensuring that the event's ID is 2", new TestResult(id, 2), counter);
 
-  	printTestOutput("Adding a pre-existing event...", 3);
-  	id = a.addEventIfNonExisting("firstEvent", new boolean[] { true }, new boolean[] { true });
-  	printTestCase("Ensuring that the method returned proper negative value", new TestResult(id, -1), counter);
+      printTestOutput("Adding a pre-existing event...", 3);
+      id = a.addEventIfNonExisting("firstEvent", new boolean[] { true }, new boolean[] { true });
+      printTestCase("Ensuring that the method returned proper negative value", new TestResult(id, -1), counter);
+      a.close();
 
-
-  		/* Print summary of this test routine */
-
-  	printTestRoutineSummary(testRoutineName, counter);
-    a.close();
-
+    }
 
   }
 
