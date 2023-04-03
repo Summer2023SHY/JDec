@@ -1183,7 +1183,7 @@ public class TestAutomata {
     printTestOutput("FINDING SHAPLEY VALUES: ", 2);
 
     printTestOutput("Loading pre-generated U-Structure...", 3);
-    UStructure uStructure = new UStructure(new File("saved automata/shapleyUStructure.hdr"), new File("saved automata/shapleyUStructure.bdy"));
+    UStructure uStructure = new UStructure(new File("saved_automata/shapleyUStructure.hdr"), new File("saved_automata/shapleyUStructure.bdy"));
 
     printTestOutput("Finding Shapley values...", 3);
     Map<Set<Integer>, Integer> shapleyValues = uStructure.findShapleyValues();
