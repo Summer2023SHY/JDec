@@ -1130,91 +1130,97 @@ public class TestAutomata {
 
   }
 
-  @Test
+  @Nested
   @DisplayName("TESTING FOR AUTOMATA PROPERTIES")
-  public void runAutomataPropertiesTestRoutine() {
+  class AutomataPropertiesTest {
 
-    String testRoutineName = "TESTING FOR AUTOMATA PROPERTIES";
-
-    printTestOutput("RUNNING " + testRoutineName + " TESTS...", 1);
-
-    TestCounter counter = new TestCounter();
+    @Test
+    @DisplayName("Controllability Tests")
+    public void controllabiltyTest() {
+      TestCounter counter = new TestCounter();
 
       /* Controllability Tests */
 
-    printTestOutput("Instantiating automaton...", 3);
-    Automaton a = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(null, null, 2),
-      "c,TF,TF\nb,TF,TF\na,TF,TF", // Events
-      "@1,T\n2,F", // States 
-      "1,c,1\n1,b,2:BAD\n2,a,2" // Transitions
-    ));
-    printTestCase("Ensuring that the automaton is controllable", new TestResult(a.testControllability(), true), counter);
+      printTestOutput("Instantiating automaton...", 3);
+      Automaton a = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+        new Automaton(null, null, 2),
+        "c,TF,TF\nb,TF,TF\na,TF,TF", // Events
+        "@1,T\n2,F", // States 
+        "1,c,1\n1,b,2:BAD\n2,a,2" // Transitions
+      ));
+      printTestCase("Ensuring that the automaton is controllable", new TestResult(a.testControllability(), true), counter);
 
-    printTestOutput("Instantiating automaton...", 3);
-    a = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(null, null, 2),
-      "c,TF,TF\nb,TF,TF\na,TF,FF", // Events
-      "@1,T\n2,F", // States 
-      "1,c,1:BAD\n1,b,2\n2,a,2:BAD" // Transitions
-    ));
-    printTestCase("Ensuring that the automaton is not controllable", new TestResult(a.testControllability(), false), counter);
+      printTestOutput("Instantiating automaton...", 3);
+      a = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+        new Automaton(null, null, 2),
+        "c,TF,TF\nb,TF,TF\na,TF,FF", // Events
+        "@1,T\n2,F", // States 
+        "1,c,1:BAD\n1,b,2\n2,a,2:BAD" // Transitions
+      ));
+      printTestCase("Ensuring that the automaton is not controllable", new TestResult(a.testControllability(), false), counter);
+    }
+
+    @Test
+    @DisplayName("Observability Tests")
+    public void observabilityTest() {
+      TestCounter counter = new TestCounter();
 
       /* Observability Tests */
 
-    printTestOutput("TESTING OBSERVABILITY: ", 2);
+      printTestOutput("TESTING OBSERVABILITY: ", 2);
 
     printTestOutput("Instantiating automaton...", 3);
-    a = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(null, null, 2),
-      "a,TF,TF\nb,FT,FT\no,TT,TT", // Events
-      "@1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T", // States 
-      "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD" // Transitions
-    ));
-    printTestCase("Ensuring that the automaton is observable", new TestResult(a.testObservability(), true), counter);
+      Automaton a = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+        new Automaton(null, null, 2),
+        "a,TF,TF\nb,FT,FT\no,TT,TT", // Events
+        "@1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T", // States 
+        "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD" // Transitions
+      ));
+      printTestCase("Ensuring that the automaton is observable", new TestResult(a.testObservability(), true), counter);
 
-    printTestOutput("Instantiating automaton...", 3);
-    a = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(null, null, 2),
-      "a,FF,TF\nb,FT,FT\no,TT,TT", // Events
-      "@1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T", // States 
-      "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD" // Transitions
-    ));
-    printTestCase("Ensuring that the automaton is not observable", new TestResult(a.testObservability(), false), counter);
+      printTestOutput("Instantiating automaton...", 3);
+      a = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+        new Automaton(null, null, 2),
+        "a,FF,TF\nb,FT,FT\no,TT,TT", // Events
+        "@1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T", // States 
+        "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD" // Transitions
+      ));
+      printTestCase("Ensuring that the automaton is not observable", new TestResult(a.testObservability(), false), counter);
+    }
+
+    @Test
+    @DisplayName("Shapley Value Test")
+    public void shapleyValueTest() {
+      TestCounter counter = new TestCounter();
 
       /* Shapley Value Tests */
 
-    printTestOutput("FINDING SHAPLEY VALUES: ", 2);
+      printTestOutput("FINDING SHAPLEY VALUES: ", 2);
 
-    printTestOutput("Loading pre-generated U-Structure...", 3);
-    UStructure uStructure = new UStructure(new File("saved_automata/shapleyUStructure.hdr"), new File("saved_automata/shapleyUStructure.bdy"));
+      printTestOutput("Loading pre-generated U-Structure...", 3);
+      UStructure uStructure = new UStructure(new File("saved_automata/shapleyUStructure.hdr"), new File("saved_automata/shapleyUStructure.bdy"));
 
-    printTestOutput("Finding Shapley values...", 3);
-    Map<Set<Integer>, Integer> shapleyValues = uStructure.findShapleyValues();
+      printTestOutput("Finding Shapley values...", 3);
+      Map<Set<Integer>, Integer> shapleyValues = uStructure.findShapleyValues();
 
-    printTestCase("Ensuring that coalition [] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>()), 0), counter);
-    printTestCase("Ensuring that coalition [1] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>(Arrays.asList(1))), 1), counter);
-    printTestCase("Ensuring that coalition [2] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>(Arrays.asList(2))), 3), counter);
-    printTestCase("Ensuring that coalition [3] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>(Arrays.asList(3))), 2), counter);
-    printTestCase("Ensuring that coalition [1, 2] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>(Arrays.asList(1, 2))), 3), counter);
-    printTestCase("Ensuring that coalition [1, 3] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>(Arrays.asList(1, 3))), 2), counter);
-    printTestCase("Ensuring that coalition [2, 3] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>(Arrays.asList(2, 3))), 3), counter);
-    printTestCase("Ensuring that coalition [1, 2, 3] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>(Arrays.asList(1, 2, 3))), 3), counter);
+      printTestCase("Ensuring that coalition [] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>()), 0), counter);
+      printTestCase("Ensuring that coalition [1] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>(Arrays.asList(1))), 1), counter);
+      printTestCase("Ensuring that coalition [2] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>(Arrays.asList(2))), 3), counter);
+      printTestCase("Ensuring that coalition [3] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>(Arrays.asList(3))), 2), counter);
+      printTestCase("Ensuring that coalition [1, 2] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>(Arrays.asList(1, 2))), 3), counter);
+      printTestCase("Ensuring that coalition [1, 3] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>(Arrays.asList(1, 3))), 2), counter);
+      printTestCase("Ensuring that coalition [2, 3] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>(Arrays.asList(2, 3))), 3), counter);
+      printTestCase("Ensuring that coalition [1, 2, 3] is correct", new TestResult(shapleyValues.get(new HashSet<Integer>(Arrays.asList(1, 2, 3))), 3), counter);
 
-    printTestOutput("Modifying one coalition value to match the error in the paper...", 3);
-    shapleyValues.put(new HashSet<Integer>(Arrays.asList(1, 3)), 3);    
+      printTestOutput("Modifying one coalition value to match the error in the paper...", 3);
+      shapleyValues.put(new HashSet<Integer>(Arrays.asList(1, 3)), 3);    
 
-    printTestOutput("Find Shapley values for each controller comparing against answers in the paper...", 3);
-    printTestCase("Ensuring that value for controller 1 is correct", new TestResult(uStructure.findShapleyValueForController(shapleyValues, 1), 0.5), counter);
-    printTestCase("Ensuring that value for controller 2 is correct", new TestResult(uStructure.findShapleyValueForController(shapleyValues, 2), 1.5), counter);
-    printTestCase("Ensuring that value for controller 3 is correct", new TestResult(uStructure.findShapleyValueForController(shapleyValues, 3), 1.0), counter);
+      printTestOutput("Find Shapley values for each controller comparing against answers in the paper...", 3);
+      printTestCase("Ensuring that value for controller 1 is correct", new TestResult(uStructure.findShapleyValueForController(shapleyValues, 1), 0.5), counter);
+      printTestCase("Ensuring that value for controller 2 is correct", new TestResult(uStructure.findShapleyValueForController(shapleyValues, 2), 1.5), counter);
+      printTestCase("Ensuring that value for controller 3 is correct", new TestResult(uStructure.findShapleyValueForController(shapleyValues, 3), 1.0), counter);
 
-      /* Print summary of this test routine */
-
-    printTestRoutineSummary(testRoutineName, counter);
-
-    
-
+    }
   }
 
   @Test
