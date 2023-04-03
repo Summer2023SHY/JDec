@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "README.md"
+      - "Docs/*"
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  actions: read
+  contents: read
+  issues: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    - name: Setup Graphviz
+      uses: ts-graphviz/setup-graphviz@v1
+    - name: Setup JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: temurin # Eclipse Temurin
+        java-version: '11'    # Java 11 (LTS)
+    - name: Cache Dependency Library
+      id: load-lib-cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ runner.temp }}/lib
+        key: junit-v1.9.2
+    - name: Download JUnit Console Standalone
+      if: steps.load-lib-cache.outputs.cache-hit != 'true'
+          # Only run if cached file does not exist
+      run: |
+        mkdir ${{ runner.temp }}/lib
+        cd ${{ runner.temp }}/lib
+        curl -o junit-platform-console-standalone-1.9.2.jar https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.9.2/junit-platform-console-standalone-1.9.2.jar
+    - name: Compile Java
+      run: |
+        javac -cp src $(find src -name '*.java')
+        javac -cp src:test:${{ runner.temp }}/lib/junit-platform-console-standalone-1.9.2.jar $(find test -name '*.java')
+    - name: Run Unit Tests
+      run: |
+        java -jar ${{ runner.temp }}/lib/junit-platform-console-standalone-1.9.2.jar -cp src -cp test --scan-classpath --reports-dir=.
+    - name: Publish Test Results
+      if: ${{ always() }}
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      with:
+        junit_files: "**/TEST-*.xml"
