@@ -21,62 +21,9 @@ public class TestAutomata {
   // Whether or not to compare lines by printing out the missing lines and added lines  (as opposed to actual vs expected)
   public static boolean DIFF = false;
   
-  public static void main(String[] args) {
-
-  		/* Turn verbose on if '-v' flag was used, turn on colored output if '-c' flag was used, enable 'diff'-like output if '-d' flag is used */
-
-    boolean coloredOutput = false;
-
-    for (String arg : args)
-  		if (arg.length() >=2) {
-        if (arg.substring(0, 2).equals("-v"))
-          verbose = MAX_VERBOSE;
-        else if (arg.substring(0, 2).equals("-c"))
-          coloredOutput = true;
-        else if (arg.substring(0, 2).equals("-d"))
-          DIFF = true;
-      }
-
-    if (!coloredOutput)
-      RESET = RED = GREEN = PURPLE = "";
-		
-			/* Run the testing suite */
-  	
-    UStructure.SUPPRESS_INVALID_COMMUNICATIONS = false;
-  	runTests();
-
-  }
-
-  private static void runTests() {
-
-  	System.out.println(PURPLE + "RUNNING ALL TESTS..." + RESET);
-
-    TestCounter counter = new TestCounter();
-
-  		/* Run tests */
-
-    counter.add(runByteManipulatorTestRoutine());
-    counter.add(runHelperMethodTestRoutine());
-    counter.add(runEventCreationTestRoutine());
-    counter.add(runStateCreationTestRoutine());
-    counter.add(runAutomatonCapacityTestRoutine());
-    counter.add(runGuiInputTestRoutine());
-    counter.add(runAutomataStandardOperationsTestRoutine());
-    counter.add(runAutomataSpecialOperationsTestRoutine());
-    counter.add(runSpecialTransitionsTestRoutine());
-    counter.add(runAutomataPropertiesTestRoutine());
-  	counter.add(runExceptionHandlingTestRoutine());
-
-  		/* Print summary of all tests */
-
-  	if (counter.getFailedTests() > 0)
-  		System.out.println(String.format("\n%s*** FAILED %d/%d TESTS ***%s", RED, counter.getFailedTests(), counter.getTotalTests(), RESET));
-    else
-      System.out.println(String.format("\n%sPASSED ALL %d TESTS%s", GREEN, counter.getTotalTests(), RESET));
-
-  }
-
-  private static TestCounter runByteManipulatorTestRoutine() {
+  @Test
+  @DisplayName("BYTE MANIPULATOR")
+  public void runByteManipulatorTestRoutine() {
 
     String testRoutineName = "BYTE MANIPULATOR";
 
@@ -112,11 +59,13 @@ public class TestAutomata {
 
     printTestRoutineSummary(testRoutineName, counter);
 
-    return counter;
+    
 
   }
 
-  private static TestCounter runHelperMethodTestRoutine() {
+  @Test
+  @DisplayName("HELPER METHOD")
+  public void runHelperMethodTestRoutine() {
 
     String testRoutineName = "HELPER METHOD";
 
@@ -288,7 +237,7 @@ public class TestAutomata {
 
     printTestRoutineSummary(testRoutineName, counter);
 
-    return counter;
+    
 
   }
 
@@ -315,7 +264,9 @@ public class TestAutomata {
 
   }
 
-  private static TestCounter runEventCreationTestRoutine() {
+  @Test
+  @DisplayName("EVENT CREATION")
+  public void runEventCreationTestRoutine() {
 
   	String testRoutineName = "EVENT CREATION";
 
@@ -383,11 +334,12 @@ public class TestAutomata {
 
   	printTestRoutineSummary(testRoutineName, counter);
 
-  	return counter;
 
   }
 
-  private static TestCounter runStateCreationTestRoutine() {
+  @Test
+  @DisplayName("STATE CREATION")
+  public void runStateCreationTestRoutine() {
 
   	String testRoutineName = "STATE CREATION";
 
@@ -439,11 +391,13 @@ public class TestAutomata {
 
   	printTestRoutineSummary(testRoutineName, counter);
 
-  	return counter;
+  	
 
   }
 
-  private static TestCounter runAutomatonCapacityTestRoutine() {
+  @Test
+  @DisplayName("AUTOMATON CAPACITY")
+  public void runAutomatonCapacityTestRoutine() {
 
   	String testRoutineName = "AUTOMATON CAPACITY";
 
@@ -562,11 +516,13 @@ public class TestAutomata {
 
   	printTestRoutineSummary(testRoutineName, counter);
 
-  	return counter;
+  	
 
   }
 
-  private static TestCounter runGuiInputTestRoutine() {
+  @Test
+  @DisplayName("GUI INPUT")
+  public void runGuiInputTestRoutine() {
 
     String testRoutineName = "GUI INPUT";
 
@@ -606,11 +562,13 @@ public class TestAutomata {
 
     printTestRoutineSummary(testRoutineName, counter);
 
-    return counter;
+    
 
   }
 
-  private static TestCounter runAutomataStandardOperationsTestRoutine() {
+  @Test
+  @DisplayName("AUTOMATA STANDARD OPERATIONS")
+  public void runAutomataStandardOperationsTestRoutine() {
 
     String testRoutineName = "AUTOMATA STANDARD OPERATIONS";
 
@@ -869,11 +827,13 @@ public class TestAutomata {
 
     printTestRoutineSummary(testRoutineName, counter);
 
-    return counter;
+    
 
   }
 
-  private static TestCounter runAutomataSpecialOperationsTestRoutine() {
+  @Test
+  @DisplayName("AUTOMATA SPECIAL OPERATIONS")
+  public void runAutomataSpecialOperationsTestRoutine() {
 
     String testRoutineName = "AUTOMATA SPECIAL OPERATIONS";
 
@@ -1117,11 +1077,13 @@ public class TestAutomata {
 
     printTestRoutineSummary(testRoutineName, counter);
 
-    return counter;
+    
 
   }
-  
-  private static TestCounter runSpecialTransitionsTestRoutine() {
+
+  @Test
+  @DisplayName("SPECIAL TRANSITIONS")
+  public void runSpecialTransitionsTestRoutine() {
 
     String testRoutineName = "SPECIAL TRANSITIONS";
 
@@ -1160,11 +1122,13 @@ public class TestAutomata {
 
     printTestRoutineSummary(testRoutineName, counter);
 
-    return counter;
+    
 
   }
 
-  private static TestCounter runAutomataPropertiesTestRoutine() {
+  @Test
+  @DisplayName("TESTING FOR AUTOMATA PROPERTIES")
+  public void runAutomataPropertiesTestRoutine() {
 
     String testRoutineName = "TESTING FOR AUTOMATA PROPERTIES";
 
@@ -1245,13 +1209,13 @@ public class TestAutomata {
 
     printTestRoutineSummary(testRoutineName, counter);
 
-    return counter;
+    
 
   }
 
   @Test
   @DisplayName("EXCEPTION HANDLING")
-  public static TestCounter runExceptionHandlingTestRoutine() {
+  public void runExceptionHandlingTestRoutine() {
 
     String testRoutineName = "EXCEPTION HANDLING";
 
@@ -1309,7 +1273,7 @@ public class TestAutomata {
 
     printTestRoutineSummary(testRoutineName, counter);
 
-    return counter;
+    
 
   }
 
@@ -1553,6 +1517,7 @@ class TestResult {
   private String summary = "";
 
   public TestResult(long actual, long expected) {
+    assertEquals(expected, actual);
     if (actual == expected)
       passed = true;
     else {
@@ -1572,6 +1537,7 @@ class TestResult {
 
   public TestResult(boolean actual, boolean expected) {
     passed = (actual == expected);
+    assertEquals(expected, actual);
     
     if (!passed)
       summary = "\nEXPECTED:\n" + expected + "\n\nACTUAL:\n" + actual + "\n";
@@ -1590,6 +1556,7 @@ class TestResult {
     Arrays.sort(expected);
 
     passed = Arrays.deepEquals(actual, expected);
+    assertArrayEquals(expected, actual);
     
     if (!passed) {
 
@@ -1639,6 +1606,7 @@ class TestResult {
   public TestResult(List<Long> actual, List<Long> expected) {
     
     passed = (actual.equals(expected));
+    assertEquals(expected, actual);
     
     if (!passed)
       summary = "\nEXPECTED:\n" + expected + "\n\nACTUAL:\n" + actual + "\n";
@@ -1657,7 +1625,7 @@ class TestResult {
   public TestResult(List<String> actual, ArrayList<String> expected) {
     
     passed = (actual.equals(expected));
-    
+    assertEquals(expected, actual);
     if (!passed)
       summary = "\nEXPECTED:\n" + expected + "\n\nACTUAL:\n" + actual + "\n";
 
@@ -1666,6 +1634,7 @@ class TestResult {
   public TestResult(boolean[] actual, boolean[] expected) {
     
     passed = (Arrays.equals(actual, expected));
+    assertArrayEquals(expected, actual);
 
     if (!passed)
       summary = "\nEXPECTED:\n" + Arrays.toString(expected) + "\n\nACTUAL:\n" + Arrays.toString(actual) + "\n";
@@ -1675,6 +1644,7 @@ class TestResult {
   public TestResult(boolean passed) {
 
     this.passed = passed;
+    assertTrue(passed);
 
     if (!passed)
       summary = "";
