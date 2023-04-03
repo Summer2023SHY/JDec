@@ -1223,68 +1223,81 @@ public class TestAutomata {
     }
   }
 
-  @Test
+  @Nested
   @DisplayName("EXCEPTION HANDLING")
-  public void runExceptionHandlingTestRoutine() {
+  class ExceptionHandlingTest {
 
-    String testRoutineName = "EXCEPTION HANDLING";
-
-    printTestOutput("RUNNING " + testRoutineName + " TESTS...", 1);
-
-    TestCounter counter = new TestCounter();
+    TestCounter counter;
+  
+    @BeforeEach
+    void setupCounter() {
+      counter = new TestCounter();
+    }
+    
+    @Test
+    @DisplayName("Incompatible Event Test")
+    public void testIncompatibleEvent() {
 
       /* IncompatibleAutomataException Tests */
 
-    printTestOutput("IncompatibleAutomataException Tests: ", 2);
+      printTestOutput("IncompatibleAutomataException Tests: ", 2);
 
-    printTestOutput("Instantiating an automaton...", 3);
-    Automaton automaton1 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(),
-      "a,T,T\nb,T,F\nc,F,T\nd,F,F", // Events
-      "", // States  
-      "" // Transitions
-    ));
+      printTestOutput("Instantiating an automaton...", 3);
+      Automaton automaton1 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+        new Automaton(),
+        "a,T,T\nb,T,F\nc,F,T\nd,F,F", // Events
+        "", // States  
+        "" // Transitions
+      ));
 
-    printTestOutput("Instantiating a second automaton (with an incompatible event)...", 3);
-    Automaton automaton2 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(),
-      "a,T,T\nc,T,T\ne,T,F", // Events
-      "", // States  
-      "" // Transitions
-    ));
+      printTestOutput("Instantiating a second automaton (with an incompatible event)...", 3);
+      Automaton automaton2 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+        new Automaton(),
+        "a,T,T\nc,T,T\ne,T,F", // Events
+        "", // States  
+        "" // Transitions
+      ));
 
-    try {
-      printTestOutput("Taking the union of the two instantiated automata...", 3);
-      Automaton.union(automaton1, automaton2, null, null);
-      printTestCase("Ensuring that an IncompatibleAutomataException was raised", new TestResult(false), counter);
-      fail("IncompatibleAutomataException not raised");
-    } catch(IncompatibleAutomataException e) {
-      printTestCase("Ensuring that an IncompatibleAutomataException was raised", new TestResult(true), counter);
+      try {
+        printTestOutput("Taking the union of the two instantiated automata...", 3);
+        Automaton.union(automaton1, automaton2, null, null);
+        printTestCase("Ensuring that an IncompatibleAutomataException was raised", new TestResult(false), counter);
+        fail("IncompatibleAutomataException not raised");
+      } catch(IncompatibleAutomataException e) {
+        printTestCase("Ensuring that an IncompatibleAutomataException was raised", new TestResult(true), counter);
+      }
+
     }
 
-    printTestOutput("Instantiating a third automaton (with different number of controllers)...", 3);
-    Automaton automaton3 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(null, null, 2),
-      "", // Events
-      "", // States  
-      "" // Transitions
-    ));
+    @Test
+    @DisplayName("Test Different Number of Controllers")
+    public void testIncompatibleNumControllers() {
 
-    try {
-      printTestOutput("Taking the union of the first and third instantiated automata...", 3);
-      Automaton.union(automaton1, automaton3, null, null);
-      printTestCase("Ensuring that an IncompatibleAutomataException was raised", new TestResult(false), counter);
-      fail("IncompatibleAutomataException not raised");
-    } catch(IncompatibleAutomataException e) {
-      printTestCase("Ensuring that an IncompatibleAutomataException was raised", new TestResult(true), counter);
+      printTestOutput("Instantiating an automaton...", 3);
+      Automaton automaton1 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+        new Automaton(),
+        "a,T,T\nb,T,F\nc,F,T\nd,F,F", // Events
+        "", // States  
+        "" // Transitions
+      ));
+
+      printTestOutput("Instantiating a third automaton (with different number of controllers)...", 3);
+      Automaton automaton3 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+        new Automaton(null, null, 2),
+        "", // Events
+        "", // States  
+        "" // Transitions
+      ));
+
+      try {
+        printTestOutput("Taking the union of the first and third instantiated automata...", 3);
+        Automaton.union(automaton1, automaton3, null, null);
+        printTestCase("Ensuring that an IncompatibleAutomataException was raised", new TestResult(false), counter);
+        fail("IncompatibleAutomataException not raised");
+      } catch(IncompatibleAutomataException e) {
+        printTestCase("Ensuring that an IncompatibleAutomataException was raised", new TestResult(true), counter);
+      }
     }
-
-      /* Print summary of this test routine */
-
-    printTestRoutineSummary(testRoutineName, counter);
-
-    
-
   }
 
   // This brings out a lot of subtle bugs
