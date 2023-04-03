@@ -1,5 +1,9 @@
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.util.*;
 import java.io.*;
+
+import org.junit.jupiter.api.*;
 
 public class TestAutomata {
 
@@ -1245,7 +1249,9 @@ public class TestAutomata {
 
   }
 
-  private static TestCounter runExceptionHandlingTestRoutine() {
+  @Test
+  @DisplayName("EXCEPTION HANDLING")
+  public static TestCounter runExceptionHandlingTestRoutine() {
 
     String testRoutineName = "EXCEPTION HANDLING";
 
@@ -1277,6 +1283,7 @@ public class TestAutomata {
       printTestOutput("Taking the union of the two instantiated automata...", 3);
       Automaton.union(automaton1, automaton2, null, null);
       printTestCase("Ensuring that an IncompatibleAutomataException was raised", new TestResult(false), counter);
+      fail("IncompatibleAutomataException not raised");
     } catch(IncompatibleAutomataException e) {
       printTestCase("Ensuring that an IncompatibleAutomataException was raised", new TestResult(true), counter);
     }
@@ -1293,6 +1300,7 @@ public class TestAutomata {
       printTestOutput("Taking the union of the first and third instantiated automata...", 3);
       Automaton.union(automaton1, automaton3, null, null);
       printTestCase("Ensuring that an IncompatibleAutomataException was raised", new TestResult(false), counter);
+      fail("IncompatibleAutomataException not raised");
     } catch(IncompatibleAutomataException e) {
       printTestCase("Ensuring that an IncompatibleAutomataException was raised", new TestResult(true), counter);
     }
