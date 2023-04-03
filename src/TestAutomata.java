@@ -309,6 +309,7 @@ public class TestAutomata {
   	id = a.addEventIfNonExisting("fourthEvent", new boolean[] { false }, new boolean[] { false });
   	printTestCase("Ensuring that 'events' set was not expanded", new TestResult(a.getEvents().size(), 4), counter);
   	printTestCase("Ensuring that the method returned proper negative value", new TestResult(id, -4), counter);
+    a.close();
 
     	/* Event ID Assignment Tests */
 
@@ -333,6 +334,7 @@ public class TestAutomata {
   		/* Print summary of this test routine */
 
   	printTestRoutineSummary(testRoutineName, counter);
+    a.close();
 
 
   }
@@ -371,6 +373,7 @@ public class TestAutomata {
   	printTestCase("Ensuring that the added state was labeled the initial state", new TestResult(automaton.getInitialStateID(), id), counter);
   	printTestCase("Ensuring that the added state has the proper label", new TestResult(automaton.getState(id).getLabel(), "secondState"), counter);
   	printTestCase("Ensuring that the added state is unmarked", new TestResult(automaton.getState(id).isMarked(), false), counter);
+    automaton.close();
   	
   		/* State ID Assignment Tests */
 
@@ -386,6 +389,7 @@ public class TestAutomata {
   	printTestOutput("Adding a second state...", 3);
     id = automaton.addState("secondState", true, true);
     printTestCase("Ensuring that the state's ID is 2", new TestResult(id, 2), counter);
+    automaton.close();
 
   		/* Print summary of this test routine */
 
