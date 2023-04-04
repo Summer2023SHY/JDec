@@ -54,7 +54,7 @@ jobs:
         os:
         - name: Windows
           tag: windows-latest
-          separator: ';'
+          separator: '\;'
         - name: Ubuntu
           tag: ubuntu-latest
           separator: ':'
