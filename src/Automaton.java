@@ -1603,13 +1603,21 @@ public class Automaton implements AutoCloseable {
       } catch (IOException e) {
         e.printStackTrace();
       }
+
+      if (System.getProperty("os.name").startsWith("Windows")) {
+        newBodyRAFile.close();
+      }
           /* Rename new body file */
 
       if (!newBodyFile.renameTo(new File(bodyFileName)))
         System.err.println("ERROR: Could not rename file.");
 
-      bodyRAFile = newBodyRAFile;
-
+      if (System.getProperty("os.name").startsWith("Windows")) {
+        bodyRAFile = new RandomAccessFile(new File(bodyFileName), "rw");
+      }
+      else {
+        bodyRAFile = newBodyRAFile;
+      }
     } catch (IOException e) {
       e.printStackTrace();
     }
