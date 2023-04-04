@@ -85,11 +85,12 @@ jobs:
       run: |
         javac -cp src $(find src -name '*.java')
         javac -cp src:test:${{ runner.temp }}/lib/junit-platform-console-standalone-1.9.2.jar $(find test -name '*.java')
+      shell: bash
     - name: Run Unit Tests
       run: |
         java -jar ${{ runner.temp }}/lib/junit-platform-console-standalone-1.9.2.jar -cp src -cp test --scan-classpath --reports-dir=.
     - name: Publish Test Results
-      if: ${{ always() }}
+      if: ${{ matrix.os.name == 'Ubuntu' && always() }}
       uses: EnricoMi/publish-unit-test-result-action@v2
       with:
         junit_files: "**/TEST-*.xml"
