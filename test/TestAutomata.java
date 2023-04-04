@@ -66,6 +66,7 @@ public class TestAutomata {
   @Nested
   @DisplayName("HELPER METHOD")
   @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+  @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
   class HelperMethodTest {
 
     TestCounter counter;

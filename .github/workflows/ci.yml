@@ -38,7 +38,7 @@ jobs:
         cd bin
         jar cfm JDec.jar manifest.txt *.class
       
-    - name: Build WARP-Java JAR file
+    - name: Build JDec JAR file
       run: |
         cd bin
         jar cfm JDec.jar manifest.txt $(find . -name '*.class')
@@ -48,8 +48,18 @@ jobs:
         name: JDec-JAR
         path: bin/JDec.jar
   test:
-    name: Unit Tests
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+        - name: Windows
+          tag: windows-latest
+          separator: '\;'
+        - name: Ubuntu
+          tag: ubuntu-latest
+          separator: ':'
+    name: Unit Tests (${{ matrix.os.name }})
+    runs-on: ${{ matrix.os.tag }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -76,12 +86,35 @@ jobs:
     - name: Compile Java
       run: |
         javac -cp src $(find src -name '*.java')
-        javac -cp src:test:${{ runner.temp }}/lib/junit-platform-console-standalone-1.9.2.jar $(find test -name '*.java')
-    - name: Run Unit Tests
+      shell: bash
+    - name: Compile JUnit (Ubuntu)
+      if: ${{ matrix.os.name == 'Ubuntu' }}
+      run: |
+        javac -cp src${{ matrix.os.separator }}test${{ matrix.os.separator }}${{ runner.temp }}/lib/junit-platform-console-standalone-1.9.2.jar $(find test -name '*.java')
+      shell: bash
+    - name: Move JUnit Standalone
+      if: ${{ matrix.os.name == 'Windows' }}
+      run: |
+        mkdir lib
+        cp ${{ runner.temp }}/lib/junit-platform-console-standalone-1.9.2.jar lib/junit-platform-console-standalone-1.9.2.jar
+    - name: Compile JUnit (Windows)
+      if: ${{ matrix.os.name == 'Windows' }}
+      run: |
+        javac -cp src $(find src -name '*.java')
+        javac -cp src${{ matrix.os.separator }}test${{ matrix.os.separator }}lib/junit-platform-console-standalone-1.9.2.jar $(find test -name '*.java')
+      shell: bash
+    - name: Run Unit Tests (Ubuntu)
+      if: ${{ matrix.os.name == 'Ubuntu' }}
       run: |
         java -jar ${{ runner.temp }}/lib/junit-platform-console-standalone-1.9.2.jar -cp src -cp test --scan-classpath --reports-dir=.
+    - name: Run Unit Tests (Windows)
+      if: ${{ matrix.os.name == 'Windows' }}
+      run: |
+        java -jar lib/junit-platform-console-standalone-1.9.2.jar -cp src -cp test --scan-classpath --reports-dir=.
     - name: Publish Test Results
       if: ${{ always() }}
-      uses: EnricoMi/publish-unit-test-result-action@v2
+      uses: mikepenz/action-junit-report@v3
       with:
-        junit_files: "**/TEST-*.xml"
+        report_paths: "**/TEST-*.xml"
+        check_name: Test Results - ${{ matrix.os.name }}
+
