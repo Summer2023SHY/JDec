@@ -56,7 +56,7 @@ jobs:
           tag: windows-latest
         - name: Ubuntu
           tag: ubuntu-latest
-    name: Unit Tests
+    name: Unit Tests (${{ matrix.os.name }})
     runs-on: ${{ matrix.os.tag }}
     steps:
     - name: Checkout repository
