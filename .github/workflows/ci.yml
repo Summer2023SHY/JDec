@@ -83,14 +83,28 @@ jobs:
         mkdir ${{ runner.temp }}/lib
         cd ${{ runner.temp }}/lib
         curl -o junit-platform-console-standalone-1.9.2.jar https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.9.2/junit-platform-console-standalone-1.9.2.jar
-    - name: Compile Java
+    - name: Compile Java (Ubuntu)
+      if: ${{ matrix.os.name == 'Ubuntu' }}
       run: |
         javac -cp src $(find src -name '*.java')
         javac -cp src${{ matrix.os.separator }}test${{ matrix.os.separator }}${{ runner.temp }}/lib/junit-platform-console-standalone-1.9.2.jar $(find test -name '*.java')
       shell: bash
-    - name: Run Unit Tests
+    - name: Compile Java (Windows)
+      if: ${{ matrix.os.name == 'Windows' }}
+      run: |
+        mkdir lib
+        cp ${{ runner.temp }}/lib/junit-platform-console-standalone-1.9.2.jar lib/junit-platform-console-standalone-1.9.2.jar
+        javac -cp src $(find src -name '*.java')
+        javac -cp src${{ matrix.os.separator }}test${{ matrix.os.separator }}lib/junit-platform-console-standalone-1.9.2.jar $(find test -name '*.java')
+      shell: bash
+    - name: Run Unit Tests (Ubuntu)
+      if: ${{ matrix.os.name == 'Ubuntu' }}
       run: |
         java -jar ${{ runner.temp }}/lib/junit-platform-console-standalone-1.9.2.jar -cp src -cp test --scan-classpath --reports-dir=.
+    - name: Run Unit Tests (Windows)
+      if: ${{ matrix.os.name == 'Windows' }}
+      run: |
+        java -jar lib/junit-platform-console-standalone-1.9.2.jar -cp src -cp test --scan-classpath --reports-dir=.
     - name: Publish Test Results (Ubuntu)
       if: ${{ matrix.os.name == 'Ubuntu' && always() }}
       uses: EnricoMi/publish-unit-test-result-action@v2
