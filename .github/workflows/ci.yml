@@ -48,8 +48,16 @@ jobs:
         name: JDec-JAR
         path: bin/JDec.jar
   test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+        - name: Windows
+          tag: windows-latest
+        - name: Ubuntu
+          tag: ubuntu-latest
     name: Unit Tests
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os.tag }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -85,3 +93,4 @@ jobs:
       uses: EnricoMi/publish-unit-test-result-action@v2
       with:
         junit_files: "**/TEST-*.xml"
+        check_name: Test Results - ${{ matrix.os.name }}
