@@ -54,8 +54,10 @@ jobs:
         os:
         - name: Windows
           tag: windows-latest
+          separator: ';'
         - name: Ubuntu
           tag: ubuntu-latest
+          separator: ':'
     name: Unit Tests (${{ matrix.os.name }})
     runs-on: ${{ matrix.os.tag }}
     steps:
@@ -84,7 +86,7 @@ jobs:
     - name: Compile Java
       run: |
         javac -cp src $(find src -name '*.java')
-        javac -cp src:test:${{ runner.temp }}/lib/junit-platform-console-standalone-1.9.2.jar $(find test -name '*.java')
+        javac -cp src${{ matrix.os.separator }}test${{ matrix.os.separator }}${{ runner.temp }}/lib/junit-platform-console-standalone-1.9.2.jar $(find test -name '*.java')
       shell: bash
     - name: Run Unit Tests
       run: |
