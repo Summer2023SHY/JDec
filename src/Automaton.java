@@ -2643,6 +2643,14 @@ public class Automaton implements AutoCloseable {
 
     }
 
+    if (System.getProperty("os.name").startsWith("Windows")) {
+      try {
+        newBodyRAFile.close();
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      }
+    }
+
       /* Rename new file */
 
     if (!newBodyFile.renameTo(new File(bodyFileName))) {
@@ -2659,7 +2667,16 @@ public class Automaton implements AutoCloseable {
     nBytesPerStateID   = newNBytesPerStateID;
     nBytesPerState     = newNBytesPerState;
 
-    bodyRAFile = newBodyRAFile;
+    if (System.getProperty("os.name").startsWith("Windows")) {
+      try {
+        bodyRAFile = new RandomAccessFile(new File(bodyFileName), "rw");
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      }
+    }
+    else {
+      bodyRAFile = newBodyRAFile;
+    }
 
   }
 
