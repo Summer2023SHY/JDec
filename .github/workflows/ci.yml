@@ -38,7 +38,7 @@ jobs:
         cd bin
         jar cfm JDec.jar manifest.txt *.class
       
-    - name: Build WARP-Java JAR file
+    - name: Build JDec JAR file
       run: |
         cd bin
         jar cfm JDec.jar manifest.txt $(find . -name '*.class')
