@@ -1,5 +1,7 @@
 # JDec v1.0
 
+[![CI](https://github.com/Summer2023SHY/Automata/actions/workflows/ci.yml/badge.svg)](https://github.com/Summer2023SHY/Automata/actions/workflows/ci.yml)
+
 ## Downloading
 
 ```bash
