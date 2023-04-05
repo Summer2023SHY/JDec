@@ -1695,7 +1695,7 @@ public class Automaton implements AutoCloseable {
     
     long combinedID = 0;
 
-    for (Long id : list) {
+    for (long id : list) {
       
       combinedID *= maxID + 1;
       combinedID += id;
@@ -1720,13 +1720,13 @@ public class Automaton implements AutoCloseable {
    **/
   public static BigInteger combineBigIDs(List<Long> list, long maxID) {
     
-    BigInteger bigMaxID = new BigInteger(String.valueOf(maxID));
-    BigInteger maxIDPlusOne = new BigInteger(String.valueOf(maxID + 1));
+    BigInteger bigMaxID = BigInteger.valueOf(maxID);
+    BigInteger maxIDPlusOne = bigMaxID.add(BigInteger.ONE);
 
     BigInteger combinedID = BigInteger.ZERO;
 
-    for (Long id : list)
-      combinedID = combinedID.multiply(maxIDPlusOne).add(new BigInteger(String.valueOf(id)));
+    for (long id : list)
+      combinedID = combinedID.multiply(maxIDPlusOne).add(BigInteger.valueOf(id));
 
     return combinedID;
 
