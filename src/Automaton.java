@@ -143,14 +143,14 @@ public class Automaton implements AutoCloseable {
 
     // Private variables
     private final byte numericValue;
-    private final Class classType;
+    private final Class<? extends Automaton> classType;
 
     /**
      * Construct a Type enum object.
      * @param numericValue  The numeric value associated with this enum value (used in .hdr file)
      * @param classType     The associated class
      **/
-    Type(byte numericValue, Class classType) {
+    Type(byte numericValue, Class<? extends Automaton> classType) {
       this.numericValue = numericValue;
       this.classType    = classType;
     }
@@ -183,7 +183,7 @@ public class Automaton implements AutoCloseable {
      * @param classType The class
      * @return          The automaton type (or null, if it could not be found)
      **/
-    public static Type getType(Class classType) {
+    public static Type getType(Class<?> classType) {
 
       for (Type type : Type.values())
         if (type.classType == classType)
