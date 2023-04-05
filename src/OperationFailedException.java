@@ -4,4 +4,4 @@
  * @author Micah Stairs
  **/
 
-public class OperationFailedException extends Exception { }
+public class OperationFailedException extends IllegalStateException { }

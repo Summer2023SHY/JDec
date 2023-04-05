@@ -4,4 +4,4 @@
  * @author Micah Stairs
  **/
 
-public class SegmentationFaultException extends Exception { }
+public class SegmentationFaultException extends RuntimeException { }

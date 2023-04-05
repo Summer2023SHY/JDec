@@ -6,4 +6,4 @@
  * @author Micah Stairs
  **/
 
-public class DoesNotSatisfyObservabilityException extends Exception { }
+public class DoesNotSatisfyObservabilityException extends IllegalStateException { }

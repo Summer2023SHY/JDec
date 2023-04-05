@@ -5,4 +5,4 @@
  * @author Micah Stairs
  **/
 
-public class MissingDependencyException extends Exception { }
+public class MissingDependencyException extends RuntimeException { }

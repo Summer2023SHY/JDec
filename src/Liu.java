@@ -5,7 +5,7 @@ public class Liu {
 
   static Map<String, UStructure> storedUStructures = new HashMap<String, UStructure>();
 
-  public static void main(String[] args) throws IncompatibleAutomataException {
+  public static void main(String[] args) {
     perms();
     // permsFirstAutomaton();
   }
