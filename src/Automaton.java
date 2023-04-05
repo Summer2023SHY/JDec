@@ -2466,13 +2466,13 @@ public class Automaton implements AutoCloseable {
 
       type = Type.getType((byte) ByteManipulator.readBytesAsLong(buffer, 0,  1));
       nStates            =       ByteManipulator.readBytesAsLong(buffer, 1,  8);
-      eventCapacity      = (int) ByteManipulator.readBytesAsLong(buffer, 9,  4);
+      eventCapacity      =       ByteManipulator.readBytesAsInt(buffer, 9,  4);
       stateCapacity      =       ByteManipulator.readBytesAsLong(buffer, 13, 8);
-      transitionCapacity = (int) ByteManipulator.readBytesAsLong(buffer, 21, 4);
-      labelLength        = (int) ByteManipulator.readBytesAsLong(buffer, 25, 4);
+      transitionCapacity =       ByteManipulator.readBytesAsInt(buffer, 21, 4);
+      labelLength        =       ByteManipulator.readBytesAsInt(buffer, 25, 4);
       initialState       =       ByteManipulator.readBytesAsLong(buffer, 29, 8);
-      nControllers       = (int) ByteManipulator.readBytesAsLong(buffer, 37, 4);
-      int nEvents        = (int) ByteManipulator.readBytesAsLong(buffer, 41, 4);
+      nControllers       =       ByteManipulator.readBytesAsInt(buffer, 37, 4);
+      int nEvents        =       ByteManipulator.readBytesAsInt(buffer, 41, 4);
 
       // None of the folowing things can exist if there are no events
       if (nEvents == 0)
@@ -2495,7 +2495,7 @@ public class Automaton implements AutoCloseable {
         // Read the number of characters in the label
         buffer = new byte[4];
         headerRAFile.read(buffer);
-        int eventLabelLength = (int) ByteManipulator.readBytesAsLong(buffer, 0, 4);
+        int eventLabelLength = ByteManipulator.readBytesAsInt(buffer, 0, 4);
 
         // Read each character of the label, building an array of characters
         buffer = new byte[eventLabelLength];
@@ -2530,7 +2530,7 @@ public class Automaton implements AutoCloseable {
 
     byte[] buffer = new byte[4];
     headerRAFile.read(buffer);
-    int nBadTransitions = (int) ByteManipulator.readBytesAsLong(buffer, 0, 4);
+    int nBadTransitions = ByteManipulator.readBytesAsInt(buffer, 0, 4);
 
       /* Read in special transitions from the .hdr file */
     
@@ -2560,7 +2560,7 @@ public class Automaton implements AutoCloseable {
       long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
       index += 8;
       
-      int eventID = (int) ByteManipulator.readBytesAsLong(buffer, index, 4);
+      int eventID = ByteManipulator.readBytesAsInt(buffer, index, 4);
       index += 4;
       
       long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
