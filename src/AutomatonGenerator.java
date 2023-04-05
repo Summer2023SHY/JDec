@@ -1,5 +1,5 @@
 /**
- * AutomatonGenerator - Abstract class used to generate automata. Automata can be generated using GUI input
+ * AutomatonGenerator - Utility class used to generate automata. Automata can be generated using GUI input
  *                      code, or they can be randomly generated (with a number of specified properties).
  *
  *                      NOTE: This class should realistically be split into two unrelated classes.
@@ -20,7 +20,9 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.text.*;
 
-public abstract class AutomatonGenerator<T> {
+public final class AutomatonGenerator {
+  /** Private constructor */
+  private AutomatonGenerator() {}
 
       /* STATIC ERROR STYLING PROPERTIES */
 
