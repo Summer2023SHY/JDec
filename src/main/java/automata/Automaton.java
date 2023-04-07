@@ -1803,9 +1803,8 @@ public class Automaton implements AutoCloseable {
    * @return                            Whether or not the output was successfully generated
    * @throws IOException If I/O error occurs
    * @throws MissingOrCorruptBodyFile   If any of the states are unable to be read from the body file
-   * @throws SegmentationFaultException If GraphViz encountered a segmentaiton fault and was unable to generated the .PNG file
    **/
-  public boolean generateImage(String outputFileName) throws IOException, MissingOrCorruptBodyFileException, SegmentationFaultException {
+  public boolean generateImage(String outputFileName) throws IOException, MissingOrCorruptBodyFileException {
 
       /* Setup */
 

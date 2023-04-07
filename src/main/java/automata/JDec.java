@@ -1154,9 +1154,6 @@ public class JDec extends JFrame implements ActionListener {
       else
         displayErrorMessage("Error", "Something went wrong while trying to generate and display the image. NOTE: It may be the case that you do not have X11 installed.");
     
-    } catch (SegmentationFaultException e) {
-      displayErrorMessage("GraphViz Failed", "GraphViz encountered a segmentation fault, so the .PNG image was unable to be generated.\nFortunately, the .SVG image was likely able to be generated. Click 'View Image in Browser' to see it.");
-
     } catch (IOException e) {
       displayErrorMessage("I/O Error", "An I/O error occured.");
     } catch (MissingOrCorruptBodyFileException e) {
