@@ -33,6 +33,10 @@ import java.nio.file.*;
 import java.awt.image.*;
 import javax.imageio.*;
 
+import guru.nidi.graphviz.engine.*;
+import guru.nidi.graphviz.model.*;
+import guru.nidi.graphviz.parse.*;
+
 public class Automaton implements AutoCloseable {
 
     /* PUBLIC CLASS CONSTANTS */
@@ -1797,13 +1801,11 @@ public class Automaton implements AutoCloseable {
    * Output this automaton in a format that is readable by GraphViz, then export as requested.
    * @param outputFileName              The location to put the generated output
    * @return                            Whether or not the output was successfully generated
+   * @throws IOException If I/O error occurs
    * @throws MissingOrCorruptBodyFile   If any of the states are unable to be read from the body file
-   * @throws MissingDependencyException If GraphViz is not installed and/or its directory has been added to the PATH variable
    * @throws SegmentationFaultException If GraphViz encountered a segmentaiton fault and was unable to generated the .PNG file
    **/
-  public boolean generateImage(String outputFileName) throws MissingOrCorruptBodyFileException,
-                                                                       MissingDependencyException,
-                                                                       SegmentationFaultException {
+  public boolean generateImage(String outputFileName) throws IOException, MissingOrCorruptBodyFileException, SegmentationFaultException {
 
       /* Setup */
 
@@ -1908,59 +1910,10 @@ public class Automaton implements AutoCloseable {
 
       /* Generate image */
 
-    try {
+    MutableGraph g = new Parser().read(str.toString());
+    Graphviz.fromGraph(g).render(Format.SVG).toFile(new File(outputFileName + ".svg"));
+    Graphviz.fromGraph(g).render(Format.PNG).toFile(new File(outputFileName + ".png"));
 
-      // Write DOT language to file
-      new PrintStream(new FileOutputStream(outputFileName + ".dot")).print(str.toString());
-
-      // Produce image from DOT language
-      Process process = new ProcessBuilder(
-        (nStates > 100) ? "neato": "dot",
-        outputFileName + ".dot",
-        "-Tpng",
-        "-o",
-        outputFileName + ".png",
-        "-Tsvg",
-        "-o",
-        outputFileName + ".svg"
-      ).start();
-
-      // Wait for it to finish
-      int exitValue;
-      if ((exitValue = process.waitFor()) != 0) {
-
-        if (exitValue == 139) {
-          System.err.println("ERROR: GraphViz failed to generate .PNG image of graph due to a segmentation fault.");
-        
-          // For some reason, this seems to work when generating both .SVG and .PNG doesn't
-          process = new ProcessBuilder(
-            (nStates > 100) ? "neato": "dot",
-            "-Tsvg",
-            outputFileName + ".dot",
-            "-o",
-            outputFileName + ".svg"
-          ).start();
-
-          throw new SegmentationFaultException();
-        
-        // If there is some other error, it is likely that X11 is missing
-        } else {
-          System.err.println("ERROR: GraphViz failed to generate image of graph. Check to ensure that X11 is installed.");
-          return false;
-        }
-        
-      }
-
-    } catch (IOException e) {
-      e.printStackTrace();
-      throw new MissingDependencyException();
-
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-      System.err.println("ERROR: GraphViz was interrupted while trying to generate image of graph.");
-      return false;
-    }
-    
     return true;
 
   }

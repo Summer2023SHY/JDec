@@ -1157,9 +1157,8 @@ public class JDec extends JFrame implements ActionListener {
     } catch (SegmentationFaultException e) {
       displayErrorMessage("GraphViz Failed", "GraphViz encountered a segmentation fault, so the .PNG image was unable to be generated.\nFortunately, the .SVG image was likely able to be generated. Click 'View Image in Browser' to see it.");
 
-    } catch (MissingDependencyException e) {
-      displayErrorMessage("Missing Dependency", "Please ensure that GraphViz is installed, with its directory added to the PATH environment variable.");
-    
+    } catch (IOException e) {
+      displayErrorMessage("I/O Error", "An I/O error occured.");
     } catch (MissingOrCorruptBodyFileException e) {
       displayErrorMessage("Corrupt or Missing File", "Please ensure that the .bdy file associated with this automaton is not corrupt or missing.");
     }
