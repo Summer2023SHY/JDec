@@ -70,47 +70,10 @@ jobs:
       with:
         distribution: temurin # Eclipse Temurin
         java-version: '11'    # Java 11 (LTS)
-    - name: Cache Dependency Library
-      id: load-lib-cache
-      uses: actions/cache@v3
-      with:
-        path: ${{ runner.temp }}/lib
-        key: junit-v1.9.2
-    - name: Download JUnit Console Standalone
-      if: steps.load-lib-cache.outputs.cache-hit != 'true'
-          # Only run if cached file does not exist
+        cache: 'maven'
+    - name: Run Tests
       run: |
-        mkdir ${{ runner.temp }}/lib
-        cd ${{ runner.temp }}/lib
-        curl -o junit-platform-console-standalone-1.9.2.jar https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.9.2/junit-platform-console-standalone-1.9.2.jar
-    - name: Compile Java
-      run: |
-        javac -cp src $(find src -name '*.java')
-      shell: bash
-    - name: Compile JUnit (Ubuntu)
-      if: ${{ matrix.os.name == 'Ubuntu' }}
-      run: |
-        javac -cp src${{ matrix.os.separator }}test${{ matrix.os.separator }}${{ runner.temp }}/lib/junit-platform-console-standalone-1.9.2.jar $(find test -name '*.java')
-      shell: bash
-    - name: Move JUnit Standalone
-      if: ${{ matrix.os.name == 'Windows' }}
-      run: |
-        mkdir lib
-        cp ${{ runner.temp }}/lib/junit-platform-console-standalone-1.9.2.jar lib/junit-platform-console-standalone-1.9.2.jar
-    - name: Compile JUnit (Windows)
-      if: ${{ matrix.os.name == 'Windows' }}
-      run: |
-        javac -cp src $(find src -name '*.java')
-        javac -cp src${{ matrix.os.separator }}test${{ matrix.os.separator }}lib/junit-platform-console-standalone-1.9.2.jar $(find test -name '*.java')
-      shell: bash
-    - name: Run Unit Tests (Ubuntu)
-      if: ${{ matrix.os.name == 'Ubuntu' }}
-      run: |
-        java -jar ${{ runner.temp }}/lib/junit-platform-console-standalone-1.9.2.jar -cp src -cp test --scan-classpath --reports-dir=.
-    - name: Run Unit Tests (Windows)
-      if: ${{ matrix.os.name == 'Windows' }}
-      run: |
-        java -jar lib/junit-platform-console-standalone-1.9.2.jar -cp src -cp test --scan-classpath --reports-dir=.
+        mvn test
     - name: Publish Test Results
       if: ${{ always() }}
       uses: mikepenz/action-junit-report@v3
