@@ -8,4 +8,4 @@ package automata;
  * @author Micah Stairs
  **/
 
-public class IncompatibleAutomataException extends Exception { }
+public class IncompatibleAutomataException extends IllegalArgumentException { }

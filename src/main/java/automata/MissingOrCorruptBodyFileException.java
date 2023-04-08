@@ -8,4 +8,4 @@ package automata;
  * @author Micah Stairs
  **/
 
-public class MissingOrCorruptBodyFileException extends Exception { }
+public class MissingOrCorruptBodyFileException extends java.io.IOException { }
