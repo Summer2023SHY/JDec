@@ -5,10 +5,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>automata</groupId>
-  <artifactId>automata</artifactId>
+  <artifactId>JDec</artifactId>
   <version>v1.0_b1</version>
 
-  <name>automata</name>
+  <name>Automata</name>
   <url>https://github.com/Summer2023SHY/Automata</url>
 
   <properties>
