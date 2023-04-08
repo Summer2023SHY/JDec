@@ -1,3 +1,0 @@
-#!/bin/sh
-javadoc -private -d docs/ src/*.java
-open docs/index.html
