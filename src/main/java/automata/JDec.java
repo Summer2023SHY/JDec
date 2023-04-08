@@ -1160,10 +1160,10 @@ public class JDec extends JFrame implements ActionListener {
       else
         displayErrorMessage("Error", "Something went wrong while trying to generate and display the image. NOTE: It may be the case that you do not have X11 installed.");
     
-    } catch (IOException e) {
-      displayErrorMessage("I/O Error", "An I/O error occured.");
     } catch (MissingOrCorruptBodyFileException e) {
       displayErrorMessage("Corrupt or Missing File", "Please ensure that the .bdy file associated with this automaton is not corrupt or missing.");
+    } catch (IOException e) {
+      displayErrorMessage("I/O Error", "An I/O error occured.");
     }
 
   }
