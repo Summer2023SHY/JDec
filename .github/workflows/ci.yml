@@ -30,23 +30,15 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '11'
-    - name: Compile Java
+        cache: 'maven'
+    - name: Build JAR
       run: |
-        javac -d bin -cp src $(find src -name '*.java')
-    - name: Build JAR file
-      run: |
-        cd bin
-        jar cfm JDec.jar manifest.txt *.class
-      
-    - name: Build JDec JAR file
-      run: |
-        cd bin
-        jar cfm JDec.jar manifest.txt $(find . -name '*.class')
+        mvn clean compile assembly:single
     - name: Upload JAR file
       uses: actions/upload-artifact@v3.1.2
       with:
         name: JDec-JAR
-        path: bin/JDec.jar
+        path: target/*.jar
   test:
     strategy:
       fail-fast: false
