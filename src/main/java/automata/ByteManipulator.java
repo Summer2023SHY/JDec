@@ -1,11 +1,13 @@
 package automata;
 /**
- * ByteManipulator - An abstract class used to perform conversions between a long and bytes.
+ * ByteManipulator - A utility class used to perform conversions between a long and bytes.
  *
  * @author Micah Stairs
  **/
 
-public abstract class ByteManipulator {
+public final class ByteManipulator {
+
+  private ByteManipulator() {}
   
   /**
    * Joins the specified number of bytes into a long from an array of bytes.
@@ -17,6 +19,27 @@ public abstract class ByteManipulator {
   public static long readBytesAsLong(byte[] arr, int index, int nBytes) {
 
     long n = 0;
+
+    // Read bytes one at a time from the array, building the long value
+    for (int i = nBytes - 1; i >= 0; i--) {
+      n <<= 8;
+      n += (arr[index++] & 0xFF); // Makes the byte unsigned, before adding it
+    }
+
+    return n;
+
+  }
+
+  /**
+   * Joins the specified number of bytes into a int from an array of bytes.
+   * @param arr    The array of bytes to read from
+   * @param index  The index in the array to start reading bytes from
+   * @param nBytes The number of bytes to be read
+   * @return       The long value
+   **/
+  public static int readBytesAsInt(byte[] arr, int index, int nBytes) {
+
+    int n = 0;
 
     // Read bytes one at a time from the array, building the long value
     for (int i = nBytes - 1; i >= 0; i--) {

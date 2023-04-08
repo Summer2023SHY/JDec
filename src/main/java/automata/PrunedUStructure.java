@@ -55,9 +55,9 @@ public class PrunedUStructure extends UStructure {
                                                   int indexOfSender) {
 
     Set<Long> indistinguishableStates = new HashSet<Long>();
-    findConnectingStates((UStructure)this, (UStructure)this.invert(), indistinguishableStates, initialStateID, indexOfSender);
+    findConnectingStates(this, this.invert(), indistinguishableStates, initialStateID, indexOfSender);
     // System.out.println("communication: " + communication + ", index of sender: " + indexOfSender);
-    for (Long s : indistinguishableStates)
+    for (long s : indistinguishableStates)
       pruneHelper(protocol, communication, new boolean[communication.getSize()], getState(s), 0);
   
   }
@@ -97,7 +97,7 @@ public class PrunedUStructure extends UStructure {
 
       // System.out.println("\t\tProcessed: " + t);
 
-      boolean[] copy = (boolean[]) vectorElementsFound.clone();
+      boolean[] copy = Arrays.copyOf(vectorElementsFound, vectorElementsFound.length);
 
       // Check to see if the event vector of this transition is compatible with what we've found so far
       for (int i = 0; i < t.getEvent().getVector().getSize(); i++) {
@@ -203,11 +203,11 @@ public class PrunedUStructure extends UStructure {
    **/
   private boolean removeEvent(int id) {
 
-    Iterator iterator = getEvents().iterator();
+    Iterator<Event> iterator = getEvents().iterator();
 
     while (iterator.hasNext()) {
 
-      Event e = (Event) iterator.next();
+      Event e = iterator.next();
 
       // Remove the event if the ID matches
       if (e.getID() == id) {
@@ -236,7 +236,7 @@ public class PrunedUStructure extends UStructure {
                                               List<? extends TransitionData> list) {
 
     for (TransitionData data : list)
-      data.eventID = mapping.get((Integer) data.eventID);
+      data.eventID = mapping.get(data.eventID);
 
     headerFileNeedsToBeWritten = true;
 
