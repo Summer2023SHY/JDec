@@ -35,6 +35,9 @@ import javax.xml.transform.stream.*;
 import org.w3c.dom.*;
 import org.xml.sax.*;
 
+import com.github.weisj.jsvg.SVGDocument;
+import com.github.weisj.jsvg.attributes.ViewBox;
+
 public class JDec extends JFrame implements ActionListener {
 
     /* CLASS CONSTANTS */
@@ -474,7 +477,7 @@ public class JDec extends JFrame implements ActionListener {
         tab.transitionInput.setText("");
 
         // Set blank image
-        tab.canvas.setImage(null);
+        tab.canvas.setSVGImage(null);
 
         break;
 
@@ -1118,7 +1121,7 @@ public class JDec extends JFrame implements ActionListener {
       tab.generateImageButton.setEnabled(false);
     } else {
       tab.generateImageButton.setEnabled(true);
-      tab.canvas.setImage(null);
+      tab.canvas.setSVGImage(null);
     }
 
     // Refresh GUI
@@ -1142,11 +1145,11 @@ public class JDec extends JFrame implements ActionListener {
 
       // Set the image blank if there were no states entered
       if (tab.automaton == null)
-        tab.canvas.setImage(null);
+        tab.canvas.setSVGImage(null);
 
       // Try to create graph image, displaying it on the screen
       else if (tab.automaton.generateImage(destinationFileName)) {
-        tab.canvas.setImage(tab.automaton.loadImageFromFile(destinationFileName + ".png"));
+        tab.canvas.setSVGImage(tab.automaton.loadSVGFromFile(destinationFileName + ".svg"));
         tab.svgFile = new File(destinationFileName + ".svg");
       }
 
@@ -1823,6 +1826,7 @@ public class JDec extends JFrame implements ActionListener {
   private class Canvas extends JPanel {
 
     private BufferedImage image;
+    private SVGDocument document;
 
     /**
      * Construct and display a canvas, initially with a grey background.
@@ -1841,6 +1845,18 @@ public class JDec extends JFrame implements ActionListener {
     public void setImage(BufferedImage image) {
 
       this.image = image;
+      this.document = null;
+      this.repaint();
+
+    }
+
+    /**
+     * Update the image in the canvas.
+     * @param image The new image to be displayed in the canvas (null indicates no image)
+     **/
+    public void setSVGImage(SVGDocument image) {
+      this.image = null;
+      this.document = image;
       this.repaint();
 
     }
@@ -1863,6 +1879,11 @@ public class JDec extends JFrame implements ActionListener {
         int horizontalPadding = Math.max(0, (getWidth()  - width)  / 2);
         int verticalPadding   = Math.max(0, (getHeight() - height) / 2);
         graphics.drawImage(image, horizontalPadding, verticalPadding, width, height, null);
+
+      }
+      else if (document != null) {
+
+        document.render(this, (Graphics2D) graphics, new ViewBox(0, 0, getWidth(), getHeight()));
 
       }
 
