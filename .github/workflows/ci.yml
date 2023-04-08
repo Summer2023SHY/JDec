@@ -55,8 +55,6 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-    - name: Setup Graphviz
-      uses: ts-graphviz/setup-graphviz@v1
     - name: Setup JDK
       uses: actions/setup-java@v3
       with:
