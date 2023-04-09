@@ -88,8 +88,11 @@ public class JDec extends JFrame implements ActionListener {
     factory.setIgnoringElementContentWhitespace(true);
     
     try {
-      tooltipDocument = factory.newDocumentBuilder().parse(new File("res/tooltips.xml"));
-    } catch (ParserConfigurationException | SAXException | IOException e) {
+      tooltipDocument = factory.newDocumentBuilder().parse(
+        getResourceURL("tooltips.xml").toURI().toString()
+      );
+    } catch (ParserConfigurationException | SAXException | IOException | URISyntaxException e) {
+      e.printStackTrace();
       tooltipDocument = null;
     }
 
@@ -163,18 +166,6 @@ public class JDec extends JFrame implements ActionListener {
     promptBeforeExit();
     cleanupBeforeProgramQuits();
 
-  }
-
-  private URL getResourceURL(String fileName) 
-  {
-      URL url = this.getClass()
-          .getClassLoader()
-          .getResource(fileName);
-      
-      if(url == null) {
-          throw new IllegalArgumentException(fileName + " is not found!");
-      }
-      return url;
   }
 
     /* SETUP METHODS */
@@ -1715,6 +1706,18 @@ public class JDec extends JFrame implements ActionListener {
     else
       setCursor(Cursor.getDefaultCursor());
   
+  }
+
+  private static URL getResourceURL(String fileName) 
+  {
+      URL url = JDec.class
+          .getClassLoader()
+          .getResource(fileName);
+      
+      if(url == null) {
+          throw new IllegalArgumentException(fileName + " is not found!");
+      }
+      return url;
   }
 
   /**
