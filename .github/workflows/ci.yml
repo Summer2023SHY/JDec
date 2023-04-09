@@ -47,10 +47,8 @@ jobs:
         os:
         - name: Windows
           tag: windows-latest
-          separator: '\;'
         - name: Ubuntu
           tag: ubuntu-latest
-          separator: ':'
     name: Unit Tests (${{ matrix.os.name }})
     runs-on: ${{ matrix.os.tag }}
     steps:
@@ -70,5 +68,6 @@ jobs:
       uses: mikepenz/action-junit-report@v3
       with:
         report_paths: "**/TEST-*.xml"
+        exclude_sources: target/
         check_name: Test Results - ${{ matrix.os.name }}
 
