@@ -126,6 +126,12 @@ public class JDec extends JFrame implements ActionListener {
    **/
   public JDec() {
 
+    URL iconUrl = getResourceURL("icon.png");
+    ImageIcon icon = new ImageIcon(iconUrl);
+    setIconImage(icon.getImage());
+
+    setMinimumSize(new Dimension(640, 480));
+
       /* Create message to dislay when there are no tabs */
 
     noTabsMessage = new JLabel("You do not have any tabs open.");
@@ -157,6 +163,18 @@ public class JDec extends JFrame implements ActionListener {
     promptBeforeExit();
     cleanupBeforeProgramQuits();
 
+  }
+
+  private URL getResourceURL(String fileName) 
+  {
+      URL url = this.getClass()
+          .getClassLoader()
+          .getResource(fileName);
+      
+      if(url == null) {
+          throw new IllegalArgumentException(fileName + " is not found!");
+      }
+      return url;
   }
 
     /* SETUP METHODS */
