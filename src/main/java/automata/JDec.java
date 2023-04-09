@@ -126,6 +126,10 @@ public class JDec extends JFrame implements ActionListener {
    **/
   public JDec() {
 
+    URL iconUrl = getResourceURL("icon.png");
+    ImageIcon icon = new ImageIcon(iconUrl);
+    setIconImage(icon.getImage());
+
       /* Create message to dislay when there are no tabs */
 
     noTabsMessage = new JLabel("You do not have any tabs open.");
