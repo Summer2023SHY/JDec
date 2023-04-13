@@ -38,14 +38,20 @@ public class DisablementData extends TransitionData {
 
     /* OVERRIDDEN METHODS */
 
-  @Override public boolean equals(Object obj) {
-
-    return super.equals(obj) && Arrays.equals(controllers, ((DisablementData) obj).controllers);
-
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) return true;
+    else if (!super.equals(obj)) {
+      return false;
+    }
+    else if (obj instanceof DisablementData)
+      return Arrays.equals(controllers, ((DisablementData) obj).controllers);
+    else return false;
   }
 
-  @Override public int hashCode() {
-    return Long.valueOf(initialStateID).hashCode();
+  @Override
+  public int hashCode() {
+    return Long.hashCode(initialStateID);
   }
 
 }

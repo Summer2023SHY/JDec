@@ -373,7 +373,8 @@ public class State {
 
     /* OVERRIDDEN METHODS */
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return "("
       + "\"" + label + "\",ID:"
       + id + ","
@@ -382,12 +383,18 @@ public class State {
       + ")";
   }
 
-  @Override public int hashCode() {
-    return ((Long) id).hashCode();
+  @Override
+  public int hashCode() {
+    return Long.hashCode(id);
   }
 
-  @Override public boolean equals(Object other) {
-    return id == ((State) other).id;
+  @Override
+  public boolean equals(Object other) {
+    if (this == other) return true;
+    else if (other instanceof State) {
+      return id == ((State) other).id;
+    }
+    else return false;
   }
 
 }

@@ -71,10 +71,14 @@ public class CommunicationData extends TransitionData {
 
     /* OVERRIDDEN METHODS */
 
-  @Override public boolean equals(Object obj) {
-
-    return super.equals(obj) && Arrays.deepEquals(roles, ((CommunicationData) obj).roles);
-
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) return true;
+    else if (!super.equals(obj)) return false;
+    else if (obj instanceof CommunicationData) {
+      return Arrays.deepEquals(roles, ((CommunicationData) obj).roles);
+    }
+    else return false;
   }
 
   @Override public String toString(Automaton automaton) {

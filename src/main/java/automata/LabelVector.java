@@ -76,15 +76,21 @@ class LabelVector {
 
     /* OVERRIDDEN METHODS */
 
-  @Override public int hashCode() {
+  @Override
+  public int hashCode() {
     return label.hashCode();
   }
 
-  @Override public boolean equals(Object other) {
-    return label.equals(((LabelVector) other).label);
+  @Override
+  public boolean equals(Object other) {
+    if (this == other) return true;
+    else if (other instanceof LabelVector)
+      return label.equals(((LabelVector) other).label);
+    else return false;
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return label;
   }
 
