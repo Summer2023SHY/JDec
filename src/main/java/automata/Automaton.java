@@ -1916,8 +1916,7 @@ public class Automaton implements AutoCloseable {
       str.append("}");
 
     } catch (NullPointerException e) {
-      e.printStackTrace();
-      throw new MissingOrCorruptBodyFileException();
+      throw new MissingOrCorruptBodyFileException(e);
     }
 
       /* Generate image */
