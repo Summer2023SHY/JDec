@@ -7,7 +7,6 @@ import java.io.*;
 import org.junit.jupiter.api.*;
 
 import automata.Automaton;
-import automata.AutomatonGenerator;
 import automata.ByteManipulator;
 import automata.CommunicationData;
 import automata.Crush;
@@ -17,6 +16,7 @@ import automata.NashCommunicationData;
 import automata.OperationFailedException;
 import automata.PrunedUStructure;
 import automata.UStructure;
+import automata.gui.util.AutomatonGenerator;
 
 public class TestAutomata {
 

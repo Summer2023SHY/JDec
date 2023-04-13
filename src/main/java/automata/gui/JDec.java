@@ -35,7 +35,6 @@ import com.github.weisj.jsvg.SVGDocument;
 import com.github.weisj.jsvg.attributes.ViewBox;
 
 import automata.Automaton;
-import automata.AutomatonGenerator;
 import automata.CommunicationData;
 import automata.Crush;
 import automata.IncompatibleAutomataException;
@@ -43,7 +42,8 @@ import automata.MissingOrCorruptBodyFileException;
 import automata.OperationFailedException;
 import automata.PrunedUStructure;
 import automata.UStructure;
-import automata.Automaton.Type;
+import automata.gui.util.AutomatonGenerator;
+import automata.gui.util.RandomAutomatonGenerator;
 
 /**
  * A Java application for Decentralized Control. This application has been design to build
@@ -1214,7 +1214,7 @@ public class JDec extends JFrame implements ActionListener {
     String fileName = getTemporaryFileName();
 
     // Generate random automaton
-    Automaton automaton = AutomatonGenerator.generateRandom(
+    Automaton automaton = RandomAutomatonGenerator.generateRandom(
       prompt,
       new File(fileName + ".hdr"),
       new File(fileName + ".bdy"),

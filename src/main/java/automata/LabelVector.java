@@ -12,7 +12,7 @@ package automata;
  *  -Overridden Methods
  **/
 
-class LabelVector {
+public class LabelVector {
 
     /* INSTANCE VARIABLES */
 
