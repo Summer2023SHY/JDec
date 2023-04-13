@@ -312,61 +312,62 @@ public abstract class NashInformationPrompt extends JDialog {
     setVisible(true);
 
   }
-    
-}
 
   /* INNER CLASSES */
 
-class CostCellRenderer extends DefaultTableCellRenderer {
+  private static class CostCellRenderer extends DefaultTableCellRenderer {
 
-  @Override public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-    
-    Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+      
+      Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-    try {
+      try {
 
-      Double.valueOf((String) value);
+        Double.valueOf((String) value);
+      
+        if (isSelected)
+          component.setBackground(javax.swing.UIManager.getColor("Table.selectionBackground"));
+        else if (hasFocus)
+          component.setBackground(javax.swing.UIManager.getColor("Table.focusCellBackground"));
+        else
+          component.setBackground(javax.swing.UIManager.getColor("Table.background"));  
+      
+      } catch (NumberFormatException e) {
+        component.setBackground(Color.RED);
+      }
+
+      return component;
     
-      if (isSelected)
-        component.setBackground(javax.swing.UIManager.getColor("Table.selectionBackground"));
-      else if (hasFocus)
-        component.setBackground(javax.swing.UIManager.getColor("Table.focusCellBackground"));
-      else
-        component.setBackground(javax.swing.UIManager.getColor("Table.background"));  
-    
-    } catch (NumberFormatException e) {
-      component.setBackground(Color.RED);
     }
 
-    return component;
-  
   }
 
-}
+  private static class ProbabilityCellRenderer extends DefaultTableCellRenderer {
 
-class ProbabilityCellRenderer extends DefaultTableCellRenderer {
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+      
+      Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+      
+      try {
 
-  @Override public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-    
-    Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-    
-    try {
+        Double.valueOf((String) value);
+      
+        if (isSelected)
+          component.setBackground(javax.swing.UIManager.getColor("Table.selectionBackground"));
+        else if (hasFocus)
+          component.setBackground(javax.swing.UIManager.getColor("Table.focusCellBackground"));
+        else
+          component.setBackground(javax.swing.UIManager.getColor("Table.background"));  
+      
+      } catch (NumberFormatException e) {
+        component.setBackground(Color.RED);
+      }
 
-      Double.valueOf((String) value);
-    
-      if (isSelected)
-        component.setBackground(javax.swing.UIManager.getColor("Table.selectionBackground"));
-      else if (hasFocus)
-        component.setBackground(javax.swing.UIManager.getColor("Table.focusCellBackground"));
-      else
-        component.setBackground(javax.swing.UIManager.getColor("Table.background"));  
-    
-    } catch (NumberFormatException e) {
-      component.setBackground(Color.RED);
+      return component;
+
     }
 
-    return component;
-  
   }
-
 }

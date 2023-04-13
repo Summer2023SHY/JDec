@@ -105,16 +105,23 @@ public class Event {
 
     /* OVERRIDDEN METHODS */
 
-  @Override public boolean equals(Object obj) {
-    Event other = (Event) obj;
-    return this.label.equals(other.label);
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) return true;
+    else if (obj instanceof Event) {
+      Event other = (Event) obj;
+      return this.label.equals(other.label);
+    }
+    else return false;
   }
 
-  @Override public int hashCode() {
+  @Override
+  public int hashCode() {
     return this.label.hashCode();
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return "("
       + "\"" + label + "\",ID:"
       + id + ","

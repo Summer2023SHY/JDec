@@ -82,12 +82,18 @@ public class Transition {
 
     /* OVERRIDDEN METHODS */
 
-  @Override public boolean equals(Object obj) {
-    Transition other = (Transition) obj;
-    return targetStateID == other.targetStateID && event.equals(other.event);
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) return true;
+    else if (obj instanceof Transition) {
+      Transition other = (Transition) obj;
+      return targetStateID == other.targetStateID && event.equals(other.event);
+    }
+    else return false;
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return "("
       + event + ","
       + targetStateID

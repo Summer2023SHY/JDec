@@ -60,21 +60,26 @@ public class TransitionData {
 
     /* OVERRIDDEN METHODS */
 
-  @Override public boolean equals(Object obj) {
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) return true;
+    else if (obj instanceof TransitionData) {
+      TransitionData other = (TransitionData) obj;
 
-    TransitionData other = (TransitionData) obj;
-
-    return initialStateID == other.initialStateID
-      && eventID == other.eventID
-      && targetStateID == other.targetStateID;
-
+      return initialStateID == other.initialStateID
+        && eventID == other.eventID
+        && targetStateID == other.targetStateID;
+    }
+    else return false;
   }
 
-  @Override public int hashCode() {
-    return ((Long) (initialStateID)).hashCode();
+  @Override
+  public int hashCode() {
+    return Long.hashCode(initialStateID);
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return String.format("(%d,%d,%d)", initialStateID, eventID, targetStateID);
   }
 
