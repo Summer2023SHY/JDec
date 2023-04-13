@@ -1,10 +1,6 @@
 package automata.gui;
-/**
- * FeasibleProtocolOutput - This class is used to display a pop-up which contains a list of feasible protocols.
- *                          The user has the ability to generate automata by applying any of the protocols in the list.
- *
- * @author Micah Stairs
- *
+
+/*
  * TABLE OF CONTENTS:
  *  -Instance Variables
  *  -Constructor
@@ -21,6 +17,12 @@ import automata.Automaton;
 import automata.CommunicationData;
 import automata.UStructure;
 
+/**
+ * Used to display a pop-up which contains a list of feasible protocols.
+ * The user has the ability to generate automata by applying any of the protocols in the list.
+ *
+ * @author Micah Stairs
+ */
 public class FeasibleProtocolOutput extends JDialog {
 
     /* INSTANCE VARIABLES */

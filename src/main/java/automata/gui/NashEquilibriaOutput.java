@@ -1,14 +1,10 @@
 package automata.gui;
-/**
- * NashEquilibriaOutput - This class is used to display a pop-up which contains a list of Nash equilibria.
- *
- * @author Micah Stairs
- *
- * TABLE OF CONTENTS:
+
+/* TABLE OF CONTENTS:
  *  -Instance Variables
  *  -Constructor
  *  -Methods
- **/
+ */
 
 import java.util.*;
 import javax.swing.*;
@@ -21,6 +17,11 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 
+/**
+ * NashEquilibriaOutput - This class is used to display a pop-up which contains a list of Nash equilibria.
+ *
+ * @author Micah Stairs
+ */
 public class NashEquilibriaOutput extends JDialog {
 
     /* INSTANCE VARIABLES */

@@ -1,10 +1,6 @@
 package automata.gui;
-/**
- * JDec - A Java application for Decentralized Control. This application has been design to build
- *        and manipulate various structures such as Automata, U-Structures, and Crushes.
- *
- * @author Micah Stairs
- *
+
+/*
  * TABLE OF CONTENTS:
  *  -Class Constants
  *  -Instance Variables
@@ -16,7 +12,7 @@ package automata.gui;
  *  -Prompts
  *  -Helper Methods
  *  -Inner Classes
- **/
+ */
 
 import java.awt.*;
 import java.awt.event.*;
@@ -49,6 +45,12 @@ import automata.PrunedUStructure;
 import automata.UStructure;
 import automata.Automaton.Type;
 
+/**
+ * A Java application for Decentralized Control. This application has been design to build
+ * and manipulate various structures such as Automata, U-Structures, and Crushes.
+ *
+ * @author Micah Stairs
+ */
 public class JDec extends JFrame implements ActionListener {
 
     /* CLASS CONSTANTS */

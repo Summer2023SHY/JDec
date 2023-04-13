@@ -1,11 +1,6 @@
 package automata.gui;
-/**
- * NashInfoForNashEquilibriaPrompt - Extending the abstract class NashInformationPrompt, this class initiates
- *                                   a call to find all Nash equilibria once the user has finished choosing
- *                                   the cost and probability values for the Nash communications.
- *
- * @author Micah Stairs
- *
+
+/*
  * TABLE OF CONTENTS:
  *  -Constructor
  *  -Overidden Method
@@ -13,6 +8,12 @@ package automata.gui;
 
 import javax.swing.*;
 
+/**
+ * Initiates a call to find all Nash equilibria once the user has finished
+ * choosing the cost and probability values for the Nash communications.
+ *
+ * @author Micah Stairs
+ */
 public class NashInfoForNashEquilibriaPrompt extends NashInformationPrompt {
 
     /* CONSTRUCTOR */
@@ -31,8 +32,9 @@ public class NashInfoForNashEquilibriaPrompt extends NashInformationPrompt {
   }
 
     /* OVERIDDEN METHOD */
-
-	@Override protected void performAction() {
+  /** {@inheritDoc} */
+	@Override
+  protected void performAction() {
 
     // Hide this screen, since we will not need to go back to it
     SwingUtilities.invokeLater(new Runnable() {

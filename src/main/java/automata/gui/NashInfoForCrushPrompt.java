@@ -1,11 +1,6 @@
 package automata.gui;
-/**
- * NashInfoForCrushPrompt - Extending the abstract class NashInformationPrompt, this class helps the user
- *                          generate a Crush structure once they have finished choosing the cost and
- *                          probability values for the Nash communications.
- *
- * @author Micah Stairs
- *
+
+/*
  * TABLE OF CONTENTS:
  *  -Constructor
  *  -Overidden Method
@@ -16,8 +11,13 @@ import java.io.*;
 import javax.swing.*;
 
 import automata.Crush;
-import automata.Crush.CombiningCosts;
 
+/**
+ * Helps the user generate a Crush structure once they have finished choosing
+ * the cost and probability values for the Nash communications.
+ *
+ * @author Micah Stairs
+ */
 public class NashInfoForCrushPrompt extends NashInformationPrompt {
 
     /* CONSTRUCTOR */
@@ -36,8 +36,9 @@ public class NashInfoForCrushPrompt extends NashInformationPrompt {
   }
 
     /* OVERIDDEN METHOD */
-
-  @Override protected void performAction() {
+  /** {@inheritDoc} */
+  @Override
+  protected void performAction() {
 
     // Hide this popup, and ask the user how they would like to combine the communication costs
     SwingUtilities.invokeLater(new Runnable() {
@@ -74,8 +75,8 @@ public class NashInfoForCrushPrompt extends NashInformationPrompt {
   /**
    * Allow the user to select a method to combine costs.
    * @param str   The message to display
-   * @param frame The application's frame (if null, then this dialog will not be modal)
-   * @return      The enum value associated with the selected method (or null if nothing was selected)
+   * @param frame The application's frame (if {@code null}, then this dialog will not be modal)
+   * @return      The {@link Crush.CombiningCosts} value associated with the selected method; or {@code null} if nothing was selected
    **/
   public static Crush.CombiningCosts pickCombiningCostsMethod(String str, JFrame frame) {
 
