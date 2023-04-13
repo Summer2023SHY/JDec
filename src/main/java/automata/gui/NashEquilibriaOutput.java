@@ -18,7 +18,7 @@ import java.awt.event.*;
 import java.io.*;
 
 /**
- * NashEquilibriaOutput - This class is used to display a pop-up which contains a list of Nash equilibria.
+ * Used to display a pop-up which contains a list of Nash equilibria.
  *
  * @author Micah Stairs
  */

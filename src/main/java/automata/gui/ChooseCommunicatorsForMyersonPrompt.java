@@ -16,9 +16,8 @@ import automata.PrunedUStructure;
 import automata.UStructure;
 
 /**
- * ChooseCommunicatorsForMyersonPrompt - Extending the abstract class ChooseSendersAndRecieversPrompt, this
- *                                       class calculates and displays the Myerson values they have selected
- *                                       senders and recievers.
+ * Calculates and displays the Myerson values they
+ * have selected senders and recievers.
  *
  * @author Micah Stairs
  */
