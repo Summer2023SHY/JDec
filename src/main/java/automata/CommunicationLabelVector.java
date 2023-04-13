@@ -1,19 +1,20 @@
 package automata;
-/**
- * CommunicationLabelVector - This class, extending LabelVector, is able to represent both a vector label
- *                            and its associated communication roles (which implies that we are only using
- *                            this for event labels, not state labels).
- *
- * @author Micah Stairs
- * 
+
+/* 
  * TABLE OF CONTENTS:
  *  -Instance Variable
  *  -Constructor
  *  -Overridden Method
- **/
+ */
 
 import java.util.*;
 
+/**
+ * Represents both a vector label and its associated communication roles (which
+ * implies that we are only using this for event labels, not state labels).
+ *
+ * @author Micah Stairs
+ */
 class CommunicationLabelVector extends LabelVector {
 
     /* INSTANCE VARIABLE */
@@ -41,7 +42,8 @@ class CommunicationLabelVector extends LabelVector {
    * @param other The communication label vector to compare this one to
    * @return      Whether or not the communication label vectors are equal
    **/
-  @Override public boolean equals(Object other) {
+  @Override
+  public boolean equals(Object other) {
     if (other instanceof CommunicationLabelVector)
       return super.equals(other) && Arrays.deepEquals(roles, ((CommunicationLabelVector) other).roles);
     else

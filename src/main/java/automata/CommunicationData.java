@@ -1,19 +1,22 @@
 package automata;
-/**
- * CommunicationData - Holds all 3 pieces of information needed to identify a transition, as well as an enumeration array
- *                     to indicate which controller is the sender and which are the recievers.
- *
- * @author Micah Stairs
- *
+
+/*
  * TABLE OF CONTENTS:
  *  -Instance Variables
  *  -Constructor
  *  -Accessor Method
  *  -Overridden Methods
- **/
+ */
 
 import java.util.*;
 
+/**
+ * Holds all 3 pieces of information needed to identify a transition, as well
+ * as an enumeration array to indicate which controller is the sender
+ * and which are the recievers.
+ *
+ * @author Micah Stairs
+ */
 public class CommunicationData extends TransitionData {
 
     /* INSTANCE VARIABLES */
@@ -71,13 +74,16 @@ public class CommunicationData extends TransitionData {
 
     /* OVERRIDDEN METHODS */
 
-  @Override public boolean equals(Object obj) {
+  @Override
+  public boolean equals(Object obj) {
 
     return super.equals(obj) && Arrays.deepEquals(roles, ((CommunicationData) obj).roles);
 
   }
 
-  @Override public String toString(Automaton automaton) {
+  /** {@inheritDoc} */
+  @Override
+  public String toString(Automaton automaton) {
 
     String str = " (";
     for (CommunicationRole role : roles)

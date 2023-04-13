@@ -1,10 +1,6 @@
 package automata;
-/**
- * DisablementData - Holds all 3 pieces of information needed to identify a transition, as well as information
- *                   on which controllers are able to disable this transition.
- *
- * @author Micah Stairs
- *
+
+/*
  * TABLE OF CONTENTS:
  *  -Constructor
  *  -Overridden Method
@@ -12,6 +8,12 @@ package automata;
 
 import java.util.*;
 
+/**
+ * Holds all 3 pieces of information needed to identify a transition, as well
+ * as information on which controllers are able to disable this transition.
+ *
+ * @author Micah Stairs
+ */
 public class DisablementData extends TransitionData {
 
     /* INSTANCE VARIABLE */
