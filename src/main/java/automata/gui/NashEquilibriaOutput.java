@@ -1,4 +1,4 @@
-package automata;
+package automata.gui;
 /**
  * NashEquilibriaOutput - This class is used to display a pop-up which contains a list of Nash equilibria.
  *
@@ -12,6 +12,11 @@ package automata;
 
 import java.util.*;
 import javax.swing.*;
+
+import automata.CommunicationData;
+import automata.NashCommunicationData;
+import automata.UStructure;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;

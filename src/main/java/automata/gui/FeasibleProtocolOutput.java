@@ -1,4 +1,4 @@
-package automata;
+package automata.gui;
 /**
  * FeasibleProtocolOutput - This class is used to display a pop-up which contains a list of feasible protocols.
  *                          The user has the ability to generate automata by applying any of the protocols in the list.
@@ -16,6 +16,10 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
+
+import automata.Automaton;
+import automata.CommunicationData;
+import automata.UStructure;
 
 public class FeasibleProtocolOutput extends JDialog {
 

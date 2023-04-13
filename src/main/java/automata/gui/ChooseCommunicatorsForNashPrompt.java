@@ -1,4 +1,4 @@
-package automata;
+package automata.gui;
 /**
  * ChooseCommunicatorsForNashPrompt - Extending the abstract class ChooseSendersAndRecieversPrompt, this
  *                                    class guides the user through the process of finding Nash equilibria
@@ -13,6 +13,13 @@ package automata;
 
 // import java.io.*;
 import javax.swing.*;
+
+import automata.CommunicationRole;
+import automata.Crush;
+import automata.NashCommunicationData;
+import automata.UStructure;
+import automata.Crush.CombiningCosts;
+
 import java.util.*;
 
 public class ChooseCommunicatorsForNashPrompt extends ChooseSendersAndRecieversPrompt {

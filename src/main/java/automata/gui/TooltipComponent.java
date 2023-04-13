@@ -1,4 +1,4 @@
-package automata;
+package automata.gui;
 /**
  * TooltipComponent - Used to add a tool-tip with the specified text to the left of the given component.
  *

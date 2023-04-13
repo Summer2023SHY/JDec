@@ -1,4 +1,4 @@
-package automata;
+package automata.gui;
 /**
  * NashInfoForNashEquilibriaPrompt - Extending the abstract class NashInformationPrompt, this class initiates
  *                                   a call to find all Nash equilibria once the user has finished choosing

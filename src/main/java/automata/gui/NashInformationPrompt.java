@@ -1,4 +1,4 @@
-package automata;
+package automata.gui;
 /**
  * NashInformationPrompt - This abstract class is used to allow a user to manipulate Nash communications,
  *                         instead of being required to do it through GUI input code, which is rather
@@ -18,6 +18,10 @@ import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.table.*;
+
+import automata.CommunicationData;
+import automata.NashCommunicationData;
+import automata.UStructure;
 
 public abstract class NashInformationPrompt extends JDialog {
 

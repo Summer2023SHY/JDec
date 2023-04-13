@@ -1,4 +1,4 @@
-package automata;
+package automata.gui;
 /**
  * ShapleyValuesOutput - This class is used to calculate and display the Shaley values for each coalition and
  *                       each controller in a popup.
@@ -14,6 +14,9 @@ package automata;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+
+import automata.UStructure;
+
 import java.util.*;
 
 public class ShapleyValuesOutput extends JDialog {

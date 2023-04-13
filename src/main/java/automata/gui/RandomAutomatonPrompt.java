@@ -1,4 +1,4 @@
-package automata;
+package automata.gui;
 /**
  * RandomAutomatonPrompt - Displays a popup box which allows the user to specify the properties of a random
  *                         automaton that they would like generated. The appropriate actions are also
@@ -16,6 +16,8 @@ package automata;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+
+import automata.Automaton;
 
 public class RandomAutomatonPrompt extends JDialog {
 

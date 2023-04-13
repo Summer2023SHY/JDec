@@ -1,4 +1,4 @@
-package automata;
+package automata.gui;
 /**
  * NashInfoForCrushPrompt - Extending the abstract class NashInformationPrompt, this class helps the user
  *                          generate a Crush structure once they have finished choosing the cost and
@@ -14,6 +14,9 @@ package automata;
 
 import java.io.*;
 import javax.swing.*;
+
+import automata.Crush;
+import automata.Crush.CombiningCosts;
 
 public class NashInfoForCrushPrompt extends NashInformationPrompt {
 

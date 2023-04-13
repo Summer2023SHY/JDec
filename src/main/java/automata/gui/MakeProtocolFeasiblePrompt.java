@@ -1,4 +1,4 @@
-package automata;
+package automata.gui;
 /**
  * MakeProtocolFeasiblePrompt - This class is used to display a pop-up which prompts the user to
  *                              decide which communications are allowed to be in protocol, and
@@ -19,6 +19,9 @@ import java.awt.EventQueue;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
+
+import automata.CommunicationData;
+import automata.UStructure;
 
 public class MakeProtocolFeasiblePrompt extends JDialog {
 

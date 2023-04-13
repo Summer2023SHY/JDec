@@ -1,4 +1,4 @@
-package automata;
+package automata.gui;
 /**
  * JDec - A Java application for Decentralized Control. This application has been design to build
  *        and manipulate various structures such as Automata, U-Structures, and Crushes.
@@ -37,6 +37,17 @@ import org.xml.sax.*;
 
 import com.github.weisj.jsvg.SVGDocument;
 import com.github.weisj.jsvg.attributes.ViewBox;
+
+import automata.Automaton;
+import automata.AutomatonGenerator;
+import automata.CommunicationData;
+import automata.Crush;
+import automata.IncompatibleAutomataException;
+import automata.MissingOrCorruptBodyFileException;
+import automata.OperationFailedException;
+import automata.PrunedUStructure;
+import automata.UStructure;
+import automata.Automaton.Type;
 
 public class JDec extends JFrame implements ActionListener {
 

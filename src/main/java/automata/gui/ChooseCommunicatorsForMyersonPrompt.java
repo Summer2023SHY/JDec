@@ -1,4 +1,4 @@
-package automata;
+package automata.gui;
 /**
  * ChooseCommunicatorsForMyersonPrompt - Extending the abstract class ChooseSendersAndRecieversPrompt, this
  *                                       class calculates and displays the Myerson values they have selected
@@ -13,6 +13,12 @@ package automata;
 
 // import java.io.*;
 import javax.swing.*;
+
+import automata.CommunicationData;
+import automata.CommunicationRole;
+import automata.PrunedUStructure;
+import automata.UStructure;
+
 import java.util.*;
 
 public class ChooseCommunicatorsForMyersonPrompt extends ChooseSendersAndRecieversPrompt {

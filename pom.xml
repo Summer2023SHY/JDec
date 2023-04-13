@@ -84,7 +84,7 @@
               <manifest>
                 <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                 <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-                <mainClass>automata.JDec</mainClass>
+                <mainClass>automata.gui.JDec</mainClass>
               </manifest>
             </archive>
             <descriptorRefs>

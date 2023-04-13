@@ -21,6 +21,9 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.text.*;
 
+import automata.gui.JDec;
+import automata.gui.RandomAutomatonPrompt;
+
 public final class AutomatonGenerator {
   /** Private constructor */
   private AutomatonGenerator() {}

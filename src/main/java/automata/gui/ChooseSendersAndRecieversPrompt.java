@@ -1,4 +1,4 @@
-package automata;
+package automata.gui;
 /**
  * ChooseSendersAndRecieversPrompt - This class is used to display a pop-up which prompts the user to
  *                                   decide which controllers are allowed to be senders and recievers,
@@ -18,6 +18,8 @@ import java.awt.GridLayout;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
+
+import automata.UStructure;
 
 public abstract class ChooseSendersAndRecieversPrompt extends JDialog {
 
