@@ -41,11 +41,13 @@ class CommunicationLabelVector extends LabelVector {
    * @param other The communication label vector to compare this one to
    * @return      Whether or not the communication label vectors are equal
    **/
-  @Override public boolean equals(Object other) {
-    if (other instanceof CommunicationLabelVector)
-      return super.equals(other) && Arrays.deepEquals(roles, ((CommunicationLabelVector) other).roles);
-    else
-      return super.equals(other);
+  @Override
+  public boolean equals(Object other) {
+    if (this == other) return true;
+    else if (!super.equals(other)) return false;
+    else if (other instanceof CommunicationLabelVector)
+      return Arrays.deepEquals(roles, ((CommunicationLabelVector) other).roles);
+    else return false;
   }
 
 }
