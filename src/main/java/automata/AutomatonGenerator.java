@@ -1,17 +1,11 @@
 package automata;
-/**
- * AutomatonGenerator - Utility class used to generate automata. Automata can be generated using GUI input
- *                      code, or they can be randomly generated (with a number of specified properties).
- *
- *                      NOTE: This class should realistically be split into two unrelated classes.
- *
- * @author Micah Stairs
+/*
  *
  * TABLE OF CONTENTS:
  *  -Static Error Styling Properties
  *  -Random Automaton Generation
  *  -Automaton Generation from GUI Input Code
- **/
+ */
 
 import java.awt.Color;
 import java.awt.EventQueue;
@@ -24,6 +18,14 @@ import javax.swing.text.*;
 import automata.gui.JDec;
 import automata.gui.RandomAutomatonPrompt;
 
+/**
+ * Utility class used to generate automata. Automata can be generated using GUI input
+ * code, or they can be randomly generated (with a number of specified properties).
+ *
+ * NOTE: This class should realistically be split into two unrelated classes.
+ *
+ * @author Micah Stairs
+ */
 public final class AutomatonGenerator {
   /** Private constructor */
   private AutomatonGenerator() {}

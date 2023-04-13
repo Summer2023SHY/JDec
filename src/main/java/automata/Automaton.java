@@ -1,15 +1,6 @@
 package automata;
-/**
- * Automaton - This extensive class is able to fully represent an automaton. The usage of .hdr and .bdy files
- *             gives the potential to work with very large automata, since the entire automaton does not need
- *             to be stored in memory.
- *
- *             NOTE: The static method clearTemporaryFiles() should be run on a regular basis when using this class (typically
- *                   done when launching your GUI or after running a test routine).
- *
- * @author Micah Stairs
- *
- * TABLE OF CONTENTS:
+
+/* TABLE OF CONTENTS:
  *  -Class Constants
  *  -Class Variables
  *  -Instance Variables
@@ -24,7 +15,7 @@ package automata;
  *  -Overridden Method
  *  -Mutator Methods
  *  -Accessor Methods
- **/
+ */
 
 import java.util.*;
 import java.io.*;
@@ -40,6 +31,16 @@ import guru.nidi.graphviz.engine.*;
 import guru.nidi.graphviz.model.*;
 import guru.nidi.graphviz.parse.*;
 
+/**
+ * Class that is able to fully represent an automaton. The usage of .hdr and .bdy files
+ * gives the potential to work with very large automata, since the entire automaton does not need
+ * to be stored in memory.
+ *
+ * @implNote The static method {@code clearTemporaryFiles()} should be run on a regular basis when using this class (typically
+ *           done when launching your GUI or after running a test routine).
+ *
+ * @author Micah Stairs
+ **/
 public class Automaton implements AutoCloseable {
 
     /* PUBLIC CLASS CONSTANTS */
@@ -67,8 +68,8 @@ public class Automaton implements AutoCloseable {
 
   /**
    * The maximum number of characters that each state label in an automaton can hold.
-   * NOTE: This value was originally 100, but was increased drastically in order to accommodate long
-   *       state vectors that are formed in the crush.
+   * @implNote This value was originally 100, but was increased drastically in order to accommodate long
+   *           state vectors that are formed in the crush.
    **/
   public static final int MAX_LABEL_LENGTH = 100000;
 
@@ -78,13 +79,13 @@ public class Automaton implements AutoCloseable {
   /** The maximum number of controllers in an automaton. */
   public static final int MAX_NUMBER_OF_CONTROLLERS = 10;
 
-  /** This is the fixed amount of space needed to hold the main variables in the .hdr file, which apply to all automaton types. */
+  /** This is the fixed amount of space needed to hold the main variables in the {@code .hdr} file, which apply to all automaton types. */
   private static final int HEADER_SIZE = 45; 
 
   /**
    * The label used to indicate a dump state.
-   * NOTE: A JDec user cannot mess up the complement operation by adding a fake dump state, since spaces
-   *       are not considered part of a valid state label.
+   * @implNote A {@link automata.gui.JDec} user cannot mess up the complement operation by adding a fake dump state, since spaces
+   *           are not considered part of a valid state label.
    **/
   public static final String DUMP_STATE_LABEL = "Dump State";
 
@@ -155,7 +156,7 @@ public class Automaton implements AutoCloseable {
 
     /**
      * Construct a Type enum object.
-     * @param numericValue  The numeric value associated with this enum value (used in .hdr file)
+     * @param numericValue  The numeric value associated with this enum value (used in {@code .hdr} file)
      * @param classType     The associated class
      **/
     Type(byte numericValue, Class<? extends Automaton> classType) {
@@ -174,7 +175,7 @@ public class Automaton implements AutoCloseable {
     /**
      * Given a numeric value, get the associated automaton type.
      * @param value The numeric value
-     * @return      The automaton type (or null, if it could not be found)
+     * @return      The automaton type (or {@code null}, if it could not be found)
      **/
     public static Type getType(byte value) {
 
@@ -189,7 +190,7 @@ public class Automaton implements AutoCloseable {
     /**
      * Given a class, get the associated enumeration value.
      * @param classType The class
-     * @return          The automaton type (or null, if it could not be found)
+     * @return          The automaton type (or {@code null}, if it could not be found)
      **/
     public static Type getType(Class<?> classType) {
 
@@ -204,7 +205,7 @@ public class Automaton implements AutoCloseable {
     /**
      * Given a header file of an automaton, get the associated enumeration value.
      * @param file  The header file of the automaton
-     * @return      The automaton type (or null, if it could not be found)
+     * @return      The automaton type (or {@code null}, if it could not be found)
      **/
     public static Type getType(File file) {
 
@@ -221,8 +222,13 @@ public class Automaton implements AutoCloseable {
 
     }
 
-    @Override public String toString() {
-
+    /**
+     * Returns the string representation of the type of Automaton this enum
+     * constant represents.
+     * @return the string representation of type
+     */
+    @Override
+    public String toString() {
       switch (this) {
         
         case AUTOMATON:
@@ -299,7 +305,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Implicit constructor: create automaton with specified initial capacities using temporary files.
-   * NOTE: Choosing larger values increases the amount of space needed to store the binary file.
+   * @implNote Choosing larger values increases the amount of space needed to store the binary file.
    * Choosing smaller values increases the frequency that you need to re-write the entire binary file in order to expand it
    * @param eventCapacity        The initial event capacity (increases by a factor of 256 when it is exceeded)
    *                             (NOTE: the initial event capacity may be higher than the value you give it, since it has to be in the form 256^x - 1)
@@ -366,7 +372,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Used to initialize all lists in order to prevent the possibility of NullPointerExceptions.
-   * NOTE: This method must be called at the beginning of the constuctor of Automaton. This method is intended to
+   * @apiNote This method must be called at the beginning of the constuctor of Automaton. This method is intended to
    * be overridden by sub-classes, however, any sub-classes of Automaton do not need to explicitly call it.
    **/
   protected void initializeLists() {
@@ -464,7 +470,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Create a new copy of this automaton that has all states removed which are unable to reach a marked state.
-   * NOTE: This method should be overridden by subclasses, using the coaccessibleHelper() method.
+   * @implNote This method should be overridden by subclasses, using the {@link #coaccessibleHelper()} method.
    * @param newHeaderFile  The header file where the new automaton should be stored
    * @param newBodyFile    The body file where the new automaton should be stored
    * @return               The co-accessible automaton
@@ -558,7 +564,7 @@ public class Automaton implements AutoCloseable {
   /**
    * Create a new copy of this automaton that has the marking status of all states toggled, and that has an added
    * 'dead' or 'dump' state where all undefined transitions lead.
-   * NOTE: This method should be overridden by subclasses, using the complementHelper() method.
+   * @implNote This method should be overridden by subclasses, using the {@link #complementHelper()} method.
    * @param newHeaderFile             The header file where the new automaton should be stored
    * @param newBodyFile               The body file where the new automaton should be stored
    * @return                          The complement automaton
@@ -658,9 +664,9 @@ public class Automaton implements AutoCloseable {
   }
 
   /**
-   * Create a new copy of this automaton that is trim (both accessible and co-accessible).
-   * NOTE: I am taking the accessible part of the automaton before the co-accessible part of the automaton
-   * because the accessible() method has less overhead than the coaccessible() method.
+   * Creates a new copy of this automaton that is trim (both accessible and co-accessible).
+   * @implNote I am taking the accessible part of the automaton before the co-accessible part of the automaton
+   * because the {@link #accessible()} method has less overhead than the coaccessible() method.
    * @param newHeaderFile  The header file where the new automaton should be stored
    * @param newBodyFile    The body file where the new automaton should be stored
    * @return               The trim automaton, or null if there was no initial state specified
@@ -671,10 +677,12 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Create a new version of this automaton which has all of the transitions going the opposite direction.
-   * NOTE: An inverted automaton is needed when you want to efficiently determine which transitions lead to a particular state.
-   * NOTE: This is just a shallow copy of the automaton (no special transition data is retained), which makes it slightly more efficient.
-   * NOTE: This method should be overridden by subclasses, using the invertHelper() method.
+   * @implNote An inverted automaton is needed when you want to efficiently determine which transitions lead to a particular state.
+   * @implNote This is just a shallow copy of the automaton (no special transition data is retained), which makes it slightly more efficient.
+   * @implNote This method should be overridden by subclasses, using the invertHelper() method.
    * @return  The inverted automaton
+   * 
+   * @see #invertHelper(Automaton)
    **/
   public Automaton invert() {
     return invertHelper(new Automaton(eventCapacity, stateCapacity, transitionCapacity, labelLength, nControllers, true));
@@ -682,8 +690,8 @@ public class Automaton implements AutoCloseable {
 
   /**
    * A helper method used to generate the inverse of this automaton.
-   * NOTE: The states in the inverted automaton should still have the same IDs.
-   * NOTE: This automaton is lightweight, meaning it has no special transition information, only the
+   * @implNote The states in the inverted automaton should still have the same IDs.
+   * @implNote This automaton is lightweight, meaning it has no special transition information, only the
    *       states, events, and transitions.
    * @param automaton The generic automaton object
    * @return          The same automaton that was passed into the method, now containing the inverse of this automaton
@@ -979,7 +987,7 @@ public class Automaton implements AutoCloseable {
    * Apply the synchronized composition algorithm to an automaton to produce the U-Structure.
    * @param newHeaderFile  The header file where the new automaton should be stored
    * @param newBodyFile    The body file where the new automaton should be stored
-   * @return               The U-Structure (or null if there was no starting state or something else
+   * @return               The U-Structure (or {@code null} if there was no starting state or something else
    *                       went wrong)
    **/
   public UStructure synchronizedComposition(File newHeaderFile, File newBodyFile) {
@@ -1231,7 +1239,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Test to see if this system is observable.
-   * NOTE: This is an expensive test.
+   * @implNote This is an expensive test.
    * @return  Whether or not this system is observable
    **/
   public boolean testObservability() {
@@ -1294,7 +1302,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Test to see if this system is controllable.
-   * NOTE: This is a cheap test.
+   * @implNote This is a cheap test.
    * @return  Whether or not this system is controllable
    **/
   public boolean testControllability() {
@@ -1319,7 +1327,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Generate the twin plant by combining this automaton w.r.t. G_{Sigma*}.
-   * NOTE: The technique used here is similar to how the complement works. This would not work
+   * @implNote The technique used here is similar to how the complement works. This would not work
    *       in all cases, but G_{Sigma*} is a special case.
    * @param newHeaderFile The header file where the new automaton should be stored
    * @param newBodyFile   The body file where the new automaton should be stored
@@ -1412,13 +1420,13 @@ public class Automaton implements AutoCloseable {
 
 
   /**
-   // * Generate the twin plant by combining this automaton w.r.t. G_{Sigma*}.
-   // * NOTE: The technique used here is similar to how the complement works. This would not work
-   // *       in all cases, but G_{Sigma*} is a special case.
-   // * @param newHeaderFile The header file where the new automaton should be stored
-   // * @param newBodyFile   The body file where the new automaton should be stored
-   // * @return              The twin plant
-   **/
+    * Generate the twin plant by combining this automaton w.r.t. G_{Sigma*}.
+    * @implNote The technique used here is similar to how the complement works. This would not work
+    *       in all cases, but G_{Sigma*} is a special case.
+    * @param newHeaderFile The header file where the new automaton should be stored
+    * @param newBodyFile   The body file where the new automaton should be stored
+    * @return              The twin plant
+    **/
   public final Automaton generateTwinPlant2(File newHeaderFile, File newBodyFile) {
 
     Automaton automaton = new Automaton(
@@ -1510,8 +1518,9 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Helper method to copy over all special transition data from this automaton to another.
-   * NOTE: The data is only copied over if both of the states involved in the transition actually exist.
-   * NOTE: This method is intended to be overridden.
+   * @implNote The data is only copied over if both of the states involved in the transition actually exist.
+   * @apiNote This method is intended to be overridden.
+   * @param <T> type of automaton
    * @param automaton The automaton which is receiving the special transitions
    **/
   protected <T extends Automaton> void copyOverSpecialTransitions(T automaton) {
@@ -1523,10 +1532,10 @@ public class Automaton implements AutoCloseable {
   }
 
   /**
-   * This method looks for blank spots in the .bdy file (which indicates that no state exists there),
+   * Looks for blank spots in the {@code .bdy} file (which indicates that no state exists there),
    * and re-numbers all of the states accordingly. This must be done after operations such as intersection or union.
-   * NOTE: To make this method more efficient we could make the buffer larger.
-   **/
+   */
+  /* To make this method more efficient we could make the buffer larger. */
   protected final void renumberStates() {
 
     try {
@@ -1639,7 +1648,8 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Renumber the states in all applicable special transition data.
-   * NOTE: This method is designed to be overridden when subclassing, in order to renumber the states in all applicable special transition data for this automaton type.
+   * @apiNote This method is designed to be overridden when subclassing, in order to renumber the states in
+   *          all applicable special transition data for this automaton type.
    * @param mappingRAFile The file containing the mapping information (old state IDs to new state IDs)
    * @throws IOException  If there are any problems read from or writing to file
    **/
@@ -1677,8 +1687,8 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Given two state IDs (the order matters) and their respective automatons, create a unique combined ID.
-   * NOTE: There is potential for long overflow, which could technically result in generating IDs that are not unique
-   * NOTE: The reasoning behind this formula is analogous to the following: if you have a table with N rows and M columns,
+   * @implNote There is potential for long overflow, which could technically result in generating IDs that are not unique
+   * @implNote The reasoning behind this formula is analogous to the following: if you have a table with N rows and M columns,
    * every cell is guaranteed to have a different combination of row and column indexes.
    * @param id1     The state ID from the first automaton
    * @param first   The first automaton
@@ -1694,7 +1704,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Given a list of IDs and a maximum possible ID, create a unique combined ID.
-   * NOTE: The order of the list matters. This method does not sort the list interally.
+   * @implNote The order of the list matters. This method does not sort the list interally.
    * @param list  The list of IDs
    * @param maxID The largest possible value that could appear in the list (usually nStates)
    * @return      The unique combined ID
@@ -1721,7 +1731,7 @@ public class Automaton implements AutoCloseable {
   /**
    * Given a list of IDs and the largest possible value that could appear in the list, create a unique
    * combined ID using a BigInteger.
-   * NOTE: The order of the list matters. This method does not sort the list interally.
+   * @implNote The order of the list matters. This method does not sort the list interally.
    * @param list  The list of IDs
    * @param maxID The largest possible value that could appear in the list (usually nStates)
    * @return      The unique combined ID
@@ -1764,7 +1774,7 @@ public class Automaton implements AutoCloseable {
   /**
    * Check to see if this automaton accepts the specified counter-example.
    * @param sequences The list of sequences of event labels which represent the counter-example
-   * @return          -1 if the autmaton accepts the counter-example, or the number of steps it took to reject the counter-example
+   * @return          {@code -1} if the autmaton accepts the counter-example, or the number of steps it took to reject the counter-example
    **/
   public int acceptsCounterExample(List<List<String>> sequences) {
 
@@ -1804,10 +1814,10 @@ public class Automaton implements AutoCloseable {
    * Output this automaton in a format that is readable by GraphViz, then export as requested.
    * @param outputFileName              The location to put the generated output
    * @return                            Whether or not the output was successfully generated
+   * @throws MissingOrCorruptBodyFileException If any of the states are unable to be read from the body file
    * @throws IOException If I/O error occurs
-   * @throws MissingOrCorruptBodyFile   If any of the states are unable to be read from the body file
    **/
-  public boolean generateImage(String outputFileName) throws IOException, MissingOrCorruptBodyFileException {
+  public boolean generateImage(String outputFileName) throws MissingOrCorruptBodyFileException, IOException {
 
       /* Setup */
 
@@ -1997,7 +2007,7 @@ public class Automaton implements AutoCloseable {
   /**
    * Load the generated graph image from file.
    * @param fileName  The name of the image to be loaded
-   * @return          The image, or null if it could not be loaded
+   * @return          The image, or {@code null} if it could not be loaded
    **/
   public SVGDocument loadSVGFromFile(String fileName) {
     try {
@@ -2012,7 +2022,8 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Generates all GUI input code (which is useful when loading automaton from file in the GUI).
-   * NOTE: Further calls to getEventInput(), getStateInput(), and/or getTransitionInput() are needed to actually get the generated input code.
+   * @apiNote Further calls to {@link #getEventInput()}, {@link #getStateInput()}, and/or {@link #getTransitionInput()}
+   *          are needed to actually get the generated input code.
    **/
   public void generateInputForGUI() {
 
@@ -2117,7 +2128,8 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Get the GUI input code correlating with the special transition data for the specified transition.
-   * NOTE: This method is intended to be overridden when subclassing **/
+   * @param data transition data
+   * @apiNote This method is intended to be overridden when subclassing **/
   protected String getInputCodeForSpecialTransitions(TransitionData data) {
 
     return (badTransitions.contains(data)) ? ",BAD" : "";
@@ -2126,7 +2138,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Get the event GUI input code.
-   * NOTE: Must call generateInputForGUI() prior to use.
+   * @apiNote Must call {@link #generateInputForGUI()} prior to use.
    * @return  GUI input code in the form of a string
    **/
   public final String getEventInput() {
@@ -2140,7 +2152,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Get the state GUI input code.
-   * NOTE: Must call generateInputForGUI() prior to use.
+   * @apiNote Must call {@link #generateInputForGUI()} prior to use.
    * @return  GUI input code in the form of a string
    **/
   public final String getStateInput() {
@@ -2154,7 +2166,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Get the transition GUI input code.
-   * NOTE: Must call generateInputForGUI() prior to use.
+   * @apiNote Must call {@link #generateInputForGUI()} prior to use.
    * @return  GUI input code in the form of a String
    **/
   public final String getTransitionInput() {
@@ -2170,7 +2182,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Duplicate this automaton, storing them in temporary files.
-   * NOTE: This method is intended to be overridden.
+   * @apiNote This method is intended to be overridden.
    **/
   public Automaton duplicate() {
     return duplicate(getTemporaryFile(), getTemporaryFile());
@@ -2178,7 +2190,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Duplicate this automaton and store it in a different set of files.
-   * NOTE: This method is intended to be overridden.
+   * @apiNote This method is intended to be overridden.
    * @param newHeaderFile The new header file where the automaton is being copied to (cannot be null)
    * @param newBodyFile   The new body file where the automaton is being copied to (cannot be null)
    * @return              The duplicated automaton
@@ -2226,7 +2238,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Open the header and body files, and read in the header file.
-   * NOTE: This must only be performed once (during the instantiation of this object), otherwise duplicate events and special transitions will be imported.
+   * @implNote This must only be performed once (during the instantiation of this object), otherwise duplicate events and special transitions will be imported.
    **/
   public void openFiles() {
 
@@ -2247,7 +2259,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Files need to be closed on the Windows operating system because there are problems trying to delete files if they are in use.
-   * NOTE: Do not attempt to use this automaton instance again afterwards.
+   * @implNote Do not attempt to use this automaton instance again afterwards.
    **/
   public void closeFiles() {
 
@@ -2364,7 +2376,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Write all of the special transitions to the header, which is relevant to this particular automaton type.
-   * NOTE: This method is intended to be overridden when sub-classing.
+   * @apiNote This method is intended to be overridden when sub-classing.
    * @throws IOException  If there were any problems writing to file
    **/
   protected void writeSpecialTransitionsToHeader() throws IOException {
@@ -2491,7 +2503,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Read all of the special transitions from the header, which is relevant to this particular automaton type.
-   * NOTE: This method is intended to be overridden when sub-classing.
+   * @apiNote This method is intended to be overridden when sub-classing.
    * @throws IOException  If there were any problems reading from file
    **/
   protected void readSpecialTransitionsFromHeader() throws IOException {
@@ -2544,7 +2556,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Re-create the body file to accommodate some increase in capacity.
-   * NOTE: This operation can clearly be expensive for large automata, so we need to try to reduce the number of times this method is called.
+   * @implNote This operation can clearly be expensive for large automata, so we need to try to reduce the number of times this method is called.
    * @param newEventCapacity      The number of events that the automaton will be able to hold
    * @param newStateCapacity      The number of states that the automaton will be able to hold
    * @param newTransitionCapacity The number of transitions that each state will be able to hold
@@ -2660,7 +2672,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Get an unused temporary file.
-   * NOTE: These temporary files do not have extensions. Do not use them directly in JDec.
+   * @implNote These temporary files do not have extensions. Do not use them directly in JDec.
    * @return  The temporary file
    **/
   public static File getTemporaryFile() {
@@ -2836,7 +2848,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Adds a transition based on the specified IDs (which means that the states and event must already exist).
-   * NOTE: This method could be made more efficient since the entire state is written to file instead of only writing the new transition to file.
+   * @implNote This method could be made more efficient since the entire state is written to file instead of only writing the new transition to file.
    * @param startingStateID The ID of the state where the transition originates from
    * @param eventID         The ID of the event that triggers the transition
    * @param targetStateID   The ID of the state where the transition leads to
@@ -2959,7 +2971,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Remove any special transition information attached to a particular transition.
-   * NOTE: This method is intended to be overridden.
+   * @apiNote This method is intended to be overridden.
    * @param data  The transition data associated with the special transitions to be removed
    **/
   protected void removeTransitionData(TransitionData data) {
@@ -2973,7 +2985,7 @@ public class Automaton implements AutoCloseable {
    * @param label           The "name" of the new state
    * @param marked          Whether or not the states is marked
    * @param isInitialState  Whether or not this is the initial state
-   * @return                The ID of the added state (0 indicates the addition was unsuccessful)
+   * @return                The ID of the added state; or {@code 0} if the addition was unsuccessful
    **/
   public long addState(String label, boolean marked, boolean isInitialState) {
     return addState(label, marked, null, isInitialState);
@@ -2985,7 +2997,7 @@ public class Automaton implements AutoCloseable {
    * @param marked          Whether or not the states is marked
    * @param transitions     The list of transitions (if null, then an empty list is made)
    * @param isInitialState  Whether or not this is the initial state
-   * @return                The ID of the added state (0 indicates the addition was unsuccessful)
+   * @return                The ID of the added state; or {@code 0} if the addition was unsuccessful
    **/
   public long addState(String label, boolean marked, ArrayList<Transition> transitions, boolean isInitialState) {
 
@@ -3083,15 +3095,15 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Add the specified state to the automaton.
-   * NOTE: This method assumes that no state already exists with the specified ID.
-   * NOTE: The method renumberStates() must be called some time after using this method has been called since it can create empty
-   * spots in the .bdy file where states don't actually exist (this happens during automata operations such as intersection).
+   * @implNote This method assumes that no state already exists with the specified ID.
+   * @implNote The method {@link #renumberStates()} must be called some time after using this method has been called since it can create empty
+   * spots in the {@code .bdy} file where states don't actually exist (this happens during automata operations such as intersection).
    * @param label           The "name" of the new state
    * @param marked          Whether or not the states is marked
    * @param transitions     The list of transitions (if null, then a new list is made)
    * @param isInitialState  Whether or not this is the initial state
    * @param id              The index where the state should be added at
-   * @return                Whether or not the addition was successful (returns false if a state already existed there)
+   * @return                Whether or not the addition was successful (returns {@code false} if a state already existed there)
    **/
   public boolean addStateAt(String label, boolean marked, ArrayList<Transition> transitions, boolean isInitialState, long id) {
 
@@ -3196,7 +3208,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Add the specified event to the set.
-   * NOTE: It is assumed that the new event is not already a member of the set (it is not checked for here for efficiency purposes).
+   * @implNote It is assumed that the new event is not already a member of the set (it is not checked for here for efficiency purposes).
    * @param label         The "name" of the new event
    * @param observable    Whether or not the event is observable
    * @param controllable  Whether or not the event is controllable
@@ -3255,7 +3267,7 @@ public class Automaton implements AutoCloseable {
    * @param observable    Whether or not the event is observable
    * @param controllable  Whether or not the event is controllable
    * @return              The ID of the added event (negative ID indicates that the event already existed)
-   *                      or 0, which indicates failure (occurring when maximum number of events has been reached)
+   *                      or {@code 0}, which indicates failure (occurring when maximum number of events has been reached)
    **/
   public int addEventIfNonExisting(String label, boolean[] observable, boolean[] controllable) {
     
@@ -3381,7 +3393,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Check to see if a state exists.
-   * NOTE: This is a light-weight method which can be used instead of calling "getState(id) != null").
+   * @implNote This is a light-weight method which can be used instead of calling "{@code getState(id) != null}").
    * It does not load all of the state information, but only checks the first byte to see if it exists or not.
    * @param id  The unique identifier corresponding to the state we are looking for
    **/
@@ -3400,7 +3412,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Given the label of a state, get the ID of the state.
-   * NOTE: This method is extremely expensive. It should only be used when abesolutely necessary.
+   * @implNote This method is extremely expensive. It should only be used when abesolutely necessary.
    * @param label The unique label corresponding to the requested state
    * @return      The corresponding state ID (or null, if it was not found)
    **/
@@ -3417,7 +3429,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Given the ID number of a state, get the state information (excluding transitions).
-   * NOTE: This is a light-weight method which is used when accessing or modifying the transitions is not needed.
+   * @implNote This is a light-weight method which is used when accessing or modifying the transitions is not needed.
    * @param id  The unique identifier corresponding to the requested state
    * @return    The requested state
    **/
@@ -3427,7 +3439,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Check to see whether or not this automaton has any unmarked states.
-   * NOTE: This can be an expensive method.
+   * @implNote This can be an expensive method.
    * @return  Whether or not this automaton has at least one unmarked state
    **/
   public boolean hasUnmarkedState() {
@@ -3442,10 +3454,10 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Given the ID number of an event, get the event information.
-   * NOTE: Using this method to check for a non-existent event is inefficient, since it checks each
-   *       event one by one if it wasn't able to locate the event directly. This behaviour is required
-   *       since there are cases where the event list is incomplete (for example,
-   *       in PrunedUStructure.removeInactiveEvents()).
+   * @implNote Using this method to check for a non-existent event is inefficient, since it checks each
+   *           event one by one if it wasn't able to locate the event directly. This behaviour is required
+   *           since there are cases where the event list is incomplete (for example,
+   *           in {@link PrunedUStructure#removeInactiveEvents()}).
    * @param id  The unique identifier corresponding to the requested event
    * @return    The requested event (or null if it does not exist)
    **/
@@ -3504,7 +3516,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Return the list of all inactive events.
-   * NOTE: This is an expensive operation.
+   * @implNote This is an expensive operation.
    * @return  The list of all inactive events
    **/
   public List<Event> getInactiveEvents() {
@@ -3520,7 +3532,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Return the list of all active events.
-   * NOTE: This is an expensive operation.
+   * @implNote This is an expensive operation.
    * @return  The list of all active events
    **/
   public List<Event> getActiveEvents() {
@@ -3551,7 +3563,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Get the number of transitions that are currently in this automaton.
-   * NOTE: This is an expensive method.
+   * @implNote This is an expensive method.
    * @return  Number of transitions
    **/
   public long getNumberOfTransitions() {
@@ -3670,7 +3682,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Check to see if this automaton is deterministic.
-   * NOTE: This method has been added purely as a testing mechanism.
+   * @implNote This method has been added purely as a testing mechanism.
    * @return  Whether or not this automaton is deterministic
    **/
   public boolean isDeterministic() {
@@ -3694,8 +3706,8 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Check to see if all states and transtions in this automaton actually exist.
-   * NOTE: Does not check special transition data.
-   * NOTE: This method has been added purely as a testing mechanism.
+   * @implNote Does not check special transition data.
+   * @implNote This method has been added purely as a testing mechanism.
    * @return  Whether or not this automaton is deterministic
    **/
   public boolean isValid() {
@@ -3722,7 +3734,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Mutate this automaton by adding self-loops to all states for all inactive events.
-   * NOTE: This is being used for Liu's thesis implementation.
+   * @implNote This is being used for Liu's thesis implementation.
    **/
   public void addSelfLoopsForInactiveEvents() {
 
