@@ -40,6 +40,12 @@ public class DisablementData extends TransitionData {
 
     /* OVERRIDDEN METHODS */
 
+  /**
+   * Indicates whether an object is "equal to" this disablement data
+   * 
+   * @param obj the reference object with which to compare
+   * @return {@code true} if this disablement data is the same as the argument
+   */
   @Override
   public boolean equals(Object obj) {
     if (this == obj) return true;
@@ -51,6 +57,7 @@ public class DisablementData extends TransitionData {
     else return false;
   }
 
+  /** {@inheritDoc} */
   @Override
   public int hashCode() {
     return Long.hashCode(initialStateID);

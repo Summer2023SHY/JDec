@@ -107,6 +107,12 @@ public class Event {
 
     /* OVERRIDDEN METHODS */
 
+  /**
+   * Indicates whether an object is "equal to" this event
+   * 
+   * @param obj the reference object with which to compare
+   * @return {@code true} if this event is the same as the argument
+   */
   @Override
   public boolean equals(Object obj) {
     if (this == obj) return true;
@@ -122,6 +128,10 @@ public class Event {
     return this.label.hashCode();
   }
 
+  /**
+   * Returns string representation of this event
+   * @return string representation of this event
+   */
   @Override
   public String toString() {
     return "("

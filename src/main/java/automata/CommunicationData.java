@@ -74,6 +74,12 @@ public class CommunicationData extends TransitionData {
 
     /* OVERRIDDEN METHODS */
 
+  /**
+   * Indicates whether an object is "equal to" this communication data
+   * 
+   * @param obj the reference object with which to compare
+   * @return {@code true} if this communication data is the same as the argument
+   */
   @Override
   public boolean equals(Object obj) {
     if (this == obj) return true;

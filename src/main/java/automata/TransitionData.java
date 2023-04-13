@@ -63,6 +63,12 @@ public class TransitionData {
 
     /* OVERRIDDEN METHODS */
 
+  /**
+   * Indicates whether an object is "equal to" this transition data
+   * 
+   * @param obj the reference object with which to compare
+   * @return {@code true} if this transition data is the same as the argument
+   */
   @Override
   public boolean equals(Object obj) {
     if (this == obj) return true;
@@ -76,11 +82,16 @@ public class TransitionData {
     else return false;
   }
 
+  /** {@inheritDoc} */
   @Override
   public int hashCode() {
     return Long.hashCode(initialStateID);
   }
 
+  /**
+   * Returns string representation of this transition data
+   * @return string representation of this transition data
+   */
   @Override
   public String toString() {
     return String.format("(%d,%d,%d)", initialStateID, eventID, targetStateID);

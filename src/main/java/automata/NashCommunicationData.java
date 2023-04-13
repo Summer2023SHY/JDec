@@ -65,7 +65,7 @@ public class NashCommunicationData extends CommunicationData implements Cloneabl
   }
 
     /* OVERIDDEN METHOD */
-
+  /** {@inheritDoc} */
   @Override
   public Object clone() {
     return new NashCommunicationData(initialStateID, eventID, targetStateID, Arrays.copyOf(roles, roles.length), cost, probability);

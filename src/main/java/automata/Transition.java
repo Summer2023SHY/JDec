@@ -82,6 +82,12 @@ public class Transition {
 
     /* OVERRIDDEN METHODS */
 
+  /**
+   * Indicates whether an object is "equal to" this transition
+   * 
+   * @param obj the reference object with which to compare
+   * @return {@code true} if this transition is the same as the argument
+   */
   @Override
   public boolean equals(Object obj) {
     if (this == obj) return true;
@@ -92,6 +98,10 @@ public class Transition {
     else return false;
   }
 
+  /**
+   * Returns string representation of this transition
+   * @return string representation of this transition
+   */
   @Override
   public String toString() {
     return "("

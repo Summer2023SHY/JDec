@@ -76,11 +76,18 @@ public class LabelVector {
 
     /* OVERRIDDEN METHODS */
 
+  /** {@inheritDoc} */
   @Override
   public int hashCode() {
     return label.hashCode();
   }
 
+  /**
+   * Indicates whether an object is "equal to" this label vector
+   * 
+   * @param obj the reference object with which to compare
+   * @return {@code true} if this label vector is the same as the argument
+   */
   @Override
   public boolean equals(Object other) {
     if (this == other) return true;
@@ -89,6 +96,10 @@ public class LabelVector {
     else return false;
   }
 
+  /**
+   * Returns string representation of this label vector
+   * @return string representation of this label vector
+   */
   @Override
   public String toString() {
     return label;
