@@ -1,14 +1,11 @@
-package automata;
-/**
- * AutomataExplorer - This class is used to display a pop-up that allows the user to interactively explore the specified automaton.
- *
- * @author Micah Stairs
- *
+package automata.gui;
+
+/*
  * TABLE OF CONTENTS:
  *  -Instance Variables
  *  -Constructor
  *  -Methods
- **/
+ */
 
 import java.awt.*;
 import java.awt.event.*;
@@ -16,6 +13,15 @@ import java.io.*;
 import java.util.*;
 import javax.swing.*;
 
+import automata.Automaton;
+import automata.State;
+import automata.Transition;
+
+/**
+ * Used to display a pop-up that allows the user to interactively explore the specified automaton.
+ *
+ * @author Micah Stairs
+ */
 public class AutomataExplorer extends JDialog {
 
     /* INSTANCE VARIABLES */

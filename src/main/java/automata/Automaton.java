@@ -676,7 +676,7 @@ public class Automaton implements AutoCloseable {
    * NOTE: This method should be overridden by subclasses, using the invertHelper() method.
    * @return  The inverted automaton
    **/
-  protected Automaton invert() {
+  public Automaton invert() {
     return invertHelper(new Automaton(eventCapacity, stateCapacity, transitionCapacity, labelLength, nControllers, true));
   }
 

@@ -1,11 +1,6 @@
-package automata;
-/**
- * GenerateFeasibleProtocolsPrompt - Extending the abstract class ChooseSendersAndRecieversPrompt, this
- *                                   class generates all feasible protocols given the selected senders
- *                                   and recievers.
- *
- * @author Micah Stairs
- *
+package automata.gui;
+
+/*
  * TABLE OF CONTENTS:
  *  -Constructor
  *  -Overidden Method
@@ -13,8 +8,18 @@ package automata;
  **/
 
 import javax.swing.*;
+
+import automata.CommunicationData;
+import automata.CommunicationRole;
+import automata.UStructure;
+
 import java.util.*;
 
+/**
+ * Generates all feasible protocols given the selected senders and receivers.
+ *
+ * @author Micah Stairs
+ */
 public class GenerateFeasibleProtocolsPrompt extends ChooseSendersAndRecieversPrompt {
 
     /* CONSTRUCTOR */
@@ -34,7 +39,9 @@ public class GenerateFeasibleProtocolsPrompt extends ChooseSendersAndRecieversPr
 
     /* OVERIDDEN METHOD */
 
-  @Override protected boolean performAction() {
+  /** {@inheritDoc} */
+  @Override
+  protected boolean performAction() {
 
     List<Set<CommunicationData>> feasibleProtocols = generateFeasibleProtocols();
 

@@ -1,11 +1,6 @@
-package automata;
-/**
- * RandomAutomatonPrompt - Displays a popup box which allows the user to specify the properties of a random
- *                         automaton that they would like generated. The appropriate actions are also
- *                         triggered when the user presses the "Generate" button in the popup.
- *
- * @author Micah Stairs
- *
+package automata.gui;
+
+/*
  * TABLE OF CONTENTS
  *  -Class Constants
  *  -Instance Variables
@@ -17,6 +12,15 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
+import automata.Automaton;
+
+/**
+ * Displays a popup box which allows the user to specify the properties of a random
+ * automaton that they would like generated. The appropriate actions are also
+ * triggered when the user presses the "Generate" button in the popup.
+ *
+ * @author Micah Stairs
+ */
 public class RandomAutomatonPrompt extends JDialog {
 
     /* CLASS CONSTANTS */
@@ -230,7 +234,8 @@ public class RandomAutomatonPrompt extends JDialog {
   private void interruptThreadOnClose() {
 
     addWindowListener(new WindowAdapter() {
-      @Override public void windowClosing(WindowEvent e) {
+      @Override
+      public void windowClosing(WindowEvent e) {
         // The method being executed in the thread is periodically checking to see if the window has been disposed
         isDisposed = true;
       

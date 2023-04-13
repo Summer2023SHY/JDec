@@ -1,14 +1,13 @@
-package automata;
+package automata.gui;
+
+import java.awt.*;
+import javax.swing.*;
+
 /**
- * TooltipComponent - Used to add a tool-tip with the specified text to the left of the given component.
+ * Used to add a tool-tip with the specified text to the left of the given component.
  *
  * @author Micah Stairs
  **/
-
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-
 public class TooltipComponent extends JPanel {
 
   /**

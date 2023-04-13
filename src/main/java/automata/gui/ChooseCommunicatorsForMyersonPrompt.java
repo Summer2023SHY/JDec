@@ -1,20 +1,26 @@
-package automata;
-/**
- * ChooseCommunicatorsForMyersonPrompt - Extending the abstract class ChooseSendersAndRecieversPrompt, this
- *                                       class calculates and displays the Myerson values they have selected
- *                                       senders and recievers.
- *
- * @author Micah Stairs
- *
+package automata.gui;
+
+/*
  * TABLE OF CONTENTS:
  *  -Constructor
  *  -Overidden Method
  **/
 
 // import java.io.*;
-import javax.swing.*;
 import java.util.*;
+import javax.swing.*;
 
+import automata.CommunicationData;
+import automata.CommunicationRole;
+import automata.PrunedUStructure;
+import automata.UStructure;
+
+/**
+ * Calculates and displays the Myerson values they
+ * have selected senders and recievers.
+ *
+ * @author Micah Stairs
+ */
 public class ChooseCommunicatorsForMyersonPrompt extends ChooseSendersAndRecieversPrompt {
 
     /* CONSTRUCTOR */
@@ -33,8 +39,9 @@ public class ChooseCommunicatorsForMyersonPrompt extends ChooseSendersAndRecieve
   }
 
     /* OVERIDDEN METHOD */
-
-  @Override protected boolean performAction() {
+  /** {@inheritDoc} */
+  @Override
+  protected boolean performAction() {
 
     Set<CommunicationData> protocol = getProtocol();
 

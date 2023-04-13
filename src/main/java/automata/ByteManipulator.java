@@ -1,4 +1,7 @@
 package automata;
+
+import automata.gui.JDec;
+
 /**
  * ByteManipulator - A utility class used to perform conversions between a long and bytes.
  *

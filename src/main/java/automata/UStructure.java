@@ -149,7 +149,8 @@ public class UStructure extends Automaton {
 
   // }
 
-  @Override protected UStructure invert() {
+  @Override
+  public UStructure invert() {
     return invertHelper(new UStructure(null, null, eventCapacity, stateCapacity, transitionCapacity, labelLength, nControllers, true));
   }
 

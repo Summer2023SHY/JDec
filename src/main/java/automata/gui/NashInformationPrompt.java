@@ -1,11 +1,6 @@
-package automata;
-/**
- * NashInformationPrompt - This abstract class is used to allow a user to manipulate Nash communications,
- *                         instead of being required to do it through GUI input code, which is rather
- *                         unintuitive.
- *
- * @author Micah Stairs
- *
+package automata.gui;
+
+/*
  * TABLE OF CONTENTS:
  *  -Instance Variables
  *  -Constructor
@@ -19,6 +14,17 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.table.*;
 
+import automata.CommunicationData;
+import automata.NashCommunicationData;
+import automata.UStructure;
+
+/**
+ * Used to allow a user to manipulate Nash communications,
+ * instead of being required to do it through GUI input code, which is rather
+ * unintuitive.
+ *
+ * @author Micah Stairs
+ */
 public abstract class NashInformationPrompt extends JDialog {
 
     /* INSTANCE VARIABLES */
@@ -134,7 +140,8 @@ public abstract class NashInformationPrompt extends JDialog {
     final TableModel tableModel = new DefaultTableModel(tableData, columnNames) {
 
       // Automatially adjust entered values to reflect how they are being interpreted
-      @Override public void setValueAt(Object value, int row, int column) {
+      @Override
+      public void setValueAt(Object value, int row, int column) {
 
         // Format the costs as non-negative doubles
         if (column == 1) {
@@ -172,7 +179,8 @@ public abstract class NashInformationPrompt extends JDialog {
     final JTable table = new JTable(tableModel) {
       
       // Try to make columns are wide enough to display all of the text
-      @Override public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+      @Override
+      public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
         Component component = super.prepareRenderer(renderer, row, column);
         int rendererWidth = component.getPreferredSize().width;
         TableColumn tableColumn = getColumnModel().getColumn(column);
@@ -181,7 +189,8 @@ public abstract class NashInformationPrompt extends JDialog {
       }
 
       // Make it so that the first column cannot be edited
-      @Override public boolean isCellEditable(int row, int column) {
+      @Override
+      public boolean isCellEditable(int row, int column) {
         return column != 0;
       }
 
@@ -200,7 +209,7 @@ public abstract class NashInformationPrompt extends JDialog {
 
     final JButton button = new JButton("Next");
     button.addActionListener(new ActionListener() {
-   
+        @Override
         public void actionPerformed(ActionEvent event) {
 
           // Don't allow the user to press this button more than once after they've entered valid input
@@ -236,7 +245,8 @@ public abstract class NashInformationPrompt extends JDialog {
           // Prevent user from pressing this button more than once
           pressedNext = true;
           EventQueue.invokeLater(new Runnable() {
-            @Override public void run() {
+            @Override
+            public void run() {
               button.setEnabled(false);
             }
           });

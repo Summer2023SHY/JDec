@@ -1,20 +1,26 @@
-package automata;
-/**
- * ChooseCommunicatorsForNashPrompt - Extending the abstract class ChooseSendersAndRecieversPrompt, this
- *                                    class guides the user through the process of finding Nash equilibria
- *                                    once they have selected senders and recievers.
- *
- * @author Micah Stairs
- *
+package automata.gui;
+
+/*
  * TABLE OF CONTENTS:
  *  -Constructor
  *  -Overidden Method
  **/
 
 // import java.io.*;
-import javax.swing.*;
 import java.util.*;
+import javax.swing.*;
 
+import automata.CommunicationRole;
+import automata.Crush;
+import automata.NashCommunicationData;
+import automata.UStructure;
+
+/**
+ * Guides the user through the process of finding Nash equilibria
+ * once they have selected senders and recievers.
+ *
+ * @author Micah Stairs
+ */
 public class ChooseCommunicatorsForNashPrompt extends ChooseSendersAndRecieversPrompt {
 
     /* CONSTRUCTOR */
@@ -33,8 +39,9 @@ public class ChooseCommunicatorsForNashPrompt extends ChooseSendersAndRecieversP
   }
 
     /* OVERIDDEN METHOD */
-
-  @Override protected boolean performAction() {
+  /** {@inheritDoc} */
+  @Override
+  protected boolean performAction() {
 
     List<Set<NashCommunicationData>> feasibleProtocols = generateFeasibleProtocols();
 
