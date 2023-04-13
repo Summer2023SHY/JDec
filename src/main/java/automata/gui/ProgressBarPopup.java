@@ -1,18 +1,20 @@
-package automata;
-/**
- * ProgressBarPopup - This class is used to show and update a progress bar inside of a dialog box.
- *
- * @author Micah Stairs
- *
+package automata.gui;
+
+/*
  * TABLE OF CONTENTS:
  *  -Instance Variables
  *  -Constructor
  *  -Methods
- **/
+ */
 
 import java.awt.*;
 import javax.swing.*;
 
+/**
+ * Used to show and update a progress bar inside of a dialog box.
+ *
+ * @author Micah Stairs
+ */
 public class ProgressBarPopup extends JDialog {
 
     /* INSTANCE VARIABLES */
@@ -45,7 +47,8 @@ public class ProgressBarPopup extends JDialog {
 
 
     EventQueue.invokeLater(new Runnable() {
-      @Override public void run() {
+      @Override
+      public void run() {
         add(progressBar);
         setGUIproperties(title);
       }
