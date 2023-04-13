@@ -5,8 +5,14 @@ updates:
     schedule:
       interval: "daily"
       time: "00:00"
+    labels:
+      - "ci"
+      - "dependencies"
   - package-ecosystem: "maven"
     directory: "/"
     schedule:
       interval: "daily"
       time: "00:00"
+    labels:
+      - "dependencies"
+      - "maven"
