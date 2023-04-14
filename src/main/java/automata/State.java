@@ -1,9 +1,6 @@
 package automata;
-/**
- * State - This object represents a state in an automaton, complete with a label and transitions.
- *
- * @author Micah Stairs
- *
+
+/*
  * TABLE OF CONTENTS:
  *  -Class Constants
  *  -Instance Variables
@@ -12,11 +9,16 @@ package automata;
  *  -Mutator Methods
  *  -Accessor Methods
  *  -Overridden Methods
- **/
+ */
 
 import java.util.*;
 import java.io.*;
 
+/**
+ * Represents a state in an automaton, complete with a label and transitions.
+ *
+ * @author Micah Stairs
+ */
 public class State {
 
     /* CLASS CONSTANTS */

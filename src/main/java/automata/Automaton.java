@@ -135,7 +135,10 @@ public class Automaton implements AutoCloseable {
 
     /* AUTOMATON TYPE ENUM */
 
-  /** The automaton type is directly correlated to the class of the instantiated Automaton */
+  /** Enum constant that represents the type of the {@link Automaton}
+   * 
+   * @author Micah Stairs
+   */
   public static enum Type {
 
     /** The basic automaton */

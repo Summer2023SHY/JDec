@@ -1,17 +1,19 @@
 package automata;
-/**
- * LabelVector - This class is used to take a string and vectorize it into its components using some
- *               basic syntax.
- *
- * @author Micah Stairs
- *
+
+/*
  * TABLE OF CONTENTS:
  *  -Instance Variables
  *  -Constructor
  *  -Accessor Methods
  *  -Overridden Methods
- **/
+ */
 
+/**
+ * LabelVector - This class is used to take a string and vectorize it into its components using some
+ *               basic syntax.
+ *
+ * @author Micah Stairs
+ */
 public class LabelVector {
 
     /* INSTANCE VARIABLES */

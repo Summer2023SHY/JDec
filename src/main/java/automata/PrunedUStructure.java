@@ -1,18 +1,20 @@
 package automata;
-/**
- * PrunedUStructure - Extending UStructure, this class represents a pruned U-Structure.
- *
- * @author Micah Stairs
- *
+
+/*
  * TABLE OF CONTENTS:
  *  -Constructors
  *  -Automata Operations
  *  -Mutator Methods
- **/
+ */
 
 import java.io.*;
 import java.util.*;
 
+/**
+ * Represents a pruned U-Structure.
+ *
+ * @author Micah Stairs
+ */
 public class PrunedUStructure extends UStructure {
 
     /* CONSTRUCTORS */

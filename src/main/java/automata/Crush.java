@@ -1,22 +1,29 @@
 package automata;
-/**
- * Crush - Extending PrunedUStructure, this class represents a Crush structure.
- *
- * @author Micah Stairs
- *
+
+/*
  * TABLE OF CONTENTS:
  *  -Enum
  *  -Constructors
  *  -Automata Operations
- **/
+ */
 
 import java.io.*;
 
+/**
+ * Crush - Extending PrunedUStructure, this class represents a Crush structure.
+ *
+ * @author Micah Stairs
+ */
 public class Crush extends PrunedUStructure {
 
     /* ENUM */
 
-  /** This enum represents the way that communication costs can be combined when creating the Crush. */
+  /** 
+   * Enum constant that represents the way that communication costs
+   * can be combined when creating the {@link Crush}.
+   * 
+   * @author Micah Stairs
+   */
   public static enum CombiningCosts {
 
     /** This is used by the Nash algorithm, and it means that the Crush doesn't actually need to be generated since the costs are not being combined in any way. */

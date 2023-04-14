@@ -1,21 +1,23 @@
 package automata;
-/**
- * Transition - Represents a transition in an automaton.
- *
- *              NOTE: An instance of this class should remain attached to a state in order to be able to
- *                    fully represent a transition (since a transition has no reference to its initial
- *                    state ID).
- *
- * @author Micah Stairs
- *
+
+/*
  * TABLE OF CONTENTS:
  *  -Instance Variables
  *  -Constructor
  *  -Mutator Method
  *  -Accessor Methods
  *  -Overridden Methods
- **/
+ */
 
+/**
+ * Represents a transition in an automaton.
+ *
+ * @implNote An instance of this class should remain attached to a state in
+ * order to be able to fully represent a transition (since a transition has
+ * no reference to its initial state ID).
+ *
+ * @author Micah Stairs
+ */
 public class Transition {
 
     /* INSTANCE VARIABLES */
