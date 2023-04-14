@@ -4,7 +4,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>automata</groupId>
+  <groupId>com.github.automaton</groupId>
   <artifactId>JDec</artifactId>
   <version>v1.0_b1</version>
 
@@ -84,7 +84,7 @@
               <manifest>
                 <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                 <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-                <mainClass>automata.gui.JDec</mainClass>
+                <mainClass>com.github.automaton.gui.JDec</mainClass>
               </manifest>
             </archive>
             <descriptorRefs>
@@ -97,7 +97,7 @@
             <artifactId>exec-maven-plugin</artifactId>
             <version>3.1.0</version>
             <configuration>
-                <mainClass>automata.JDec</mainClass>
+                <mainClass>com.github.automaton.gui.JDec</mainClass>
             </configuration>
         </plugin>
         <plugin>
