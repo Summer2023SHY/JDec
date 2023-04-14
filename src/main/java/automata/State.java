@@ -1,9 +1,6 @@
 package automata;
-/**
- * State - This object represents a state in an automaton, complete with a label and transitions.
- *
- * @author Micah Stairs
- *
+
+/*
  * TABLE OF CONTENTS:
  *  -Class Constants
  *  -Instance Variables
@@ -12,11 +9,16 @@ package automata;
  *  -Mutator Methods
  *  -Accessor Methods
  *  -Overridden Methods
- **/
+ */
 
 import java.util.*;
 import java.io.*;
 
+/**
+ * Represents a state in an automaton, complete with a label and transitions.
+ *
+ * @author Micah Stairs
+ */
 public class State {
 
     /* CLASS CONSTANTS */
@@ -373,6 +375,10 @@ public class State {
 
     /* OVERRIDDEN METHODS */
 
+  /**
+   * Returns string representation of this state
+   * @return string representation of this state
+   */
   @Override
   public String toString() {
     return "("
@@ -383,11 +389,18 @@ public class State {
       + ")";
   }
 
+  /** {@inheritDoc} */
   @Override
   public int hashCode() {
     return Long.hashCode(id);
   }
 
+  /**
+   * Indicates whether an object is "equal to" this state
+   * 
+   * @param obj the reference object with which to compare
+   * @return {@code true} if this state is the same as the argument
+   */
   @Override
   public boolean equals(Object other) {
     if (this == other) return true;

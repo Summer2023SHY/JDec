@@ -1,6 +1,6 @@
 package automata;
 /**
- * OperationFailedException - This exception is thrown when an operation fails for some reason.
+ * Thrown when an operation fails for some reason.
  *
  * @author Micah Stairs
  **/

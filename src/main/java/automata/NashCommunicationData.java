@@ -1,20 +1,24 @@
 package automata;
 
-import java.util.Arrays;
-/**
- * NashCommunicationData - Extending CommunicationData, this class adds the additional information of
- *                         both cost and probability values. This information is particularly useful
- *                         when finding Nash equilibria.
- *
- * @author Micah Stairs
- *
+/*
  * TABLE OF CONTENTS:
  *  -Instance Variables
  *  -Constructor
  *  -Method
  *  -Overidden Method
- **/
+ */
 
+import java.util.Arrays;
+
+/**
+ * Holds all 3 pieces of information needed to identify a transition, as well
+ * as an enumeration array to indicate which controller is the sender
+ * and which are the recievers and the additional information of both cost
+ * and probability values. This information is particularly useful when finding
+ * Nash equilibria.
+ *
+ * @author Micah Stairs
+ */
 public class NashCommunicationData extends CommunicationData implements Cloneable {
 
     /* INSTANCE VARIABLES */
@@ -65,7 +69,7 @@ public class NashCommunicationData extends CommunicationData implements Cloneabl
   }
 
     /* OVERIDDEN METHOD */
-
+  /** {@inheritDoc} */
   @Override
   public Object clone() {
     return new NashCommunicationData(initialStateID, eventID, targetStateID, Arrays.copyOf(roles, roles.length), cost, probability);

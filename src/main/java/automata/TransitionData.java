@@ -1,20 +1,23 @@
 package automata;
-/**
- * TransitionData - Holds all 3 pieces of information needed to identify a transition.
- *
- *                  NOTE: This class is different from the Transition class, since this class does not need
- *                        to be attached to a specific state in order to fully represent a transition (the
- *                        Transition class does not have a reference to the initial state ID, and it contains
- *                        a reference to the actual Event object instead of only holding onto its ID).
- *
- * @author Micah Stairs
- *
+
+/*
  * TABLE OF CONTENTS:
  *  -Instance Variables
  *  -Constructor
  *  -Overridden Methods
- **/
+ */
 
+/**
+ * Holds all 3 pieces of information needed to identify a transition.
+ *
+ * <p>NOTE: This class is different from the {@link Transition} class, since
+ * this class does not need to be attached to a specific state in order to
+ * fully represent a transition (the {@link Transition} class does not have a
+ * reference to the initial state ID, and it contains a reference to the actual
+ * {@link Event} object instead of only holding onto its ID).</p>
+ *
+ * @author Micah Stairs
+ */
 public class TransitionData {
 
     /* PUBLIC INSTANCE VARIABLES */
@@ -60,6 +63,12 @@ public class TransitionData {
 
     /* OVERRIDDEN METHODS */
 
+  /**
+   * Indicates whether an object is "equal to" this transition data
+   * 
+   * @param obj the reference object with which to compare
+   * @return {@code true} if this transition data is the same as the argument
+   */
   @Override
   public boolean equals(Object obj) {
     if (this == obj) return true;
@@ -73,11 +82,16 @@ public class TransitionData {
     else return false;
   }
 
+  /** {@inheritDoc} */
   @Override
   public int hashCode() {
     return Long.hashCode(initialStateID);
   }
 
+  /**
+   * Returns string representation of this transition data
+   * @return string representation of this transition data
+   */
   @Override
   public String toString() {
     return String.format("(%d,%d,%d)", initialStateID, eventID, targetStateID);

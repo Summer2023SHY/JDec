@@ -1,10 +1,6 @@
 package automata;
-/**
- * DisablementData - Holds all 3 pieces of information needed to identify a transition, as well as information
- *                   on which controllers are able to disable this transition.
- *
- * @author Micah Stairs
- *
+
+/*
  * TABLE OF CONTENTS:
  *  -Constructor
  *  -Overridden Method
@@ -12,6 +8,12 @@ package automata;
 
 import java.util.*;
 
+/**
+ * Holds all 3 pieces of information needed to identify a transition, as well
+ * as information on which controllers are able to disable this transition.
+ *
+ * @author Micah Stairs
+ */
 public class DisablementData extends TransitionData {
 
     /* INSTANCE VARIABLE */
@@ -38,6 +40,12 @@ public class DisablementData extends TransitionData {
 
     /* OVERRIDDEN METHODS */
 
+  /**
+   * Indicates whether an object is "equal to" this disablement data
+   * 
+   * @param obj the reference object with which to compare
+   * @return {@code true} if this disablement data is the same as the argument
+   */
   @Override
   public boolean equals(Object obj) {
     if (this == obj) return true;
@@ -49,6 +57,7 @@ public class DisablementData extends TransitionData {
     else return false;
   }
 
+  /** {@inheritDoc} */
   @Override
   public int hashCode() {
     return Long.hashCode(initialStateID);

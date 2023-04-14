@@ -1,22 +1,24 @@
 package automata;
-/**
- * Event - This simple class represents an event in an automaton. It supports both centralized and
- *         decentralized control, which means that it can have observability and controllability
- *         properties for each controller. It also has support for events that have labels formatted
- *         as vectors.
- *
- * @author Micah Stairs
- *
+
+/*
  * TABLE OF CONTENTS:
  *  -Instance Variables
  *  -Constructor
  *  -Mutator Method
  *  -Accessor Methods
  *  -Overridden Methods
- **/
+ */
 
 import java.util.*;
 
+/**
+ * Represents an event in an automaton. It supports both centralized and
+ * decentralized control, which means that it can have observability and
+ * controllability properties for each controller. It also has support for
+ * events that have labels formatted as vectors.
+ *
+ * @author Micah Stairs
+ */
 public class Event {
     
     /* INSTANCE VARIABLES */
@@ -105,6 +107,12 @@ public class Event {
 
     /* OVERRIDDEN METHODS */
 
+  /**
+   * Indicates whether an object is "equal to" this event
+   * 
+   * @param obj the reference object with which to compare
+   * @return {@code true} if this event is the same as the argument
+   */
   @Override
   public boolean equals(Object obj) {
     if (this == obj) return true;
@@ -120,6 +128,10 @@ public class Event {
     return this.label.hashCode();
   }
 
+  /**
+   * Returns string representation of this event
+   * @return string representation of this event
+   */
   @Override
   public String toString() {
     return "("

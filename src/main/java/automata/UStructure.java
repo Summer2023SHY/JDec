@@ -1,9 +1,6 @@
 package automata;
-/**
- * UStructure - Extending Automaton, this class represents an un-pruned U-Structure.
- *
- * @author Micah Stairs
- *
+
+/*
  * TABLE OF CONTENTS:
  *  -Instance Variables
  *  -Constructors
@@ -14,12 +11,17 @@ package automata;
  *  -Working with Files
  *  -Mutator Methods
  *  -Accessor Methods
- **/
+ */
 
 import java.util.*;
 import java.io.*;
 import java.math.*;
 
+/**
+ * Represents an un-pruned U-Structure.
+ *
+ * @author Micah Stairs
+ */
 public class UStructure extends Automaton {
 
     /* CLASS CONSTANTS */

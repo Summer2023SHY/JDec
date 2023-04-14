@@ -1,21 +1,23 @@
 package automata;
-/**
- * Transition - Represents a transition in an automaton.
- *
- *              NOTE: An instance of this class should remain attached to a state in order to be able to
- *                    fully represent a transition (since a transition has no reference to its initial
- *                    state ID).
- *
- * @author Micah Stairs
- *
+
+/*
  * TABLE OF CONTENTS:
  *  -Instance Variables
  *  -Constructor
  *  -Mutator Method
  *  -Accessor Methods
  *  -Overridden Methods
- **/
+ */
 
+/**
+ * Represents a transition in an automaton.
+ *
+ * @implNote An instance of this class should remain attached to a state in
+ * order to be able to fully represent a transition (since a transition has
+ * no reference to its initial state ID).
+ *
+ * @author Micah Stairs
+ */
 public class Transition {
 
     /* INSTANCE VARIABLES */
@@ -82,6 +84,12 @@ public class Transition {
 
     /* OVERRIDDEN METHODS */
 
+  /**
+   * Indicates whether an object is "equal to" this transition
+   * 
+   * @param obj the reference object with which to compare
+   * @return {@code true} if this transition is the same as the argument
+   */
   @Override
   public boolean equals(Object obj) {
     if (this == obj) return true;
@@ -92,6 +100,10 @@ public class Transition {
     else return false;
   }
 
+  /**
+   * Returns string representation of this transition
+   * @return string representation of this transition
+   */
   @Override
   public String toString() {
     return "("

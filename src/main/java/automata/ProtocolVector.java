@@ -1,18 +1,20 @@
 package automata;
-/**
- * ProtocolVector - Used to vectorize a communication protocol into multiple components, based on the
- *                  index of the sending controller.
- *
- * @author Micah Stairs
- *
+
+/*
  * TABLE OF CONTENTS:
  *  -Instance Variables
  *  -Constructor
  *  -Accessor Methods
- **/
+ */
 
 import java.util.*;
 
+/**
+ * Used to vectorize a communication protocol into multiple components, based on the
+ * index of the sending controller.
+ *
+ * @author Micah Stairs
+ */
 public class ProtocolVector {
 
     /* INSTANCE VARIBLES */

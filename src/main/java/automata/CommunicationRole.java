@@ -1,16 +1,18 @@
 package automata;
-/**
- * CommunicationRole - An enumeration used to help indicate whether a controller is the sender, one of
- *                     the recievers, or neither.
- *
- * @author Micah Stairs
- *
+/*
  * TABLE OF CONTENTS:
  *  -Enumeration Values
  *  -Instance Variables
  *  -Constructor
  *  -Accessor Methods
- **/
+ */
+
+/**
+ * Enumeration used to help indicate whether a controller is the sender,
+ * one of the recievers, or neither.
+ *
+ * @author Micah Stairs
+ */
 public enum CommunicationRole {
 
     /* ENUMERATION VALUES */
