@@ -1025,16 +1025,19 @@ public class JDec extends JFrame implements ActionListener {
 
     int index = tabbedPane.getSelectedIndex();
     AutomatonTab tab = tabs.get(index);
-    String fileName = currentDirectory + "/" + removeExtension(tab.headerFile.getName()) + ".svg";
+    String fileName = currentDirectory + File.separator + removeExtension(tab.headerFile.getName()) + ".svg";
 
     boolean successful = false;
 
     // Try to load image from file
     try {
       if (Desktop.isDesktopSupported()) {
-
-        // NOTE: There is the possibility that I am missing some characters that should be encoded
-        Desktop.getDesktop().browse(new URI("file://" + fileName.replaceAll(" ", "%20")));
+        if (System.getProperty("os.name").startsWith("Windows")) {
+          Desktop.getDesktop().open(new File(fileName.replaceAll(" ", "%20")));
+        } else {
+          // NOTE: There is the possibility that I am missing some characters that should be encoded
+          Desktop.getDesktop().browse(new URI("file://" + fileName.replaceAll(" ", "%20")));
+        }
         successful = true;
 
       }
