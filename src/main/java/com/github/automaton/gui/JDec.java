@@ -39,8 +39,7 @@ import com.github.automaton.automata.MissingOrCorruptBodyFileException;
 import com.github.automaton.automata.OperationFailedException;
 import com.github.automaton.automata.PrunedUStructure;
 import com.github.automaton.automata.UStructure;
-import com.github.automaton.gui.util.AutomatonGenerator;
-import com.github.automaton.gui.util.RandomAutomatonGenerator;
+import com.github.automaton.gui.util.*;
 import com.github.weisj.jsvg.SVGDocument;
 import com.github.weisj.jsvg.attributes.ViewBox;
 
@@ -1173,7 +1172,7 @@ public class JDec extends JFrame implements ActionListener {
 
       // Try to create graph image, displaying it on the screen
       else if (tab.automaton.generateImage(destinationFileName)) {
-        tab.canvas.setSVGImage(tab.automaton.loadSVGFromFile(destinationFileName + ".svg"));
+        tab.canvas.setSVGImage(ImageLoader.loadSVGFromFile(destinationFileName + ".svg"));
         tab.svgFile = new File(destinationFileName + ".svg");
       }
 

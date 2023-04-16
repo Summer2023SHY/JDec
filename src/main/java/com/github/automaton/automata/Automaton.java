@@ -21,11 +21,6 @@ import java.util.*;
 import java.io.*;
 import java.math.*;
 import java.nio.file.*;
-import java.awt.image.*;
-import javax.imageio.*;
-
-import com.github.weisj.jsvg.SVGDocument;
-import com.github.weisj.jsvg.parser.SVGLoader;
 
 import guru.nidi.graphviz.engine.*;
 import guru.nidi.graphviz.model.*;
@@ -1990,34 +1985,6 @@ public class Automaton implements AutoCloseable {
       map.put(key, map.get(key) + value);
     else
       map.put(key, value); 
-  }
-
-  /**
-   * Load the generated graph image from file.
-   * @param fileName  The name of the image to be loaded
-   * @return          The image, or null if it could not be loaded
-   **/
-  public BufferedImage loadImageFromFile(String fileName) {
-    try {
-      return ImageIO.read(new File(fileName));
-    } catch (IOException e) {
-      e.printStackTrace();
-      return null;  
-    }
-  }
-
-  /**
-   * Load the generated graph image from file.
-   * @param fileName  The name of the image to be loaded
-   * @return          The image, or {@code null} if it could not be loaded
-   **/
-  public SVGDocument loadSVGFromFile(String fileName) {
-    try {
-      return new SVGLoader().load(new File(fileName).toURI().toURL());
-    } catch (IOException e) {
-      e.printStackTrace();
-      return null;  
-    }
   }
 
     /* GUI INPUT CODE GENERATION */
