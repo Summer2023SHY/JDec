@@ -17,6 +17,8 @@ import java.util.*;
 import java.io.*;
 import java.math.*;
 
+import com.github.automaton.automata.util.ByteManipulator;
+
 /**
  * Represents an un-pruned U-Structure.
  *

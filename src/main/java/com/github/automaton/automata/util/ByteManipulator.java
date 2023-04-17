@@ -1,9 +1,9 @@
-package com.github.automaton.automata;
+package com.github.automaton.automata.util;
 
 import com.github.automaton.gui.JDec;
 
 /**
- * ByteManipulator - A utility class used to perform conversions between a long and bytes.
+ * A utility class used to perform conversions between a long and bytes.
  *
  * @author Micah Stairs
  **/

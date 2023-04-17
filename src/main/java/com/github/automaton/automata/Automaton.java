@@ -22,6 +22,8 @@ import java.io.*;
 import java.math.*;
 import java.nio.file.*;
 
+import com.github.automaton.automata.util.ByteManipulator;
+
 import guru.nidi.graphviz.engine.*;
 import guru.nidi.graphviz.model.*;
 import guru.nidi.graphviz.parse.*;

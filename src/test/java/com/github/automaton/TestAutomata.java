@@ -8,7 +8,6 @@ import java.io.*;
 import org.junit.jupiter.api.*;
 
 import com.github.automaton.automata.Automaton;
-import com.github.automaton.automata.ByteManipulator;
 import com.github.automaton.automata.CommunicationData;
 import com.github.automaton.automata.Crush;
 import com.github.automaton.automata.DoesNotSatisfyObservabilityException;
@@ -17,6 +16,7 @@ import com.github.automaton.automata.NashCommunicationData;
 import com.github.automaton.automata.OperationFailedException;
 import com.github.automaton.automata.PrunedUStructure;
 import com.github.automaton.automata.UStructure;
+import com.github.automaton.automata.util.ByteManipulator;
 import com.github.automaton.gui.util.AutomatonGenerator;
 
 public class TestAutomata {

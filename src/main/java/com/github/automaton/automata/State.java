@@ -14,6 +14,8 @@ package com.github.automaton.automata;
 import java.util.*;
 import java.io.*;
 
+import com.github.automaton.automata.util.ByteManipulator;
+
 /**
  * Represents a state in an automaton, complete with a label and transitions.
  *
