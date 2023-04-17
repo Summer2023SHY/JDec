@@ -31,7 +31,8 @@ public class Crush extends PrunedUStructure {
 
     /** 
      * The maximum cost of the communications which are being crushed together becomes the cost of the combined communication.
-     * NOTE: The costs are capped at Integer.MAX_VALUE.
+     * 
+     * <p>NOTE: The costs are capped at {@link Integer#MAX_VALUE}
      **/
     MAX,
 

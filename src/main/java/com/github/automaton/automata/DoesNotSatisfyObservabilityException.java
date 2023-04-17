@@ -5,5 +5,8 @@ package com.github.automaton.automata;
  * control problem.
  *
  * @author Micah Stairs
+ * 
+ * @see UStructure#findNashEquilibria(Crush.CombiningCosts)
+ * @see UStructure#findNashEquilibria(Crush.CombiningCosts, java.util.List)
  */
 public class DoesNotSatisfyObservabilityException extends IllegalStateException { }
