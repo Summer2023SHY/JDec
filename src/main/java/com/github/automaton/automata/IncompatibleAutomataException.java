@@ -7,4 +7,40 @@ package com.github.automaton.automata;
  *
  * @author Micah Stairs
  **/
-public class IncompatibleAutomataException extends IllegalArgumentException { }
+public class IncompatibleAutomataException extends IllegalArgumentException {
+    /**
+     * Constructs a {@code IncompatibleAutomataException} with no
+     * detail message.
+     */
+    public IncompatibleAutomataException() {
+        super();
+    }
+
+    /**
+     * Constructs a {@code IncompatibleAutomataException} with the
+     * specified detail message.
+     * @param message the detail message
+     */
+    public IncompatibleAutomataException(String message) {
+        super(message);
+    }
+
+    /**
+     * Constructs a {@code IncompatibleAutomataException} with the
+     * specified detail message and cause.
+     * @param message the detail message
+     * @param cause the cause
+     */
+    public IncompatibleAutomataException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    /**
+     * Constructs a {@code IncompatibleAutomataException} with the
+     * specified cause.
+     * @param cause the cause
+     */
+    public IncompatibleAutomataException(Throwable cause) {
+        super(cause);
+    }
+}

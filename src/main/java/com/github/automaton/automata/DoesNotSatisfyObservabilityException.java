@@ -9,4 +9,40 @@ package com.github.automaton.automata;
  * @see UStructure#findNashEquilibria(Crush.CombiningCosts)
  * @see UStructure#findNashEquilibria(Crush.CombiningCosts, java.util.List)
  */
-public class DoesNotSatisfyObservabilityException extends IllegalStateException { }
+public class DoesNotSatisfyObservabilityException extends IllegalStateException {
+    /**
+     * Constructs a {@code DoesNotSatisfyObservabilityException} with no
+     * detail message.
+     */
+    public DoesNotSatisfyObservabilityException() {
+        super();
+    }
+
+    /**
+     * Constructs a {@code DoesNotSatisfyObservabilityException} with the
+     * specified detail message.
+     * @param message the detail message
+     */
+    public DoesNotSatisfyObservabilityException(String message) {
+        super(message);
+    }
+
+    /**
+     * Constructs a {@code DoesNotSatisfyObservabilityException} with the
+     * specified detail message and cause.
+     * @param message the detail message
+     * @param cause the cause
+     */
+    public DoesNotSatisfyObservabilityException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    /**
+     * Constructs a {@code DoesNotSatisfyObservabilityException} with the
+     * specified cause.
+     * @param cause the cause
+     */
+    public DoesNotSatisfyObservabilityException(Throwable cause) {
+        super(cause);
+    }
+}
