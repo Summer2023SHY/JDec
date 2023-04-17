@@ -28,6 +28,8 @@ import javax.xml.parsers.*;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.*;
 import javax.xml.transform.stream.*;
+
+import org.apache.batik.swing.svg.JSVGComponent;
 import org.w3c.dom.*;
 import org.xml.sax.*;
 
@@ -40,8 +42,6 @@ import com.github.automaton.automata.OperationFailedException;
 import com.github.automaton.automata.PrunedUStructure;
 import com.github.automaton.automata.UStructure;
 import com.github.automaton.gui.util.*;
-import com.github.weisj.jsvg.SVGDocument;
-import com.github.weisj.jsvg.attributes.ViewBox;
 
 /**
  * A Java application for Decentralized Control. This application has been design to build
@@ -500,7 +500,7 @@ public class JDec extends JFrame implements ActionListener {
         tab.transitionInput.setText("");
 
         // Set blank image
-        tab.canvas.setSVGImage(null);
+        tab.canvas.loadSVGDocument(null);
 
         break;
 
@@ -1147,7 +1147,7 @@ public class JDec extends JFrame implements ActionListener {
       tab.generateImageButton.setEnabled(false);
     } else {
       tab.generateImageButton.setEnabled(true);
-      tab.canvas.setSVGImage(null);
+      tab.canvas.loadSVGDocument(null);
     }
 
     // Refresh GUI
@@ -1171,12 +1171,12 @@ public class JDec extends JFrame implements ActionListener {
 
       // Set the image blank if there were no states entered
       if (tab.automaton == null)
-        tab.canvas.setSVGImage(null);
+        tab.canvas.loadSVGDocument(null);
 
       // Try to create graph image, displaying it on the screen
       else if (tab.automaton.generateImage(destinationFileName)) {
-        tab.canvas.setSVGImage(ImageLoader.loadSVGFromFile(destinationFileName + ".svg"));
         tab.svgFile = new File(destinationFileName + ".svg");
+        tab.canvas.setSVGDocument(ImageLoader.loadSVGFromFile((tab.svgFile)));
       }
 
       // Display error message
@@ -1859,77 +1859,6 @@ public class JDec extends JFrame implements ActionListener {
     /* INNER CLASSES */
 
   /**
-   * Private class to maintain a canvas on which a BufferedImage can be drawn.
-   **/
-  private class Canvas extends JPanel {
-
-    private BufferedImage image;
-    private SVGDocument document;
-
-    /**
-     * Construct and display a canvas, initially with a grey background.
-     **/
-    public Canvas() {
-
-      setBackground(Color.LIGHT_GRAY);
-      setVisible(true);
-
-    }
-
-    /**
-     * Update the image in the canvas.
-     * @param image The new image to be displayed in the canvas (null indicates no image)
-     **/
-    public void setImage(BufferedImage image) {
-
-      this.image = image;
-      this.document = null;
-      this.repaint();
-
-    }
-
-    /**
-     * Update the image in the canvas.
-     * @param image The new image to be displayed in the canvas (null indicates no image)
-     **/
-    public void setSVGImage(SVGDocument image) {
-      this.image = null;
-      this.document = image;
-      this.repaint();
-
-    }
-
-    /**
-     * Updates the canvas, drawing the image (or blank canvas) in the center.
-     * @param graphics Graphics object
-     **/
-    @Override protected void paintComponent(Graphics graphics) {
-
-      super.paintComponent(graphics);
-
-        /* Draw image */
-      
-      if (image != null) {
-
-        double ratio = Math.max((double) image.getWidth() / (double) getWidth(), (double) image.getHeight() / (double) getHeight());
-        int width  = (int) (image.getWidth()  / ratio);
-        int height = (int) (image.getHeight() / ratio);
-        int horizontalPadding = Math.max(0, (getWidth()  - width)  / 2);
-        int verticalPadding   = Math.max(0, (getHeight() - height) / 2);
-        graphics.drawImage(image, horizontalPadding, verticalPadding, width, height, null);
-
-      }
-      else if (document != null) {
-
-        document.render(this, (Graphics2D) graphics, new ViewBox(0, 0, getWidth(), getHeight()));
-
-      }
-
-    }
-
-  } // Canvas class
-
-  /**
    * Class used to maintain a tab inside the JDec object.
    * NOTE: Since this is an inner class (and since there are a lot of instance variables), I chose to
    * keep most variables public, as opposed to have a multitude of getters and setters.
@@ -1943,7 +1872,7 @@ public class JDec extends JFrame implements ActionListener {
     public JTextPane eventInput, stateInput, transitionInput;
     public JSpinner controllerInput;
     public JButton generateAutomatonButton, generateImageButton, viewImageInBrowserButton, exploreAutomatonButton;
-    public Canvas canvas = null;
+    public JSVGComponent canvas = null;
 
     // Automaton properties
     public Automaton automaton;
@@ -1979,7 +1908,7 @@ public class JDec extends JFrame implements ActionListener {
 
       // Create containers
       Container inputContainer = createInputContainer(type);
-      canvas = new Canvas();
+      canvas = new JSVGComponent(null, true, false);
 
       // Create a split pane with the two scroll panes in it
       splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, inputContainer, canvas);

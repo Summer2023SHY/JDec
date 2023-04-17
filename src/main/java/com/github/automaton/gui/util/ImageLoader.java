@@ -4,8 +4,10 @@ import java.awt.image.*;
 import java.io.*;
 import javax.imageio.*;
 
-import com.github.weisj.jsvg.SVGDocument;
-import com.github.weisj.jsvg.parser.SVGLoader;
+import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
+import org.apache.batik.dom.svg.SVGDocumentFactory;
+import org.apache.batik.util.XMLResourceDescriptor;
+import org.w3c.dom.svg.SVGDocument;
 
 /**
  * Helper class for image IO operations
@@ -14,6 +16,10 @@ import com.github.weisj.jsvg.parser.SVGLoader;
  * @author Sung Ho Yoon
  */
 public final class ImageLoader {
+
+    /** Internally used {@link SVGDocumentFactory} object */
+    private static SVGDocumentFactory svgFactory = new SAXSVGDocumentFactory(XMLResourceDescriptor.getXMLParserClassName());
+
     /** Private Constructor */
     private ImageLoader() {}
 
@@ -33,17 +39,24 @@ public final class ImageLoader {
     }
 
     /**
-     * Load the generated graph image from file.
+     * Load the generated graph SVG from filename.
      * 
      * @param fileName The name of the image to be loaded
-     * @return The image, or {@code null} if it could not be loaded
+     * @return the SVG document
+     * @throws IOException if I/O error occurs
      **/
-    public static SVGDocument loadSVGFromFile(String fileName) {
-        try {
-            return new SVGLoader().load(new File(fileName).toURI().toURL());
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+    public static SVGDocument loadSVGFromFile(String fileName) throws IOException {
+        return loadSVGFromFile(new File(fileName));
+    }
+
+    /**
+     * Load the generated graph SVG from file.
+     * 
+     * @param file {@link File} that points to the image to be loaded
+     * @return the SVG document
+     * @throws IOException if I/O error occurs
+     **/
+    public static SVGDocument loadSVGFromFile(File file) throws IOException {
+        return svgFactory.createSVGDocument(file.toURI().toString());
     }
 }

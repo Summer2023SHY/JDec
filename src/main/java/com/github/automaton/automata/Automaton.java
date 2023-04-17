@@ -1821,7 +1821,7 @@ public class Automaton implements AutoCloseable {
 
     StringBuilder str = new StringBuilder();
     str.append("digraph Image {");
-    str.append("overlap=scale;");
+    str.append("bgcolor=\"transparent\";overlap=scale;");
     str.append("node [shape=circle, style=bold, constraint=false];");
 
     try {
@@ -1920,7 +1920,7 @@ public class Automaton implements AutoCloseable {
       /* Generate image */
 
     MutableGraph g = new Parser().read(str.toString());
-    Graphviz.fromGraph(g).render(Format.SVG).toFile(new File(outputFileName + ".svg"));
+    Graphviz.fromGraph(g).render(Format.SVG_STANDALONE).toFile(new File(outputFileName + ".svg"));
     Graphviz.fromGraph(g).render(Format.PNG).toFile(new File(outputFileName + ".png"));
 
     return true;
