@@ -10,7 +10,7 @@ package com.github.automaton.automata;
 import java.io.*;
 
 /**
- * Crush - Extending PrunedUStructure, this class represents a Crush structure.
+ * Representation of a Crush structure.
  *
  * @author Micah Stairs
  */

@@ -9,8 +9,8 @@ package com.github.automaton.automata;
  */
 
 /**
- * LabelVector - This class is used to take a string and vectorize it into its components using some
- *               basic syntax.
+ * Used to take a string and vectorize it into its components using some
+ * basic syntax.
  *
  * @author Micah Stairs
  */
