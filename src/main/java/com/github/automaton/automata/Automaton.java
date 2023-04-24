@@ -23,6 +23,7 @@ import java.math.*;
 import java.nio.file.*;
 
 import com.github.automaton.automata.util.ByteManipulator;
+import com.github.automaton.io.HeaderAccessFile;
 import com.github.automaton.io.IOUtility;
 
 import guru.nidi.graphviz.engine.*;
@@ -77,9 +78,6 @@ public class Automaton implements AutoCloseable {
   /** The maximum number of controllers in an automaton. */
   public static final int MAX_NUMBER_OF_CONTROLLERS = 10;
 
-  /** This is the fixed amount of space needed to hold the main variables in the {@code .hdr} file, which apply to all automaton types. */
-  private static final int HEADER_SIZE = 45; 
-
   /**
    * The label used to indicate a dump state.
    * @implNote A {@link com.github.automaton.gui.JDec} user cannot mess up the complement operation by adding a fake dump state, since spaces
@@ -114,11 +112,9 @@ public class Automaton implements AutoCloseable {
   protected long nBytesPerState;
 
   // File variables
-  protected final String headerFileName;
+  protected final HeaderAccessFile haf;
   protected final String bodyFileName;
-  protected final File headerFile;
   protected final File bodyFile;
-  protected RandomAccessFile headerRAFile; // Contains basic information about automaton, needed in order to read the bodyFile, as well as the events
   protected RandomAccessFile bodyRAFile; // List each state in the automaton, with the transitions
   protected boolean headerFileNeedsToBeWritten;
 
@@ -335,10 +331,12 @@ public class Automaton implements AutoCloseable {
     initializeLists();
 
       /* Store variables */
-
-    this.headerFile     = (headerFile == null ? IOUtility.getTemporaryFile() : headerFile);
+    try {
+      this.haf = new HeaderAccessFile(Objects.requireNonNullElse(headerFile, IOUtility.getTemporaryFile()));
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
     this.bodyFile       = (bodyFile   == null ? IOUtility.getTemporaryFile() : bodyFile);
-    this.headerFileName = this.headerFile.getAbsolutePath();
     this.bodyFileName   = this.bodyFile.getAbsolutePath();
 
       /* These variables will be overridden if we are loading information from file */
@@ -2186,9 +2184,8 @@ public class Automaton implements AutoCloseable {
     // Copy the header and body files
     try {
     
-      if (headerFile.exists())
-        Files.copy(headerFile.toPath(), newHeaderFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-      
+      if (haf.exists())
+        haf.copy(newHeaderFile);
       if (bodyFile.exists())
         Files.copy(bodyFile.toPath(), newBodyFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
     
@@ -2213,7 +2210,6 @@ public class Automaton implements AutoCloseable {
     try {
 
       // Set up RandomAccessFile objects
-      headerRAFile = new RandomAccessFile(headerFile, "rw");
       bodyRAFile   = new RandomAccessFile(bodyFile, "rw");
 
       // Read the header file
@@ -2235,7 +2231,7 @@ public class Automaton implements AutoCloseable {
 
         writeHeaderFile();
 
-        headerRAFile.close();
+        haf.close();
         bodyRAFile.close();
 
       } catch (IOException e) {
@@ -2256,7 +2252,7 @@ public class Automaton implements AutoCloseable {
 
     try {
 
-      if (!headerFile.delete() && headerFile.exists())
+      if (!haf.delete() && haf.exists())
         System.err.println("ERROR: Could not delete header file.");
       
       if (!bodyFile.delete() && bodyFile.exists())
@@ -2279,7 +2275,7 @@ public class Automaton implements AutoCloseable {
 
       /* Write the header of the .hdr file */
     
-    byte[] buffer = new byte[HEADER_SIZE];
+    byte[] buffer = new byte[HeaderAccessFile.HEADER_SIZE];
 
     ByteManipulator.writeLongAsBytes(buffer, 0,  type.getNumericValue(), 1);
     ByteManipulator.writeLongAsBytes(buffer, 1,  nStates, 8);
@@ -2293,8 +2289,8 @@ public class Automaton implements AutoCloseable {
 
     try {
 
-      headerRAFile.seek(0);
-      headerRAFile.write(buffer);
+      haf.seek(0);
+      haf.write(buffer);
 
         /* Write the events to the .hdr file */
 
@@ -2320,7 +2316,7 @@ public class Automaton implements AutoCloseable {
         for (int i = 0; i < e.getLabel().length(); i++)
           buffer[index++] = (byte) e.getLabel().charAt(i);
 
-        headerRAFile.write(buffer);
+        haf.write(buffer);
 
       }
 
@@ -2334,7 +2330,7 @@ public class Automaton implements AutoCloseable {
 
         /* Trim the file so that there is no garbage at the end (removing events, for example, shortens the .hdr file) */
 
-      headerRAFile.setLength(headerRAFile.getFilePointer());
+      haf.trim();
 
     } catch (IOException e) {
       e.printStackTrace();
@@ -2353,7 +2349,7 @@ public class Automaton implements AutoCloseable {
 
     byte[] buffer = new byte[4];
     ByteManipulator.writeLongAsBytes(buffer, 0, badTransitions.size(), 4);
-    headerRAFile.write(buffer);
+    haf.write(buffer);
 
       /* Write special transitions to the .hdr file */
 
@@ -2390,7 +2386,7 @@ public class Automaton implements AutoCloseable {
 
       /* Write the buffer to file */
 
-    headerRAFile.write(buffer);
+    haf.write(buffer);
 
   }
 
@@ -2403,14 +2399,12 @@ public class Automaton implements AutoCloseable {
 
         /* Do not try to load an empty file */
 
-      if (headerRAFile.length() == 0)
+      if (haf.isEmpty())
         return;
 
         /* Go to the proper position and read in the bytes */
 
-      byte[] buffer = new byte[HEADER_SIZE];
-      headerRAFile.seek(0);
-      headerRAFile.read(buffer);
+      byte[] buffer = haf.readHeaderBytes(HeaderAccessFile.HEADER_SIZE);
 
         /* Calculate the values stored in these bytes */
 
@@ -2433,8 +2427,7 @@ public class Automaton implements AutoCloseable {
       for (int e = 1; e <= nEvents; e++) {
 
         // Read properties
-        buffer = new byte[nControllers * 2];
-        headerRAFile.read(buffer);
+        buffer = haf.readHeaderBytes(nControllers * 2);
         boolean[] observable = new boolean[nControllers];
         boolean[] controllable = new boolean[nControllers];
         for (int i = 0; i < nControllers; i++) {
@@ -2443,13 +2436,11 @@ public class Automaton implements AutoCloseable {
         }
 
         // Read the number of characters in the label
-        buffer = new byte[4];
-        headerRAFile.read(buffer);
+        buffer = haf.readHeaderBytes(4);
         int eventLabelLength = ByteManipulator.readBytesAsInt(buffer, 0, 4);
 
         // Read each character of the label, building an array of characters
-        buffer = new byte[eventLabelLength];
-        headerRAFile.read(buffer);
+        buffer = haf.readHeaderBytes(eventLabelLength);
         char[] arr = new char[eventLabelLength];
         for (int i = 0; i < arr.length; i++)
           arr[i] = (char) buffer[i];
@@ -2478,8 +2469,7 @@ public class Automaton implements AutoCloseable {
 
       /* Read the number which indicates how many special transitions are in the file */
 
-    byte[] buffer = new byte[4];
-    headerRAFile.read(buffer);
+    byte[] buffer = haf.readHeaderBytes(4);
     int nBadTransitions = ByteManipulator.readBytesAsInt(buffer, 0, 4);
 
       /* Read in special transitions from the .hdr file */
@@ -2499,8 +2489,7 @@ public class Automaton implements AutoCloseable {
 
       /* Read from file */
 
-    byte[] buffer = new byte[nTransitions * 20];
-    headerRAFile.read(buffer);
+    byte[] buffer = haf.readHeaderBytes(nTransitions * 20);
     int index = 0;
 
       /* Add transitions to the list */
@@ -3563,7 +3552,7 @@ public class Automaton implements AutoCloseable {
    * @return  The header file
    **/
   public final File getHeaderFile() {
-    return headerFile;
+    return haf.getHeaderFile();
   }
 
   /**
