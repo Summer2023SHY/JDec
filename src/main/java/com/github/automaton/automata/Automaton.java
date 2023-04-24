@@ -350,7 +350,7 @@ public class Automaton implements AutoCloseable {
       /* Clear files */
 
     if (clearFiles)
-      deleteFiles();
+      clearFiles();
     
       /* Open files and try to load data from header */
 
@@ -2248,11 +2248,11 @@ public class Automaton implements AutoCloseable {
   /**
    * Delete the current header and body files.
    **/
-  private void deleteFiles() {
+  private void clearFiles() {
 
     try {
 
-      if (!haf.delete() && haf.exists())
+      if (!haf.clearFile())
         System.err.println("ERROR: Could not delete header file.");
       
       if (!bodyFile.delete() && bodyFile.exists())

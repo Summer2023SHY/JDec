@@ -20,12 +20,16 @@ public final class HeaderAccessFile implements Closeable {
         headerRAFile = new RandomAccessFile(headerFile, "rw");
     }
 
-    public boolean delete() {
+    public boolean clearFile() {
         try {
             headerRAFile.close();
-            return headerFile.delete();
+            headerFile.delete();
+            headerFile.createNewFile();
+            headerRAFile = new RandomAccessFile(headerFile, "rw");
+            return true;
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            e.printStackTrace();
+            return false;
         }
     }
 
