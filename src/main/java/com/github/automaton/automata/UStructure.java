@@ -18,6 +18,7 @@ import java.io.*;
 import java.math.*;
 
 import com.github.automaton.automata.util.ByteManipulator;
+import com.github.automaton.io.IOUtility;
 
 /**
  * Represents an un-pruned U-Structure.
@@ -503,10 +504,10 @@ public class UStructure extends Automaton {
   public PrunedUStructure duplicateAsPrunedUStructure(File newHeaderFile, File newBodyFile) {
 
     if (newHeaderFile == null)
-      newHeaderFile = getTemporaryFile();
+      newHeaderFile = IOUtility.getTemporaryFile();
 
     if (newBodyFile == null)
-      newBodyFile = getTemporaryFile();
+      newBodyFile = IOUtility.getTemporaryFile();
 
     if (!duplicateHelper(newHeaderFile, newBodyFile))
       return null;
@@ -2068,7 +2069,7 @@ public class UStructure extends Automaton {
     /* WORKING WITH FILES */
 
   @Override public UStructure duplicate() {
-    return duplicate(getTemporaryFile(), getTemporaryFile());
+    return duplicate(IOUtility.getTemporaryFile(), IOUtility.getTemporaryFile());
   }
 
   @Override public UStructure duplicate(File newHeaderFile, File newBodyFile) {

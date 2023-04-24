@@ -23,6 +23,7 @@ import java.math.*;
 import java.nio.file.*;
 
 import com.github.automaton.automata.util.ByteManipulator;
+import com.github.automaton.io.IOUtility;
 
 import guru.nidi.graphviz.engine.*;
 import guru.nidi.graphviz.model.*;
@@ -85,10 +86,6 @@ public class Automaton implements AutoCloseable {
    *           are not considered part of a valid state label.
    **/
   public static final String DUMP_STATE_LABEL = "Dump State";
-
-    /* CLASS VARIABLES */
-
-  protected static int temporaryFileIndex = 1;
 
     /* INSTANCE VARIABLES */
 
@@ -339,8 +336,8 @@ public class Automaton implements AutoCloseable {
 
       /* Store variables */
 
-    this.headerFile     = (headerFile == null ? getTemporaryFile() : headerFile);
-    this.bodyFile       = (bodyFile   == null ? getTemporaryFile() : bodyFile);
+    this.headerFile     = (headerFile == null ? IOUtility.getTemporaryFile() : headerFile);
+    this.bodyFile       = (bodyFile   == null ? IOUtility.getTemporaryFile() : bodyFile);
     this.headerFileName = this.headerFile.getAbsolutePath();
     this.bodyFileName   = this.bodyFile.getAbsolutePath();
 
@@ -1544,7 +1541,7 @@ public class Automaton implements AutoCloseable {
 
         /* Create a file containing the mappings (where the new IDs can be indexed using the old IDs) */
 
-      File mappingFile = getTemporaryFile();
+      File mappingFile = IOUtility.getTemporaryFile();
       RandomAccessFile mappingRAFile = new RandomAccessFile(mappingFile, "rw");
 
       long newID = 1;
@@ -1560,7 +1557,7 @@ public class Automaton implements AutoCloseable {
 
         /* Create new .bdy file with renumbered states */
 
-      File newBodyFile = getTemporaryFile();
+      File newBodyFile = IOUtility.getTemporaryFile();
       RandomAccessFile newBodyRAFile = new RandomAccessFile(newBodyFile, "rw");
 
       for (long s = 1; s <= getStateCapacity(); s++) {
@@ -2156,7 +2153,7 @@ public class Automaton implements AutoCloseable {
    * @apiNote This method is intended to be overridden.
    **/
   public Automaton duplicate() {
-    return duplicate(getTemporaryFile(), getTemporaryFile());
+    return duplicate(IOUtility.getTemporaryFile(), IOUtility.getTemporaryFile());
   }
 
   /**
@@ -2541,7 +2538,7 @@ public class Automaton implements AutoCloseable {
 
       /* Setup files */
 
-    File newBodyFile = getTemporaryFile();
+    File newBodyFile = IOUtility.getTemporaryFile();
 
     // Ensure that this temporary file does not already exist
     if (newBodyFile.exists())
@@ -2638,49 +2635,6 @@ public class Automaton implements AutoCloseable {
     else {
       bodyRAFile = newBodyRAFile;
     }
-
-  }
-
-  /**
-   * Get an unused temporary file.
-   * @implNote These temporary files do not have extensions. Do not use them directly in JDec.
-   * @return  The temporary file
-   **/
-  public static File getTemporaryFile() {
-
-    try {
-
-      File file = Files.createTempFile(null, null).toFile();
-      file.deleteOnExit();
-      return file;
-
-    } catch (Exception e1) {
-
-      // Continue to try getting a temporary file until we've found one that hasn't been used
-      while (true) {
-
-        File file = new File(".tmp" + temporaryFileIndex++);
-        System.out.println("WARNING: Temporary file had to be manually created.");
-
-        if (!file.exists()) {
-
-          try {
-            if (!file.createNewFile())
-              System.err.println("ERROR: Could not create empty temporary file.");
-          } catch (IOException e2) {
-            System.err.println("ERROR: Could not create empty temporary file.");
-            e2.printStackTrace();
-          }
-
-          file.deleteOnExit();
-          return file;
-        }
-
-      } // while
-
-    } // catch
-
-    
 
   }
 
