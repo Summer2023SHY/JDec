@@ -209,9 +209,9 @@ public class Automaton implements AutoCloseable {
      **/
     public static Type getType(File file) {
 
-      try {
+      try (RandomAccessFile raf = (new RandomAccessFile(file, "r"))) {
       
-        return Automaton.Type.getType(new RandomAccessFile(file, "r").readByte());
+        return Automaton.Type.getType(raf.readByte());
       
       } catch (IOException e) {
         
