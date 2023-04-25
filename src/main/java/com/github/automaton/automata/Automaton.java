@@ -20,7 +20,6 @@ package com.github.automaton.automata;
 import java.util.*;
 import java.io.*;
 import java.math.*;
-import java.nio.file.*;
 
 import com.github.automaton.automata.util.ByteManipulator;
 import com.github.automaton.io.*;
@@ -112,9 +111,7 @@ public class Automaton implements AutoCloseable {
 
   // File variables
   protected final HeaderAccessFile haf;
-  protected final String bodyFileName;
-  protected final File bodyFile;
-  protected RandomAccessFile bodyRAFile; // List each state in the automaton, with the transitions
+  protected final BodyAccessFile baf;
   protected boolean headerFileNeedsToBeWritten;
 
   // GUI input
@@ -329,14 +326,13 @@ public class Automaton implements AutoCloseable {
 
     initializeLists();
 
-      /* Store variables */
+      /* Store variables and open files */
     try {
       this.haf = new HeaderAccessFile(Objects.requireNonNullElse(headerFile, IOUtility.getTemporaryFile()));
+      this.baf = new BodyAccessFile(Objects.requireNonNullElse(bodyFile, IOUtility.getTemporaryFile()));
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
-    this.bodyFile       = (bodyFile   == null ? IOUtility.getTemporaryFile() : bodyFile);
-    this.bodyFileName   = this.bodyFile.getAbsolutePath();
 
       /* These variables will be overridden if we are loading information from file */
 
@@ -351,9 +347,9 @@ public class Automaton implements AutoCloseable {
     if (clearFiles)
       clearFiles();
     
-      /* Open files and try to load data from header */
+      /* Load data from header */
 
-    openFiles();
+    readHeaderFile();
 
       /* Finish setting up */
 
@@ -1530,6 +1526,7 @@ public class Automaton implements AutoCloseable {
    * and re-numbers all of the states accordingly. This must be done after operations such as intersection or union.
    */
   /* To make this method more efficient we could make the buffer larger. */
+  @SuppressWarnings("deprecation")
   protected final void renumberStates() {
 
     try {
@@ -1595,7 +1592,7 @@ public class Automaton implements AutoCloseable {
           }
 
           // Write the updated state to the new file
-          if (!state.writeToFile(newBodyRAFile, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID))
+          if (!StateIO.writeToFile(state, newBodyRAFile, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID))
             System.err.println("ERROR: Could not write state to file.");
 
         }
@@ -1609,26 +1606,13 @@ public class Automaton implements AutoCloseable {
         /* Remove old body file and mappings file */
 
       try {
-        bodyRAFile.close();
+        newBodyRAFile.close();
         mappingRAFile.close();
+        baf.copyFrom(newBodyFile);
       } catch (IOException e) {
         e.printStackTrace();
       }
 
-      if (System.getProperty("os.name").startsWith("Windows")) {
-        newBodyRAFile.close();
-      }
-          /* Rename new body file */
-
-      if (!newBodyFile.renameTo(new File(bodyFileName)))
-        System.err.println("ERROR: Could not rename file.");
-
-      if (System.getProperty("os.name").startsWith("Windows")) {
-        bodyRAFile = new RandomAccessFile(new File(bodyFileName), "rw");
-      }
-      else {
-        bodyRAFile = newBodyRAFile;
-      }
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -2185,8 +2169,8 @@ public class Automaton implements AutoCloseable {
     
       if (haf.exists())
         haf.copyTo(newHeaderFile);
-      if (bodyFile.exists())
-        Files.copy(bodyFile.toPath(), newBodyFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+      if (baf.exists())
+        baf.copyTo(newBodyFile);
     
     // Handle errors
     } catch (IOException e) {
@@ -2201,26 +2185,6 @@ public class Automaton implements AutoCloseable {
   }
 
   /**
-   * Open the header and body files, and read in the header file.
-   * @implNote This must only be performed once (during the instantiation of this object), otherwise duplicate events and special transitions will be imported.
-   **/
-  public void openFiles() {
-
-    try {
-
-      // Set up RandomAccessFile objects
-      bodyRAFile   = new RandomAccessFile(bodyFile, "rw");
-
-      // Read the header file
-      readHeaderFile();
-
-    } catch (IOException e) {
-      e.printStackTrace();
-    } 
-
-  }
-
-  /**
    * Files need to be closed on the Windows operating system because there are problems trying to delete files if they are in use.
    * @implNote Do not attempt to use this automaton instance again afterwards.
    **/
@@ -2231,7 +2195,7 @@ public class Automaton implements AutoCloseable {
         writeHeaderFile();
 
         haf.close();
-        bodyRAFile.close();
+        baf.close();
 
       } catch (IOException e) {
         e.printStackTrace();
@@ -2254,7 +2218,7 @@ public class Automaton implements AutoCloseable {
       if (!haf.clearFile())
         System.err.println("ERROR: Could not delete header file.");
       
-      if (!bodyFile.delete() && bodyFile.exists())
+      if (!baf.clearFile())
         System.err.println("ERROR: Could not delete body file.");
 
     } catch (SecurityException e) {
@@ -2520,6 +2484,7 @@ public class Automaton implements AutoCloseable {
    * @param newNBytesPerStateID   The number of bytes that are now required to represent each state's ID
    * @param newNBytesPerEventID   The number of bytes that are now required to represent each event's ID
    **/
+  @SuppressWarnings("deprecation")
   private void recreateBodyFile(int newEventCapacity, long newStateCapacity, int newTransitionCapacity, int newLabelLength, int newNBytesPerEventID, int newNBytesPerStateID) {
 
     long newNBytesPerState = calculateNumberOfBytesPerState(newNBytesPerEventID, newNBytesPerStateID, newTransitionCapacity, newLabelLength);
@@ -2569,7 +2534,7 @@ public class Automaton implements AutoCloseable {
       }
 
       // Try writing to file
-      if (!state.writeToFile(newBodyRAFile, newNBytesPerState, newLabelLength, newNBytesPerEventID, newNBytesPerStateID)) {
+      if (!StateIO.writeToFile(state, newBodyRAFile, newNBytesPerState, newLabelLength, newNBytesPerEventID, newNBytesPerStateID)) {
         System.err.println("ERROR: Could not write copy over state to file. Aborting re-creation of .bdy file.");
         return;
       }
@@ -2580,8 +2545,8 @@ public class Automaton implements AutoCloseable {
 
     try {
 
-      bodyRAFile.close();
-      bodyFile.delete();
+      newBodyRAFile.close();
+      baf.copyFrom(newBodyFile);
 
     } catch (SecurityException | IOException e) {
 
@@ -2589,20 +2554,6 @@ public class Automaton implements AutoCloseable {
 
     }
 
-    if (System.getProperty("os.name").startsWith("Windows")) {
-      try {
-        newBodyRAFile.close();
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      }
-    }
-
-      /* Rename new file */
-
-    if (!newBodyFile.renameTo(new File(bodyFileName))) {
-      throw new UncheckedIOException(new IOException("CRUCIAL ERROR: Could not rename .bdy file during re-creation process."));
-      //System.exit(-1);
-    }
       /* Update variables */
 
     eventCapacity      = newEventCapacity;
@@ -2612,17 +2563,6 @@ public class Automaton implements AutoCloseable {
     nBytesPerEventID   = newNBytesPerEventID;
     nBytesPerStateID   = newNBytesPerStateID;
     nBytesPerState     = newNBytesPerState;
-
-    if (System.getProperty("os.name").startsWith("Windows")) {
-      try {
-        bodyRAFile = new RandomAccessFile(new File(bodyFileName), "rw");
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      }
-    }
-    else {
-      bodyRAFile = newBodyRAFile;
-    }
 
   }
 
@@ -2836,7 +2776,7 @@ public class Automaton implements AutoCloseable {
 
     Event event = getEvent(eventID);
     startingState.addTransition(new Transition(event, targetStateID));
-    if (!startingState.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID)) {
+    if (!StateIO.writeToFile(startingState, baf, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID)) {
       System.err.println("ERROR: Could not add transition to file.");
       return false;
     }
@@ -2867,7 +2807,7 @@ public class Automaton implements AutoCloseable {
 
     Event event = getEvent(eventID);
     startingState.removeTransition(new Transition(event, targetStateID));
-    if (!startingState.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID)) {
+    if (!StateIO.writeToFile(startingState, baf, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID)) {
       System.err.println("ERROR: Could not remove transition from file.");
       return false;
     }
@@ -2989,7 +2929,7 @@ public class Automaton implements AutoCloseable {
       /* Write new state to file */
     
     State state = new State(label, id, marked, transitions);
-    if (!state.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID)) {
+    if (!StateIO.writeToFile(state, baf, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID)) {
       System.err.println("ERROR: Could not write state to file.");
       return 0;
     }
@@ -3100,7 +3040,7 @@ public class Automaton implements AutoCloseable {
     
     State state = new State(label, id, marked, transitions);
     
-    if (!state.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID)) {
+    if (!StateIO.writeToFile(state, baf, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID)) {
       System.err.println("ERROR: Could not write state to file.");
       return false;
     }
@@ -3311,7 +3251,7 @@ public class Automaton implements AutoCloseable {
    * @param id  The unique identifier corresponding to the state we are looking for
    **/
   public boolean stateExists(long id) {
-    return State.stateExists(this, bodyRAFile, id);
+    return StateIO.stateExists(this, baf, id);
   }
 
   /**
@@ -3320,7 +3260,7 @@ public class Automaton implements AutoCloseable {
    * @return    The requested state
    **/
   public State getState(long id) {
-    return StateIO.readFromFile(this, bodyRAFile, id);
+    return StateIO.readFromFile(this, baf, id);
   }
 
   /**
@@ -3332,7 +3272,7 @@ public class Automaton implements AutoCloseable {
   public Long getStateID(String label) {
   
     for (long s = 1; s <= getNumberOfStates(); s++) {
-      State state = StateIO.readFromFileExcludingTransitions(this, bodyRAFile, s);
+      State state = StateIO.readFromFileExcludingTransitions(this, baf, s);
       if (state.getLabel().equals(label))
         return s;
     }
@@ -3347,7 +3287,7 @@ public class Automaton implements AutoCloseable {
    * @return    The requested state
    **/
   public State getStateExcludingTransitions(long id) {
-    return StateIO.readFromFileExcludingTransitions(this, bodyRAFile, id);
+    return StateIO.readFromFileExcludingTransitions(this, baf, id);
   }
 
   /**
@@ -3559,7 +3499,7 @@ public class Automaton implements AutoCloseable {
    * @return  The body file
    **/
   public final File getBodyFile() {
-    return bodyFile;
+    return baf.getBodyFile();
   }
 
   /**

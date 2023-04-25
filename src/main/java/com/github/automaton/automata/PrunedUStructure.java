@@ -10,6 +10,8 @@ package com.github.automaton.automata;
 import java.io.*;
 import java.util.*;
 
+import com.github.automaton.io.StateIO;
+
 /**
  * Represents a pruned U-Structure.
  *
@@ -176,7 +178,7 @@ public class PrunedUStructure extends UStructure {
       }
 
       // Write updated state to file
-      if (!state.writeToFile(bodyRAFile, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID))
+      if (!StateIO.writeToFile(state, baf, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID))
         System.err.println("ERROR: Could not write state to file.");
 
     }
