@@ -55,7 +55,9 @@ public final class BodyAccessFile implements Closeable {
      * @throws IOException if I/O error occurs
      */
     public void copyTo(File newBodyFile) throws IOException {
+        bodyRAFile.close();
         Files.copy(bodyFile.toPath(), newBodyFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        bodyRAFile = new RandomAccessFile(bodyFile, "rw");
     }
 
     /**

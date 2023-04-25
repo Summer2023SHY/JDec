@@ -107,7 +107,9 @@ public final class HeaderAccessFile implements Closeable {
      * @throws IOException if I/O error occurs
      */
     public void copyTo(File newHeaderFile) throws IOException {
+        headerRAFile.close();
         Files.copy(headerFile.toPath(), newHeaderFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        headerRAFile = new RandomAccessFile(headerFile, "rw");
     }
 
     /**
