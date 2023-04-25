@@ -2403,7 +2403,7 @@ public class Automaton implements AutoCloseable {
         return;
 
         /* Go to the proper position and read in the bytes */
-
+      haf.seek(0);
       byte[] buffer = haf.readHeaderBytes(HeaderAccessFile.HEADER_SIZE);
 
         /* Calculate the values stored in these bytes */

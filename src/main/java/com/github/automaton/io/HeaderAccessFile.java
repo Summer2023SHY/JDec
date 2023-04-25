@@ -40,7 +40,6 @@ public final class HeaderAccessFile implements Closeable {
             );
         }
         byte[] buffer = new byte[length];
-        headerRAFile.seek(0);
         if (headerRAFile.read(buffer) == -1) {
             throw new EOFException();
         }
