@@ -23,8 +23,7 @@ import java.math.*;
 import java.nio.file.*;
 
 import com.github.automaton.automata.util.ByteManipulator;
-import com.github.automaton.io.HeaderAccessFile;
-import com.github.automaton.io.IOUtility;
+import com.github.automaton.io.*;
 
 import guru.nidi.graphviz.engine.*;
 import guru.nidi.graphviz.model.*;
@@ -3321,7 +3320,7 @@ public class Automaton implements AutoCloseable {
    * @return    The requested state
    **/
   public State getState(long id) {
-    return State.readFromFile(this, bodyRAFile, id);
+    return StateIO.readFromFile(this, bodyRAFile, id);
   }
 
   /**
@@ -3333,7 +3332,7 @@ public class Automaton implements AutoCloseable {
   public Long getStateID(String label) {
   
     for (long s = 1; s <= getNumberOfStates(); s++) {
-      State state = State.readFromFileExcludingTransitions(this, bodyRAFile, s);
+      State state = StateIO.readFromFileExcludingTransitions(this, bodyRAFile, s);
       if (state.getLabel().equals(label))
         return s;
     }
@@ -3348,7 +3347,7 @@ public class Automaton implements AutoCloseable {
    * @return    The requested state
    **/
   public State getStateExcludingTransitions(long id) {
-    return State.readFromFileExcludingTransitions(this, bodyRAFile, id);
+    return StateIO.readFromFileExcludingTransitions(this, bodyRAFile, id);
   }
 
   /**
