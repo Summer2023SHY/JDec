@@ -59,7 +59,7 @@ public final class HeaderAccessFile implements Closeable {
         return headerRAFile.length() == 0;
     }
 
-    public void copy(File newHeaderFile) throws IOException {
+    public void copyTo(File newHeaderFile) throws IOException {
         Files.copy(headerFile.toPath(), newHeaderFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
 

@@ -2185,7 +2185,7 @@ public class Automaton implements AutoCloseable {
     try {
     
       if (haf.exists())
-        haf.copy(newHeaderFile);
+        haf.copyTo(newHeaderFile);
       if (bodyFile.exists())
         Files.copy(bodyFile.toPath(), newBodyFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
     
