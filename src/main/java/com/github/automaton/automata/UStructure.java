@@ -18,6 +18,7 @@ import java.io.*;
 import java.math.*;
 
 import com.github.automaton.automata.util.ByteManipulator;
+import com.github.automaton.io.IOUtility;
 
 /**
  * Represents an un-pruned U-Structure.
@@ -503,17 +504,16 @@ public class UStructure extends Automaton {
   public PrunedUStructure duplicateAsPrunedUStructure(File newHeaderFile, File newBodyFile) {
 
     if (newHeaderFile == null)
-      newHeaderFile = getTemporaryFile();
+      newHeaderFile = IOUtility.getTemporaryFile();
 
     if (newBodyFile == null)
-      newBodyFile = getTemporaryFile();
+      newBodyFile = IOUtility.getTemporaryFile();
 
     if (!duplicateHelper(newHeaderFile, newBodyFile))
       return null;
 
     // Change the first byte (which indicates the automaton type)
-    try {
-      RandomAccessFile raFile = new RandomAccessFile(newHeaderFile, "rw");
+    try (RandomAccessFile raFile = new RandomAccessFile(newHeaderFile, "rw")) {
       raFile.writeByte((byte) Type.PRUNED_U_STRUCTURE.getNumericValue());
     } catch (IOException e) {
       e.printStackTrace();
@@ -2068,7 +2068,7 @@ public class UStructure extends Automaton {
     /* WORKING WITH FILES */
 
   @Override public UStructure duplicate() {
-    return duplicate(getTemporaryFile(), getTemporaryFile());
+    return duplicate(IOUtility.getTemporaryFile(), IOUtility.getTemporaryFile());
   }
 
   @Override public UStructure duplicate(File newHeaderFile, File newBodyFile) {
@@ -2091,7 +2091,7 @@ public class UStructure extends Automaton {
     ByteManipulator.writeLongAsBytes(buffer, 12, invalidCommunications.size(),   4);
     ByteManipulator.writeLongAsBytes(buffer, 16, nashCommunications.size(),      4);
     ByteManipulator.writeLongAsBytes(buffer, 20, disablementDecisions.size(),    4);
-    headerRAFile.write(buffer);
+    haf.write(buffer);
 
       /* Write special transitions to the .hdr file */
 
@@ -2130,7 +2130,7 @@ public class UStructure extends Automaton {
       for (CommunicationRole role : data.roles)
         buffer[index++] = role.getNumericValue();
       
-      headerRAFile.write(buffer);
+      haf.write(buffer);
 
     }
 
@@ -2169,7 +2169,7 @@ public class UStructure extends Automaton {
       for (CommunicationRole role : data.roles)
         buffer[index++] = role.getNumericValue();
       
-      headerRAFile.write(buffer);
+      haf.write(buffer);
 
     }
 
@@ -2200,7 +2200,7 @@ public class UStructure extends Automaton {
       for (boolean b : data.controllers)
         buffer[index++] = (byte) (b ? 1 : 0);
       
-      headerRAFile.write(buffer);
+      haf.write(buffer);
 
     }
 
@@ -2210,8 +2210,7 @@ public class UStructure extends Automaton {
 
       /* Read the number which indicates how many special transitions are in the file */
 
-    byte[] buffer = new byte[24];
-    headerRAFile.read(buffer);
+    byte[] buffer = haf.readHeaderBytes(24);
 
     int nUnconditionalViolations = (int) ByteManipulator.readBytesAsLong(buffer, 0,  4);
     int nConditionalViolations   = (int) ByteManipulator.readBytesAsLong(buffer, 4,  4);
@@ -2263,8 +2262,7 @@ public class UStructure extends Automaton {
   private void readCommunicationDataFromHeader(int nCommunications,
                                                List<CommunicationData> list) throws IOException {
 
-    byte[] buffer = new byte[nCommunications * (20 + nControllers)];
-    headerRAFile.read(buffer);
+    byte[] buffer = haf.readHeaderBytes(nCommunications * (20 + nControllers));
     int index = 0;
 
     for (int i = 0; i < nCommunications; i++) {
@@ -2297,8 +2295,7 @@ public class UStructure extends Automaton {
   private void readNashCommunicationDataFromHeader(int nCommunications,
                                                    List<NashCommunicationData> list) throws IOException {
 
-    byte[] buffer = new byte[nCommunications * (36 + nControllers)];
-    headerRAFile.read(buffer);
+    byte[] buffer = haf.readHeaderBytes(nCommunications * (36 + nControllers));
     int index = 0;
 
     for (int i = 0; i < nCommunications; i++) {
@@ -2337,8 +2334,7 @@ public class UStructure extends Automaton {
   private void readDisablementDataFromHeader(int nDisablements,
                                              List<DisablementData> list) throws IOException {
 
-    byte[] buffer = new byte[nDisablements * (20 + nControllers)];
-    headerRAFile.read(buffer);
+    byte[] buffer = haf.readHeaderBytes(nDisablements * (20 + nControllers));
     int index = 0;
 
     for (int i = 0; i < nDisablements; i++) {
