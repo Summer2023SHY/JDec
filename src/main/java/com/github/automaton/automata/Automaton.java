@@ -1682,10 +1682,11 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Given a list of IDs and a maximum possible ID, create a unique combined ID.
-   * @implNote The order of the list matters. This method does not sort the list interally.
+   * @implNote The order of the list matters. This method does not sort the list internally.
    * @param list  The list of IDs
-   * @param maxID The largest possible value that could appear in the list (usually nStates)
+   * @param maxID The largest possible value that could appear in the list (usually {@link #nStates})
    * @return      The unique combined ID
+   * @throws ArithmeticException if the ID combination result overflows a {@code long}
    **/
   public static long combineIDs(List<Long> list, long maxID) {
     
@@ -1698,7 +1699,7 @@ public class Automaton implements AutoCloseable {
 
       // Check for overflow
       if (combinedID < 0)
-        System.err.println("ERROR: Overflow in Automaton.combineIDs() method. Consider using Automaton.combineBigIDs() method instead.");
+        throw new ArithmeticException("Overflow in Automaton.combineIDs() method. Consider using Automaton.combineBigIDs() method instead.");
 
     }
 
