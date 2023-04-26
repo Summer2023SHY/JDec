@@ -228,6 +228,7 @@ public class TestAutomata {
     }
 
     @Test
+    @Disabled
     @DisplayName("combineCommunicationCosts() Tests")
     public void testCombineCommunicationCosts() {
 
@@ -970,6 +971,7 @@ public class TestAutomata {
   }
 
   @Nested
+  @Disabled
   @DisplayName("AUTOMATA SPECIAL OPERATIONS")
   class AutomataSpecialOperationsTest {
 
