@@ -1720,6 +1720,7 @@ class TestResult {
   }
 
   public TestResult(double actual, double expected) {
+    assertEquals(expected, actual);
     if (actual == expected)
       passed = true;
     else {
