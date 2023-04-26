@@ -399,7 +399,11 @@ public class TestAutomata {
 
       @AfterAll
       void cleanup() {
-        a.close();
+        try {
+          a.close();
+        } catch (IOException e) {
+          throw new UncheckedIOException(e);
+        }
       }
     }
 
@@ -424,7 +428,12 @@ public class TestAutomata {
       printTestOutput("Adding a pre-existing event...", 3);
       id = a.addEventIfNonExisting("firstEvent", new boolean[] { true }, new boolean[] { true });
       printTestCase("Ensuring that the method returned proper negative value", new TestResult(id, -1), counter);
-      a.close();
+
+      try {
+        a.close();
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      }
 
     }
 
@@ -468,7 +477,12 @@ public class TestAutomata {
       printTestCase("Ensuring that the added state was labeled the initial state", new TestResult(automaton.getInitialStateID(), id), counter);
       printTestCase("Ensuring that the added state has the proper label", new TestResult(automaton.getState(id).getLabel(), "secondState"), counter);
       printTestCase("Ensuring that the added state is unmarked", new TestResult(automaton.getState(id).isMarked(), false), counter);
-      automaton.close();
+
+      try {
+        automaton.close();
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      }
     }
   	
     @Test
@@ -488,7 +502,12 @@ public class TestAutomata {
       printTestOutput("Adding a second state...", 3);
       id = automaton.addState("secondState", true, true);
       printTestCase("Ensuring that the state's ID is 2", new TestResult(id, 2), counter);
-      automaton.close();
+
+      try {
+        automaton.close();
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      }
     }
 
   }

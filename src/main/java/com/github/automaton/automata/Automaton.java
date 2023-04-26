@@ -38,7 +38,7 @@ import guru.nidi.graphviz.parse.*;
  *
  * @author Micah Stairs
  **/
-public class Automaton implements AutoCloseable {
+public class Automaton implements Closeable {
 
     /* PUBLIC CLASS CONSTANTS */
 
@@ -2185,17 +2185,17 @@ public class Automaton implements AutoCloseable {
   }
 
   /**
-   * Files need to be closed on the Windows operating system because there are problems trying to delete files if they are in use.
-   * @implNote Do not attempt to use this automaton instance again afterwards.
+   * Closes files associated with this instance of automaton.
+   * 
+   * @deprecated This method has a non-standard name and is subject
+   * to removal. Use {@link #close()} instead.
    **/
+  @Deprecated(forRemoval = true)
   public void closeFiles() {
 
       try {
 
-        writeHeaderFile();
-
-        haf.close();
-        baf.close();
+        close();
 
       } catch (IOException e) {
         e.printStackTrace();
@@ -2203,9 +2203,16 @@ public class Automaton implements AutoCloseable {
 
   }
 
+  /**
+   * Closes resources associated with this automaton.
+   * 
+   * @throws IOException if I/O error occurs
+   */
   @Override
-  public void close() {
-    closeFiles();
+  public void close() throws IOException {
+    writeHeaderFile();
+    haf.close();
+    baf.close();
   } 
 
   /**
