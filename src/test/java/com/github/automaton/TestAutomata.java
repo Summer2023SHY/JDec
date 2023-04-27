@@ -1494,7 +1494,11 @@ public class TestAutomata {
   // This brings out a lot of subtle bugs
   private static Automaton saveAndLoadAutomaton(Automaton automaton) {
     
-    automaton.closeFiles();
+    try {
+      automaton.close();
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
 
     return new Automaton(automaton.getHeaderFile(), automaton.getBodyFile(), false);
 
@@ -1502,7 +1506,11 @@ public class TestAutomata {
 
   private static UStructure saveAndLoadUStructure(UStructure uStructure) {
     
-    uStructure.closeFiles();
+    try {
+      uStructure.close();
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
     
     return new UStructure(uStructure.getHeaderFile(), uStructure.getBodyFile());
 
@@ -1510,7 +1518,11 @@ public class TestAutomata {
 
   private static PrunedUStructure saveAndLoadPrunedUStructure(PrunedUStructure prunedUStructure) {
     
-    prunedUStructure.closeFiles();
+    try {
+      prunedUStructure.close();
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
     
     return new PrunedUStructure(prunedUStructure.getHeaderFile(), prunedUStructure.getBodyFile());
 
