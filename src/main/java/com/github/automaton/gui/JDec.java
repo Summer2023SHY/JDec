@@ -144,7 +144,7 @@ public class JDec extends JFrame implements ActionListener {
     ImageIcon icon = new ImageIcon(iconUrl);
     setIconImage(icon.getImage());
 
-    setMinimumSize(new Dimension(640, 480));
+    setMinimumSize(new Dimension(1280, 720));
 
       /* Create message to dislay when there are no tabs */
 
