@@ -33,14 +33,7 @@ import org.apache.batik.swing.svg.JSVGComponent;
 import org.w3c.dom.*;
 import org.xml.sax.*;
 
-import com.github.automaton.automata.Automaton;
-import com.github.automaton.automata.CommunicationData;
-import com.github.automaton.automata.Crush;
-import com.github.automaton.automata.IncompatibleAutomataException;
-import com.github.automaton.automata.MissingOrCorruptBodyFileException;
-import com.github.automaton.automata.OperationFailedException;
-import com.github.automaton.automata.PrunedUStructure;
-import com.github.automaton.automata.UStructure;
+import com.github.automaton.automata.*;
 import com.github.automaton.gui.util.*;
 
 /**
@@ -478,6 +471,7 @@ public class JDec extends JFrame implements ActionListener {
    * This method handles all of the actions triggered when the user interacts with the main menu.
    * @param event The triggered event
    **/
+  @SuppressWarnings({"deprecation", "removal"})
   public void actionPerformed(ActionEvent event) {
 
     int index = tabbedPane.getSelectedIndex();
@@ -721,6 +715,8 @@ public class JDec extends JFrame implements ActionListener {
 
       case "Crush":
 
+        //TODO: Get rid of Crush operations
+
         UStructure uStructure = ((UStructure) tab.automaton);
 
         if (uStructure.hasViolations()) {
@@ -834,7 +830,7 @@ public class JDec extends JFrame implements ActionListener {
         break;
 
       case "Nash":
-
+        // TODO: Handle use of deprecated method
         uStructure = ((UStructure) tab.automaton);
 
         if (uStructure.hasSelfLoop(uStructure.getPotentialAndNashCommunications()))
@@ -1058,6 +1054,7 @@ public class JDec extends JFrame implements ActionListener {
   /**
    * Generate an automaton using the entered GUI input code.
    **/
+  @SuppressWarnings("removal")
   private void generateAutomatonButtonPressed() {
 
     // Get the current tab
@@ -1113,7 +1110,7 @@ public class JDec extends JFrame implements ActionListener {
         break;
 
       case CRUSH:
-
+        // TODO: Get rid of Crush operations
         nControllers = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
         tab.automaton = AutomatonGenerator.generateFromGUICode(
           new Crush(tab.headerFile, tab.bodyFile, nControllers),
@@ -1239,6 +1236,7 @@ public class JDec extends JFrame implements ActionListener {
    * NOTE: A loading bar is displayed to keep track of the progress.
    * @param index The tab's index
    **/
+  @SuppressWarnings("removal")
   private void refresh(final int index) {
       
     setBusyCursor(true);
@@ -1272,6 +1270,7 @@ public class JDec extends JFrame implements ActionListener {
             break;
 
           case CRUSH:
+            // TODO: Get rid of Crush operations
             tab.automaton = new Crush(tab.headerFile, tab.bodyFile);
             break;
 

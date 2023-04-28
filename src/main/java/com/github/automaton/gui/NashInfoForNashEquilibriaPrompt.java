@@ -13,7 +13,11 @@ import javax.swing.*;
  * choosing the cost and probability values for the Nash communications.
  *
  * @author Micah Stairs
+ * 
+ * @deprecated Operations for Nash equilibria depend on {@link Crush}. As {@link Crush} is deprecated
+ * and subject to removal, all Nash equilibria operations are deprecated.
  */
+@Deprecated
 public class NashInfoForNashEquilibriaPrompt extends NashInformationPrompt {
 
     /* CONSTRUCTOR */

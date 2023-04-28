@@ -136,7 +136,10 @@ public class Automaton implements AutoCloseable {
     /** The pruned U-Structure */
     PRUNED_U_STRUCTURE((byte) 2, PrunedUStructure.class),
 
-    /** A pruned U-Structure after being 'crushed' with respect to a given controller */
+    /**
+     * A pruned U-Structure after being 'crushed' with respect to a given controller 
+     */
+    @Deprecated(forRemoval = true)
     CRUSH((byte) 3, Crush.class);
 
     // Private variables

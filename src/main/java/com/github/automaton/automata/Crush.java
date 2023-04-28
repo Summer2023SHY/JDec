@@ -13,7 +13,11 @@ import java.io.*;
  * Representation of a Crush structure.
  *
  * @author Micah Stairs
+ * 
+ * @deprecated Crush is too restrictive in terms of its capabilities, and is subject to removal. See
+ * <a href="https://github.com/Summer2023SHY/Automata/issues/28">Automata#28</a> for more information.
  */
+@Deprecated(forRemoval = true)
 public class Crush extends PrunedUStructure {
 
     /* ENUM */

@@ -531,7 +531,11 @@ public class UStructure extends Automaton {
    * @throws DoesNotSatisfyObservabilityException If the system does not satisfy observability, meaning
    *                                              that there are no feasible protocols that satisfy the
    *                                              control problem.
+   * 
+   * @deprecated Operations for Nash equilibria depend on {@link Crush}. As {@link Crush} is deprecated
+   * and subject to removal, all Nash equilibria operations are deprecated.
    **/
+  @Deprecated
   public List<Set<NashCommunicationData>> findNashEquilibria(Crush.CombiningCosts combiningCostsMethod)
                                                              throws DoesNotSatisfyObservabilityException {
 
@@ -552,7 +556,11 @@ public class UStructure extends Automaton {
    * @param feasibleProtocols                     The list of feasible protocols to consider
    *                                              NOTE: They must all solve the control problem
    * @return                                      The list of Nash equilibria
+   * 
+   * @deprecated Operations for Nash equilibria depend on {@link Crush}. As {@link Crush} is deprecated
+   * and subject to removal, all Nash equilibria operations are deprecated.
    **/
+  @Deprecated
   public List<Set<NashCommunicationData>> findNashEquilibria(Crush.CombiningCosts combiningCostsMethod,
                                                              List<Set<NashCommunicationData>> feasibleProtocols) {
 
@@ -648,7 +656,10 @@ public class UStructure extends Automaton {
    *                              with the combined costs (if null, then a HashMap will simply not be populated)
    * @param combiningCostsMethod  The method used to combine communication costs (can be null if there are no communications)
    * @return                      The crush
+   * 
+   * @deprecated Crush is too restrictive in terms of its capabilities, and all operations related to it are subject to removal.
    **/
+  @Deprecated(forRemoval = true)
   public Crush crush(File newHeaderFile,
                      File newBodyFile,
                      int indexOfController,
@@ -824,7 +835,10 @@ public class UStructure extends Automaton {
    * @param newBodyFile           The file where the body should be stored
    * @param indexOfController     The index of the controller in which the crush is taken with respect to (1-based)
    * @return                      The crush
+   * 
+   * @deprecated Crush is too restrictive in terms of its capabilities, and all operations related to it are subject to removal.
    **/
+  @Deprecated(forRemoval = true)
   public Crush crush(File newHeaderFile,
                      File newBodyFile,
                      int indexOfController) {
@@ -955,7 +969,10 @@ public class UStructure extends Automaton {
    * Find the Shapley values for each coalition.
    * NOTE: This can also be used to find the Myerson values once the U-Structure has been pruned.
    * @return  The mapping between the coalitions and their respective values (or null if there were violations)
+   * 
+   * @deprecated Crush is too restrictive in terms of its capabilities, and all operations related to it are subject to removal.
    **/
+  @Deprecated(forRemoval = true)
   public Map<Set<Integer>, Integer> findShapleyValues() {
 
     // Ensure that there are no violations
@@ -1641,7 +1658,10 @@ public class UStructure extends Automaton {
    *                                    will be created (since those objects could be referenced in other
    *                                    protocols, and we do not want to interfere with them)
    * @param combiningCostsMethod  The method in which the communications are being combined
+   * 
+   * @deprecated Crush is too restrictive in terms of its capabilities, and all operations related to it are subject to removal.
    **/
+  @Deprecated(forRemoval = true)
   public void combineCommunicationCosts(Set<NashCommunicationData> feasibleProtocol,
                                         Crush.CombiningCosts combiningCostsMethod) {
 
@@ -1688,7 +1708,10 @@ public class UStructure extends Automaton {
    * @param setOfStates     The set of states which are being crushed
    * @param isInitialState  Whether or not this crushed state is the initial state
    * @param id              The ID of the crushed state
+   * 
+   * @deprecated Crush is too restrictive in terms of its capabilities, and all operations related to it are subject to removal.
    **/
+  @Deprecated(forRemoval = true)
   private void addStateToCrush(Crush crush, Set<Long> setOfStates, boolean isInitialState, long id) {
 
     // Create a label for this state
