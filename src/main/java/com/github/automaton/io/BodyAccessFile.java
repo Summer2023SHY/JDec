@@ -9,9 +9,7 @@ import java.util.*;
  * 
  * @author Sung Ho Yoon
  */
-public final class BodyAccessFile implements Closeable {
-    private String bodyFileName;
-    private File bodyFile;
+public final class BodyAccessFile extends AutomatonAccessFile {
     /** List each state in the automaton, with the transitions */
     private RandomAccessFile bodyRAFile;
 
@@ -22,25 +20,21 @@ public final class BodyAccessFile implements Closeable {
      * @throws FileNotFoundException if the given file object cannot be opened
      */
     public BodyAccessFile(File bodyFile) throws FileNotFoundException {
-        this.bodyFile = Objects.requireNonNull(bodyFile);
-        this.bodyFileName   = this.bodyFile.getAbsolutePath();
+        super(bodyFile);
         bodyRAFile = new RandomAccessFile(bodyFile, "rw");
-    }
-
-    public boolean exists() {
-        return bodyFile.exists();
     }
 
     /**
      * Clears the content of the body file
      * @return {@code true} the content is cleared; {@code false} otherwise.
      */
+    @Override
     public boolean clearFile() {
         try {
             bodyRAFile.close();
-            bodyFile.delete();
-            bodyFile.createNewFile();
-            bodyRAFile = new RandomAccessFile(bodyFile, "rw");
+            getFile().delete();
+            getFile().createNewFile();
+            bodyRAFile = new RandomAccessFile(getFile(), "rw");
             return true;
         } catch (IOException e) {
             e.printStackTrace();
@@ -51,29 +45,33 @@ public final class BodyAccessFile implements Closeable {
     /**
      * Copies the content of the underlying body file to a new file
      * 
-     * @param newHeaderFile the target destination
+     * @param newFile the target destination
      * @throws IOException if I/O error occurs
+     * @throws NullPointerException if argument is {@code null}
      */
-    public void copyTo(File newBodyFile) throws IOException {
+    @Override
+    public void copyTo(File newFile) throws IOException {
         bodyRAFile.close();
-        Files.copy(bodyFile.toPath(), newBodyFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        bodyRAFile = new RandomAccessFile(bodyFile, "rw");
+        super.copyTo(newFile);
+        bodyRAFile = new RandomAccessFile(getFile(), "rw");
     }
 
     /**
      * Copies and overwrites the underlying body file with the specified file
      * 
-     * @param newHeaderFile the source data file
+     * @param srcFile the source data file
+     * @throws IllegalArgumentException if argument is not a normal file
      * @throws IOException if I/O error occurs
+     * @throws NullPointerException if argument is {@code null}
      */
-    public void copyFrom(File newFile) throws IOException {
-        Objects.requireNonNull(newFile);
-        if (!newFile.isFile()) {
+    public void copyFrom(File srcFile) throws IOException {
+        Objects.requireNonNull(srcFile);
+        if (!srcFile.isFile()) {
             throw new IllegalArgumentException();
         }
         bodyRAFile.close();
-        Files.copy(newFile.toPath(), bodyFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        bodyRAFile = new RandomAccessFile(bodyFile, "rw");
+        Files.copy(srcFile.toPath(), getFile().toPath(), StandardCopyOption.REPLACE_EXISTING);
+        bodyRAFile = new RandomAccessFile(getFile(), "rw");
     }
 
     /**
@@ -93,7 +91,7 @@ public final class BodyAccessFile implements Closeable {
      * @return the underlying file object
      */
     public File getBodyFile() {
-        return bodyFile;
+        return getFile();
     }
 
     /**
@@ -113,6 +111,6 @@ public final class BodyAccessFile implements Closeable {
      */
     @Override
     public String toString() {
-        return this.bodyFileName;
+        return super.toString();
     }
 }

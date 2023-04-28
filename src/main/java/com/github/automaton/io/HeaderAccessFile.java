@@ -1,7 +1,6 @@
 package com.github.automaton.io;
 
 import java.io.*;
-import java.nio.file.*;
 import java.util.*;
 
 /**
@@ -9,13 +8,11 @@ import java.util.*;
  * 
  * @author Sung Ho Yoon
  */
-public final class HeaderAccessFile implements Closeable {
+public final class HeaderAccessFile extends AutomatonAccessFile {
 
     /** The fixed amount of space needed to hold the main variables in the {@code .hdr} file, which apply to all automaton types. */
     public static final int HEADER_SIZE = 45; 
 
-    private String headerFileName;
-    private File headerFile;
     /** Contains basic information about automaton, needed in order to read the bodyFile, as well as the events */
     private RandomAccessFile headerRAFile;
 
@@ -26,8 +23,7 @@ public final class HeaderAccessFile implements Closeable {
      * @throws FileNotFoundException if the given file object cannot be opened
      */
     public HeaderAccessFile(File headerFile) throws FileNotFoundException {
-        this.headerFile = Objects.requireNonNull(headerFile);
-        this.headerFileName = this.headerFile.getAbsolutePath();
+        super(headerFile);
         headerRAFile = new RandomAccessFile(headerFile, "rw");
     }
 
@@ -35,12 +31,13 @@ public final class HeaderAccessFile implements Closeable {
      * Clears the content of the header file
      * @return {@code true} the content is cleared; {@code false} otherwise.
      */
+    @Override
     public boolean clearFile() {
         try {
             headerRAFile.close();
-            headerFile.delete();
-            headerFile.createNewFile();
-            headerRAFile = new RandomAccessFile(headerFile, "rw");
+            getFile().delete();
+            getFile().createNewFile();
+            headerRAFile = new RandomAccessFile(getFile(), "rw");
             return true;
         } catch (IOException e) {
             e.printStackTrace();
@@ -82,15 +79,6 @@ public final class HeaderAccessFile implements Closeable {
     }
 
     /**
-     * Determines whether the underlying header file exists.
-     * 
-     * @return {@code true} if the underlying header file exists
-     */
-    public boolean exists() {
-        return headerFile.exists();
-    }
-
-    /**
      * Determines whether the underlying header file is empty
      * 
      * @return {@code true} if the underlying header file is empty
@@ -103,13 +91,15 @@ public final class HeaderAccessFile implements Closeable {
     /**
      * Copies the content of the underlying header file to a new file
      * 
-     * @param newHeaderFile the target destination
+     * @param newFile the target destination
      * @throws IOException if I/O error occurs
+     * @throws NullPointerException if argument is {@code null}
      */
-    public void copyTo(File newHeaderFile) throws IOException {
+    @Override
+    public void copyTo(File newFile) throws IOException {
         headerRAFile.close();
-        Files.copy(headerFile.toPath(), newHeaderFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        headerRAFile = new RandomAccessFile(headerFile, "rw");
+        super.copyTo(newFile);
+        headerRAFile = new RandomAccessFile(getFile(), "rw");
     }
 
     /**
@@ -148,7 +138,7 @@ public final class HeaderAccessFile implements Closeable {
      * @return the underlying file object
      */
     public File getHeaderFile() {
-        return this.headerFile;
+        return getFile();
     }
 
     /**
@@ -157,6 +147,6 @@ public final class HeaderAccessFile implements Closeable {
      */
     @Override
     public String toString() {
-        return this.headerFileName;
+        return super.toString();
     }
 }
