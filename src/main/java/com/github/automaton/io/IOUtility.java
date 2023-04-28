@@ -15,6 +15,8 @@ public class IOUtility {
     /* CLASS VARIABLES */
     private static int temporaryFileIndex = 1;
 
+    /** Private constructor */
+    private IOUtility() {}
 
     /**
      * Get an unused temporary file.
