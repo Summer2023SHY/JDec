@@ -20,7 +20,11 @@ import com.github.automaton.automata.UStructure;
  * once they have selected senders and recievers.
  *
  * @author Micah Stairs
+ * 
+ * @deprecated Operations for Nash equilibria depend on {@link Crush}. As {@link Crush} is deprecated
+   * and subject to removal, all Nash equilibria operations are deprecated.
  */
+@Deprecated
 public class ChooseCommunicatorsForNashPrompt extends ChooseSendersAndRecieversPrompt {
 
     /* CONSTRUCTOR */

@@ -19,7 +19,12 @@ import com.github.automaton.automata.UStructure;
  * and each controller in a popup.
  *
  * @author Micah Stairs
+ * 
+ * @deprecated Data being displayed through this class depends on the
+ * deprecated {@link UStructure#findShapleyValues()} method, and thus, this
+ * class is also deprecated and subject to removal.
  */
+@Deprecated(forRemoval = true)
 public class ShapleyValuesOutput extends JDialog {
 
     /* INSTANCE VARIABLES */

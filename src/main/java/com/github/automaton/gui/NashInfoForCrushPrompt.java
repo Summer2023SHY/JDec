@@ -17,7 +17,10 @@ import com.github.automaton.automata.Crush;
  * the cost and probability values for the Nash communications.
  *
  * @author Micah Stairs
+ * 
+* @deprecated Crush is too restrictive in terms of its capabilities, and all operations related to it are subject to removal.
  */
+@Deprecated(forRemoval = true)
 public class NashInfoForCrushPrompt extends NashInformationPrompt {
 
     /* CONSTRUCTOR */

@@ -41,6 +41,7 @@ public class ChooseCommunicatorsForMyersonPrompt extends ChooseSendersAndRecieve
     /* OVERIDDEN METHOD */
   /** {@inheritDoc} */
   @Override
+  @SuppressWarnings("removal")
   protected boolean performAction() {
 
     Set<CommunicationData> protocol = getProtocol();
@@ -62,6 +63,7 @@ public class ChooseCommunicatorsForMyersonPrompt extends ChooseSendersAndRecieve
     PrunedUStructure prunedUStructure = uStructure.applyProtocol(getProtocol(), null, null, true);
 
     // Display Myerson values
+    // TODO: Handle use of deprecated method
     new ShapleyValuesOutput(gui, prunedUStructure, "Myerson Values", "Myerson values by controller:", "Myerson values by coalition:");
 
     return true;

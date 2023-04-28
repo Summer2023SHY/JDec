@@ -19,6 +19,7 @@ import com.github.automaton.automata.UStructure;
 import com.github.automaton.automata.util.ByteManipulator;
 import com.github.automaton.gui.util.AutomatonGenerator;
 
+@SuppressWarnings({"deprecation", "removal"})
 public class TestAutomata {
 
   // Colored output makes it more readable (doesn't work on all operating systems)
