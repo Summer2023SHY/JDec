@@ -810,6 +810,7 @@ public class TestAutomata {
 
     @Test
     @DisplayName("Intersection Operation Tests")
+    @Order(4)
     public void testIntersectionOperation() {
 
       /* Intersection Operation Tests */
@@ -899,6 +900,7 @@ public class TestAutomata {
 
     @Test
     @DisplayName("Union Operation Tests")
+    @Order(5)
     public void testUnionOperation() {
       /* Union Operation Tests */
 
