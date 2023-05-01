@@ -29,7 +29,7 @@ public class AutomataExplorer extends JDialog {
   private JDec gui;
   private Automaton automaton;
   private Automaton invertedAutomaton;
-  private Long currentStateID;
+  private long currentStateID;
   private State currentState;
 
   private JScrollPane scrollPane;
@@ -115,7 +115,7 @@ public class AutomataExplorer extends JDialog {
   /**
    * Add all of the components to the window.
    **/
-  private void changeState(Long newStateID) {
+  private void changeState(long newStateID) {
 
     if (scrollPane != null)
       remove(scrollPane);
