@@ -874,6 +874,8 @@ public class TestAutomata {
         result.close();
       } catch(IncompatibleAutomataException e) {
         fail(e);;
+      } catch(IOException ioe) {
+        throw new UncheckedIOException(ioe);
       }
 
       printTestOutput("Instantiating automaton from Figure 2.13(b)...", 3);
@@ -895,6 +897,8 @@ public class TestAutomata {
         result.close();
       } catch(IncompatibleAutomataException e) {
         fail(e);
+      } catch(IOException ioe) {
+        throw new UncheckedIOException(ioe);
       }
 
       printTestOutput("Instantiating the first automaton from Figure 2.20...", 3);
@@ -923,9 +927,15 @@ public class TestAutomata {
         result.close();
       } catch(IncompatibleAutomataException e) {
         fail(e);
+      } catch(IOException ioe) {
+        throw new UncheckedIOException(ioe);
       }
-      fig2_1.close();
-      fig2_2.close();
+      try {
+        fig2_1.close();
+        fig2_2.close();
+      } catch(IOException ioe) {
+        throw new UncheckedIOException(ioe);
+      }
     }
 
     @Test
@@ -1005,8 +1015,12 @@ public class TestAutomata {
       } catch(IncompatibleAutomataException e) {
         fail(e);
       }
-      fig2_1.close();
-      fig2_2.close();
+      try {
+        fig2_1.close();
+        fig2_2.close();
+      } catch(IOException ioe) {
+        throw new UncheckedIOException(ioe);
+      }
     }
   }
 
