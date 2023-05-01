@@ -1819,7 +1819,7 @@ public class Automaton implements Closeable {
    * @throws NullPointerException if any argument is {@code null}
    * @throws IOException If I/O error occurs
    **/
-  public final File export(String outputFileName, Format format) throws MissingOrCorruptBodyFileException, IOException {
+  public final File export(String outputFileName, Format format) throws IOException {
     Objects.requireNonNull(outputFileName);
     Objects.requireNonNull(format);
 
