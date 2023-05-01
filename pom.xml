@@ -121,6 +121,12 @@
           <configuration>
             <tags>
               <tag>
+                <name>apiNote</name>
+                <!-- API notes for all places -->
+                <placement>a</placement>
+                <head>API note:</head>
+              </tag>
+              <tag>
                 <name>implNote</name>
                 <!-- implementation notes for all places -->
                 <placement>a</placement>
