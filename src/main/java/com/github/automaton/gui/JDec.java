@@ -1771,6 +1771,15 @@ public class JDec extends JFrame implements ActionListener {
   }
 
   /**
+   * Display an exception in a modal dialog which will stay on top of the GUI at all times.
+   * @param exception Exception to display
+   **/
+  public void displayException(Exception exception) {
+    
+    displayMessage("Exception: " + exception.getClass().getName(), exception.getMessage(), JOptionPane.ERROR_MESSAGE);
+  }
+
+  /**
    * Display an error message in a modal dialog which will stay on top of the GUI at all times.
    * @param title   The title to display in the dialog box
    * @param message The message to display in the dialog box
@@ -2056,7 +2065,11 @@ public class JDec extends JFrame implements ActionListener {
       exploreAutomatonButton.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           AutomatonTab tab = tabs.get(tabbedPane.getSelectedIndex());
-          new AutomataExplorer(JDec.this, tab.automaton, "Explore");
+          try {
+            new AutomataExplorer(JDec.this, tab.automaton, "Explore");
+          } catch (RuntimeException re) {
+            displayException(re);
+          }
         }
       });
       c.ipady = 0; c.weightx = 0.5; c.weighty = 1.0; c.gridx = 0; c.gridy = 8;

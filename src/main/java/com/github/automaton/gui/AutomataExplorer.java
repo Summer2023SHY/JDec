@@ -47,7 +47,14 @@ public class AutomataExplorer extends JDialog {
                           String title) {
 
     super(gui, true);
-
+    if (automaton == null) {
+      this.dispose();
+      throw new IllegalArgumentException("Automaton to explore cannot be null");
+    }
+    else if (automaton.getInitialStateID() == 0L) {
+      this.dispose();
+      throw new IllegalArgumentException("Automaton cannot be explored");
+    }
     this.gui = gui;
     this.automaton = automaton;
     invertedAutomaton = automaton.invert();
