@@ -1,4 +1,4 @@
-# JDec v1.0
+# JDec v1.1
 
 [![CI](https://github.com/Summer2023SHY/Automata/actions/workflows/ci.yml/badge.svg)](https://github.com/Summer2023SHY/Automata/actions/workflows/ci.yml)
 

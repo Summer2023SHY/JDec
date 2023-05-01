@@ -110,9 +110,15 @@ public class Automaton implements Closeable {
   protected long nBytesPerState;
 
   // File variables
-  /** {@code .hdr} file I/O handler */
+  /**
+   * {@code .hdr} file I/O handler
+   * @since 1.1
+   */
   protected final HeaderAccessFile haf;
-  /** {@code .bdy} file I/O handler */
+  /**
+   * {@code .bdy} file I/O handler
+   * @since 1.1
+   */
   protected final BodyAccessFile baf;
   /** Indicates whether the header file needs to be rewritten */
   protected boolean headerFileNeedsToBeWritten;
@@ -142,7 +148,7 @@ public class Automaton implements Closeable {
     /**
      * A pruned U-Structure after being 'crushed' with respect to a given controller 
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated(forRemoval = true, since="1.1")
     CRUSH((byte) 3, Crush.class);
 
     // Private variables
@@ -1821,6 +1827,7 @@ public class Automaton implements Closeable {
    * @return the exported file
    * @throws NullPointerException if any argument is {@code null}
    * @throws IOException If I/O error occurs
+   * @since 1.1
    **/
   public final File export(String outputFileName, Format format) throws IOException {
     Objects.requireNonNull(outputFileName);
@@ -2228,7 +2235,7 @@ public class Automaton implements Closeable {
    * @deprecated This method has a non-standard name and is subject
    * to removal. Use {@link #close()} instead.
    **/
-  @Deprecated(forRemoval = true)
+  @Deprecated(forRemoval = true, since="1.1")
   public void closeFiles() {
 
       try {
@@ -2245,6 +2252,7 @@ public class Automaton implements Closeable {
    * Closes resources associated with this automaton.
    * 
    * @throws IOException if I/O error occurs
+   * @since 1.1
    */
   @Override
   public void close() throws IOException {

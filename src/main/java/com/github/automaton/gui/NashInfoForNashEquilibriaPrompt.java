@@ -19,7 +19,7 @@ import javax.swing.*;
  * {@link com.github.automaton.automata.Crush Crush} is deprecated and subject
  * to removal, all Nash equilibria operations are deprecated.
  */
-@Deprecated
+@Deprecated(since="1.1")
 public class NashInfoForNashEquilibriaPrompt extends NashInformationPrompt {
 
     /* CONSTRUCTOR */

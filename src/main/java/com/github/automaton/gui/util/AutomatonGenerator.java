@@ -25,6 +25,7 @@ import com.github.automaton.gui.JDec;
  * input code
  *
  * @author Micah Stairs
+ * @since 1.1
  */
 public final class AutomatonGenerator {
   /** Private constructor */

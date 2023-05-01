@@ -17,7 +17,7 @@ import java.io.*;
  * @deprecated Crush is too restrictive in terms of its capabilities, and is subject to removal. See
  * <a href="https://github.com/Summer2023SHY/Automata/issues/28">Automata#28</a> for more information.
  */
-@Deprecated(forRemoval = true)
+@Deprecated(forRemoval = true, since="1.1")
 public class Crush extends PrunedUStructure {
 
     /* ENUM */

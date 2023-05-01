@@ -13,6 +13,7 @@ import com.github.automaton.automata.util.ByteManipulator;
  * @author Sung Ho Yoon
  * 
  * @see com.github.automaton.automata.State
+ * @since 1.1
  */
 public class StateIO {
 
@@ -54,7 +55,7 @@ public class StateIO {
      * 
      * @deprecated {@code .bdy} files should not be directly read from nor written to. Use {@link #readFromFileExcludingTransitions(Automaton, BodyAccessFile, long)} instead.
      **/
-    @Deprecated
+    @Deprecated(since="1.1")
     public static State readFromFileExcludingTransitions(Automaton automaton, RandomAccessFile file, long id) {
 
         /* Setup */
@@ -127,7 +128,7 @@ public class StateIO {
      * 
      * @deprecated {@code .bdy} files should not be directly read from nor written to. Use {@link #readFromFile(Automaton, BodyAccessFile, long)} instead.
      **/
-    @Deprecated
+    @Deprecated(since="1.1")
     public static State readFromFile(Automaton automaton, RandomAccessFile file, long id) {
 
         /* Setup */
@@ -226,7 +227,7 @@ public class StateIO {
      * @return whether or not the state exists
      * @deprecated {@code .bdy} files should not be directly read from nor written to. Use {@link #stateExists(Automaton, BodyAccessFile, long)} instead.
      **/
-    @Deprecated
+    @Deprecated(since="1.1")
     public static boolean stateExists(Automaton automaton, RandomAccessFile file, long id) {
 
         try {
@@ -283,7 +284,7 @@ public class StateIO {
      * 
      * @deprecated {@code .bdy} files should not be directly read from nor written to. Use {@link #writeToFile(State, BodyAccessFile, long, int, int, int)} instead.
      **/
-    @Deprecated
+    @Deprecated(since="1.1")
     public static boolean writeToFile(State s, RandomAccessFile file, long nBytesPerState, int labelLength, int nBytesPerEventID,
             int nBytesPerStateID) {
 

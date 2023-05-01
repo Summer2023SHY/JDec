@@ -7,6 +7,7 @@ import java.util.*;
  * I/O handler for {@code .hdr} files.
  * 
  * @author Sung Ho Yoon
+ * @since 1.1
  */
 public final class HeaderAccessFile extends AutomatonAccessFile {
 

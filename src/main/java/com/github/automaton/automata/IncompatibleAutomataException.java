@@ -20,6 +20,7 @@ public class IncompatibleAutomataException extends IllegalArgumentException {
      * Constructs a {@code IncompatibleAutomataException} with the
      * specified detail message.
      * @param message the detail message
+     * @since 1.1
      */
     public IncompatibleAutomataException(String message) {
         super(message);
@@ -30,6 +31,7 @@ public class IncompatibleAutomataException extends IllegalArgumentException {
      * specified detail message and cause.
      * @param message the detail message
      * @param cause the cause
+     * @since 1.1
      */
     public IncompatibleAutomataException(String message, Throwable cause) {
         super(message, cause);
@@ -39,6 +41,7 @@ public class IncompatibleAutomataException extends IllegalArgumentException {
      * Constructs a {@code IncompatibleAutomataException} with the
      * specified cause.
      * @param cause the cause
+     * @since 1.1
      */
     public IncompatibleAutomataException(Throwable cause) {
         super(cause);

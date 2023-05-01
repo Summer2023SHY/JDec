@@ -24,7 +24,7 @@ import com.github.automaton.automata.UStructure;
  * deprecated {@link UStructure#findShapleyValues()} method, and thus, this
  * class is also deprecated and subject to removal.
  */
-@Deprecated(forRemoval = true)
+@Deprecated(forRemoval = true, since="1.1")
 public class ShapleyValuesOutput extends JDialog {
 
     /* INSTANCE VARIABLES */

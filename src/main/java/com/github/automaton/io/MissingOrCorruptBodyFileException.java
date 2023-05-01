@@ -19,6 +19,7 @@ public class MissingOrCorruptBodyFileException extends java.io.IOException {
      * Constructs a {@code MissingOrCorruptBodyFileException} with the
      * specified detail message.
      * @param message the detail message
+     * @since 1.1
      */
     public MissingOrCorruptBodyFileException(String message) {
         super(message);
@@ -29,6 +30,7 @@ public class MissingOrCorruptBodyFileException extends java.io.IOException {
      * specified detail message and cause.
      * @param message the detail message
      * @param cause the cause
+     * @since 1.1
      */
     public MissingOrCorruptBodyFileException(String message, Throwable cause) {
         super(message, cause);
@@ -38,6 +40,7 @@ public class MissingOrCorruptBodyFileException extends java.io.IOException {
      * Constructs a {@code MissingOrCorruptBodyFileException} with the
      * specified cause.
      * @param cause the cause
+     * @since 1.1
      */
     public MissingOrCorruptBodyFileException(Throwable cause) {
         super(cause);

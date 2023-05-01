@@ -6,6 +6,7 @@ import com.github.automaton.gui.JDec;
  * A utility class used to perform conversions between a long and bytes.
  *
  * @author Micah Stairs
+ * @since 1.1
  **/
 
 public final class ByteManipulator {

@@ -22,6 +22,7 @@ public class DoesNotSatisfyObservabilityException extends IllegalStateException 
      * Constructs a {@code DoesNotSatisfyObservabilityException} with the
      * specified detail message.
      * @param message the detail message
+     * @since 1.1
      */
     public DoesNotSatisfyObservabilityException(String message) {
         super(message);
@@ -32,6 +33,7 @@ public class DoesNotSatisfyObservabilityException extends IllegalStateException 
      * specified detail message and cause.
      * @param message the detail message
      * @param cause the cause
+     * @since 1.1
      */
     public DoesNotSatisfyObservabilityException(String message, Throwable cause) {
         super(message, cause);
@@ -41,6 +43,7 @@ public class DoesNotSatisfyObservabilityException extends IllegalStateException 
      * Constructs a {@code DoesNotSatisfyObservabilityException} with the
      * specified cause.
      * @param cause the cause
+     * @since 1.1
      */
     public DoesNotSatisfyObservabilityException(Throwable cause) {
         super(cause);

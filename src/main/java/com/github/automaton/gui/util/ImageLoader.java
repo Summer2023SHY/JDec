@@ -14,6 +14,7 @@ import org.w3c.dom.svg.SVGDocument;
  * 
  * @author Micah Stairs
  * @author Sung Ho Yoon
+ * @since 1,1
  */
 public final class ImageLoader {
 

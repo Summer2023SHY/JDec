@@ -8,6 +8,7 @@ import java.util.*;
  * I/O handler for {@code .bdy} files.
  * 
  * @author Sung Ho Yoon
+ * @since 1.1
  */
 public final class BodyAccessFile extends AutomatonAccessFile {
     /** List each state in the automaton, with the transitions */

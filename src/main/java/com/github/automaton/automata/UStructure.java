@@ -535,7 +535,7 @@ public class UStructure extends Automaton {
    * @deprecated Operations for Nash equilibria depend on {@link Crush}. As {@link Crush} is deprecated
    * and subject to removal, all Nash equilibria operations are deprecated.
    **/
-  @Deprecated
+  @Deprecated(since="1.1")
   public List<Set<NashCommunicationData>> findNashEquilibria(Crush.CombiningCosts combiningCostsMethod)
                                                              throws DoesNotSatisfyObservabilityException {
 
@@ -560,7 +560,7 @@ public class UStructure extends Automaton {
    * @deprecated Operations for Nash equilibria depend on {@link Crush}. As {@link Crush} is deprecated
    * and subject to removal, all Nash equilibria operations are deprecated.
    **/
-  @Deprecated
+  @Deprecated(since="1.1")
   public List<Set<NashCommunicationData>> findNashEquilibria(Crush.CombiningCosts combiningCostsMethod,
                                                              List<Set<NashCommunicationData>> feasibleProtocols) {
 
@@ -659,7 +659,7 @@ public class UStructure extends Automaton {
    * 
    * @deprecated Crush is too restrictive in terms of its capabilities, and all operations related to it are subject to removal.
    **/
-  @Deprecated(forRemoval = true)
+  @Deprecated(forRemoval = true, since="1.1")
   public Crush crush(File newHeaderFile,
                      File newBodyFile,
                      int indexOfController,
@@ -838,7 +838,7 @@ public class UStructure extends Automaton {
    * 
    * @deprecated Crush is too restrictive in terms of its capabilities, and all operations related to it are subject to removal.
    **/
-  @Deprecated(forRemoval = true)
+  @Deprecated(forRemoval = true, since="1.1")
   public Crush crush(File newHeaderFile,
                      File newBodyFile,
                      int indexOfController) {
@@ -972,7 +972,7 @@ public class UStructure extends Automaton {
    * 
    * @deprecated Crush is too restrictive in terms of its capabilities, and all operations related to it are subject to removal.
    **/
-  @Deprecated(forRemoval = true)
+  @Deprecated(forRemoval = true, since="1.1")
   public Map<Set<Integer>, Integer> findShapleyValues() {
 
     // Ensure that there are no violations
@@ -1661,7 +1661,7 @@ public class UStructure extends Automaton {
    * 
    * @deprecated Crush is too restrictive in terms of its capabilities, and all operations related to it are subject to removal.
    **/
-  @Deprecated(forRemoval = true)
+  @Deprecated(forRemoval = true, since="1.1")
   public void combineCommunicationCosts(Set<NashCommunicationData> feasibleProtocol,
                                         Crush.CombiningCosts combiningCostsMethod) {
 
@@ -1711,7 +1711,7 @@ public class UStructure extends Automaton {
    * 
    * @deprecated Crush is too restrictive in terms of its capabilities, and all operations related to it are subject to removal.
    **/
-  @Deprecated(forRemoval = true)
+  @Deprecated(forRemoval = true, since="1.1")
   private void addStateToCrush(Crush crush, Set<Long> setOfStates, boolean isInitialState, long id) {
 
     // Create a label for this state

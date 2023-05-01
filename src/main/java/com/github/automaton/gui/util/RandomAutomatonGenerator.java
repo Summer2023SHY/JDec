@@ -14,6 +14,7 @@ import com.github.automaton.gui.RandomAutomatonPrompt;
  * Utility class used to generate random automata (with a number of specified properties).
  *
  * @author Micah Stairs
+ * @since 1.1
  */
 public class RandomAutomatonGenerator {
   /** Private constructor */

@@ -24,7 +24,7 @@ import com.github.automaton.automata.UStructure;
  * @deprecated Operations for Nash equilibria depend on {@link Crush}. As {@link Crush} is deprecated
    * and subject to removal, all Nash equilibria operations are deprecated.
  */
-@Deprecated
+@Deprecated(since="1.1")
 public class ChooseCommunicatorsForNashPrompt extends ChooseSendersAndRecieversPrompt {
 
     /* CONSTRUCTOR */

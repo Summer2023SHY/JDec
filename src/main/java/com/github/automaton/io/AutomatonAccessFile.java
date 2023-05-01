@@ -8,6 +8,7 @@ import java.util.Objects;
  * I/O handler for automaton data files.
  * 
  * @author Sung Ho Yoon
+ * @since 1,1
  */
 public abstract class AutomatonAccessFile implements Closeable {
     
