@@ -135,6 +135,7 @@
             </tags>
             <links>
               <link>https://www.javadoc.io/doc/xml-apis/xml-apis/1.4.01/</link>
+              <link>https://www.javadoc.io/doc/guru.nidi/graphviz-java/0.18.1/</link>
             </links>
           </configuration>
       </plugin>

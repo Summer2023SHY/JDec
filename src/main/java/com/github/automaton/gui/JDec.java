@@ -35,6 +35,7 @@ import org.xml.sax.*;
 
 import com.github.automaton.automata.*;
 import com.github.automaton.gui.util.*;
+import com.github.automaton.io.MissingOrCorruptBodyFileException;
 
 /**
  * A Java application for Decentralized Control. This application has been design to build

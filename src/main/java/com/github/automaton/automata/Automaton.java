@@ -38,7 +38,7 @@ import guru.nidi.graphviz.parse.*;
  *
  * @author Micah Stairs
  **/
-public class Automaton implements AutoCloseable {
+public class Automaton implements Closeable {
 
     /* PUBLIC CLASS CONSTANTS */
 
@@ -1798,12 +1798,51 @@ public class Automaton implements AutoCloseable {
    * Output this automaton in a format that is readable by GraphViz, then export as requested.
    * @param outputFileName              The location to put the generated output
    * @return                            Whether or not the output was successfully generated
-   * @throws MissingOrCorruptBodyFileException If any of the states are unable to be read from the body file
+   * @throws NullPointerException if argument is {@code null}
+   **/
+  public final boolean generateImage(String outputFileName) {
+    Objects.requireNonNull(outputFileName, "Output file name cannot be null");
+    /* For backwards compatibility */
+    try {
+      MutableGraph g = new Parser().read(generateDotString());
+      Graphviz.fromGraph(g).render(Format.SVG_STANDALONE).toFile(new File(outputFileName + "." + Format.SVG_STANDALONE.fileExtension));
+      Graphviz.fromGraph(g).render(Format.PNG).toFile(new File(outputFileName + "." + Format.PNG.fileExtension));
+      return true;
+    } catch (IOException e) {
+      e.printStackTrace();
+      return false;
+    }
+  }
+
+  /**
+   * Exports this automaton in a Graphviz-exportable format
+   * @param outputFileName name of the exported file
+   * @param format file format to export with
+   * @return the exported file
+   * @throws NullPointerException if any argument is {@code null}
    * @throws IOException If I/O error occurs
    **/
-  public boolean generateImage(String outputFileName) throws MissingOrCorruptBodyFileException, IOException {
+  public final File export(String outputFileName, Format format) throws IOException {
+    Objects.requireNonNull(outputFileName);
+    Objects.requireNonNull(format);
 
-      /* Setup */
+      /* Generate image */
+
+    MutableGraph g = new Parser().read(generateDotString());
+    File destFile = new File(outputFileName + "." + format.fileExtension);
+    Graphviz.fromGraph(g).render(format).toFile(destFile);
+
+    return destFile;
+
+  }
+
+  /**
+   * Converts this automaton to Graphviz-recognizable {@code .dot} format
+   * @return {@code .dot} representation of this automaton
+   * @throws MissingOrCorruptBodyFileException If any of the states are unable to be read from the body file
+   */
+  private String generateDotString() throws MissingOrCorruptBodyFileException {
+    /* Setup */
 
     StringBuilder str = new StringBuilder();
     str.append("digraph Image {");
@@ -1902,15 +1941,7 @@ public class Automaton implements AutoCloseable {
     } catch (NullPointerException e) {
       throw new MissingOrCorruptBodyFileException(e);
     }
-
-      /* Generate image */
-
-    MutableGraph g = new Parser().read(str.toString());
-    Graphviz.fromGraph(g).render(Format.SVG_STANDALONE).toFile(new File(outputFileName + ".svg"));
-    Graphviz.fromGraph(g).render(Format.PNG).toFile(new File(outputFileName + ".png"));
-
-    return true;
-
+    return str.toString();
   }
 
   /**
@@ -2192,17 +2223,17 @@ public class Automaton implements AutoCloseable {
   }
 
   /**
-   * Files need to be closed on the Windows operating system because there are problems trying to delete files if they are in use.
-   * @implNote Do not attempt to use this automaton instance again afterwards.
+   * Closes files associated with this instance of automaton.
+   * 
+   * @deprecated This method has a non-standard name and is subject
+   * to removal. Use {@link #close()} instead.
    **/
+  @Deprecated(forRemoval = true)
   public void closeFiles() {
 
       try {
 
-        writeHeaderFile();
-
-        haf.close();
-        baf.close();
+        close();
 
       } catch (IOException e) {
         e.printStackTrace();
@@ -2210,9 +2241,16 @@ public class Automaton implements AutoCloseable {
 
   }
 
+  /**
+   * Closes resources associated with this automaton.
+   * 
+   * @throws IOException if I/O error occurs
+   */
   @Override
-  public void close() {
-    closeFiles();
+  public void close() throws IOException {
+    writeHeaderFile();
+    haf.close();
+    baf.close();
   } 
 
   /**
