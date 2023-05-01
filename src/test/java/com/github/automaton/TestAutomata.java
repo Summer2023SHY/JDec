@@ -810,6 +810,7 @@ public class TestAutomata {
 
     @Test
     @DisplayName("Intersection Operation Tests")
+    @Order(4)
     public void testIntersectionOperation() {
 
       /* Intersection Operation Tests */
@@ -840,6 +841,7 @@ public class TestAutomata {
         printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T"), counter);
         printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@x_zero,F\nx_one,T"), counter);
         printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "x_zero,a,x_one\nx_one,a,x_one"), counter);
+        result.close();
       } catch(IncompatibleAutomataException e) {
         fail(e);;
       }
@@ -860,6 +862,7 @@ public class TestAutomata {
         printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a,T,T\nb,T,T"), counter);
         printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@zero_zero,F\none_one,F\nzero_two,F"), counter);
         printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "zero_zero,a,one_one\none_one,b,zero_two"), counter);
+        result.close();
       } catch(IncompatibleAutomataException e) {
         fail(e);
       }
@@ -887,13 +890,17 @@ public class TestAutomata {
         printTestCase("Ensuring the events are correct", new TestResult(result.getEventInput(), "a1,T,T\na2,T,T\nb,T,T\nr,T,T"), counter);
         printTestCase("Ensuring the states are correct", new TestResult(result.getStateInput(), "@x1_y1,F\nx2_y2,F\nx2_y3,F\nx3_y4,F\nx3_y5,F"), counter);
         printTestCase("Ensuring the transitions are correct", new TestResult(result.getTransitionInput(), "x1_y1,a1,x2_y2\nx1_y1,a2,x2_y3\nx2_y2,b,x3_y4\nx2_y3,b,x3_y5\nx3_y4,r,x1_y1\nx3_y5,r,x1_y1"), counter);
+        result.close();
       } catch(IncompatibleAutomataException e) {
         fail(e);
       }
+      fig2_1.close();
+      fig2_2.close();
     }
 
     @Test
     @DisplayName("Union Operation Tests")
+    @Order(5)
     public void testUnionOperation() {
       /* Union Operation Tests */
 
@@ -968,6 +975,8 @@ public class TestAutomata {
       } catch(IncompatibleAutomataException e) {
         fail(e);
       }
+      fig2_1.close();
+      fig2_2.close();
     }
   }
 
