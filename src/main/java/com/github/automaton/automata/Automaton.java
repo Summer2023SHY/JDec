@@ -110,8 +110,11 @@ public class Automaton implements AutoCloseable {
   protected long nBytesPerState;
 
   // File variables
+  /** {@code .hdr} file I/O handler */
   protected final HeaderAccessFile haf;
+  /** {@code .bdy} file I/O handler */
   protected final BodyAccessFile baf;
+  /** Indicates whether the header file needs to be rewritten */
   protected boolean headerFileNeedsToBeWritten;
 
   // GUI input
@@ -2135,6 +2138,7 @@ public class Automaton implements AutoCloseable {
   /**
    * Duplicate this automaton, storing them in temporary files.
    * @apiNote This method is intended to be overridden.
+   * @return A duplicate of this automaton
    **/
   public Automaton duplicate() {
     return duplicate(IOUtility.getTemporaryFile(), IOUtility.getTemporaryFile());

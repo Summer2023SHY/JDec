@@ -271,6 +271,7 @@ public class StateIO {
     /**
      * Writes a given state to file.
      * 
+     * @param s                The state to write
      * @param file             The RandomAccessFile we are using to write to
      * @param nBytesPerState   The number of bytes used to store each state in the
      *                         file

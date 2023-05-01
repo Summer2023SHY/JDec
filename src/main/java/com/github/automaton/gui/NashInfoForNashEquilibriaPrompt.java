@@ -14,8 +14,10 @@ import javax.swing.*;
  *
  * @author Micah Stairs
  * 
- * @deprecated Operations for Nash equilibria depend on {@link Crush}. As {@link Crush} is deprecated
- * and subject to removal, all Nash equilibria operations are deprecated.
+ * @deprecated Operations for Nash equilibria depend on
+ * {@link com.github.automaton.automata.Crush Crush}. As
+ * {@link com.github.automaton.automata.Crush Crush} is deprecated and subject
+ * to removal, all Nash equilibria operations are deprecated.
  */
 @Deprecated
 public class NashInfoForNashEquilibriaPrompt extends NashInformationPrompt {

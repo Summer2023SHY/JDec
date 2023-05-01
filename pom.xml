@@ -119,6 +119,20 @@
           <artifactId>maven-javadoc-plugin</artifactId>
           <version>3.5.0</version>
           <configuration>
+            <tags>
+              <tag>
+                <name>apiNote</name>
+                <!-- API notes for all places -->
+                <placement>a</placement>
+                <head>API note:</head>
+              </tag>
+              <tag>
+                <name>implNote</name>
+                <!-- implementation notes for all places -->
+                <placement>a</placement>
+                <head>Implementation note:</head>
+              </tag>
+            </tags>
             <links>
               <link>https://www.javadoc.io/doc/xml-apis/xml-apis/1.4.01/</link>
             </links>
