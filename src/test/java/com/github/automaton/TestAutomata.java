@@ -767,7 +767,7 @@ public class TestAutomata {
 
         printTestOutput("Instantiating an automaton...", 3);
         Automaton complementExample = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-          new Automaton(new File("aut/complementExample.hdr"), new File("aut/complementExample.bdy"), 3),
+          new Automaton(new File("aut/complementExample1.hdr"), new File("aut/complementExample1.bdy"), 3),
           "a1,TFF,FFF\na2,TFF,FFF\nb1,FTF,FFF\nb2,FTF,FFF\nc1,FFT,FFF\nc2,FFT,FFF\no,FFF,TTT", // Events
           "@0,F\n1,F\n2,F\n3,F\n4,F\n5,F\n6,F\n7,F\n8,F\n9,F\n10,F\n11,F\n12,F\n13,F\n14,F\n15,F\n16,F\n17,F\n18,F\n19,F", // States 
           "0,a1,4\n0,b2,3\n0,b1,2\n0,c1,1\n1,b2,6\n1,a2,5\n2,a1,7\n3,c2,8\n4,b1,9\n5,b1,10\n6,a1,11\n7,c2,12\n8,a2,13\n9,c1,14\n10,o,15\n11,o,16\n12,o,17\n13,o,18:BAD\n14,o,19:BAD" // Transitions
@@ -796,7 +796,7 @@ public class TestAutomata {
 
         printTestOutput("Instantiating an automaton...", 3);
         Automaton complementExample2 = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-          new Automaton(new File("aut/complementExample.hdr"), new File("aut/complementExample.bdy"), 1),
+          new Automaton(new File("aut/complementExample2.hdr"), new File("aut/complementExample2.bdy"), 1),
           "a,T,F\nb,T,T", // Events
           "0,T\n1,F", // States 
           "0,a,1\n0,b,0\n1,a,0\n1,b,0" // Transitions
