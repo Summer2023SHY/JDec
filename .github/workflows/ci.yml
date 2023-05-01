@@ -37,7 +37,8 @@ jobs:
     - name: Submit Dependency Snapshot
       uses: advanced-security/maven-dependency-submission-action@v3
     - name: Upload JAR file
-      if: ${{ github.event_name != 'pull_request' }}
+      if: false
+      # if: ${{ github.event_name != 'pull_request' }}
       uses: actions/upload-artifact@v3.1.2
       with:
         name: JDec-JAR
