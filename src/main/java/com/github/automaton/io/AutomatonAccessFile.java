@@ -33,7 +33,7 @@ public abstract class AutomatonAccessFile implements Closeable {
     /**
      * Copies the content of the underlying data file to a new file
      * 
-     * @param newHeaderFile the target destination
+     * @param newFile the target destination
      * @throws IOException if I/O error occurs
      * @throws NullPointerException if argument is {@code null}
      */
