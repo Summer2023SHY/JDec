@@ -6,7 +6,7 @@
 
   <groupId>com.github.automaton</groupId>
   <artifactId>JDec</artifactId>
-  <version>v1.2.0</version>
+  <version>v2.0-dev</version>
 
   <name>Automata</name>
   <url>https://github.com/Summer2023SHY/Automata</url>
