@@ -88,16 +88,18 @@ public class JDec extends JFrame implements ActionListener {
   private static Document tooltipDocument;
   static {
     
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    factory.setValidating(false);
-    factory.setIgnoringElementContentWhitespace(true);
-    
     try {
+      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      factory.setValidating(false);
+      factory.setIgnoringElementContentWhitespace(true);
       tooltipDocument = factory.newDocumentBuilder().parse(
         getResourceURL("tooltips.xml").toURI().toString()
       );
     } catch (ParserConfigurationException | SAXException | IOException | URISyntaxException e) {
       e.printStackTrace();
+      tooltipDocument = null;
+    } catch (FactoryConfigurationError fce) {
+      fce.printStackTrace();
       tooltipDocument = null;
     }
 
