@@ -760,9 +760,15 @@ public class Automaton implements Closeable {
         if (e1.equals(e2)) {
 
           // Ensure that these automata are compatible (meaning that no events have the same name, but with different properties)
-          if (!Arrays.equals(e1.isObservable(), e2.isObservable()) || !Arrays.equals(e1.isControllable(), e2.isControllable()))
-            throw new IncompatibleAutomataException();
-
+          if (!Arrays.equals(e1.isObservable(), e2.isObservable()) || !Arrays.equals(e1.isControllable(), e2.isControllable())) {
+            IncompatibleAutomataException iae = new IncompatibleAutomataException();
+            try {
+              automaton.close();
+            } catch (IOException e) {
+              iae.addSuppressed(e);
+            }
+            throw iae;
+          }
           automaton.addEvent(e1.getLabel(), e1.isObservable(), e1.isControllable());
 
         }
