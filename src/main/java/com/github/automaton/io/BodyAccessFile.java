@@ -68,7 +68,7 @@ public final class BodyAccessFile extends AutomatonAccessFile {
     public void copyFrom(File srcFile) throws IOException {
         Objects.requireNonNull(srcFile);
         if (!srcFile.isFile()) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException(srcFile + "is not a normal file");
         }
         bodyRAFile.close();
         Files.copy(srcFile.toPath(), getFile().toPath(), StandardCopyOption.REPLACE_EXISTING);
