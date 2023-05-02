@@ -9,7 +9,7 @@ package com.github.automaton.automata;
  * @see UStructure#findNashEquilibria(Crush.CombiningCosts)
  * @see UStructure#findNashEquilibria(Crush.CombiningCosts, java.util.List)
  */
-public class DoesNotSatisfyObservabilityException extends IllegalStateException {
+public class DoesNotSatisfyObservabilityException extends OperationFailedException {
     /**
      * Constructs a {@code DoesNotSatisfyObservabilityException} with no
      * detail message.

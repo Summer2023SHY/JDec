@@ -760,9 +760,15 @@ public class Automaton implements Closeable {
         if (e1.equals(e2)) {
 
           // Ensure that these automata are compatible (meaning that no events have the same name, but with different properties)
-          if (!Arrays.equals(e1.isObservable(), e2.isObservable()) || !Arrays.equals(e1.isControllable(), e2.isControllable()))
-            throw new IncompatibleAutomataException();
-
+          if (!Arrays.equals(e1.isObservable(), e2.isObservable()) || !Arrays.equals(e1.isControllable(), e2.isControllable())) {
+            IncompatibleAutomataException iae = new IncompatibleAutomataException();
+            try {
+              automaton.close();
+            } catch (IOException e) {
+              iae.addSuppressed(e);
+            }
+            throw iae;
+          }
           automaton.addEvent(e1.getLabel(), e1.isObservable(), e1.isControllable());
 
         }
@@ -989,10 +995,16 @@ public class Automaton implements Closeable {
    * Apply the synchronized composition algorithm to an automaton to produce the U-Structure.
    * @param newHeaderFile  The header file where the new automaton should be stored
    * @param newBodyFile    The body file where the new automaton should be stored
-   * @return               The U-Structure (or {@code null} if there was no starting state or something else
-   *                       went wrong)
+   * @return               The U-Structure
+   * @throws NoInitialStateException if there was no starting state
+   * @throws OperationFailedException if something else went wrong
    **/
   public UStructure synchronizedComposition(File newHeaderFile, File newBodyFile) {
+
+    // Error checking
+    if (getState(initialState) == null) {
+      throw new NoInitialStateException("No starting state");
+    }
 
       /* Setup */
 
@@ -1006,12 +1018,6 @@ public class Automaton implements Closeable {
       List<Long> listOfInitialIDs = new ArrayList<Long>();
       String combinedStateLabel = "";
       State startingState = getState(initialState);
-
-      // Error checking
-      if (startingState == null) {
-        System.err.println("ERROR: No starting state.");
-        return null;
-      }
 
       // Create list of initial IDs and build the label
       for (int i = 0; i <= nControllers; i++) {
@@ -1137,8 +1143,13 @@ public class Automaton implements Closeable {
 
           // Add state
           if (!uStructure.addStateAt(combinedStateLabel, false, new ArrayList<Transition>(), false, combinedTargetID)) {
-            System.err.println("ERROR: Failed to add state. Synchronized composition aborted.");
-            return null;
+            OperationFailedException ofe = new OperationFailedException("Failed to add state");
+            try {
+              uStructure.close();
+            } catch (IOException ioe) {
+              ofe.addSuppressed(ioe);
+            }
+            throw ofe;
           }
           
           // Only add the ID if it's not already waiting to be processed
@@ -1200,8 +1211,13 @@ public class Automaton implements Closeable {
 
               // Add state
               if (!uStructure.addStateAt(combinedStateLabel, false, new ArrayList<Transition>(), false, combinedTargetID)) {
-                System.err.println("ERROR: Failed to add state. Synchronized composition aborted.");
-                return null;
+                OperationFailedException ofe = new OperationFailedException("Failed to add state");
+                try {
+                  uStructure.close();
+                } catch (IOException ioe) {
+                  ofe.addSuppressed(ioe);
+                }
+                throw ofe;
               }
             
               // Only add the ID if it's not already waiting to be processed

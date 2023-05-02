@@ -14,6 +14,7 @@ import java.util.*;
 import javax.swing.*;
 
 import com.github.automaton.automata.Automaton;
+import com.github.automaton.automata.NoInitialStateException;
 import com.github.automaton.automata.State;
 import com.github.automaton.automata.Transition;
 
@@ -41,6 +42,8 @@ public class AutomataExplorer extends JDialog {
    * @param gui               A reference to the GUI
    * @param automaton         The automaton that is being worked with
    * @param title             The title of the popup box
+   * @throws NullPointerException if the argument is {@code null}
+   * @throws NoInitialStateException if the argument has no initial state
    **/
   public AutomataExplorer(JDec gui,
                           Automaton automaton,
@@ -49,11 +52,11 @@ public class AutomataExplorer extends JDialog {
     super(gui, true);
     if (automaton == null) {
       this.dispose();
-      throw new IllegalArgumentException("Automaton to explore cannot be null");
+      throw new NullPointerException("Automaton to explore cannot be null");
     }
     else if (automaton.getInitialStateID() == 0L) {
       this.dispose();
-      throw new IllegalArgumentException("Automaton cannot be explored");
+      throw new NoInitialStateException("Automaton to explore has no initial state");
     }
     this.gui = gui;
     this.automaton = automaton;
