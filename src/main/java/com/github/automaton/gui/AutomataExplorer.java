@@ -29,7 +29,7 @@ public class AutomataExplorer extends JDialog {
   private JDec gui;
   private Automaton automaton;
   private Automaton invertedAutomaton;
-  private Long currentStateID;
+  private long currentStateID;
   private State currentState;
 
   private JScrollPane scrollPane;
@@ -47,7 +47,14 @@ public class AutomataExplorer extends JDialog {
                           String title) {
 
     super(gui, true);
-
+    if (automaton == null) {
+      this.dispose();
+      throw new IllegalArgumentException("Automaton to explore cannot be null");
+    }
+    else if (automaton.getInitialStateID() == 0L) {
+      this.dispose();
+      throw new IllegalArgumentException("Automaton cannot be explored");
+    }
     this.gui = gui;
     this.automaton = automaton;
     invertedAutomaton = automaton.invert();
@@ -108,7 +115,7 @@ public class AutomataExplorer extends JDialog {
   /**
    * Add all of the components to the window.
    **/
-  private void changeState(Long newStateID) {
+  private void changeState(long newStateID) {
 
     if (scrollPane != null)
       remove(scrollPane);

@@ -119,7 +119,7 @@ public final class AutomatonGenerator {
       int startIndex = endIndex;
       endIndex += line.length() + 1;
 
-      String[] splitLine = splitStringWithVectors(line);
+      String[] splitLine = splitStringWithVectors(line.trim());
       String label = splitLine[0].trim();
       boolean marked = (splitLine.length >= 2 && isTrue(splitLine[1]));
 
@@ -203,7 +203,7 @@ public final class AutomatonGenerator {
       int startIndex = endIndex;
       endIndex += line.length() + 1;
         
-      String[] splitLine = splitStringWithVectors(line);
+      String[] splitLine = splitStringWithVectors(line.trim());
 
       if (splitLine == null) {
         System.err.println("ERROR: Could not store '" + line + "' as an event, the vectors could not be parsed properly.");
