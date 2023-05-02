@@ -1665,7 +1665,6 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Given two state IDs (the order matters) and their respective automatons, create a unique combined ID.
-   * @implNote There is potential for long overflow, which could technically result in generating IDs that are not unique
    * @implNote The reasoning behind this formula is analogous to the following: if you have a table with N rows and M columns,
    * every cell is guaranteed to have a different combination of row and column indexes.
    * @param id1     The state ID from the first automaton
@@ -1673,10 +1672,11 @@ public class Automaton implements AutoCloseable {
    * @param id2     The state ID from the second automaton
    * @param second  The second automaton
    * @return        The combined ID
+   * @throws ArithmeticException if the ID combination result overflows a {@code long}
    **/ 
   private static long combineTwoIDs(long id1, Automaton first, long id2, Automaton second) {
 
-    return ((id2 - 1) * first.getNumberOfStates() + id1);
+    return Math.addExact((id2 - 1) * first.getNumberOfStates(), id1);
 
   }
 
