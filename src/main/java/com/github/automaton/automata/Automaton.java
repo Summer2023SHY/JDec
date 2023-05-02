@@ -656,10 +656,10 @@ public class Automaton implements AutoCloseable {
   /**
    * Creates a new copy of this automaton that is trim (both accessible and co-accessible).
    * @implNote I am taking the accessible part of the automaton before the co-accessible part of the automaton
-   * because the {@link #accessible()} method has less overhead than the coaccessible() method.
+   * because the {@link #accessible()} method has less overhead than the {@link #coaccessible(File, File)} method.
    * @param newHeaderFile  The header file where the new automaton should be stored
    * @param newBodyFile    The body file where the new automaton should be stored
-   * @return               The trim automaton, or null if there was no initial state specified
+   * @return               The trim automaton, or {@code null} if there was no initial state specified
    **/
   public Automaton trim(File newHeaderFile, File newBodyFile) {
     return accessible(null, null).coaccessible(newHeaderFile, newBodyFile);
@@ -669,7 +669,7 @@ public class Automaton implements AutoCloseable {
    * Create a new version of this automaton which has all of the transitions going the opposite direction.
    * @implNote An inverted automaton is needed when you want to efficiently determine which transitions lead to a particular state.
    * @implNote This is just a shallow copy of the automaton (no special transition data is retained), which makes it slightly more efficient.
-   * @implNote This method should be overridden by subclasses, using the invertHelper() method.
+   * @implNote This method should be overridden by subclasses, using the {@link #invertHelper(Automaton)} method.
    * @return  The inverted automaton
    * 
    * @see #invertHelper(Automaton)
