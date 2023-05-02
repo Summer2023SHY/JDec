@@ -151,6 +151,7 @@ public class AutomataExplorer extends JDialog {
     jumpToStateButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         String stateLabel = JOptionPane.showInputDialog("Enter the state's label:", "");
+        if (stateLabel == null) return;
         for (long s = 1; s <= automaton.getNumberOfStates(); s++) {
           if (stateLabel.equals(automaton.getState(s).getLabel())) {
             changeState(s);
