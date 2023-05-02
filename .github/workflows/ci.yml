@@ -55,6 +55,7 @@ jobs:
         - name: Ubuntu
           tag: ubuntu-latest
     name: Unit Tests (${{ matrix.os.name }})
+    if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
     runs-on: ${{ matrix.os.tag }}
     steps:
     - name: Checkout repository
