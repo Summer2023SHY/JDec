@@ -6,7 +6,7 @@ package com.github.automaton.automata;
  * @author Micah Stairs
  **/
 
-public class OperationFailedException extends IllegalStateException {
+public class OperationFailedException extends AutomatonException {
     /**
      * Constructs a {@code OperationFailedException} with no
      * detail message.
