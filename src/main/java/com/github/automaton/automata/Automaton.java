@@ -362,7 +362,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Used to initialize all lists in order to prevent the possibility of NullPointerExceptions.
-   * @apiNote This method must be called at the beginning of the constuctor of Automaton. This method is intended to
+   * @apiNote This method must be called at the beginning of the constructor of Automaton. This method is intended to
    * be overridden by sub-classes, however, any sub-classes of Automaton do not need to explicitly call it.
    **/
   protected void initializeLists() {
@@ -375,8 +375,8 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Create a new copy of this automaton that has all unreachable states and transitions removed.
-   * @param newHeaderFile   The header file where the accesible automaton should be stored
-   * @param newBodyFile     The body file where the accesible automaton should be stored
+   * @param newHeaderFile   The header file where the accessible automaton should be stored
+   * @param newBodyFile     The body file where the accessible automaton should be stored
    * @return                The accessible automaton
    **/
   public Automaton accessible(File newHeaderFile, File newBodyFile) {
@@ -1710,7 +1710,7 @@ public class Automaton implements AutoCloseable {
   /**
    * Given a list of IDs and the largest possible value that could appear in the list, create a unique
    * combined ID using a BigInteger.
-   * @implNote The order of the list matters. This method does not sort the list interally.
+   * @implNote The order of the list matters. This method does not sort the list internally.
    * @param list  The list of IDs
    * @param maxID The largest possible value that could appear in the list (usually nStates)
    * @return      The unique combined ID
@@ -1753,7 +1753,7 @@ public class Automaton implements AutoCloseable {
   /**
    * Check to see if this automaton accepts the specified counter-example.
    * @param sequences The list of sequences of event labels which represent the counter-example
-   * @return          {@code -1} if the autmaton accepts the counter-example, or the number of steps it took to reject the counter-example
+   * @return          {@code -1} if the automaton accepts the counter-example, or the number of steps it took to reject the counter-example
    **/
   public int acceptsCounterExample(List<List<String>> sequences) {
 
@@ -2382,7 +2382,7 @@ public class Automaton implements AutoCloseable {
       nControllers       =       ByteManipulator.readBytesAsInt(buffer, 37, 4);
       int nEvents        =       ByteManipulator.readBytesAsInt(buffer, 41, 4);
 
-      // None of the folowing things can exist if there are no events
+      // None of the following things can exist if there are no events
       if (nEvents == 0)
         return;
 
@@ -3266,7 +3266,7 @@ public class Automaton implements AutoCloseable {
 
   /**
    * Given the label of a state, get the ID of the state.
-   * @implNote This method is extremely expensive. It should only be used when abesolutely necessary.
+   * @implNote This method is extremely expensive. It should only be used when absolutely necessary.
    * @param label The unique label corresponding to the requested state
    * @return      The corresponding state ID (or null, if it was not found)
    **/
@@ -3559,7 +3559,7 @@ public class Automaton implements AutoCloseable {
   }
 
   /**
-   * Check to see if all states and transtions in this automaton actually exist.
+   * Check to see if all states and transitions in this automaton actually exist.
    * @implNote Does not check special transition data.
    * @implNote This method has been added purely as a testing mechanism.
    * @return  Whether or not this automaton is deterministic
