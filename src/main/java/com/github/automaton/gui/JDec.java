@@ -1063,6 +1063,13 @@ public class JDec extends JFrame implements ActionListener {
     // Get the current tab
     int index = tabbedPane.getSelectedIndex();
     AutomatonTab tab = tabs.get(index);
+    if (tab.automaton != null) {
+      try {
+        tab.automaton.close();
+      } catch (IOException ioe) {
+        throw new UncheckedIOException(ioe);
+      }
+    }
 
     // Create automaton from input code
     switch (tab.type) {
