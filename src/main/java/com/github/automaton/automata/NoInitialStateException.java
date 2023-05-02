@@ -7,7 +7,7 @@ package com.github.automaton.automata;
  * @author Sung Ho Yoon
  * @since 1.2
  **/
-public class NoInitialStateException extends OperationFailedException {
+public class NoInitialStateException extends AutomatonException {
     /**
      * Constructs a {@code NoInitialStateException} with no
      * detail message.
