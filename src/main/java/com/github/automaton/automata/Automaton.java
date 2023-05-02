@@ -374,7 +374,7 @@ public class Automaton implements Closeable {
 
   /**
    * Used to initialize all lists in order to prevent the possibility of NullPointerExceptions.
-   * @apiNote This method must be called at the beginning of the constuctor of Automaton. This method is intended to
+   * @apiNote This method must be called at the beginning of the constructor of Automaton. This method is intended to
    * be overridden by sub-classes, however, any sub-classes of Automaton do not need to explicitly call it.
    **/
   protected void initializeLists() {
@@ -387,8 +387,8 @@ public class Automaton implements Closeable {
 
   /**
    * Create a new copy of this automaton that has all unreachable states and transitions removed.
-   * @param newHeaderFile   The header file where the accesible automaton should be stored
-   * @param newBodyFile     The body file where the accesible automaton should be stored
+   * @param newHeaderFile   The header file where the accessible automaton should be stored
+   * @param newBodyFile     The body file where the accessible automaton should be stored
    * @return                The accessible automaton
    **/
   public Automaton accessible(File newHeaderFile, File newBodyFile) {
@@ -668,10 +668,10 @@ public class Automaton implements Closeable {
   /**
    * Creates a new copy of this automaton that is trim (both accessible and co-accessible).
    * @implNote I am taking the accessible part of the automaton before the co-accessible part of the automaton
-   * because the {@link #accessible()} method has less overhead than the coaccessible() method.
+   * because the {@link #accessible()} method has less overhead than the {@link #coaccessible(File, File)} method.
    * @param newHeaderFile  The header file where the new automaton should be stored
    * @param newBodyFile    The body file where the new automaton should be stored
-   * @return               The trim automaton, or null if there was no initial state specified
+   * @return               The trim automaton, or {@code null} if there was no initial state specified
    **/
   public Automaton trim(File newHeaderFile, File newBodyFile) {
     return accessible(null, null).coaccessible(newHeaderFile, newBodyFile);
@@ -681,7 +681,7 @@ public class Automaton implements Closeable {
    * Create a new version of this automaton which has all of the transitions going the opposite direction.
    * @implNote An inverted automaton is needed when you want to efficiently determine which transitions lead to a particular state.
    * @implNote This is just a shallow copy of the automaton (no special transition data is retained), which makes it slightly more efficient.
-   * @implNote This method should be overridden by subclasses, using the invertHelper() method.
+   * @implNote This method should be overridden by subclasses, using the {@link #invertHelper(Automaton)} method.
    * @return  The inverted automaton
    * 
    * @see #invertHelper(Automaton)
@@ -1677,7 +1677,6 @@ public class Automaton implements Closeable {
 
   /**
    * Given two state IDs (the order matters) and their respective automatons, create a unique combined ID.
-   * @implNote There is potential for long overflow, which could technically result in generating IDs that are not unique
    * @implNote The reasoning behind this formula is analogous to the following: if you have a table with N rows and M columns,
    * every cell is guaranteed to have a different combination of row and column indexes.
    * @param id1     The state ID from the first automaton
@@ -1685,19 +1684,21 @@ public class Automaton implements Closeable {
    * @param id2     The state ID from the second automaton
    * @param second  The second automaton
    * @return        The combined ID
+   * @throws ArithmeticException if the ID combination result overflows a {@code long}
    **/ 
   private static long combineTwoIDs(long id1, Automaton first, long id2, Automaton second) {
 
-    return ((id2 - 1) * first.getNumberOfStates() + id1);
+    return Math.addExact((id2 - 1) * first.getNumberOfStates(), id1);
 
   }
 
   /**
    * Given a list of IDs and a maximum possible ID, create a unique combined ID.
-   * @implNote The order of the list matters. This method does not sort the list interally.
+   * @implNote The order of the list matters. This method does not sort the list internally.
    * @param list  The list of IDs
-   * @param maxID The largest possible value that could appear in the list (usually nStates)
+   * @param maxID The largest possible value that could appear in the list (usually {@link #nStates})
    * @return      The unique combined ID
+   * @throws ArithmeticException if the ID combination result overflows a {@code long}
    **/
   public static long combineIDs(List<Long> list, long maxID) {
     
@@ -1710,7 +1711,7 @@ public class Automaton implements Closeable {
 
       // Check for overflow
       if (combinedID < 0)
-        System.err.println("ERROR: Overflow in Automaton.combineIDs() method. Consider using Automaton.combineBigIDs() method instead.");
+        throw new ArithmeticException("Overflow in Automaton.combineIDs() method. Consider using Automaton.combineBigIDs() method instead.");
 
     }
 
@@ -1721,7 +1722,7 @@ public class Automaton implements Closeable {
   /**
    * Given a list of IDs and the largest possible value that could appear in the list, create a unique
    * combined ID using a BigInteger.
-   * @implNote The order of the list matters. This method does not sort the list interally.
+   * @implNote The order of the list matters. This method does not sort the list internally.
    * @param list  The list of IDs
    * @param maxID The largest possible value that could appear in the list (usually nStates)
    * @return      The unique combined ID
@@ -1764,7 +1765,7 @@ public class Automaton implements Closeable {
   /**
    * Check to see if this automaton accepts the specified counter-example.
    * @param sequences The list of sequences of event labels which represent the counter-example
-   * @return          {@code -1} if the autmaton accepts the counter-example, or the number of steps it took to reject the counter-example
+   * @return          {@code -1} if the automaton accepts the counter-example, or the number of steps it took to reject the counter-example
    **/
   public int acceptsCounterExample(List<List<String>> sequences) {
 
@@ -2434,7 +2435,7 @@ public class Automaton implements Closeable {
       nControllers       =       ByteManipulator.readBytesAsInt(buffer, 37, 4);
       int nEvents        =       ByteManipulator.readBytesAsInt(buffer, 41, 4);
 
-      // None of the folowing things can exist if there are no events
+      // None of the following things can exist if there are no events
       if (nEvents == 0)
         return;
 
@@ -3318,7 +3319,7 @@ public class Automaton implements Closeable {
 
   /**
    * Given the label of a state, get the ID of the state.
-   * @implNote This method is extremely expensive. It should only be used when abesolutely necessary.
+   * @implNote This method is extremely expensive. It should only be used when absolutely necessary.
    * @param label The unique label corresponding to the requested state
    * @return      The corresponding state ID (or null, if it was not found)
    **/
@@ -3611,7 +3612,7 @@ public class Automaton implements Closeable {
   }
 
   /**
-   * Check to see if all states and transtions in this automaton actually exist.
+   * Check to see if all states and transitions in this automaton actually exist.
    * @implNote Does not check special transition data.
    * @implNote This method has been added purely as a testing mechanism.
    * @return  Whether or not this automaton is deterministic
