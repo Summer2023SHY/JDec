@@ -56,7 +56,7 @@ public class AutomataExplorer extends JDialog {
     }
     else if (automaton.getInitialStateID() == 0L) {
       this.dispose();
-      throw new NoInitialStateException();
+      throw new NoInitialStateException("Automaton to explore has no initial state");
     }
     this.gui = gui;
     this.automaton = automaton;
