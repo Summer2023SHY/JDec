@@ -10,6 +10,8 @@ package com.github.automaton.gui;
 import java.util.*;
 import javax.swing.*;
 
+import org.apache.logging.log4j.*;
+
 import com.github.automaton.automata.CommunicationData;
 import com.github.automaton.automata.CommunicationRole;
 import com.github.automaton.automata.PrunedUStructure;
@@ -22,6 +24,8 @@ import com.github.automaton.automata.UStructure;
  * @author Micah Stairs
  */
 public class ChooseCommunicatorsForMyersonPrompt extends ChooseSendersAndRecieversPrompt {
+
+  private static Logger logger = LogManager.getLogger();
 
     /* CONSTRUCTOR */
 
@@ -98,7 +102,7 @@ public class ChooseCommunicatorsForMyersonPrompt extends ChooseSendersAndRecieve
               if (a != c && !selected[a][c]) {
                 changesMade = true;
                 selected[a][c] = true;
-                System.out.println("DBEUG: Added!");
+                logger.debug("Added!");
               }
               
             }

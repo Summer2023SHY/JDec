@@ -11,6 +11,7 @@ import java.util.*;
  * @since 1.1
  */
 public final class BodyAccessFile extends AutomatonAccessFile {
+
     /** List each state in the automaton, with the transitions */
     private RandomAccessFile bodyRAFile;
 
@@ -38,7 +39,7 @@ public final class BodyAccessFile extends AutomatonAccessFile {
             bodyRAFile = new RandomAccessFile(getFile(), "rw");
             return true;
         } catch (IOException e) {
-            e.printStackTrace();
+            getLogger().catching(e);
             return false;
         }
     }

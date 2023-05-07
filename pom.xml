@@ -27,6 +27,14 @@
         <artifactId>graphviz-java-all-j2v8</artifactId>
         <version>0.18.1</version>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.12.0</version>
+      <scope>compile</scope>
+      <optional>true</optional>
+    </dependency>
     <!-- https://mvnrepository.com/artifact/org.apache.xmlgraphics/batik-swing -->
     <dependency>
       <groupId>org.apache.xmlgraphics</groupId>
@@ -37,11 +45,15 @@
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
       <version>2.20.0</version>
+      <scope>compile</scope>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
       <version>2.20.0</version>
+      <scope>compile</scope>
+      <optional>true</optional>
     </dependency>
   </dependencies>
 
@@ -134,6 +146,7 @@
               </tag>
             </tags>
             <links>
+              <link>https://logging.apache.org/log4j/2.x/log4j-api/apidocs/</link>
               <link>https://www.javadoc.io/doc/xml-apis/xml-apis/1.4.01/</link>
               <link>https://www.javadoc.io/doc/guru.nidi/graphviz-java/0.18.1/</link>
             </links>

@@ -10,6 +10,8 @@ package com.github.automaton.automata;
 import java.io.*;
 import java.util.*;
 
+import org.apache.logging.log4j.*;
+
 import com.github.automaton.io.StateIO;
 
 /**
@@ -18,6 +20,8 @@ import com.github.automaton.io.StateIO;
  * @author Micah Stairs
  */
 public class PrunedUStructure extends UStructure {
+
+  private static Logger logger = LogManager.getLogger();
 
     /* CONSTRUCTORS */
 
@@ -159,7 +163,7 @@ public class PrunedUStructure extends UStructure {
     for (int id = 1; id <= maxID; id++) {
       if (!active[id]) {
         if (!removeEvent(id))
-          System.err.println("ERROR: Failed to remove inactive event.");
+          logger.error("Failed to remove inactive event.");
       } else 
         mapping.put(id, newID++);
     }
@@ -179,7 +183,7 @@ public class PrunedUStructure extends UStructure {
 
       // Write updated state to file
       if (!StateIO.writeToFile(state, baf, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID))
-        System.err.println("ERROR: Could not write state to file.");
+        logger.error("Could not write state to file.");
 
     }
 

@@ -3,6 +3,8 @@ package com.github.automaton.io;
 import java.io.*;
 import java.util.*;
 
+import org.apache.logging.log4j.*;
+
 import com.github.automaton.automata.*;
 import com.github.automaton.automata.util.ByteManipulator;
 
@@ -16,6 +18,8 @@ import com.github.automaton.automata.util.ByteManipulator;
  * @since 1.1
  */
 public class StateIO {
+
+    private static Logger logger = LogManager.getLogger();
 
     /** Private constructor */
     private StateIO() {}
@@ -71,7 +75,7 @@ public class StateIO {
 
         } catch (IOException e) {
 
-            e.printStackTrace();
+            logger.catching(e);
             return null;
 
         }
@@ -144,7 +148,7 @@ public class StateIO {
 
         } catch (IOException e) {
 
-            e.printStackTrace();
+            logger.catching(e);
             return null;
 
         }
@@ -242,7 +246,7 @@ public class StateIO {
 
         } catch (IOException e) {
 
-            e.printStackTrace();
+            logger.catching(e);
             return false;
 
         }
@@ -305,8 +309,8 @@ public class StateIO {
 
             // Double-check to make sure we can retrieve this character
             if ((char) bytesToWrite[i + 1] != s.getLabel().charAt(i))
-                System.err.println(
-                        "ERROR: Unsupported character '" + s.getLabel().charAt(i) + "' was written to file in a state label.");
+                logger.error(
+                        "Unsupported character '" + s.getLabel().charAt(i) + "' was written to file in a state label.");
         }
 
         /* Transitions */
@@ -335,7 +339,7 @@ public class StateIO {
 
         } catch (IOException e) {
 
-            e.printStackTrace();
+            logger.catching(e);
 
             return false;
 

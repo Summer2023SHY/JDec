@@ -21,6 +21,8 @@ import java.util.*;
 import java.io.*;
 import java.math.*;
 
+import org.apache.logging.log4j.*;
+
 import com.github.automaton.automata.util.ByteManipulator;
 import com.github.automaton.io.*;
 
@@ -82,6 +84,8 @@ public class Automaton implements Closeable {
    *           are not considered part of a valid state label.
    **/
   public static final String DUMP_STATE_LABEL = "Dump State";
+
+  private static Logger logger = LogManager.getLogger();
 
     /* INSTANCE VARIABLES */
 
@@ -216,7 +220,7 @@ public class Automaton implements Closeable {
       
       } catch (IOException e) {
         
-        e.printStackTrace();
+        logger.catching(e);
         return null;
       
       }
@@ -648,7 +652,7 @@ public class Automaton implements Closeable {
       long id = automaton.addState(DUMP_STATE_LABEL, false, false);
 
       if (id != dumpStateID)
-        System.err.println("ERROR: Dump state ID did not match expected ID.");
+        logger.error("Dump state ID did not match expected ID.");
     
     }
 
@@ -782,7 +786,7 @@ public class Automaton implements Closeable {
 
       // Error checking
       if (id1 == 0 || id2 == 0) {
-        System.err.println("ERROR: Bad state ID.");
+        logger.error("Bad state ID.");
         continue;
       }
 
@@ -894,7 +898,7 @@ public class Automaton implements Closeable {
 
       // Error checking
       if (id1 == 0 || id2 == 0) {
-        System.err.println("ERROR: Bad state ID.");
+        logger.error("Bad state ID.");
         continue;
       }
 
@@ -1157,7 +1161,7 @@ public class Automaton implements Closeable {
               stack.push(combinedTargetID);
               valuesInStack.add(combinedTargetID);
           } else
-            System.out.println("DEBUG: Prevented adding of state since it was already in the stack (NOTE: Does this ever get printed to the console? Intuitively it should, but I have never seen it before.).");
+            logger.debug("Prevented adding of state since it was already in the stack (NOTE: Does this ever get printed to the console? Intuitively it should, but I have never seen it before.).");
         }
 
         // Add transition
@@ -1225,13 +1229,13 @@ public class Automaton implements Closeable {
                 stack.push(combinedTargetID);
                 valuesInStack.add(combinedTargetID);
               } else
-                System.out.println("DEBUG: Prevented adding of state since it was already in the stack.");
+                logger.debug("Prevented adding of state since it was already in the stack.");
 
             }
 
             // Add transition
             if (uStructure.addTransition(combinedID, combinedEventLabel, combinedTargetID) == 0)
-              System.err.println("ERROR: Failed to add transition.");
+              logger.error("Failed to add transition.");
 
           }
         }
@@ -1418,7 +1422,7 @@ public class Automaton implements Closeable {
       long id = automaton.addState(DUMP_STATE_LABEL, false, false);
 
       if (id != dumpStateID)
-        System.err.println("ERROR: Dump state ID did not match expected ID.");
+        logger.error("Dump state ID did not match expected ID.");
     
     }
 
@@ -1514,7 +1518,7 @@ public class Automaton implements Closeable {
       long id = automaton.addState(DUMP_STATE_LABEL, false, false);
 
       if (id != dumpStateID)
-        System.err.println("ERROR: Dump state ID did not match expected ID.");
+        logger.error("Dump state ID did not match expected ID.");
     
     }
 
@@ -1612,7 +1616,7 @@ public class Automaton implements Closeable {
             long newTargetStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
 
             if (newTargetStateID == 0) {
-              System.out.println("ERROR: Target state does not exist, deleting transitions in an attempt to recover.");
+              logger.error("Target state does not exist, deleting transitions in an attempt to recover.");
               state.getTransitions().clear();
               break;
             } else 
@@ -1621,7 +1625,7 @@ public class Automaton implements Closeable {
 
           // Write the updated state to the new file
           if (!StateIO.writeToFile(state, newBodyRAFile, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID))
-            System.err.println("ERROR: Could not write state to file.");
+            logger.error("Could not write state to file.");
 
         }
 
@@ -1638,11 +1642,11 @@ public class Automaton implements Closeable {
         mappingRAFile.close();
         baf.copyFrom(newBodyFile);
       } catch (IOException e) {
-        e.printStackTrace();
+        logger.catching(e);
       }
 
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.catching(e);
     }
 
       /* Update header file (since we renumbered the information in the special transitions) */
@@ -1832,7 +1836,7 @@ public class Automaton implements Closeable {
       Graphviz.fromGraph(g).render(Format.PNG).toFile(new File(outputFileName + "." + Format.PNG.fileExtension));
       return true;
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.catching(e);
       return false;
     }
   }
@@ -2089,7 +2093,7 @@ public class Automaton implements Closeable {
       State state = getState(s);
 
       if (state == null) {
-        System.err.println("ERROR: State could not be loaded.");
+        logger.error("State could not be loaded.");
         continue;
       }
 
@@ -2237,7 +2241,7 @@ public class Automaton implements Closeable {
     // Handle errors
     } catch (IOException e) {
 
-      e.printStackTrace();
+      logger.catching(e);
       return false;
 
     }
@@ -2260,7 +2264,7 @@ public class Automaton implements Closeable {
         close();
 
       } catch (IOException e) {
-        e.printStackTrace();
+        logger.catching(e);
       }
 
   }
@@ -2286,13 +2290,13 @@ public class Automaton implements Closeable {
     try {
 
       if (!haf.clearFile())
-        System.err.println("ERROR: Could not delete header file.");
+        logger.error("Could not delete header file.");
       
       if (!baf.clearFile())
-        System.err.println("ERROR: Could not delete body file.");
+        logger.error("Could not delete body file.");
 
     } catch (SecurityException e) {
-      e.printStackTrace();
+      logger.catching(e);
     }
 
   }
@@ -2366,7 +2370,7 @@ public class Automaton implements Closeable {
       haf.trim();
 
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.catching(e);
     } 
 
   }
@@ -2488,7 +2492,7 @@ public class Automaton implements Closeable {
       readSpecialTransitionsFromHeader();
 
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.catching(e);
     } 
 
   }
@@ -2566,7 +2570,7 @@ public class Automaton implements Closeable {
     // Ensure that this temporary file does not already exist
     if (newBodyFile.exists())
       if (!newBodyFile.delete())
-        System.err.println("ERROR: Could not delete previously existing temporary file.");
+        logger.error("Could not delete previously existing temporary file.");
 
     RandomAccessFile newBodyRAFile = null;
 
@@ -2575,7 +2579,7 @@ public class Automaton implements Closeable {
       newBodyRAFile = new RandomAccessFile(newBodyFile, "rw");
 
     } catch (FileNotFoundException e) {
-      e.printStackTrace();
+      logger.catching(e);
       return;
     }
 
@@ -2595,7 +2599,7 @@ public class Automaton implements Closeable {
         try {
           newBodyRAFile.write(buffer);
         } catch (IOException e) {
-          e.printStackTrace();
+          logger.catching(e);
         }
 
         counter++;
@@ -2605,7 +2609,7 @@ public class Automaton implements Closeable {
 
       // Try writing to file
       if (!StateIO.writeToFile(state, newBodyRAFile, newNBytesPerState, newLabelLength, newNBytesPerEventID, newNBytesPerStateID)) {
-        System.err.println("ERROR: Could not write copy over state to file. Aborting re-creation of .bdy file.");
+        logger.error("Could not write copy over state to file. Aborting re-creation of .bdy file.");
         return;
       }
 
@@ -2620,7 +2624,7 @@ public class Automaton implements Closeable {
 
     } catch (SecurityException | IOException e) {
 
-      e.printStackTrace();
+      logger.catching(e);
 
     }
 
@@ -2784,7 +2788,7 @@ public class Automaton implements Closeable {
     State startingState  = getState(startingStateID);
 
     if (startingState == null) {
-      System.err.println("ERROR: Could not add transition to file (starting state does not exist).");
+      logger.error("Could not add transition to file (starting state does not exist).");
       return false;
     }
 
@@ -2794,7 +2798,7 @@ public class Automaton implements Closeable {
 
       // If we cannot increase the capacity, return false (NOTE: This will likely never happen)
       if (transitionCapacity == MAX_TRANSITION_CAPACITY) {
-        System.err.println("ERROR: Could not add transition to file (reached maximum transition capacity).");
+        logger.error("Could not add transition to file (reached maximum transition capacity).");
         return false;
       }
 
@@ -2818,7 +2822,7 @@ public class Automaton implements Closeable {
     if (targetStateID > getStateCapacity()) {
 
       if (targetStateID > MAX_STATE_CAPACITY) {
-        System.err.println("ERROR: Could not add transition (reached maximum state capacity).");
+        logger.error("Could not add transition (reached maximum state capacity).");
         return false;
       }
 
@@ -2847,7 +2851,7 @@ public class Automaton implements Closeable {
     Event event = getEvent(eventID);
     startingState.addTransition(new Transition(event, targetStateID));
     if (!StateIO.writeToFile(startingState, baf, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID)) {
-      System.err.println("ERROR: Could not add transition to file.");
+      logger.error("Could not add transition to file.");
       return false;
     }
 
@@ -2869,7 +2873,7 @@ public class Automaton implements Closeable {
     State startingState  = getState(startingStateID);
 
     if (startingState == null) {
-      System.err.println("ERROR: Could not remove transition from file (starting state does not exist).");
+      logger.error("Could not remove transition from file (starting state does not exist).");
       return false;
     }
 
@@ -2878,7 +2882,7 @@ public class Automaton implements Closeable {
     Event event = getEvent(eventID);
     startingState.removeTransition(new Transition(event, targetStateID));
     if (!StateIO.writeToFile(startingState, baf, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID)) {
-      System.err.println("ERROR: Could not remove transition from file.");
+      logger.error("Could not remove transition from file.");
       return false;
     }
 
@@ -2930,7 +2934,7 @@ public class Automaton implements Closeable {
       /* Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs) */
 
     if (nStates == MAX_STATE_CAPACITY) {
-      System.err.println("ERROR: Could not write state to file (reached maximum state capacity).");
+      logger.error("Could not write state to file (reached maximum state capacity).");
       return 0;
     }
 
@@ -2940,7 +2944,7 @@ public class Automaton implements Closeable {
 
       // If we cannot increase the capacity, indicate a failure
       if (label.length() > MAX_LABEL_LENGTH) {
-        System.err.println("ERROR: Could not write state to file (reached maximum label length).");
+        logger.error("Could not write state to file (reached maximum label length).");
         return 0;
       }
 
@@ -2962,7 +2966,7 @@ public class Automaton implements Closeable {
 
       // If we cannot increase the capacity, indicate a failure (NOTE: This will likely never happen)
       if (transitions.size() > MAX_TRANSITION_CAPACITY) {
-        System.err.println("ERROR: Could not write state to file (reached maximum transition capacity).");
+        logger.error("Could not write state to file (reached maximum transition capacity).");
         return 0;
       }
 
@@ -3000,7 +3004,7 @@ public class Automaton implements Closeable {
     
     State state = new State(label, id, marked, transitions);
     if (!StateIO.writeToFile(state, baf, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID)) {
-      System.err.println("ERROR: Could not write state to file.");
+      logger.error("Could not write state to file.");
       return 0;
     }
 
@@ -3036,7 +3040,7 @@ public class Automaton implements Closeable {
       /* Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs) */
     
     if (id > MAX_STATE_CAPACITY) {
-      System.err.println("ERROR: Could not write state to file (exceeded maximum state capacity).");
+      logger.error("Could not write state to file (exceeded maximum state capacity).");
       return false;
     }
 
@@ -3046,7 +3050,7 @@ public class Automaton implements Closeable {
 
       // If we cannot increase the capacity, indicate a failure
       if (label.length() > MAX_LABEL_LENGTH) {
-        System.err.println("ERROR: Could not write state to file (exceeded maximum label length).");
+        logger.error("Could not write state to file (exceeded maximum label length).");
         return false;
       }
 
@@ -3067,7 +3071,7 @@ public class Automaton implements Closeable {
 
       // If we cannot increase the capacity, indicate a failure (NOTE: This will likely never happen)
       if (transitions.size() > MAX_TRANSITION_CAPACITY) {
-        System.err.println("ERROR: Could not write state to file (exceeded maximum transition capacity).");
+        logger.error("Could not write state to file (exceeded maximum transition capacity).");
         return false;
       }
 
@@ -3111,7 +3115,7 @@ public class Automaton implements Closeable {
     State state = new State(label, id, marked, transitions);
     
     if (!StateIO.writeToFile(state, baf, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID)) {
-      System.err.println("ERROR: Could not write state to file.");
+      logger.error("Could not write state to file.");
       return false;
     }
 
@@ -3142,7 +3146,7 @@ public class Automaton implements Closeable {
       /* Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs) */
 
     if (events.size() == MAX_EVENT_CAPACITY) {
-      System.err.println("ERROR: Could not add event (reached maximum event capacity).");
+      logger.error("Could not add event (reached maximum event capacity).");
       return 0;
     }
 
@@ -3170,7 +3174,7 @@ public class Automaton implements Closeable {
       /* Add the event */
 
     if (!events.add(event) ) {
-      System.err.println("ERROR: Could not add event to list.");
+      logger.error("Could not add event to list.");
       return 0;
     }
 

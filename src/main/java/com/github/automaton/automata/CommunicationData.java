@@ -10,6 +10,8 @@ package com.github.automaton.automata;
 
 import java.util.*;
 
+import org.apache.logging.log4j.*;
+
 /**
  * Holds all 3 pieces of information needed to identify a transition, as well
  * as an enumeration array to indicate which controller is the sender
@@ -18,6 +20,8 @@ import java.util.*;
  * @author Micah Stairs
  */
 public class CommunicationData extends TransitionData {
+
+  private static Logger logger = LogManager.getLogger();
 
     /* INSTANCE VARIABLES */
 
@@ -53,7 +57,7 @@ public class CommunicationData extends TransitionData {
       /* Print error message to the console if there is not exactly one sender */
 
     if (nSenders != 1)
-      System.err.println("ERROR: A communication must contain exactly one sender. " + nSenders + " senders were found.");
+      logger.error("A communication must contain exactly one sender. " + nSenders + " senders were found.");
       
   }
 

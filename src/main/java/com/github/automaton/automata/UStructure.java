@@ -17,6 +17,8 @@ import java.util.*;
 import java.io.*;
 import java.math.*;
 
+import org.apache.logging.log4j.*;
+
 import com.github.automaton.automata.util.ByteManipulator;
 import com.github.automaton.io.IOUtility;
 
@@ -31,6 +33,8 @@ public class UStructure extends Automaton {
 
   /** Whether or not invalid communications should be added for mathmatical completeness, or supressed for efficiency purposes */
   public static boolean SUPPRESS_INVALID_COMMUNICATIONS = true;
+
+  private static Logger logger = LogManager.getLogger();
 
     /* INSTANCE VARIABLES */
 
@@ -249,7 +253,7 @@ public class UStructure extends Automaton {
             // If there were no potential communications, then it must be a invalid communication
             if (!found) {
               if (SUPPRESS_INVALID_COMMUNICATIONS)
-                System.err.println("ERROR: Invalid communication was not supressed: " + vector);
+                logger.error("Invalid communication was not supressed: " + vector);
               uStructure.addInvalidCommunication(startingState.getID(), id, destinationState.getID());
             }
     
@@ -385,7 +389,7 @@ public class UStructure extends Automaton {
       CommunicationData associatedCommunication = uStructure.findCommunicationToBeAdded(chosenViolation, this, protocol);
 
       if (protocol.contains(associatedCommunication)) {
-        System.err.println("ERROR : There was an infinite loop detected.");
+        logger.error("ERROR : There was an infinite loop detected.");
         break;
       }
       protocol.addAll(addCommunicationsToEnsureFeasibility(associatedCommunication));
@@ -516,7 +520,7 @@ public class UStructure extends Automaton {
     try (RandomAccessFile raFile = new RandomAccessFile(newHeaderFile, "rw")) {
       raFile.writeByte((byte) Type.PRUNED_U_STRUCTURE.getNumericValue());
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.catching(e);
       return null;
     }
 
@@ -667,7 +671,7 @@ public class UStructure extends Automaton {
                      Crush.CombiningCosts combiningCostsMethod) {
 
     if (potentialCommunications.size() > 0)
-      System.err.println("WARNING: " + potentialCommunications.size() + " communications were ignored. Only Nash communications are being considered.");
+      logger.warn(potentialCommunications.size() + " communications were ignored. Only Nash communications are being considered.");
 
       /* Setup */
 
@@ -794,7 +798,7 @@ public class UStructure extends Automaton {
                   break;
 
                 default:
-                  System.err.println("ERROR: Could not combine communication costs as requested.");
+                  logger.error("Could not combine communication costs as requested.");
                   break;
               }
 
@@ -844,7 +848,7 @@ public class UStructure extends Automaton {
                      int indexOfController) {
 
     if (nashCommunications.size() > 0)
-      System.err.println("WARNING: Nash information was ignored.");
+      logger.warn("Nash information was ignored.");
 
       /* Setup */
 
@@ -1158,7 +1162,7 @@ public class UStructure extends Automaton {
 
     }
 
-    System.err.println("ERROR: Could not locate communication to be removed.");
+    logger.error("Could not locate communication to be removed.");
 
     return null;
 
@@ -1216,7 +1220,7 @@ public class UStructure extends Automaton {
 
     // Error checking
     if (n < 0 || n > 12) {
-      System.err.println("ERROR: Factorial value of " + n + " is outside allowed range.");
+      logger.error("Factorial value of " + n + " is outside allowed range.");
       return -1;
     }
     
@@ -1397,7 +1401,7 @@ public class UStructure extends Automaton {
           /* Error checking */
 
         if (v1.getSize() == -1 || v2.getSize() == -1 || v1.getSize() != v2.getSize()) {
-          System.err.println("ERROR: Bad event vectors. Least upper bounds generation aborted.");
+          logger.error("Bad event vectors. Least upper bounds generation aborted.");
           return null;
         }
 
@@ -1503,7 +1507,7 @@ public class UStructure extends Automaton {
             /* Error checking */
 
           if (v1.getSize() == -1 || v2.getSize() == -1 || v1.getSize() != v2.getSize()) {
-            System.err.println("ERROR: Bad event vectors. Pair of label vectors skipped.");
+            logger.error("Bad event vectors. Pair of label vectors skipped.");
             continue;
           }
 
@@ -1890,7 +1894,7 @@ public class UStructure extends Automaton {
       return null;
 
     if (nStates + 1 > Integer.MAX_VALUE)
-      System.err.println("ERROR: Integer overflow due to too many states.");
+      logger.error("Integer overflow due to too many states.");
 
       /* Find counter-examples using a breadth-first search */
     
