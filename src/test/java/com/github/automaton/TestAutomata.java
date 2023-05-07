@@ -36,46 +36,29 @@ public class TestAutomata {
   // Whether or not to compare lines by printing out the missing lines and added lines  (as opposed to actual vs expected)
   public static boolean DIFF = false;
   
-  @Test
+  @Nested
   @DisplayName("BYTE MANIPULATOR")
-  public void runByteManipulatorTestRoutine() {
+  class ByteManipulatorTest {
 
-    String testRoutineName = "BYTE MANIPULATOR";
-
-    printTestOutput("RUNNING " + testRoutineName + " TESTS...", 1);
-
-    TestCounter counter = new TestCounter();
-
-    printTestOutput("Ensuring that values being written can be read again: ", 2);
-
-    boolean passed = true;
-    for (int i = 0; i <= 255; i++) {
-      byte[] arr = new byte[1];
-      ByteManipulator.writeLongAsBytes(arr, 0, i, 1);
-      if (ByteManipulator.readBytesAsLong(arr, 0, 1) != i) {
-        passed = false;
-        break;
+    @Test
+    @DisplayName("Ensuring that values being written can be read again")
+    public void byteManipulatorTest1() {
+      for (int i = 0; i <= 255; i++) {
+        byte[] arr = new byte[1];
+        ByteManipulator.writeLongAsBytes(arr, 0, i, 1);
+        assertEquals(i, ByteManipulator.readBytesAsLong(arr, 0, 1));
       }
     }
-    printTestCase("Ensuring that one byte values were written and read properly", new TestResult(passed), counter);
 
-    passed = true;
-    for (int i = 256; i <= 65535; i++) {
-      byte[] arr = new byte[2];
-      ByteManipulator.writeLongAsBytes(arr, 0, i, 2);
-      if (ByteManipulator.readBytesAsLong(arr, 0, 2) != i) {
-        passed = false;
-        break;
+    @Test
+    @DisplayName("Ensuring that one byte values were written and read properly")
+    public void byteManipulatorTest2() {
+      for (int i = 256; i <= 65535; i++) {
+        byte[] arr = new byte[2];
+        ByteManipulator.writeLongAsBytes(arr, 0, i, 2);
+        assertEquals(i, ByteManipulator.readBytesAsLong(arr, 0, 2));
       }
     }
-    printTestCase("Ensuring that two byte values were written and read properly", new TestResult(passed), counter);
-   
-      /* Print summary of this test routine */
-
-    printTestRoutineSummary(testRoutineName, counter);
-
-    
-
   }
 
   @Nested
@@ -670,49 +653,48 @@ public class TestAutomata {
 
   }
 
-  @Test
+  @Nested
   @DisplayName("GUI INPUT")
-  public void runGuiInputTestRoutine() {
+  class GuiInputTest {
 
-    String testRoutineName = "GUI INPUT";
+    TestCounter counter;
 
-    printTestOutput("RUNNING " + testRoutineName + " TEST ROUTINE...", 1);
-
-    TestCounter counter = new TestCounter();
+    @BeforeEach
+    void setupCounter() {
+      counter = new TestCounter();
+    }
 
       /* Basic GUI Input Tests */
 
-    printTestOutput("BASIC GUI INPUT: ", 2);
+    @Test
+    @DisplayName("Simple GUI input code")
+    public void basicInputTest1() {
+      Automaton automaton = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+        new Automaton(),
+        "a,T,T\nb,T,F\nc,F,T\nd,F,F", // Events
+        "e,T\nf,F", // States  
+        "e,a,f\nf,b,e" // Transitions
+      ));
+      automaton.generateInputForGUI();
+      printTestCase("Ensuring the event input was saved and loaded correctly", new TestResult(automaton.getEventInput(), "a,T,T\nb,T,F\nc,F,T\nd,F,F"), counter);
+      printTestCase("Ensuring the state input was saved and loaded correctly", new TestResult(automaton.getStateInput(), "e,T\nf,F"), counter);
+      printTestCase("Ensuring the transition input was saved and loaded correctly", new TestResult(automaton.getTransitionInput(), "e,a,f\nf,b,e"), counter);
+    }
 
-    printTestOutput("Instantiating automaton from simple GUI input code...", 3);
-    Automaton automaton = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(),
-      "a,T,T\nb,T,F\nc,F,T\nd,F,F", // Events
-      "e,T\nf,F", // States  
-      "e,a,f\nf,b,e" // Transitions
-    ));
-    automaton.generateInputForGUI();
-    printTestCase("Ensuring the event input was saved and loaded correctly", new TestResult(automaton.getEventInput(), "a,T,T\nb,T,F\nc,F,T\nd,F,F"), counter);
-    printTestCase("Ensuring the state input was saved and loaded correctly", new TestResult(automaton.getStateInput(), "e,T\nf,F"), counter);
-    printTestCase("Ensuring the transition input was saved and loaded correctly", new TestResult(automaton.getTransitionInput(), "e,a,f\nf,b,e"), counter);
-
-    printTestOutput("Instantiating automaton from GUI input code with duplicate labels, omitted optional parameters, and an initial state...", 3);
-    automaton = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(),
-      "a\nb,F,F\na,F,F\nb", // Events
-      "@c\nc,F", // States  
-      "" // Transitions
-    ));
-    automaton.generateInputForGUI();
-    printTestCase("Ensuring the event input was saved and loaded correctly", new TestResult(automaton.getEventInput(), "a,T,T\nb,F,F"), counter);
-    printTestCase("Ensuring the state input was saved and loaded correctly", new TestResult(automaton.getStateInput(), "@c,F"), counter);
-    printTestCase("Ensuring the transition input was saved and loaded correctly", new TestResult(automaton.getTransitionInput(), ""), counter);
-
-      /* Print summary of this test routine */
-
-    printTestRoutineSummary(testRoutineName, counter);
-
-    
+    @Test
+    @DisplayName("GUI input code with duplicate labels, omitted optional parameters, and an initial state")
+    public void basicInputTest2() {
+      Automaton automaton = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+        new Automaton(),
+        "a\nb,F,F\na,F,F\nb", // Events
+        "@c\nc,F", // States  
+        "" // Transitions
+      ));
+      automaton.generateInputForGUI();
+      printTestCase("Ensuring the event input was saved and loaded correctly", new TestResult(automaton.getEventInput(), "a,T,T\nb,F,F"), counter);
+      printTestCase("Ensuring the state input was saved and loaded correctly", new TestResult(automaton.getStateInput(), "@c,F"), counter);
+      printTestCase("Ensuring the transition input was saved and loaded correctly", new TestResult(automaton.getTransitionInput(), ""), counter);
+    }
 
   }
 
@@ -1148,7 +1130,7 @@ public class TestAutomata {
       
       } catch (NullPointerException e) {
 
-        e.printStackTrace();
+        fail(e);
         counter.increment(false);
         counter.increment(false);
         counter.increment(false);
@@ -1299,7 +1281,7 @@ public class TestAutomata {
         
       } catch (DoesNotSatisfyObservabilityException e) {
 
-        e.printStackTrace();
+        fail(e);
         counter.increment(false);
         counter.increment(false);
         counter.increment(false);
@@ -1484,14 +1466,10 @@ public class TestAutomata {
         "" // Transitions
       ));
 
-      try {
+      assertThrows(IncompatibleAutomataException.class, () -> {
         printTestOutput("Taking the union of the two instantiated automata...", 3);
         Automaton.union(automaton1, automaton2, null, null);
-        printTestCase("Ensuring that an IncompatibleAutomataException was raised", new TestResult(false), counter);
-        fail("IncompatibleAutomataException not raised");
-      } catch(IncompatibleAutomataException e) {
-        printTestCase("Ensuring that an IncompatibleAutomataException was raised", new TestResult(true), counter);
-      }
+      }, "IncompatibleAutomataException not raised");
 
     }
 
@@ -1515,14 +1493,10 @@ public class TestAutomata {
         "" // Transitions
       ));
 
-      try {
+      assertThrows(IncompatibleAutomataException.class, () -> {
         printTestOutput("Taking the union of the first and third instantiated automata...", 3);
         Automaton.union(automaton1, automaton3, null, null);
-        printTestCase("Ensuring that an IncompatibleAutomataException was raised", new TestResult(false), counter);
-        fail("IncompatibleAutomataException not raised");
-      } catch(IncompatibleAutomataException e) {
-        printTestCase("Ensuring that an IncompatibleAutomataException was raised", new TestResult(true), counter);
-      }
+      }, "IncompatibleAutomataException not raised");
     }
   }
 
@@ -1818,7 +1792,7 @@ class TestResult {
     Arrays.sort(expected);
 
     passed = Arrays.deepEquals(actual, expected);
-    assertArrayEquals(expected, actual, String.format("Expected %s but was %s", Arrays.toString(expected), Arrays.toString(actual)));
+    assertIterableEquals(Arrays.asList(expected), Arrays.asList(actual), String.format("Expected %s but was %s", Arrays.toString(expected), Arrays.toString(actual)));
     
     if (!passed) {
 
@@ -1865,29 +1839,11 @@ class TestResult {
 
   }
 
-  public TestResult(List<Long> actual, List<Long> expected) {
+  public <T> TestResult(List<T> actual, List<T> expected) {
     
     passed = (actual.equals(expected));
-    assertEquals(expected, actual);
-    
-    if (!passed)
-      summary = "\nEXPECTED:\n" + expected + "\n\nACTUAL:\n" + actual + "\n";
+    assertIterableEquals(expected, actual);
 
-  }
-
-  public TestResult(ArrayList<Integer> actual, ArrayList<Integer> expected) {
-    
-    passed = (actual.equals(expected));
-    
-    if (!passed)
-      summary = "\nEXPECTED:\n" + expected + "\n\nACTUAL:\n" + actual + "\n";
-
-  }
-
-  public TestResult(List<String> actual, ArrayList<String> expected) {
-    
-    passed = (actual.equals(expected));
-    assertEquals(expected, actual);
     if (!passed)
       summary = "\nEXPECTED:\n" + expected + "\n\nACTUAL:\n" + actual + "\n";
 
