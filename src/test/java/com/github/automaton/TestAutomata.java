@@ -1148,7 +1148,7 @@ public class TestAutomata {
       
       } catch (NullPointerException e) {
 
-        e.printStackTrace();
+        fail(e);
         counter.increment(false);
         counter.increment(false);
         counter.increment(false);
@@ -1299,7 +1299,7 @@ public class TestAutomata {
         
       } catch (DoesNotSatisfyObservabilityException e) {
 
-        e.printStackTrace();
+        fail(e);
         counter.increment(false);
         counter.increment(false);
         counter.increment(false);
@@ -1484,14 +1484,10 @@ public class TestAutomata {
         "" // Transitions
       ));
 
-      try {
+      assertThrows(IncompatibleAutomataException.class, () -> {
         printTestOutput("Taking the union of the two instantiated automata...", 3);
         Automaton.union(automaton1, automaton2, null, null);
-        printTestCase("Ensuring that an IncompatibleAutomataException was raised", new TestResult(false), counter);
-        fail("IncompatibleAutomataException not raised");
-      } catch(IncompatibleAutomataException e) {
-        printTestCase("Ensuring that an IncompatibleAutomataException was raised", new TestResult(true), counter);
-      }
+      }, "IncompatibleAutomataException not raised");
 
     }
 
@@ -1515,14 +1511,10 @@ public class TestAutomata {
         "" // Transitions
       ));
 
-      try {
+      assertThrows(IncompatibleAutomataException.class, () -> {
         printTestOutput("Taking the union of the first and third instantiated automata...", 3);
         Automaton.union(automaton1, automaton3, null, null);
-        printTestCase("Ensuring that an IncompatibleAutomataException was raised", new TestResult(false), counter);
-        fail("IncompatibleAutomataException not raised");
-      } catch(IncompatibleAutomataException e) {
-        printTestCase("Ensuring that an IncompatibleAutomataException was raised", new TestResult(true), counter);
-      }
+      }, "IncompatibleAutomataException not raised");
     }
   }
 
@@ -1818,7 +1810,7 @@ class TestResult {
     Arrays.sort(expected);
 
     passed = Arrays.deepEquals(actual, expected);
-    assertArrayEquals(expected, actual, String.format("Expected %s but was %s", Arrays.toString(expected), Arrays.toString(actual)));
+    assertIterableEquals(Arrays.asList(expected), Arrays.asList(actual), String.format("Expected %s but was %s", Arrays.toString(expected), Arrays.toString(actual)));
     
     if (!passed) {
 
