@@ -1839,29 +1839,11 @@ class TestResult {
 
   }
 
-  public TestResult(List<Long> actual, List<Long> expected) {
+  public <T> TestResult(List<T> actual, List<T> expected) {
     
     passed = (actual.equals(expected));
-    assertEquals(expected, actual);
-    
-    if (!passed)
-      summary = "\nEXPECTED:\n" + expected + "\n\nACTUAL:\n" + actual + "\n";
+    assertIterableEquals(expected, actual);
 
-  }
-
-  public TestResult(ArrayList<Integer> actual, ArrayList<Integer> expected) {
-    
-    passed = (actual.equals(expected));
-    
-    if (!passed)
-      summary = "\nEXPECTED:\n" + expected + "\n\nACTUAL:\n" + actual + "\n";
-
-  }
-
-  public TestResult(List<String> actual, ArrayList<String> expected) {
-    
-    passed = (actual.equals(expected));
-    assertEquals(expected, actual);
     if (!passed)
       summary = "\nEXPECTED:\n" + expected + "\n\nACTUAL:\n" + actual + "\n";
 
