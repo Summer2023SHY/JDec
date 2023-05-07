@@ -41,7 +41,7 @@ public final class HeaderAccessFile extends AutomatonAccessFile {
             headerRAFile = new RandomAccessFile(getFile(), "rw");
             return true;
         } catch (IOException e) {
-            e.printStackTrace();
+            getLogger().catching(e);
             return false;
         }
     }

@@ -3,6 +3,8 @@ package com.github.automaton.io;
 import java.io.*;
 import java.nio.file.*;
 
+import org.apache.logging.log4j.*;
+
 /**
  * This class contains various methods for assisting
  * I/O operations with automata.
@@ -12,6 +14,8 @@ import java.nio.file.*;
  * @since 1.1
  */
 public class IOUtility {
+
+    private static Logger logger = LogManager.getLogger();
 
     /* CLASS VARIABLES */
     private static int temporaryFileIndex = 1;
@@ -41,16 +45,15 @@ public class IOUtility {
             while (true) {
 
                 File file = new File(".tmp" + temporaryFileIndex++);
-                System.out.println("WARNING: Temporary file had to be manually created.");
+                logger.warn("Temporary file had to be manually created.");
 
                 if (!file.exists()) {
 
                     try {
                         if (!file.createNewFile())
-                            System.err.println("ERROR: Could not create empty temporary file.");
+                            logger.error("Could not create empty temporary file.");
                     } catch (IOException e2) {
-                        System.err.println("ERROR: Could not create empty temporary file.");
-                        e2.printStackTrace();
+                        logger.error("Could not create empty temporary file.", e2);
                     }
 
                     file.deleteOnExit();

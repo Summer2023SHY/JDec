@@ -30,6 +30,7 @@ import javax.xml.transform.dom.*;
 import javax.xml.transform.stream.*;
 
 import org.apache.batik.swing.svg.JSVGComponent;
+import org.apache.logging.log4j.*;
 import org.w3c.dom.*;
 import org.xml.sax.*;
 
@@ -65,6 +66,8 @@ public class JDec extends JFrame implements ActionListener {
 
   private static final int N_STATES_TO_AUTOMATICALLY_DRAW = 20;
 
+  private static Logger logger = LogManager.getLogger();
+
     /* INSTANCE VARIABLES */
 
   // Tabs
@@ -96,10 +99,10 @@ public class JDec extends JFrame implements ActionListener {
         getResourceURL("tooltips.xml").toURI().toString()
       );
     } catch (ParserConfigurationException | SAXException | IOException | URISyntaxException e) {
-      e.printStackTrace();
+      logger.error(e);
       tooltipDocument = null;
     } catch (FactoryConfigurationError fce) {
-      fce.printStackTrace();
+      logger.error(fce);
       tooltipDocument = null;
     }
 
@@ -111,7 +114,7 @@ public class JDec extends JFrame implements ActionListener {
     try {
       TEMPORARY_DIRECTORY = Files.createTempDirectory(null).toFile();
     } catch (Exception e) {
-      System.out.println("WARNING: Temporary directory could not be created.");
+      logger.warn("Temporary directory could not be created.", e);
       TEMPORARY_DIRECTORY = new File("JDec_Temporary_Files");
     }
   }
@@ -1045,7 +1048,7 @@ public class JDec extends JFrame implements ActionListener {
 
       }
     } catch (IOException | URISyntaxException e) {
-      e.printStackTrace();
+      logger.catching(e);
     }
     
     // Display the proper error message
@@ -1871,7 +1874,7 @@ public class JDec extends JFrame implements ActionListener {
         writer.close();
 
       } catch (IOException e) {
-        e.printStackTrace();
+        logger.catching(e);
       }
 
     }
@@ -2187,8 +2190,8 @@ public class JDec extends JFrame implements ActionListener {
      **/
     public void refreshGUI() {
 
-      // System.out.println("Starting refresh...");
-      // long s = System.currentTimeMillis();
+      logger.info("Starting refresh...");
+      long s = System.currentTimeMillis();
 
       automaton.generateInputForGUI();
 
@@ -2197,7 +2200,7 @@ public class JDec extends JFrame implements ActionListener {
       stateInput.setText(automaton.getStateInput());
       transitionInput.setText(automaton.getTransitionInput());
       
-      // System.out.println("Finished in " + (System.currentTimeMillis() - s) + "ms.");
+      logger.debug("Finished in " + (System.currentTimeMillis() - s) + "ms.");
 
     }
 

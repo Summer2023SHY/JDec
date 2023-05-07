@@ -4,6 +4,8 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.Objects;
 
+import org.apache.logging.log4j.*;
+
 /**
  * I/O handler for automaton data files.
  * 
@@ -11,7 +13,8 @@ import java.util.Objects;
  * @since 1,1
  */
 public abstract class AutomatonAccessFile implements Closeable {
-    
+
+    private Logger logger;
     private String fileName;
     private File file;
 
@@ -23,6 +26,7 @@ public abstract class AutomatonAccessFile implements Closeable {
     AutomatonAccessFile(File file) throws NullPointerException {
         this.file = Objects.requireNonNull(file);
         this.fileName = this.file.getAbsolutePath();
+        this.logger = LogManager.getLogger(this.getClass().getName() + "(" + this.file.getName() +")");
     }
 
     /**
@@ -57,6 +61,16 @@ public abstract class AutomatonAccessFile implements Closeable {
      */
     public final File getFile() {
         return file;
+    }
+
+    /**
+     * Returns the internally used logger. The name of this logger is
+     * of the form {@code Classname (filename)}, where {@code Classname}
+     * is specified by calling {@link Class#getName()} on {@link #getClass()}.
+     * @return the internally used logger
+     */
+    protected final Logger getLogger() {
+        return logger;
     }
 
     /**
