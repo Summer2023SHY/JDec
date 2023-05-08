@@ -173,7 +173,8 @@ public class State {
   public boolean equals(Object other) {
     if (this == other) return true;
     else if (other instanceof State) {
-      return id == ((State) other).id;
+      State s = (State) other;
+      return Objects.equals(this.label, s.label) && this.id == s.id;
     }
     else return false;
   }
