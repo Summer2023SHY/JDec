@@ -8,6 +8,8 @@ package com.github.automaton.automata;
  *  -Overridden Methods
  */
 
+import org.apache.commons.lang3.*;
+
 /**
  * Used to take a string and vectorize it into its components using some
  * basic syntax.
@@ -36,6 +38,30 @@ public class LabelVector {
     if (label.charAt(0) == '<' && label.charAt(label.length() - 1) == '>')
       vector = label.substring(1, label.length() - 1).split(",");
 
+  }
+
+  /**
+   * Construct a {@code LabelVector} object from its vector components
+   * 
+   * @param labels components of this vector
+   * @throws IllegalArgumentException if argument or any element of it is {@code null}
+   * 
+   * @since 2.0
+   */
+  public LabelVector(String[] labels) {
+    if (ObjectUtils.anyNull((Object[]) labels)) {
+      throw new IllegalArgumentException();
+    }
+    this.vector = ArrayUtils.clone(labels);
+    StringBuilder labelBuilder = new StringBuilder();
+    labelBuilder.append('<');
+    for (String l : vector) {
+      labelBuilder.append(l);
+      labelBuilder.append(',');
+    }
+    labelBuilder.deleteCharAt(labelBuilder.length() - 1);
+    labelBuilder.append('>');
+    this.label = labelBuilder.toString();
   }
 
     /* ACCESSOR METHODS */

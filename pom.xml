@@ -33,7 +33,6 @@
       <artifactId>commons-lang3</artifactId>
       <version>3.12.0</version>
       <scope>compile</scope>
-      <optional>true</optional>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.apache.xmlgraphics/batik-swing -->
     <dependency>

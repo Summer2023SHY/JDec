@@ -53,6 +53,23 @@ public class Event {
 
   }
 
+  /**
+   * Construct a new event with the specified properties
+   * @param labelVector the label vector
+   * @param id            The ID of the event
+   * @param observable    Whether or not the event can be observed
+   * @param controllable  Whether or not the event can be controlled
+   * 
+   * @since 2.0
+   */
+  public Event(LabelVector labelVector, int id, boolean[] observable, boolean[] controllable) {
+    this.label = labelVector.toString();
+    this.vector = labelVector;
+    this.id = id;
+    this.observable = observable;
+    this.controllable = controllable;
+  }
+
     /* MUTATOR METHOD */
 
   /**
