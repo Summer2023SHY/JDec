@@ -8,6 +8,8 @@ package com.github.automaton.automata;
  *  -Overridden Methods
  */
 
+import java.util.*;
+
 /**
  * Used to take a string and vectorize it into its components using some
  * basic syntax.
@@ -46,7 +48,7 @@ public class LabelVector {
    * @return      Whether or not the label vector is unobservable to the specified controller.
    **/
   public boolean isUnobservableToController(int index) {
-    return getLabelAtIndex(0).equals("*") || getLabelAtIndex(index).equals("*");
+    return Objects.equals(getLabelAtIndex(0), "*") || Objects.equals(getLabelAtIndex(index), "*");
   }
 
   /**

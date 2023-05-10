@@ -40,12 +40,7 @@ public class Transition {
    **/
   public Transition(Event event, long targetStateID) {
     this.event = event;
-    this.targetStateID = targetStateID;
-
-    if (targetStateID == 0) {
-      logger.warn("The target state ID was specified as 0 (which is null).");
-      logger.warn(getStackTrace(new Exception()));
-    }
+    setTargetStateID(targetStateID);
   }
 
     /* MUTATOR METHOD */
