@@ -16,7 +16,6 @@ package com.github.automaton.gui;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.*;
 import java.io.*;
 import java.net.*;
 import java.nio.file.*;
@@ -1933,7 +1932,7 @@ public class JDec extends JFrame implements ActionListener {
 
       // Create containers
       Container inputContainer = createInputContainer(type);
-      canvas = new JSVGComponent(null, true, false);
+      canvas = new ScrollableSVGCanvas();
 
       // Create a split pane with the two scroll panes in it
       splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, inputContainer, canvas);
