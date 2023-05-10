@@ -225,6 +225,22 @@ public class StateIO {
      * just a blank spot filled with padding).
      * 
      * @param automaton The automaton in consideration
+     * @param bodyAccessFile The {@link BodyAccessFile} containing the states associated with this
+     *                  automaton
+     * @param state     The state we are checking to see if it exists
+     * @return whether or not the state exists
+     * 
+     * @since 2.0
+     **/
+    public static boolean stateExists(Automaton automaton, BodyAccessFile bodyAccessFile, State state) {
+        return stateExists(automaton, bodyAccessFile, state.getID());
+    }
+
+    /**
+     * Check to see if the specified state actually exists in the file (or if it's
+     * just a blank spot filled with padding).
+     * 
+     * @param automaton The automaton in consideration
      * @param file      The {@code .bdy} file containing the states associated with this
      *                  automaton
      * @param id        The ID of the state we are checking to see if it exists

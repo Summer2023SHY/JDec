@@ -1012,28 +1012,26 @@ public class Automaton implements Closeable {
 
       /* Setup */
 
-    Stack<Long> stack = new Stack<Long>();
-    HashSet<Long> valuesInStack = new HashSet<Long>();
+    Stack<StateVector> stack = new Stack<StateVector>();
+    HashSet<StateVector> valuesInStack = new HashSet<StateVector>();
     UStructure uStructure = new UStructure(newHeaderFile, newBodyFile, nControllers, true);
 
       /* Add initial state to the stack */
 
     { // The only reason this is inside a scope is so that variable names could be re-used more cleanly
-      List<Long> listOfInitialIDs = new ArrayList<Long>();
-      String combinedStateLabel = "";
+      List<State> listOfInitialStates = new ArrayList<State>();
       State startingState = getState(initialState);
 
       // Create list of initial IDs and build the label
       for (int i = 0; i <= nControllers; i++) {
-        listOfInitialIDs.add(initialState);
-        combinedStateLabel += "_" + startingState.getLabel();
+        listOfInitialStates.add(startingState);
       }
 
-      long combinedID = combineIDs(listOfInitialIDs, nStates);
-      stack.push(combinedID);
-      valuesInStack.add(combinedID);
+      StateVector initialStateVector = new StateVector(listOfInitialStates, nStates);
+      stack.push(initialStateVector);
+      valuesInStack.add(initialStateVector);
 
-      uStructure.addStateAt(combinedStateLabel.substring(1), false, new ArrayList<Transition>(), true, combinedID);
+      uStructure.addStateAt(initialStateVector, true);
 
     }
 
@@ -1041,28 +1039,28 @@ public class Automaton implements Closeable {
 
     while (stack.size() > 0) {
       
-      long combinedID = stack.pop();
-      valuesInStack.remove(combinedID);
+      StateVector stateVector = stack.pop();
+      valuesInStack.remove(stateVector);
 
       // Get list of IDs and states
-      List<Long> listOfIDs = separateIDs(combinedID, nStates);
-      List<State> listOfStates = new ArrayList<State>();
-      for (long id : listOfIDs)
-        listOfStates.add(getState(id));
+      List<State> listOfStates = stateVector.getStates();
+      List<Long> listOfIDs = new ArrayList<Long>();
+      for (State s : listOfStates)
+        listOfIDs.add(s.getID());
 
       // For each transition in the system automaton
       outer: for (Transition t1 : listOfStates.get(0).getTransitions()) {
 
         Event e = t1.getEvent();
 
-        List<Long> listOfTargetIDs = new ArrayList<Long>();
-        listOfTargetIDs.add(t1.getTargetStateID());
+        List<State> targetStates = new ArrayList<State>();
+        State currTargetState = getState(t1.getTargetStateID());
+        targetStates.add(currTargetState);
 
         String combinedEventLabel = e.getLabel();
-        String combinedStateLabel = getStateExcludingTransitions(t1.getTargetStateID()).getLabel();
 
         // If this is the system has a bad transition, then it is an unconditional violation by default until we've found a controller that prevents it
-        boolean isBadTransition = isBadTransition(listOfStates.get(0).getID(), e.getID(), t1.getTargetStateID());
+        boolean isBadTransition = isBadTransition(listOfStates.get(0), e, currTargetState);
         boolean isUnconditionalViolation = isBadTransition;
 
         // It is not a disablement decision by default, until we find a controller that can disable it
@@ -1090,25 +1088,22 @@ public class Automaton implements Closeable {
             observable[i] = true;
 
             // If the event is observable, but not possible at this current time, then we can skip this altogether
-            long targetID = 0;
-            String label = null;
+            State target = null;
             for (Transition t2 : listOfStates.get(i + 1).getTransitions())
               if (t2.getEvent().equals(e)) {
-                targetID = t2.getTargetStateID();
-                label = getStateExcludingTransitions(t2.getTargetStateID()).getLabel();
+                target = getState(t2.getTargetStateID());
               }
-            if (targetID == 0)
+            if (target == null)
               continue outer;
 
             combinedEventLabel += "," + e.getLabel();
-            combinedStateLabel += "_" + label;
-            listOfTargetIDs.add(targetID);
+            targetStates.add(target);
 
             if (e.isControllable()[i]) {
 
               controllable[i] = true;
 
-              TransitionData data = new TransitionData(listOfStates.get(i + 1).getID(), e.getID(), targetID);
+              TransitionData data = new TransitionData(listOfStates.get(i + 1), e, target);
 
               // Check to see if this controller can prevent an unconditional violation
               if (isUnconditionalViolation && badTransitions.contains(data))
@@ -1129,24 +1124,23 @@ public class Automaton implements Closeable {
           // Unobservable events by this controller
           } else {
             combinedEventLabel += ",*";
-            combinedStateLabel += "_" + listOfStates.get(i + 1).getLabel();
-            listOfTargetIDs.add(listOfIDs.get(i + 1));
+            targetStates.add(listOfStates.get(i + 1));
           }
 
         } // for i
 
         combinedEventLabel = "<" + combinedEventLabel + ">";
 
-        long combinedTargetID = combineIDs(listOfTargetIDs, nStates);
+        StateVector targetStateVector = new StateVector(targetStates, nStates);
 
         // Add event
         uStructure.addEventIfNonExisting(combinedEventLabel, observable, controllable);
 
         // Add state if it doesn't already exist
-        if (!uStructure.stateExists(combinedTargetID)) {
+        if (!uStructure.stateExists(targetStateVector.getID())) {
 
           // Add state
-          if (!uStructure.addStateAt(combinedStateLabel, false, new ArrayList<Transition>(), false, combinedTargetID)) {
+          if (!uStructure.addStateAt(targetStateVector, false)) {
             OperationFailedException ofe = new OperationFailedException("Failed to add state");
             try {
               uStructure.close();
@@ -1157,21 +1151,21 @@ public class Automaton implements Closeable {
           }
           
           // Only add the ID if it's not already waiting to be processed
-          if (!valuesInStack.contains(combinedTargetID)) {
-              stack.push(combinedTargetID);
-              valuesInStack.add(combinedTargetID);
+          if (!valuesInStack.contains(targetStateVector)) {
+              stack.push(targetStateVector);
+              valuesInStack.add(targetStateVector);
           } else
             logger.debug("Prevented adding of state since it was already in the stack (NOTE: Does this ever get printed to the console? Intuitively it should, but I have never seen it before.).");
         }
 
         // Add transition
-        int eventID = uStructure.addTransition(combinedID, combinedEventLabel, combinedTargetID);
+        int eventID = uStructure.addTransition(stateVector, combinedEventLabel, targetStateVector);
         if (isUnconditionalViolation)
-          uStructure.addUnconditionalViolation(combinedID, eventID, combinedTargetID);
+          uStructure.addUnconditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
         if (isConditionalViolation)
-          uStructure.addConditionalViolation(combinedID, eventID, combinedTargetID);
+          uStructure.addConditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
         if (isDisablementDecision)
-          uStructure.addDisablementDecision(combinedID, eventID, combinedTargetID, disablementControllers);
+          uStructure.addDisablementDecision(stateVector.getID(), eventID, targetStateVector.getID(), disablementControllers);
 
       } // for
 
@@ -1181,28 +1175,24 @@ public class Automaton implements Closeable {
         for (Transition t : listOfStates.get(i + 1).getTransitions()) {
           if (!t.getEvent().isObservable()[i]) {
 
-            List<Long> listOfTargetIDs = new ArrayList<Long>();
+            List<State> targetStates = new ArrayList<State>();
             String combinedEventLabel = "";
-            String combinedStateLabel = "";
 
             for (int j = 0; j <= nControllers; j++) {
 
               // The current controller
               if (j == i + 1) {
-                listOfTargetIDs.add(t.getTargetStateID());
                 combinedEventLabel += "," + t.getEvent().getLabel();
-                combinedStateLabel += "_" + getStateExcludingTransitions(t.getTargetStateID()).getLabel();
+                targetStates.add(getState(t.getTargetStateID()));
               } else {
-                listOfTargetIDs.add(listOfIDs.get(j));
                 combinedEventLabel += ",*";
-                combinedStateLabel += "_" + listOfStates.get(j).getLabel(); 
+                targetStates.add(getState(listOfIDs.get(j)));
               }
 
             }
 
             combinedEventLabel = "<" + combinedEventLabel.substring(1) + ">";
-            combinedStateLabel = combinedStateLabel.substring(1);
-            long combinedTargetID = combineIDs(listOfTargetIDs, nStates);
+            StateVector targetStateVector = new StateVector(targetStates, nStates);
 
             // Add event
             boolean[] observable = new boolean[nControllers];
@@ -1211,10 +1201,10 @@ public class Automaton implements Closeable {
             uStructure.addEventIfNonExisting(combinedEventLabel, observable, controllable);
 
             // Add state if it doesn't already exist
-            if (!uStructure.stateExists(combinedTargetID)) {
+            if (!uStructure.stateExists(targetStateVector)) {
 
               // Add state
-              if (!uStructure.addStateAt(combinedStateLabel, false, new ArrayList<Transition>(), false, combinedTargetID)) {
+              if (!uStructure.addStateAt(targetStateVector, false)) {
                 OperationFailedException ofe = new OperationFailedException("Failed to add state");
                 try {
                   uStructure.close();
@@ -1225,16 +1215,16 @@ public class Automaton implements Closeable {
               }
             
               // Only add the ID if it's not already waiting to be processed
-              if (!valuesInStack.contains(combinedTargetID)) {
-                stack.push(combinedTargetID);
-                valuesInStack.add(combinedTargetID);
+              if (!valuesInStack.contains(targetStateVector)) {
+                stack.push(targetStateVector);
+                valuesInStack.add(targetStateVector);
               } else
                 logger.debug("Prevented adding of state since it was already in the stack.");
 
             }
 
             // Add transition
-            if (uStructure.addTransition(combinedID, combinedEventLabel, combinedTargetID) == 0)
+            if (uStructure.addTransition(stateVector, combinedEventLabel, targetStateVector) == 0)
               logger.error("Failed to add transition.");
 
           }
@@ -2774,6 +2764,29 @@ public class Automaton implements Closeable {
   }
 
   /**
+   * Adds a transition based the label of the event (instead the ID).
+   * @param startingState The state where the transition originates from
+   * @param eventLabel    The label of the event that triggers the transition
+   * @param targetState   The state where the transition leads to
+   * @return              The ID of the event label (returns 0 if the addition was unsuccessful)
+   * 
+   * @since 2.0
+   **/
+  public int addTransition(State startingState, String eventLabel, State targetState) {
+
+    for (Event e : events)
+      if (eventLabel.equals(e.getLabel())) {
+        if (!addTransition(startingState.getID(), e.getID(), targetState.getID()))
+          return 0;
+        else
+          return e.getID();
+      }
+
+    return 0;
+
+  }
+
+  /**
    * Adds a transition based on the specified IDs (which means that the states and event must already exist).
    * @implNote This method could be made more efficient since the entire state is written to file instead of only writing the new transition to file.
    * @param startingStateID The ID of the state where the transition originates from
@@ -3021,6 +3034,20 @@ public class Automaton implements Closeable {
   }
 
   /**
+   * Add the specified state to this automaton.
+   * 
+   * @param state a state to add to this automaton
+   * @param isInitialState Whether or not this is the initial state
+   * @return Whether or not the addition was successful (returns {@code false} if a state already existed there)
+   * 
+   * @see #addStateAt(String, boolean, ArrayList, boolean, long)
+   * @since 2.0
+   */
+  public boolean addStateAt(State state, boolean isInitialState) {
+    return addStateAt(state.getLabel(), state.isMarked(), state.getTransitions(), isInitialState, state.getID());
+  }
+
+  /**
    * Add the specified state to the automaton.
    * @implNote This method assumes that no state already exists with the specified ID.
    * @implNote The method {@link #renumberStates()} must be called some time after using this method has been called since it can create empty
@@ -3032,7 +3059,7 @@ public class Automaton implements Closeable {
    * @param id              The index where the state should be added at
    * @return                Whether or not the addition was successful (returns {@code false} if a state already existed there)
    **/
-  public boolean addStateAt(String label, boolean marked, ArrayList<Transition> transitions, boolean isInitialState, long id) {
+  public boolean addStateAt(String label, boolean marked, List<Transition> transitions, boolean isInitialState, long id) {
 
     if (transitions == null)
       transitions = new ArrayList<Transition>();
@@ -3142,14 +3169,40 @@ public class Automaton implements Closeable {
    * @return              The ID of the added event (0 indicates failure)
    **/
   public int addEvent(String label, boolean[] observable, boolean[] controllable) {
+    if (!ensureEventCapacity()) return 0;
+    int id = events.size() + 1;
+    return addEvent(new Event(label, id, observable, controllable));
+  }
 
-      /* Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs) */
+  /**
+   * Add the specified event to the set.
+   * @implNote It is assumed that the new event is not already a member of the set (it is not checked for here for efficiency purposes).
+   * @param label         The "name" of the new event
+   * @param observable    Whether or not the event is observable
+   * @param controllable  Whether or not the event is controllable
+   * @return              The ID of the added event (0 indicates failure)
+   * 
+   * @since 2.0
+   **/
+  public int addEvent(LabelVector labelVector, boolean[] observable, boolean[] controllable) {
+    if (!ensureEventCapacity()) return 0;
+    int id = events.size() + 1;
+    return addEvent(new Event(labelVector, id, observable, controllable));
+  }
 
+  /**
+   * Helper method for ensuring there is enough space to add a new event
+   * @return {@code true} if there is enough space to add a new event
+   * 
+   * @see #addEvent(String, boolean[], boolean[])
+   * @see #addEvent(LabelVector, boolean[], boolean[])
+   * @since 2.0
+   */
+  private boolean ensureEventCapacity() {
     if (events.size() == MAX_EVENT_CAPACITY) {
       logger.error("Could not add event (reached maximum event capacity).");
-      return 0;
+      return false;
     }
-
       /* Check to see if we need to re-write the entire binary file */
     
     if (events.size() == eventCapacity) {
@@ -3166,10 +3219,20 @@ public class Automaton implements Closeable {
 
     }
 
-      /* Instantiate the event */
+    return true;
+  }
 
-    int id = events.size() + 1;
-    Event event = new Event(label, id, observable, controllable);
+  /**
+   * Helper method for adding a new event
+   * 
+   * @param event the event to add
+   * @return the ID of the added event, or {@code 0} if addition failed
+   * 
+   * @see #addEvent(String, boolean[], boolean[])
+   * @see #addEvent(LabelVector, boolean[], boolean[])
+   * @since 2.0
+   */
+  private int addEvent(Event event) {
 
       /* Add the event */
 
@@ -3178,14 +3241,13 @@ public class Automaton implements Closeable {
       return 0;
     }
 
-    eventsMap.put(label, event);
+    eventsMap.put(event.getLabel(), event);
 
       /* Update the header file */
 
     headerFileNeedsToBeWritten = true;
 
-    return id;
-
+    return event.getID();
   }
 
   /**
@@ -3202,6 +3264,27 @@ public class Automaton implements Closeable {
 
     if (event == null)
       return addEvent(label, observable, controllable);
+    else
+      return -event.getID();
+
+  }
+
+  /**
+   * Add the specified event to the set if it does not already exist.
+   * @param label         The "name" of the new event
+   * @param observable    Whether or not the event is observable
+   * @param controllable  Whether or not the event is controllable
+   * @return              The ID of the added event (negative ID indicates that the event already existed)
+   *                      or {@code 0}, which indicates failure (occurring when maximum number of events has been reached)
+   * 
+   * @since 2.0
+   **/
+  public int addEventIfNonExisting(LabelVector labelVector, boolean[] observable, boolean[] controllable) {
+    
+    Event event = getEvent(labelVector);
+
+    if (event == null)
+      return addEvent(labelVector, observable, controllable);
     else
       return -event.getID();
 
@@ -3319,6 +3402,21 @@ public class Automaton implements Closeable {
   }
 
   /**
+   * Check to see if a transition is bad.
+   * @param initialState  The initial state
+   * @param event         The event triggering the transition
+   * @param targetState   The target state
+   * @return              Whether or not the transition is bad
+   * 
+   * @since 2.0
+   **/
+  public boolean isBadTransition(State initialState, Event event, State targetState) {
+
+    return isBadTransition(initialState.getID(), event.getID(), targetState.getID());
+
+  }
+
+  /**
    * Check to see if a state exists.
    * @implNote This is a light-weight method which can be used instead of calling "{@code getState(id) != null}").
    * It does not load all of the state information, but only checks the first byte to see if it exists or not.
@@ -3326,6 +3424,18 @@ public class Automaton implements Closeable {
    **/
   public boolean stateExists(long id) {
     return StateIO.stateExists(this, baf, id);
+  }
+
+  /**
+   * Check to see if a state exists.
+   * @implNote This is a light-weight method which can be used instead of calling "{@code getState(id) != null}").
+   * It does not load all of the state information, but only checks the first byte to see if it exists or not.
+   * @param state  The state we are looking for
+   * 
+   * @since 2.0
+   **/
+  public boolean stateExists(State state) {
+    return StateIO.stateExists(this, baf, state);
   }
 
   /**
@@ -3415,6 +3525,17 @@ public class Automaton implements Closeable {
    **/
   public Event getEvent(String label) {
     return eventsMap.get(label);
+  }
+
+  /**
+   * Given the label vector of an event, get the event information.
+   * @param label  The unique label vector corresponding to the requested event
+   * @return       The requested event (or {@code null} if it does not exist)
+   * 
+   * @since 2.0
+   **/
+  public Event getEvent(LabelVector labelVector) {
+    return eventsMap.get(labelVector.toString());
   }
 
   /**

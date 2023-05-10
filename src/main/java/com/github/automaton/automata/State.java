@@ -38,6 +38,16 @@ public class State {
     /* CONSTRUCTORS */
 
   /**
+   * Default constructor. All instances created using this constructor
+   * must update the instance variables using the respective mutator methods.
+   * 
+   * @since 2.0
+   */
+  State() {
+    transitions = new ArrayList<Transition>();
+  }
+
+  /**
    * Construct a state (including transitions).
    * @param label       The state's label
    * @param id          The state ID
@@ -65,6 +75,16 @@ public class State {
   }
 
     /* MUTATOR METHODS */
+
+  /**
+   * Changes the label of this state.
+   * @param label new label for this state
+   * @throws NullPointerException if argument is {@code null}
+   * @since 2.0
+   */
+  void setLabel(String label) {
+    this.label = Objects.requireNonNull(label);
+  }
 
   /**
    * Change the ID of this state.
@@ -173,7 +193,8 @@ public class State {
   public boolean equals(Object other) {
     if (this == other) return true;
     else if (other instanceof State) {
-      return id == ((State) other).id;
+      State s = (State) other;
+      return Objects.equals(this.label, s.label) && this.id == s.id;
     }
     else return false;
   }
