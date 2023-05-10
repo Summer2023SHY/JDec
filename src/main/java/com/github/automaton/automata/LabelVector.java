@@ -54,20 +54,17 @@ public class LabelVector {
   /**
    * Get a specific label from the vector.
    * @param index  The index in the vector
-   * @return       The label from the vector, or null if this label is not a vector
+   * @return       The label from the vector, or {@code null} if this label is not a vector
+   * @throws IndexOutOfBoundsException if argument is out of bounds
    **/
   public String getLabelAtIndex(int index) {
-
-    if (vector == null)
-      return null;
-    else
-      return vector[index];
-    
+    if (Objects.isNull(vector)) return null;
+    return vector[Objects.checkIndex(index, getSize())];
   }
 
   /**
    * Get the size of the vector.
-   * @return The label from the vector, or -1 if this label is not a vector
+   * @return The size of this vector, or {@code -1} if this label is not a vector
    **/
   public int getSize() {
 
