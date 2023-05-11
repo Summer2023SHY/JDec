@@ -17,6 +17,8 @@ package com.github.automaton.automata;
  *  -Accessor Methods
  */
 
+import static guru.nidi.graphviz.model.Factory.*;
+
 import java.util.*;
 import java.io.*;
 import java.math.*;
@@ -26,6 +28,7 @@ import org.apache.logging.log4j.*;
 import com.github.automaton.automata.util.ByteManipulator;
 import com.github.automaton.io.*;
 
+import guru.nidi.graphviz.attribute.*;
 import guru.nidi.graphviz.engine.*;
 import guru.nidi.graphviz.model.*;
 import guru.nidi.graphviz.parse.*;
@@ -1821,9 +1824,10 @@ public class Automaton implements Closeable {
     Objects.requireNonNull(outputFileName, "Output file name cannot be null");
     /* For backwards compatibility */
     try {
-      MutableGraph g = new Parser().read(generateDotString());
-      Graphviz.fromGraph(g).render(Format.SVG_STANDALONE).toFile(new File(outputFileName + "." + Format.SVG_STANDALONE.fileExtension));
-      Graphviz.fromGraph(g).render(Format.PNG).toFile(new File(outputFileName + "." + Format.PNG.fileExtension));
+      MutableGraph g = generateGraph();
+      Graphviz graphviz = Graphviz.fromGraph(g);
+      graphviz.render(Format.SVG_STANDALONE).toFile(new File(outputFileName + "." + Format.SVG_STANDALONE.fileExtension));
+      graphviz.render(Format.PNG).toFile(new File(outputFileName + "." + Format.PNG.fileExtension));
       return true;
     } catch (IOException e) {
       logger.catching(e);
@@ -1852,6 +1856,109 @@ public class Automaton implements Closeable {
 
     return destFile;
 
+  }
+
+  /**
+   * Generate a graph that represents this automaton
+   * 
+   * @return a Graphviz graph that represents this automaton
+   * @throws MissingOrCorruptBodyFileException If any of the states are unable to be read from the body file
+   * @since 2.0
+   */
+  private MutableGraph generateGraph() throws MissingOrCorruptBodyFileException {
+    MutableGraph g = mutGraph().setDirected(true);
+    g = g.graphAttrs().add(Color.TRANSPARENT, Attributes.attr("overlap", "scale"));
+    g = g.nodeAttrs().add(Shape.CIRCLE, Style.BOLD, Attributes.attr("constraint", false));
+    try {
+
+        /* Mark special transitions */
+
+      HashMap<String, Attributes<? extends ForLink>> additionalEdgeProperties = new HashMap<String, Attributes<? extends ForLink>>();
+      addAdditionalLinkProperties(additionalEdgeProperties);
+
+        /* Draw all states and their transitions */
+
+      for (long s = 1; s <= nStates; s++) {
+
+        // Get state from file
+        State state = getState(s);
+        String stateLabel = formatStateLabel(state);
+        MutableNode sourceNode = mutNode(stateLabel);
+
+        // Draw state
+        g = g.add(sourceNode.add(Attributes.attr("peripheries", state.isMarked() ? 2 : 1), Label.nodeName()));
+        
+        // Find and draw all of the special transitions 
+        ArrayList<Transition> transitionsToSkip = new ArrayList<Transition>();
+        for (Transition t : state.getTransitions()) {
+
+          State targetState = getStateExcludingTransitions(t.getTargetStateID());
+
+          // Check to see if this transition has additional properties (meaning it's a special transition)
+          String key = "" + stateLabel + " " + t.getEvent().getID() + " " + formatStateLabel(targetState);
+          Attributes<? extends ForLink> properties = additionalEdgeProperties.get(key);
+
+          if (properties != null) {
+
+            transitionsToSkip.add(t);
+
+            MutableNode targetNode = mutNode(formatStateLabel(targetState));
+            targetNode.addTo(g);
+            Link l = sourceNode.linkTo(targetNode);
+            l.add(Label.of(t.getEvent().getLabel()));
+            l.add(properties);
+            sourceNode.links().add(l);
+          }
+        }
+
+        // Draw all of the remaining (normal) transitions
+        for (Transition t1 : state.getTransitions()) {
+
+          // Skip it if this was already taken care of (grouped into another transition going to the same target state)
+          if (transitionsToSkip.contains(t1))
+            continue;
+
+          // Start building the label
+          String label = t1.getEvent().getLabel();
+          transitionsToSkip.add(t1);
+
+          // Look for all transitions that can be grouped with this one
+          for (Transition t2 : state.getTransitions()) {
+
+            // Skip it if this was already taken care of (grouped into another transition going to
+            // the same target state)
+            if (transitionsToSkip.contains(t2))
+              continue;
+
+            // Check to see if both transitions lead to the same event
+            if (t1.getTargetStateID() == t2.getTargetStateID()) {
+              label += "," + t2.getEvent().getLabel();
+              transitionsToSkip.add(t2);
+            }
+
+          }
+
+          // Add transition
+          MutableNode targetNode = mutNode(formatStateLabel(getStateExcludingTransitions(t1.getTargetStateID())));
+          targetNode.addTo(g);
+          Link l = sourceNode.linkTo(targetNode);
+          l.add(Label.of(label));
+          sourceNode.links().add(l);
+        }
+
+        if (initialState > 0) {
+          MutableNode startNode = mutNode("").add(Shape.PLAIN_TEXT);
+          MutableNode initNode = mutNode(formatStateLabel(getStateExcludingTransitions(initialState)));
+          Link init = startNode.linkTo(initNode);
+          init.add(Color.BLUE);
+          startNode.links().add(init);
+          startNode.addTo(g);
+        }
+      }
+    } catch (NullPointerException e) {
+      throw new MissingOrCorruptBodyFileException(e);
+    }
+    return g;
   }
 
   /**
@@ -1986,6 +2093,20 @@ public class Automaton implements Closeable {
   }
 
   /**
+   * Add any additional edge properties applicable to this automaton type, which is used in the graph generation.
+   * <p>EXAMPLE: This is used to color potential communications blue.
+   * @param map The mapping from edges to additional properties
+   * 
+   * @since 2.0
+   **/
+  protected void addAdditionalLinkProperties(Map<String, Attributes<? extends ForLink>> map) {
+
+    for (TransitionData data : badTransitions) {
+      combineAttributesInMap(map, createKey(data), Style.DOTTED);
+    }
+  }
+
+  /**
    * Add any additional edge properties applicable to this automaton type, which is used in the DOT output.
    * EXAMPLE: This is used to color potential communications blue.
    * @param map The mapping from edges to additional properties
@@ -2006,6 +2127,22 @@ public class Automaton implements Closeable {
     return "" + formatStateLabel(getState(data.initialStateID)) + " "
               + data.eventID + " "
               + formatStateLabel(getStateExcludingTransitions(data.targetStateID));
+  }
+
+  /**
+   * Helper method used to append a value to the pre-existing value of a particular key in a map.
+   * If the key was not previously in the map, then the value is simply added.
+   * @param map   The relevant map
+   * @param key   The key which is mapped to a value that is being appending to
+   * @param value The attribute to be added
+   * 
+   * @since 2.0
+   **/
+  protected static void combineAttributesInMap(Map<String, Attributes<? extends ForLink>> map, String key, Attributes<? extends ForLink> value) {
+    if (map.containsKey(key))
+      map.put(key, Attributes.attrs(map.get(key), value));
+    else
+      map.put(key, value); 
   }
 
   /**

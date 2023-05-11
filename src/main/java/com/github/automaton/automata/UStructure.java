@@ -22,6 +22,8 @@ import org.apache.logging.log4j.*;
 import com.github.automaton.automata.util.ByteManipulator;
 import com.github.automaton.io.IOUtility;
 
+import guru.nidi.graphviz.attribute.*;
+
 /**
  * Represents an un-pruned U-Structure.
  *
@@ -2025,6 +2027,35 @@ public class UStructure extends Automaton {
   }
 
     /* IMAGE GENERATION */
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @since 2.0
+   */
+  @Override
+  protected void addAdditionalLinkProperties(Map<String, Attributes<? extends ForLink>> map) {
+
+    for (TransitionData data : unconditionalViolations) {
+      combineAttributesInMap(map, createKey(data), Attributes.attrs(Color.RED, Color.RED.font()));
+    }
+
+    for (TransitionData data : conditionalViolations) {
+      combineAttributesInMap(map, createKey(data), Attributes.attrs(Color.GREEN3, Color.GREEN3.font()));
+    }
+
+    for (TransitionData data : getPotentialCommunications()) {
+      combineAttributesInMap(map, createKey(data), Attributes.attrs(Color.BLUE, Color.BLUE.font()));
+    }
+
+    for (TransitionData data : getNashCommunications()) {
+      combineAttributesInMap(map, createKey(data), Attributes.attrs(Color.BLUE, Color.BLUE.font()));
+    }
+
+    for (TransitionData data : getNashCommunications()) {
+      combineAttributesInMap(map, createKey(data), Style.DOTTED);
+    }
+  }
 
   @Override protected void addAdditionalEdgeProperties(Map<String, String> map) {
 
