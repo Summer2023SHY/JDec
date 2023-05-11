@@ -2057,7 +2057,13 @@ public class UStructure extends Automaton {
     }
   }
 
-  @Override protected void addAdditionalEdgeProperties(Map<String, String> map) {
+  /**
+   * {@inheritDoc}
+   * @deprecated This method is no longer used. Use {@link #addAdditionalLinkProperties(Map)} instead.
+   */
+  @Override
+  @Deprecated(since = "2.0", forRemoval = true)
+  protected void addAdditionalEdgeProperties(Map<String, String> map) {
 
     for (TransitionData data : unconditionalViolations)
       appendValueToMap(map, createKey(data), ",color=red,fontcolor=red");

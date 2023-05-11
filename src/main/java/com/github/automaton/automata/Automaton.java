@@ -31,7 +31,6 @@ import com.github.automaton.io.*;
 import guru.nidi.graphviz.attribute.*;
 import guru.nidi.graphviz.engine.*;
 import guru.nidi.graphviz.model.*;
-import guru.nidi.graphviz.parse.*;
 
 /**
  * Class that is able to fully represent an automaton. The usage of .hdr and .bdy files
@@ -1850,7 +1849,7 @@ public class Automaton implements Closeable {
 
       /* Generate image */
 
-    MutableGraph g = new Parser().read(generateDotString());
+    MutableGraph g = generateGraph();
     File destFile = new File(outputFileName + "." + format.fileExtension);
     Graphviz.fromGraph(g).render(format).toFile(destFile);
 
@@ -1966,6 +1965,7 @@ public class Automaton implements Closeable {
    * @return {@code .dot} representation of this automaton
    * @throws MissingOrCorruptBodyFileException If any of the states are unable to be read from the body file
    */
+  @Deprecated(since = "2.0", forRemoval = true)
   private String generateDotString() throws MissingOrCorruptBodyFileException {
     /* Setup */
 
@@ -2110,7 +2110,10 @@ public class Automaton implements Closeable {
    * Add any additional edge properties applicable to this automaton type, which is used in the DOT output.
    * EXAMPLE: This is used to color potential communications blue.
    * @param map The mapping from edges to additional properties
+   * 
+   * @deprecated This method is no longer used. Use {@link #addAdditionalLinkProperties(Map)} instead.
    **/
+  @Deprecated(since = "2.0", forRemoval = true)
   protected void addAdditionalEdgeProperties(Map<String, String> map) {
 
     for (TransitionData data : badTransitions)
@@ -2151,7 +2154,10 @@ public class Automaton implements Closeable {
    * @param map   The relevant map
    * @param key   The key which is mapped to a value that is being appending to
    * @param value The value to be appended
+   * 
+   * @deprecated This method is no longer used. Use {@link #combineAttributesInMap(Map, String, Attributes)} instead.
    **/
+  @Deprecated(since = "2.0", forRemoval = true)
   protected void appendValueToMap(Map<String, String> map, String key, String value) {
     if (map.containsKey(key))
       map.put(key, map.get(key) + value);
