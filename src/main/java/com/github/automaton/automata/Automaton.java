@@ -1978,8 +1978,8 @@ public class Automaton implements Closeable {
 
     StringBuilder stringBuilder = new StringBuilder();
 
-    for (int i = 0; i < size; i++)
-      stringBuilder.append(labelVector.getLabelAtIndex(i) + "\\n");
+    for (String indexedLabel : labelVector)
+      stringBuilder.append(indexedLabel + "\\n");
 
     return stringBuilder.toString();
 

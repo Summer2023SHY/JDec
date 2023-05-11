@@ -17,8 +17,9 @@ import org.apache.commons.lang3.*;
  * basic syntax.
  *
  * @author Micah Stairs
+ * @author Sung Ho Yoon
  */
-public class LabelVector {
+public class LabelVector implements Iterable<String> {
 
     /* INSTANCE VARIABLES */
 
@@ -102,6 +103,33 @@ public class LabelVector {
   }
 
     /* OVERRIDDEN METHODS */
+  /**
+   * Returns an iterator over the labels in this vector
+   * 
+   * @return an iterator
+   * @throws UnsupportedOperationException if this label is not a vector
+   * 
+   * @since 2.0
+   */
+  @Override
+  public Iterator<String> iterator() {
+    if (Objects.isNull(vector)) {
+      throw new UnsupportedOperationException("This label is not a vector");
+    }
+    return new Iterator<String>() {
+      private int index = 0;
+
+      @Override
+      public boolean hasNext() {
+        return index != vector.length;
+      }
+
+      @Override
+      public String next() {
+        return vector[index++];
+      }
+    };
+  }
 
   /** {@inheritDoc} */
   @Override
