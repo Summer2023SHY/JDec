@@ -192,7 +192,7 @@ public final class AutomatonGenerator {
 
       // Otherwise, no text was entered for the label
       } else if (line.length() > 0) {
-        logger.error("ERROR: Could not store'" + line + "' as a state. The label must be at least 1 character long.");
+        logger.error("Could not store'" + line + "' as a state. The label must be at least 1 character long.");
         if (stateInputPane != null)
           stateInputPane.getStyledDocument().setCharacterAttributes(startIndex, line.length(), errorStyle, false);
         hasErrors = true;    

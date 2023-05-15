@@ -52,7 +52,7 @@ public class Transition {
   public void setTargetStateID(long id) {
     targetStateID = id;
     if (targetStateID == 0) {
-      logger.warn("WARNING: Setting target state ID to 0 (which is null).");
+      logger.warn("Setting target state ID to 0 (which is null).");
       logger.warn(getStackTrace(new Exception()));
     }
   }
