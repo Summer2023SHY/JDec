@@ -7,7 +7,7 @@ import java.util.*;
  * @author Sung Ho Yoon
  * @since 2.0
  */
-public class StateVector extends State {
+public class StateVector extends State implements Iterable<State> {
     private List<State> states;
 
     public StateVector(List<State> states, long maxID) {
@@ -26,6 +26,11 @@ public class StateVector extends State {
 
     public List<State> getStates() {
         return states;
+    }
+
+    @Override
+    public Iterator<State> iterator() {
+        return states.iterator();
     }
 
     /** {@inheritDoc} */
