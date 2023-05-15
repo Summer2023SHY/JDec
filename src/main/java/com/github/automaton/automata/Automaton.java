@@ -1163,12 +1163,27 @@ public class Automaton implements Closeable {
 
         // Add transition
         int eventID = uStructure.addTransition(stateVector, eventLabelVector, targetStateVector);
-        if (isUnconditionalViolation)
+        if (isUnconditionalViolation) {
           uStructure.addUnconditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
-        if (isConditionalViolation)
+          stateVector.setDisablement(true);
+        }
+        if (isConditionalViolation) {
           uStructure.addConditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
+          stateVector.setEnablement(true);
+        }
         if (isDisablementDecision)
           uStructure.addDisablementDecision(stateVector.getID(), eventID, targetStateVector.getID(), disablementControllers);
+        try {
+          StateIO.rewriteStatus(uStructure, uStructure.baf, stateVector);
+        } catch (StateNotFoundException | IOException exc) {
+          OperationFailedException ofe = new OperationFailedException("Failed to update status of state", exc);
+          try {
+            uStructure.close();
+          } catch (IOException ioe2) {
+            ofe.addSuppressed(ioe2);
+          }
+          throw ofe;
+        }
 
       } // for
 

@@ -370,4 +370,36 @@ public class StateIO {
         }
 
     }
+
+    /**
+     * Rewrites the status of a state in the given automaton
+     * 
+     * @param automaton the automaton that contains the given state
+     * @param state     the state with modified status
+     * @param baf       The {@link BodyAccessFile} containing the states associated
+     *                  with this automaton
+     * 
+     * @throws StateNotFoundException   if {@code automaton} does not contain a
+     *                                  state with the matching ID
+     * @throws IllegalArgumentException if {@code state} is not equal to the one
+     *                                  stored in {@code automaton}
+     * @throws IOException              if I/O error occurs
+     */
+    public static void rewriteStatus(Automaton automaton, BodyAccessFile baf, State state) throws IOException {
+        if (!stateExists(automaton, baf, state.getID())) {
+            throw new StateNotFoundException(state.getID());
+        } else if (!Objects.equals(readFromFileExcludingTransitions(automaton, baf, state.getID()), state)) {
+            throw new IllegalArgumentException("The provided state is not equal to the one stored in the automaton.");
+        }
+        baf.getRAFile().seek(state.getID() * automaton.getSizeOfState());
+        baf.getLogger().debug("StateIO.rewriteStatus() - FP: " + baf.getRAFile().getFilePointer());
+        byte newStatus = State.EXISTS_MASK;
+        if (state.isMarked())
+            newStatus |= State.MARKED_MASK;
+        if (state.isEnablementState())
+            newStatus |= State.ENABLEMENT_MASK;
+        else if (state.isDisablementState())
+            newStatus |= State.DISABLEMENT_MASK;
+        baf.getRAFile().write(newStatus);
+    }
 }
