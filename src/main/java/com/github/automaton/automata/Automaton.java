@@ -1059,7 +1059,8 @@ public class Automaton implements Closeable {
         State currTargetState = getState(t1.getTargetStateID());
         targetStates.add(currTargetState);
 
-        String combinedEventLabel = e.getLabel();
+        List<String> combinedEvent = new ArrayList<>();
+        combinedEvent.add(e.getLabel());
 
         // If this is the system has a bad transition, then it is an unconditional violation by default until we've found a controller that prevents it
         boolean isBadTransition = isBadTransition(listOfStates.get(0), e, currTargetState);
@@ -1098,7 +1099,7 @@ public class Automaton implements Closeable {
             if (target == null)
               continue outer;
 
-            combinedEventLabel += "," + e.getLabel();
+            combinedEvent.add(e.getLabel());
             targetStates.add(target);
 
             if (e.isControllable()[i]) {
@@ -1125,18 +1126,18 @@ public class Automaton implements Closeable {
 
           // Unobservable events by this controller
           } else {
-            combinedEventLabel += ",*";
+            combinedEvent.add("*");
             targetStates.add(listOfStates.get(i + 1));
           }
 
         } // for i
 
-        combinedEventLabel = "<" + combinedEventLabel + ">";
+        LabelVector eventLabelVector = new LabelVector(combinedEvent.toArray(new String[0]));
 
         StateVector targetStateVector = new StateVector(targetStates, nStates);
 
         // Add event
-        uStructure.addEventIfNonExisting(combinedEventLabel, observable, controllable);
+        uStructure.addEventIfNonExisting(eventLabelVector, observable, controllable);
 
         // Add state if it doesn't already exist
         if (!uStructure.stateExists(targetStateVector.getID())) {
@@ -1161,7 +1162,7 @@ public class Automaton implements Closeable {
         }
 
         // Add transition
-        int eventID = uStructure.addTransition(stateVector, combinedEventLabel, targetStateVector);
+        int eventID = uStructure.addTransition(stateVector, eventLabelVector, targetStateVector);
         if (isUnconditionalViolation)
           uStructure.addUnconditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
         if (isConditionalViolation)
@@ -1178,29 +1179,29 @@ public class Automaton implements Closeable {
           if (!t.getEvent().isObservable()[i]) {
 
             List<State> targetStates = new ArrayList<State>();
-            String combinedEventLabel = "";
+            List<String> combinedEvent = new ArrayList<>();
 
             for (int j = 0; j <= nControllers; j++) {
 
               // The current controller
               if (j == i + 1) {
-                combinedEventLabel += "," + t.getEvent().getLabel();
+                combinedEvent.add(t.getEvent().getLabel());
                 targetStates.add(getState(t.getTargetStateID()));
               } else {
-                combinedEventLabel += ",*";
+                combinedEvent.add("*");
                 targetStates.add(getState(listOfIDs.get(j)));
               }
 
             }
 
-            combinedEventLabel = "<" + combinedEventLabel.substring(1) + ">";
+            LabelVector eventLabelVector = new LabelVector(combinedEvent.toArray(new String[0]));
             StateVector targetStateVector = new StateVector(targetStates, nStates);
 
             // Add event
             boolean[] observable = new boolean[nControllers];
             boolean[] controllable = new boolean[nControllers];
             controllable[i] = t.getEvent().isControllable()[i];
-            uStructure.addEventIfNonExisting(combinedEventLabel, observable, controllable);
+            uStructure.addEventIfNonExisting(eventLabelVector, observable, controllable);
 
             // Add state if it doesn't already exist
             if (!uStructure.stateExists(targetStateVector)) {
@@ -1226,7 +1227,7 @@ public class Automaton implements Closeable {
             }
 
             // Add transition
-            if (uStructure.addTransition(stateVector, combinedEventLabel, targetStateVector) == 0)
+            if (uStructure.addTransition(stateVector, eventLabelVector, targetStateVector) == 0)
               logger.error("Failed to add transition.");
 
           }
