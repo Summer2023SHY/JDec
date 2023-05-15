@@ -2931,6 +2931,21 @@ public class Automaton implements Closeable {
   }
 
   /**
+   * Adds a transition based the label of the event (instead the ID).
+   * @param startingState The state where the transition originates from
+   * @param labelVector    The label vector of the event that triggers the transition
+   * @param targetState   The state where the transition leads to
+   * @return              The ID of the event label (returns 0 if the addition was unsuccessful)
+   * 
+   * @since 2.0
+   **/
+  public int addTransition(State startingState, LabelVector labelVector, State targetState) {
+
+    return addTransition(startingState, labelVector.toString(), targetState);
+
+  }
+
+  /**
    * Adds a transition based on the specified IDs (which means that the states and event must already exist).
    * @implNote This method could be made more efficient since the entire state is written to file instead of only writing the new transition to file.
    * @param startingStateID The ID of the state where the transition originates from
@@ -3178,20 +3193,6 @@ public class Automaton implements Closeable {
   }
 
   /**
-   * Add the specified state to this automaton.
-   * 
-   * @param state a state to add to this automaton
-   * @param isInitialState Whether or not this is the initial state
-   * @return Whether or not the addition was successful (returns {@code false} if a state already existed there)
-   * 
-   * @see #addStateAt(String, boolean, ArrayList, boolean, long)
-   * @since 2.0
-   */
-  public boolean addStateAt(State state, boolean isInitialState) {
-    return addStateAt(state.getLabel(), state.isMarked(), state.getTransitions(), isInitialState, state.getID());
-  }
-
-  /**
    * Add the specified state to the automaton.
    * @implNote This method assumes that no state already exists with the specified ID.
    * @implNote The method {@link #renumberStates()} must be called some time after using this method has been called since it can create empty
@@ -3205,103 +3206,112 @@ public class Automaton implements Closeable {
    **/
   public boolean addStateAt(String label, boolean marked, List<Transition> transitions, boolean isInitialState, long id) {
 
-    if (transitions == null)
-      transitions = new ArrayList<Transition>();
+    return addStateAt(new State(label, id, marked, Objects.requireNonNullElse(transitions, new ArrayList<Transition>())), isInitialState);
+  }
 
+  /**
+   * Add the specified state to this automaton.
+   * 
+   * @param state a state to add to this automaton
+   * @param isInitialState Whether or not this is the initial state
+   * @return Whether or not the addition was successful (returns {@code false} if a state already existed there)
+   * 
+   * @see #addStateAt(String, boolean, ArrayList, boolean, long)
+   * @since 2.0
+   */
+  public boolean addStateAt(State state, boolean isInitialState) {
       /* Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs) */
     
-    if (id > MAX_STATE_CAPACITY) {
-      logger.error("Could not write state to file (exceeded maximum state capacity).");
-      return false;
-    }
-
-      /* Increase the maximum allowed characters per state label */
-    
-    if (label.length() > labelLength) {
-
-      // If we cannot increase the capacity, indicate a failure
-      if (label.length() > MAX_LABEL_LENGTH) {
-        logger.error("Could not write state to file (exceeded maximum label length).");
+      if (state.getID() > MAX_STATE_CAPACITY) {
+        logger.error("Could not write state to file (exceeded maximum state capacity).");
         return false;
       }
-
-      recreateBodyFile(
-        eventCapacity,
-        stateCapacity,
-        transitionCapacity,
-        label.length(),
-        nBytesPerEventID,
-        nBytesPerStateID
-      );
-
-    }
-
-      /* Increase the maximum allowed transitions per state */
-
-    if (transitions.size() > transitionCapacity) {
-
-      // If we cannot increase the capacity, indicate a failure (NOTE: This will likely never happen)
-      if (transitions.size() > MAX_TRANSITION_CAPACITY) {
-        logger.error("Could not write state to file (exceeded maximum transition capacity).");
+  
+        /* Increase the maximum allowed characters per state label */
+      
+      if (state.getLabel().length() > labelLength) {
+  
+        // If we cannot increase the capacity, indicate a failure
+        if (state.getLabel().length() > MAX_LABEL_LENGTH) {
+          logger.error("Could not write state to file (exceeded maximum label length).");
+          return false;
+        }
+  
+        recreateBodyFile(
+          eventCapacity,
+          stateCapacity,
+          transitionCapacity,
+          state.getLabel().length(),
+          nBytesPerEventID,
+          nBytesPerStateID
+        );
+  
+      }
+  
+        /* Increase the maximum allowed transitions per state */
+  
+      if (state.getTransitions().size() > transitionCapacity) {
+  
+        // If we cannot increase the capacity, indicate a failure (NOTE: This will likely never happen)
+        if (state.getTransitions().size() > MAX_TRANSITION_CAPACITY) {
+          logger.error("Could not write state to file (exceeded maximum transition capacity).");
+          return false;
+        }
+  
+        recreateBodyFile(
+          eventCapacity,
+          stateCapacity,
+          state.getTransitions().size(),
+          labelLength,
+          nBytesPerEventID,
+          nBytesPerStateID
+        );
+  
+      }
+  
+        /* Increase the number of allowed states */
+  
+      if (state.getID() > stateCapacity) {
+  
+        // Determine how much stateCapacity and nBytesPerStateID need to be increased by
+        long newStateCapacity = stateCapacity;
+        int newNBytesPerStateID = nBytesPerStateID;
+        while (newStateCapacity < state.getID()) {
+          newStateCapacity = ((newStateCapacity + 1) << 8) - 1;
+          newNBytesPerStateID++;
+        }
+  
+        // Re-create binary file
+        recreateBodyFile(
+          eventCapacity,
+          newStateCapacity,
+          transitionCapacity,
+          labelLength,
+          nBytesPerEventID,
+          newNBytesPerStateID
+        );
+  
+      }
+  
+        /* Write new state to file */
+      
+      if (!StateIO.writeToFile(state, baf, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID)) {
+        logger.error("Could not write state to file.");
         return false;
       }
-
-      recreateBodyFile(
-        eventCapacity,
-        stateCapacity,
-        transitions.size(),
-        labelLength,
-        nBytesPerEventID,
-        nBytesPerStateID
-      );
-
-    }
-
-      /* Increase the number of allowed states */
-
-    if (id > stateCapacity) {
-
-      // Determine how much stateCapacity and nBytesPerStateID need to be increased by
-      long newStateCapacity = stateCapacity;
-      int newNBytesPerStateID = nBytesPerStateID;
-      while (newStateCapacity < id) {
-        newStateCapacity = ((newStateCapacity + 1) << 8) - 1;
-        newNBytesPerStateID++;
-      }
-
-      // Re-create binary file
-      recreateBodyFile(
-        eventCapacity,
-        newStateCapacity,
-        transitionCapacity,
-        labelLength,
-        nBytesPerEventID,
-        newNBytesPerStateID
-      );
-
-    }
-
-      /* Write new state to file */
-    
-    State state = new State(label, id, marked, transitions);
-    
-    if (!StateIO.writeToFile(state, baf, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID)) {
-      logger.error("Could not write state to file.");
-      return false;
-    }
-
-    nStates++;
-
-      /* Update initial state */
-    
-    if (isInitialState)
-      initialState = id;
-
-      /* Update header file */
-    
-    headerFileNeedsToBeWritten = true;
-
-    return true;
+  
+      nStates++;
+  
+        /* Update initial state */
+      
+      if (isInitialState)
+        initialState = state.getID();
+  
+        /* Update header file */
+      
+      headerFileNeedsToBeWritten = true;
+  
+      return true;
   }
 
   /**
