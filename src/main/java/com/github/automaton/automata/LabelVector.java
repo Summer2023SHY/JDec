@@ -47,13 +47,15 @@ public class LabelVector implements Iterable<String> {
    * Construct a {@code LabelVector} object from its vector components
    * 
    * @param labels components of this vector
-   * @throws IllegalArgumentException if argument or any element of it is {@code null}
+   * @throws NullPointerException if argument is {@code null}
+   * @throws IllegalArgumentException if any element of the argument is {@code null}
    * 
    * @since 2.0
    */
   public LabelVector(String[] labels) {
+    Objects.requireNonNull(labels);
     if (ObjectUtils.anyNull((Object[]) labels)) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException("Argument contains null element");
     }
     this.vector = ArrayUtils.clone(labels);
     StringBuilder labelBuilder = new StringBuilder();
@@ -65,6 +67,19 @@ public class LabelVector implements Iterable<String> {
     labelBuilder.deleteCharAt(labelBuilder.length() - 1);
     labelBuilder.append('>');
     this.label = labelBuilder.toString();
+  }
+
+  /**
+   * Construct a {@code LabelVector} object from its vector components
+   * 
+   * @param labels components of this vector
+   * @throws NullPointerException if argument is {@code null}
+   * @throws IllegalArgumentException if any element of the argument is {@code null}
+   * 
+   * @since 2.0
+   */
+  public LabelVector(List<String> labels) {
+    this(Objects.requireNonNull(labels).toArray(new String[0]));
   }
 
     /* ACCESSOR METHODS */

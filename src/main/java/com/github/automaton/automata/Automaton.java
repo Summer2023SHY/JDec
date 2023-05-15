@@ -1132,7 +1132,7 @@ public class Automaton implements Closeable {
 
         } // for i
 
-        LabelVector eventLabelVector = new LabelVector(combinedEvent.toArray(new String[0]));
+        LabelVector eventLabelVector = new LabelVector(combinedEvent);
 
         StateVector targetStateVector = new StateVector(targetStates, nStates);
 
@@ -1194,7 +1194,7 @@ public class Automaton implements Closeable {
 
             }
 
-            LabelVector eventLabelVector = new LabelVector(combinedEvent.toArray(new String[0]));
+            LabelVector eventLabelVector = new LabelVector(combinedEvent);
             StateVector targetStateVector = new StateVector(targetStates, nStates);
 
             // Add event
