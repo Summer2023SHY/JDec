@@ -30,6 +30,7 @@ import javax.xml.transform.stream.*;
 
 import org.apache.batik.swing.svg.JSVGComponent;
 import org.apache.logging.log4j.*;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.w3c.dom.*;
 import org.xml.sax.*;
 
@@ -49,10 +50,14 @@ public class JDec extends JFrame implements ActionListener {
 
   /**
    * When debug mode is on some processes will take longer since extra checks are being done.
-   * If any problems are found, then they will be printed out on the console.
-   * NOTE: This hasn't been taken advantage of yet.
+   * All events with the logging level of {@link Level#DEBUG DEBUG} or above will be logged.
    **/
   public static final boolean DEBUG_MODE = true;
+  {
+    if (DEBUG_MODE) {
+      Configurator.setAllLevels(LogManager.getRootLogger().getName(), Level.DEBUG);
+    }
+  }
 
   public static final int PREFERRED_DIALOG_WIDTH  = 500;
   public static final int PREFERRED_DIALOG_HEIGHT = 500;
