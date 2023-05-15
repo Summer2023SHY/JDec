@@ -17,6 +17,7 @@ import java.util.*;
  * Represents a state in an automaton, complete with a label and transitions.
  *
  * @author Micah Stairs
+ * @author Sung Ho Yoon
  */
 public class State {
 
@@ -27,12 +28,26 @@ public class State {
   public static final int EXISTS_MASK = 0b00000010;
   /** Bitmask for checking whether or not a state is marked */
   public static final int MARKED_MASK = 0b00000001;
+  /**
+   * Bitmask for checking whether or not a state is marked
+   * 
+   * @since 2.0
+   */
+  public static final int ENABLEMENT_MASK = 0b00000100;
+  /**
+   * Bitmask for checking whether or not a state is marked
+   * 
+   * @since 2.0
+   */
+  public static final int DISABLEMENT_MASK = 0b00001000;
     
     /* INSTANCE VARIABLES */
   
   private String label;
   private long id;
   private boolean marked;
+  private boolean enablement;
+  private boolean disablement;
   private List<Transition> transitions;
 
     /* CONSTRUCTORS */
@@ -53,12 +68,48 @@ public class State {
    * @param id          The state ID
    * @param marked      Whether or not the state is marked
    * @param transitions The list of transitions leading out from this state
+   * @param enablement  Whether or not the state is an enablement state
+   * @param disablement Whether or not the state is an disablement state
+   * @throws IllegalArgumentException if {@code enablement && disablement} is {@code true}
+   * 
+   * @since 2.0
+   **/
+  public State(String label, long id, boolean marked, List<Transition> transitions, boolean enablement, boolean disablement) {
+    this(label, id, marked, transitions);
+    if (enablement && disablement) {
+      throw new IllegalArgumentException("A state cannot be an enablement and a disablement simultaneously");
+    }
+    this.enablement  = enablement;
+    this.disablement = disablement;
+  }
+
+  /**
+   * Construct a state (including transitions).
+   * @param label       The state's label
+   * @param id          The state ID
+   * @param marked      Whether or not the state is marked
+   * @param transitions The list of transitions leading out from this state
    **/
   public State(String label, long id, boolean marked, List<Transition> transitions) {
     this.label       = label;
     this.id          = id;
     this.marked      = marked;
     this.transitions = transitions;
+  }
+
+  /**
+   * Construct a state (with 0 transitions).
+   * @param label       The state's label
+   * @param id          The state ID
+   * @param marked      Whether or not the state is marked
+   * @param enablement  Whether or not the state is an enablement state
+   * @param disablement Whether or not the state is an disablement state
+   * @throws IllegalArgumentException if {@code enablement && disablement} is {@code true}
+   * 
+   * @since 2.0
+   **/
+  public State(String label, long id, boolean marked, boolean enablement, boolean disablement) {
+    this(label, id, marked, new ArrayList<Transition>(), enablement, disablement);
   }
 
   /**
@@ -103,6 +154,26 @@ public class State {
   }
 
   /**
+   * Change the enablement status of this state.
+   * @param enablement  Whether or not this state is an enablement state
+   * 
+   * @since 2.0
+   */
+  void setEnablement(boolean enablement) {
+    this.enablement = enablement;
+  }
+
+  /**
+   * Change the disablement status of this state.
+   * @param disablement  Whether or not this state is an disablement state
+   * 
+   * @since 2.0
+   */
+  void setDisablement(boolean disablement) {
+    this.disablement = disablement;
+  }
+
+  /**
    * Add a transition to the list.
    * @param transition  The new transition
    **/
@@ -127,6 +198,26 @@ public class State {
    **/
   public boolean isMarked() {
     return marked;
+  }
+
+  /**
+   * Checks whether this state is an enablement state
+   * @return Whether or not this state is an enablement state
+   *
+   * @since 2.0
+   */
+  public boolean isEnablementState() {
+    return enablement;
+  }
+
+  /**
+   * Checks whether this state is a disablement state
+   * @return Whether or not this state is a disablement state
+   * 
+   * @since 2.0
+   */
+  public boolean isDisablementState() {
+    return disablement;
   }
 
   /**

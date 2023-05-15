@@ -84,6 +84,8 @@ public class StateIO {
 
         boolean marked = (bytesRead[0] & State.MARKED_MASK) > 0;
         boolean exists = (bytesRead[0] & State.EXISTS_MASK) > 0;
+        boolean enablement = (bytesRead[0] & State.ENABLEMENT_MASK) > 0;
+        boolean disablement = (bytesRead[0] & State.DISABLEMENT_MASK) > 0;
 
         // Return null if this state doesn't actually exist
         if (!exists)
@@ -106,7 +108,7 @@ public class StateIO {
 
         }
 
-        return new State(new String(arr), id, marked, null);
+        return new State(new String(arr), id, marked, null, enablement, disablement);
 
     }
 
@@ -157,6 +159,8 @@ public class StateIO {
 
         boolean marked = (bytesRead[0] & State.MARKED_MASK) > 0;
         boolean exists = (bytesRead[0] & State.EXISTS_MASK) > 0;
+        boolean enablement = (bytesRead[0] & State.ENABLEMENT_MASK) > 0;
+        boolean disablement = (bytesRead[0] & State.DISABLEMENT_MASK) > 0;
 
         // Return null if this state doesn't actually exist
         if (!exists)
@@ -180,7 +184,7 @@ public class StateIO {
         }
 
         // Instantiate the state
-        State state = new State(new String(arr), id, marked);
+        State state = new State(new String(arr), id, marked, enablement, disablement);
 
         /* Transitions */
 
@@ -317,6 +321,10 @@ public class StateIO {
         bytesToWrite[0] = (byte) (State.EXISTS_MASK);
         if (s.isMarked())
             bytesToWrite[0] |= State.MARKED_MASK;
+        if (s.isEnablementState())
+            bytesToWrite[0] |= State.ENABLEMENT_MASK;
+        else if (s.isDisablementState())
+            bytesToWrite[0] |= State.DISABLEMENT_MASK;
 
         /* State's label */
 
