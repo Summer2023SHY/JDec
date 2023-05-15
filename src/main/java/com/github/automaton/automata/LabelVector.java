@@ -141,6 +141,9 @@ public class LabelVector implements Iterable<String> {
 
       @Override
       public String next() {
+        if (!hasNext()) {
+          throw new NoSuchElementException("No more elements to iterate over");
+        }
         return vector[index++];
       }
     };
