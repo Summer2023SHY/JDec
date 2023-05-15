@@ -1899,6 +1899,7 @@ public class Automaton implements Closeable {
         State state = getState(s);
         String stateLabel = formatStateLabel(state);
         MutableNode sourceNode = mutNode(stateLabel);
+        addAdditionalNodeProperties(state, sourceNode);
 
         // Draw state
         g = g.add(sourceNode.add(Attributes.attr("peripheries", state.isMarked() ? 2 : 1), Label.nodeName()));
@@ -2106,6 +2107,17 @@ public class Automaton implements Closeable {
 
     return stringBuilder.toString();
 
+  }
+
+  /**
+   * Add any additional node properties applicable to this automaton type, which is used in the graph generation.
+   * 
+   * @param state State in this automaton that corresponds to the node in the graph
+   * @param node Node in graph to add properties to
+   * 
+   * @since 2.0
+   */
+  protected void addAdditionalNodeProperties(State state, MutableNode node) {
   }
 
   /**

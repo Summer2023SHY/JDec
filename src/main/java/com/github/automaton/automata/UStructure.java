@@ -23,6 +23,7 @@ import com.github.automaton.automata.util.ByteManipulator;
 import com.github.automaton.io.IOUtility;
 
 import guru.nidi.graphviz.attribute.*;
+import guru.nidi.graphviz.model.MutableNode;
 
 /**
  * Represents an un-pruned U-Structure.
@@ -2027,6 +2028,20 @@ public class UStructure extends Automaton {
   }
 
     /* IMAGE GENERATION */
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @since 2.0
+   */
+  @Override
+  protected void addAdditionalNodeProperties(State state, MutableNode node) {
+    if (state.isEnablementState()) {
+      node.add(Color.GREEN3);
+    } else if (state.isDisablementState()) {
+      node.add(Color.RED);
+    }
+  }
 
   /**
    * {@inheritDoc}
