@@ -1790,7 +1790,7 @@ public class JDec extends JFrame implements ActionListener {
    * @param exception Exception to display
    **/
   public void displayException(Exception exception) {
-    
+    logger.catching(exception);
     displayMessage("Exception: " + exception.getClass().getName(), exception.getMessage(), JOptionPane.ERROR_MESSAGE);
   }
 
@@ -1800,7 +1800,7 @@ public class JDec extends JFrame implements ActionListener {
    * @param message The message to display in the dialog box
    **/
   public void displayErrorMessage(String title, String message) {
-    
+    logger.error(title + ": " + message);
     displayMessage(title, message, JOptionPane.ERROR_MESSAGE);
 
   }
@@ -1810,7 +1810,7 @@ public class JDec extends JFrame implements ActionListener {
    * at all times.
    * @param title       The title to display in the dialog box
    * @param message     The message to display in the dialog box
-   * @param messageType The type of message (using JOptionPane constants)
+   * @param messageType The type of message (using {@link JOptionPane} constants)
    **/
   public void displayMessage(String title, String message, int messageType) {
     
