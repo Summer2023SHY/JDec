@@ -1163,13 +1163,41 @@ public class Automaton implements Closeable {
 
         // Add transition
         int eventID = uStructure.addTransition(stateVector, eventLabelVector, targetStateVector);
+
+        boolean suppressed = false;
+
         if (isUnconditionalViolation) {
-          uStructure.addUnconditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
-          stateVector.setDisablement(true);
+          inner: for (int i = 0; i < nControllers; i++) {
+            State s = stateVector.getStateFor(i + 1);
+            for (Transition tran : s.getTransitions()) {
+              if (!tran.getEvent().isControllable()[i]) {
+                uStructure.addSuppressedTransition(stateVector.getID(), eventID, targetStateVector.getID());
+                suppressed = true;
+                break inner;
+              }
+            }
+          }
+          if (!suppressed) {
+            uStructure.addUnconditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
+            stateVector.setDisablement(true);
+          }
         }
         if (isConditionalViolation) {
-          uStructure.addConditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
-          stateVector.setEnablement(true);
+
+          inner: for (int i = 0; i < nControllers; i++) {
+            State s = stateVector.getStateFor(i + 1);
+            for (Transition tran : s.getTransitions()) {
+              if (!tran.getEvent().isControllable()[i]) {
+                uStructure.addSuppressedTransition(stateVector.getID(), eventID, targetStateVector.getID());
+                suppressed = true;
+                break inner;
+              }
+            }
+          }
+          if (!suppressed) {
+            uStructure.addConditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
+            stateVector.setEnablement(true);
+          }
         }
         if (isDisablementDecision)
           uStructure.addDisablementDecision(stateVector.getID(), eventID, targetStateVector.getID(), disablementControllers);

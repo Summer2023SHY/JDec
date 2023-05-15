@@ -42,6 +42,7 @@ public class UStructure extends Automaton {
     /* INSTANCE VARIABLES */
 
   // Special transitions
+  protected List<TransitionData> suppressedTransitions;
   protected List<TransitionData> unconditionalViolations;
   protected List<TransitionData> conditionalViolations;
   protected List<CommunicationData> potentialCommunications;
@@ -128,6 +129,7 @@ public class UStructure extends Automaton {
 
     super.initializeLists();
 
+    suppressedTransitions = new ArrayList<TransitionData>();
     unconditionalViolations = new ArrayList<TransitionData>();
     conditionalViolations   = new ArrayList<TransitionData>();
     potentialCommunications = new ArrayList<CommunicationData>();
@@ -1873,6 +1875,7 @@ public class UStructure extends Automaton {
 
   @Override protected void renumberStatesInAllTransitionData(RandomAccessFile mappingRAFile) throws IOException {
 
+    renumberStatesInTransitionData(mappingRAFile, suppressedTransitions);
     renumberStatesInTransitionData(mappingRAFile, unconditionalViolations);
     renumberStatesInTransitionData(mappingRAFile, conditionalViolations);
     renumberStatesInTransitionData(mappingRAFile, potentialCommunications);
@@ -2051,6 +2054,10 @@ public class UStructure extends Automaton {
   @Override
   protected void addAdditionalLinkProperties(Map<String, Attributes<? extends ForLink>> map) {
 
+    for (TransitionData data : suppressedTransitions) {
+      combineAttributesInMap(map, createKey(data), Attributes.attrs(Color.TRANSPARENT, Label.of("")));
+    }
+
     for (TransitionData data : unconditionalViolations) {
       combineAttributesInMap(map, createKey(data), Attributes.attrs(Color.RED, Color.RED.font()));
     }
@@ -2163,13 +2170,14 @@ public class UStructure extends Automaton {
 
       /* Write numbers to indicate how many special transitions are in the file */
 
-    byte[] buffer = new byte[24];
+    byte[] buffer = new byte[28];
     ByteManipulator.writeLongAsBytes(buffer, 0,  unconditionalViolations.size(), 4);
     ByteManipulator.writeLongAsBytes(buffer, 4,  conditionalViolations.size(),   4);
     ByteManipulator.writeLongAsBytes(buffer, 8,  potentialCommunications.size(), 4);
     ByteManipulator.writeLongAsBytes(buffer, 12, invalidCommunications.size(),   4);
     ByteManipulator.writeLongAsBytes(buffer, 16, nashCommunications.size(),      4);
     ByteManipulator.writeLongAsBytes(buffer, 20, disablementDecisions.size(),    4);
+    ByteManipulator.writeLongAsBytes(buffer, 24,  suppressedTransitions.size(), 4);
     haf.write(buffer);
 
       /* Write special transitions to the .hdr file */
@@ -2180,6 +2188,7 @@ public class UStructure extends Automaton {
     writeTransitionDataToHeader(invalidCommunications);
     writeNashCommunicationDataToHeader(nashCommunications);
     writeDisablementDataToHeader(disablementDecisions);
+    writeTransitionDataToHeader(suppressedTransitions);
 
   }
 
@@ -2289,7 +2298,7 @@ public class UStructure extends Automaton {
 
       /* Read the number which indicates how many special transitions are in the file */
 
-    byte[] buffer = haf.readHeaderBytes(24);
+    byte[] buffer = haf.readHeaderBytes(28);
 
     int nUnconditionalViolations = (int) ByteManipulator.readBytesAsLong(buffer, 0,  4);
     int nConditionalViolations   = (int) ByteManipulator.readBytesAsLong(buffer, 4,  4);
@@ -2297,6 +2306,7 @@ public class UStructure extends Automaton {
     int nInvalidCommunications   = (int) ByteManipulator.readBytesAsLong(buffer, 12, 4);
     int nNashCommunications      = (int) ByteManipulator.readBytesAsLong(buffer, 16, 4);
     int nDisablementDecisions    = (int) ByteManipulator.readBytesAsLong(buffer, 20, 4);
+    int nSuppressedTransitions = (int) ByteManipulator.readBytesAsLong(buffer, 0,  24);
 
       /* Read in special transitions from the .hdr file */
     
@@ -2328,6 +2338,11 @@ public class UStructure extends Automaton {
     if (nDisablementDecisions > 0) {
       disablementDecisions = new ArrayList<DisablementData>();
       readDisablementDataFromHeader(nDisablementDecisions, disablementDecisions);
+    }
+
+    if (nSuppressedTransitions > 0) {
+      suppressedTransitions = new ArrayList<TransitionData>();
+      readTransitionDataFromHeader(nSuppressedTransitions, suppressedTransitions);
     }
 
   }
@@ -2444,6 +2459,8 @@ public class UStructure extends Automaton {
    * @param data  The transition data associated with the special transitions to be removed
    **/
   @Override protected void removeTransitionData(TransitionData data) {
+
+    suppressedTransitions.remove(data);
     
     unconditionalViolations.remove(data);
 
@@ -2459,6 +2476,17 @@ public class UStructure extends Automaton {
 
     disablementDecisions.remove(data);
 
+  }
+
+  /**
+   * Add a suppressed transition.
+   * @param initialStateID   The initial state
+   * @param eventID          The event triggering the transition
+   * @param targetStateID    The target state
+   **/
+  public void addSuppressedTransition(long initialStateID, int eventID, long targetStateID) {
+    suppressedTransitions.add(new TransitionData(initialStateID, eventID, targetStateID));
+    headerFileNeedsToBeWritten = true;
   }
 
   /**

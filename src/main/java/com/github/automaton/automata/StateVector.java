@@ -24,6 +24,10 @@ public class StateVector extends State implements Iterable<State> {
         setID(Automaton.combineIDs(stateIDs, maxID));
     }
 
+    public State getStateFor(int controller) {
+        return states.get(controller);
+    }
+
     public List<State> getStates() {
         return states;
     }
