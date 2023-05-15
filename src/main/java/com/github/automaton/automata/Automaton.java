@@ -1161,7 +1161,8 @@ public class Automaton implements Closeable {
               stack.push(combinedTargetID);
               valuesInStack.add(combinedTargetID);
           } else
-            logger.debug("Prevented adding of state since it was already in the stack (NOTE: Does this ever get printed to the console? Intuitively it should, but I have never seen it before.).");
+            logger.debug("Prevented adding of state since it was already in the stack.");
+            /* NOTE: Does this ever get printed to the console? Intuitively it should, but I have never seen it before. (from Micah Stairs) */
         }
 
         // Add transition
