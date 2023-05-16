@@ -384,6 +384,8 @@ public class StateIO {
      * @throws IllegalArgumentException if {@code state} is not equal to the one
      *                                  stored in {@code automaton}
      * @throws IOException              if I/O error occurs
+     * 
+     * @since 2.0
      */
     public static void rewriteStatus(Automaton automaton, BodyAccessFile baf, State state) throws IOException {
         if (!stateExists(automaton, baf, state.getID())) {

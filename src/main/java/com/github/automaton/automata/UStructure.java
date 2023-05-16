@@ -29,6 +29,7 @@ import guru.nidi.graphviz.model.MutableNode;
  * Represents an un-pruned U-Structure.
  *
  * @author Micah Stairs
+ * @author Sung Ho Yoon
  */
 public class UStructure extends Automaton {
 
@@ -42,6 +43,11 @@ public class UStructure extends Automaton {
     /* INSTANCE VARIABLES */
 
   // Special transitions
+  /**
+   * Transitions that are graphically suppressed for readability
+   * 
+   * @since 2.0
+   */
   protected List<TransitionData> suppressedTransitions;
   protected List<TransitionData> unconditionalViolations;
   protected List<TransitionData> conditionalViolations;
