@@ -34,14 +34,12 @@ import guru.nidi.graphviz.engine.*;
 import guru.nidi.graphviz.model.*;
 
 /**
- * Class that is able to fully represent an automaton. The usage of .hdr and .bdy files
+ * Class that is able to fully represent an automaton. The usage of {@code .hdr} and {@code .bdy} files
  * gives the potential to work with very large automata, since the entire automaton does not need
  * to be stored in memory.
  *
- * @implNote The static method {@code clearTemporaryFiles()} should be run on a regular basis when using this class (typically
- *           done when launching your GUI or after running a test routine).
- *
  * @author Micah Stairs
+ * @author Sung Ho Yoon
  **/
 public class Automaton implements Closeable {
 
@@ -1801,10 +1799,10 @@ public class Automaton implements Closeable {
 
   /**
    * Given a list of IDs and the largest possible value that could appear in the list, create a unique
-   * combined ID using a BigInteger.
+   * combined ID using a {@link BigInteger}.
    * @implNote The order of the list matters. This method does not sort the list internally.
    * @param list  The list of IDs
-   * @param maxID The largest possible value that could appear in the list (usually nStates)
+   * @param maxID The largest possible value that could appear in the list (usually {@link #nStates})
    * @return      The unique combined ID
    **/
   public static BigInteger combineBigIDs(List<Long> list, long maxID) {

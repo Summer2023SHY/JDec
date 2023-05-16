@@ -17,12 +17,12 @@ import com.github.automaton.automata.UStructure;
 
 /**
  * Used to display a pop-up which prompts the user to decide which controllers
- * are allowed to be senders and recievers, and then go on to generate all
+ * are allowed to be senders and receivers, and then go on to generate all
  * applicable feasible protocols, displaying them in another window.
  *
  * @author Micah Stairs
  */
-public abstract class ChooseSendersAndRecieversPrompt extends JDialog {
+public abstract class ChooseSendersAndReceiversPrompt extends JDialog {
 
     /* INSTANCE VARIABLES */
 
@@ -35,14 +35,14 @@ public abstract class ChooseSendersAndRecieversPrompt extends JDialog {
     /* CONSTRUCTOR */
 
   /**
-   * Construct a ChooseSendersAndRecieversPrompt object.
+   * Construct a ChooseSendersAndReceiversPrompt object.
    * @param gui         A reference to the GUI which is being worked with
    * @param uStructure  The UStructure that is being worked with
    * @param title       The title of the popup box
    * @param message     The text for the label to be displayed at the top of the screen
    * @param buttonText  The text to be place on the button
    **/
-  public ChooseSendersAndRecieversPrompt(JDec gui, UStructure uStructure, String title, String message, String buttonText) {
+  public ChooseSendersAndReceiversPrompt(JDec gui, UStructure uStructure, String title, String message, String buttonText) {
 
     super(gui, true);
 
@@ -122,7 +122,7 @@ public abstract class ChooseSendersAndRecieversPrompt extends JDialog {
     /* METHODS */
 
   /**
-   * This action is performed once the user has selected senders and recievers and moves on to the next step.
+   * This action is performed once the user has selected senders and receivers and moves on to the next step.
    * @return  True if the action was completed (which will dispose of this dialog box), or false if the action
    *          should be allowed to happen again.
    **/

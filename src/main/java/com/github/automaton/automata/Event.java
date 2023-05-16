@@ -28,7 +28,7 @@ public class Event {
   private boolean[] observable, controllable;
 
   /**
-   * Events can sometimes be vectors (for example, automata created by synchonrized composition use them).
+   * Events can sometimes be vectors (for example, automata created by synchronized composition use them).
    * Example of syntax: "&lt;a,b,d>" actually represents an event vector: {"a", "b", "d"}. This instance
    * variable holds a reference to the vectorized event label.
    **/

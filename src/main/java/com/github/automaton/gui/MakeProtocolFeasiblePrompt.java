@@ -68,7 +68,7 @@ public class MakeProtocolFeasiblePrompt extends JDialog {
 
       /* Add Instructions */
 
-    add(new JLabel(" Select the communications to would like to include in your protocol: "));
+    add(new JLabel(" Select the communications you would like to include in your protocol: "));
 
       /* Add Checkboxes (in a scroll pane in case there are a lot of them) */
 

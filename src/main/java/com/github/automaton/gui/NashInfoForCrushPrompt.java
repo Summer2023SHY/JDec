@@ -3,7 +3,7 @@ package com.github.automaton.gui;
 /*
  * TABLE OF CONTENTS:
  *  -Constructor
- *  -Overidden Method
+ *  -Overridden Method
  *  -Method
  **/
 
@@ -38,7 +38,7 @@ public class NashInfoForCrushPrompt extends NashInformationPrompt {
 
   }
 
-    /* OVERIDDEN METHOD */
+    /* OVERRIDDEN METHOD */
   /** {@inheritDoc} */
   @Override
   protected void performAction() {

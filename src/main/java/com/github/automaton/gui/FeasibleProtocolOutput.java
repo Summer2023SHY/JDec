@@ -36,7 +36,7 @@ public class FeasibleProtocolOutput extends JDialog {
 
   /**
    * Construct a FeasibleProtocolOutput object.
-   * @param gui               A reference to the GUI which will be recieving requests for new tabs
+   * @param gui               A reference to the GUI which will be receiving requests for new tabs
    * @param uStructure        The U-Structure that is being worked with
    * @param feasibleProtocols The list of protocols that are feasible
    * @param title             The title of the popup box

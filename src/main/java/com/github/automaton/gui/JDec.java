@@ -149,7 +149,7 @@ public class JDec extends JFrame implements ActionListener {
 
     setMinimumSize(new Dimension(1280, 720));
 
-      /* Create message to dislay when there are no tabs */
+      /* Create message to display when there are no tabs */
 
     noTabsMessage = new JLabel("You do not have any tabs open.");
     noTabsMessage.setHorizontalAlignment(JLabel.CENTER);
@@ -1204,7 +1204,7 @@ public class JDec extends JFrame implements ActionListener {
     } catch (MissingOrCorruptBodyFileException e) {
       displayErrorMessage("Corrupt or Missing File", "Please ensure that the .bdy file associated with this automaton is not corrupt or missing.");
     } catch (IOException e) {
-      displayErrorMessage("I/O Error", "An I/O error occured.");
+      displayErrorMessage("I/O Error", "An I/O error occurred.");
     }
 
   }
@@ -1773,7 +1773,7 @@ public class JDec extends JFrame implements ActionListener {
       Node node3 = element2.getElementsByTagName(automatonType.name()).item(0);
       Element element3 = (Element) node3;
 
-      // Generate a string of this element and its descendents, including tags
+      // Generate a string of this element and its descendants, including tags
       StringWriter buffer = new StringWriter();
       Transformer xform = TransformerFactory.newInstance().newTransformer();
       xform.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
@@ -2077,7 +2077,7 @@ public class JDec extends JFrame implements ActionListener {
       c.ipady = 0; c.weightx = 0.5; c.weighty = 1.0; c.gridx = 0; c.gridy = 7;
       container.add(viewImageInBrowserButton, c);
 
-        /* Exaplore Automaton Button */
+        /* Explore Automaton Button */
 
       exploreAutomatonButton = new JButton("Explore");
       exploreAutomatonButton.setFocusable(false);

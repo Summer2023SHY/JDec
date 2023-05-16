@@ -3,7 +3,7 @@ package com.github.automaton.gui;
 /*
  * TABLE OF CONTENTS:
  *  -Constructor
- *  -Overidden Method
+ *  -Overridden Method
  *  -Method
  **/
 
@@ -20,7 +20,7 @@ import java.util.*;
  *
  * @author Micah Stairs
  */
-public class GenerateFeasibleProtocolsPrompt extends ChooseSendersAndRecieversPrompt {
+public class GenerateFeasibleProtocolsPrompt extends ChooseSendersAndReceiversPrompt {
 
     /* CONSTRUCTOR */
 
@@ -37,7 +37,7 @@ public class GenerateFeasibleProtocolsPrompt extends ChooseSendersAndRecieversPr
 
   }
 
-    /* OVERIDDEN METHOD */
+    /* OVERRIDDEN METHOD */
 
   /** {@inheritDoc} */
   @Override
@@ -47,7 +47,7 @@ public class GenerateFeasibleProtocolsPrompt extends ChooseSendersAndRecieversPr
 
     if (feasibleProtocols.size() == 0) {
 
-      gui.displayMessage("No Feasible Protocols", "There were no feasible protocols found with the specified senders and recievers.", JOptionPane.INFORMATION_MESSAGE);
+      gui.displayMessage("No Feasible Protocols", "There were no feasible protocols found with the specified senders and receivers.", JOptionPane.INFORMATION_MESSAGE);
       return false;
 
     } else {
@@ -70,7 +70,7 @@ public class GenerateFeasibleProtocolsPrompt extends ChooseSendersAndRecieversPr
     /* METHOD */
 
   /**
-   * Generate the feasible protocols based on the selected senders and recievers.
+   * Generate the feasible protocols based on the selected senders and receivers.
    * @return  The list of feasible protocols
    **/
   protected List<Set<CommunicationData>> generateFeasibleProtocols() {
@@ -84,7 +84,7 @@ public class GenerateFeasibleProtocolsPrompt extends ChooseSendersAndRecieversPr
 
       // Check for communication that isn't allowed
       for (int i = 0; i < data.roles.length; i++)
-        if (data.roles[i] == CommunicationRole.RECIEVER && !checkBoxes[sender][i].isSelected())
+        if (data.roles[i] == CommunicationRole.RECEIVER && !checkBoxes[sender][i].isSelected())
           continue outer;
 
       // If we got this far then we can add it

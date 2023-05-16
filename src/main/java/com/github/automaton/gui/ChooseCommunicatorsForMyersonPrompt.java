@@ -3,7 +3,7 @@ package com.github.automaton.gui;
 /*
  * TABLE OF CONTENTS:
  *  -Constructor
- *  -Overidden Method
+ *  -Overridden Method
  **/
 
 // import java.io.*;
@@ -19,11 +19,11 @@ import com.github.automaton.automata.UStructure;
 
 /**
  * Calculates and displays the Myerson values they
- * have selected senders and recievers.
+ * have selected senders and receivers.
  *
  * @author Micah Stairs
  */
-public class ChooseCommunicatorsForMyersonPrompt extends ChooseSendersAndRecieversPrompt {
+public class ChooseCommunicatorsForMyersonPrompt extends ChooseSendersAndReceiversPrompt {
 
   private static Logger logger = LogManager.getLogger();
 
@@ -42,7 +42,7 @@ public class ChooseCommunicatorsForMyersonPrompt extends ChooseSendersAndRecieve
 
   }
 
-    /* OVERIDDEN METHOD */
+    /* OVERRIDDEN METHOD */
   /** {@inheritDoc} */
   @Override
   @SuppressWarnings("removal")
@@ -52,7 +52,7 @@ public class ChooseCommunicatorsForMyersonPrompt extends ChooseSendersAndRecieve
 
     // Ensure that there is at least one communication in the protocol
     if (protocol.size() == 0) {
-      JOptionPane.showMessageDialog(null, "There were no communications found with the specified senders and recievers", "No Communications", JOptionPane.INFORMATION_MESSAGE);
+      JOptionPane.showMessageDialog(null, "There were no communications found with the specified senders and receivers", "No Communications", JOptionPane.INFORMATION_MESSAGE);
       return false;
     }
 
@@ -75,7 +75,7 @@ public class ChooseCommunicatorsForMyersonPrompt extends ChooseSendersAndRecieve
   }
 
   /**
-   * Generate the protocol which includes all communication from the selected senders and recievers,
+   * Generate the protocol which includes all communication from the selected senders and receivers,
    * including communications that are relayed.
    * @return  The protocol (which may or may not be feasible)
    **/
@@ -118,7 +118,7 @@ public class ChooseCommunicatorsForMyersonPrompt extends ChooseSendersAndRecieve
 
       // Check for communication that isn't allowed
       for (int i = 0; i < data.roles.length; i++)
-        if (data.roles[i] == CommunicationRole.RECIEVER && !selected[sender][i])
+        if (data.roles[i] == CommunicationRole.RECEIVER && !selected[sender][i])
           continue outer;
 
       // If we got this far then we can add it

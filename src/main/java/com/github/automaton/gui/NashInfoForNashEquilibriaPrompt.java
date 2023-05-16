@@ -3,7 +3,7 @@ package com.github.automaton.gui;
 /*
  * TABLE OF CONTENTS:
  *  -Constructor
- *  -Overidden Method
+ *  -Overridden Method
  **/
 
 import javax.swing.*;
@@ -37,7 +37,7 @@ public class NashInfoForNashEquilibriaPrompt extends NashInformationPrompt {
 
   }
 
-    /* OVERIDDEN METHOD */
+    /* OVERRIDDEN METHOD */
   /** {@inheritDoc} */
 	@Override
   protected void performAction() {

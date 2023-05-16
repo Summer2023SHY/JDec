@@ -35,7 +35,7 @@ public class UStructure extends Automaton {
 
     /* CLASS CONSTANTS */
 
-  /** Whether or not invalid communications should be added for mathmatical completeness, or supressed for efficiency purposes */
+  /** Whether or not invalid communications should be added for mathematical completeness, or suppressed for efficiency purposes */
   public static boolean SUPPRESS_INVALID_COMMUNICATIONS = true;
 
   private static Logger logger = LogManager.getLogger();
@@ -264,7 +264,7 @@ public class UStructure extends Automaton {
             // If there were no potential communications, then it must be a invalid communication
             if (!found) {
               if (SUPPRESS_INVALID_COMMUNICATIONS)
-                logger.error("Invalid communication was not supressed: " + vector);
+                logger.error("Invalid communication was not suppressed: " + vector);
               uStructure.addInvalidCommunication(startingState.getID(), id, destinationState.getID());
             }
     
@@ -389,13 +389,13 @@ public class UStructure extends Automaton {
 
       // System.out.println(uStructure.unconditionalViolations.size() + " " + uStructure.conditionalViolations.size() + " " + uStructure.getNumberOfStates());
 
-      // Choose an abitrary violation
+      // Choose an arbitrary violation
       TransitionData chosenViolation = (uStructure.conditionalViolations.size() > 0 ? uStructure.conditionalViolations.get(0) : uStructure.unconditionalViolations.get(0));
       // System.out.println(chosenViolation.toString(uStructure));
       // System.out.println(uStructure.getState(chosenViolation.initialStateID));
 
       // Determine a communication which is necessary in order to help prevent this violation
-      // NOTE: It is possible that more than one communication will be neccessary, but this will
+      // NOTE: It is possible that more than one communication will be necessary, but this will
       //       be taken care of in subsequent iterations
       CommunicationData associatedCommunication = uStructure.findCommunicationToBeAdded(chosenViolation, this, protocol);
 
@@ -866,7 +866,7 @@ public class UStructure extends Automaton {
     // Invert this U-Structure (so that we can travel backwards over transitions)
     UStructure invertedUStructure = invert();
 
-    // Create empty crush, copy over events oberservable by the controller
+    // Create empty crush, copy over events observable by the controller
     Crush crush = new Crush(newHeaderFile, newBodyFile, nControllers);
     for (Event e : events)
       if (!e.getVector().isUnobservableToController(indexOfController))
@@ -1399,7 +1399,7 @@ public class UStructure extends Automaton {
         observableLabels.add(v);
     }
 
-    // Find all LUB's of the unobservable labels (which will add communications where there is more than one reciever)
+    // Find all LUB's of the unobservable labels (which will add communications where there is more than one receiver)
     generateLeastUpperBounds(unobservableLabels);
 
       /* Find potential communications */
@@ -1448,14 +1448,14 @@ public class UStructure extends Automaton {
             potentialCommunication += "," + label2;
             newEventLabel = label2;
             if (i > 0)
-              roles[i - 1] = CommunicationRole.RECIEVER;
+              roles[i - 1] = CommunicationRole.RECEIVER;
           } else {
             potentialCommunication += ",*";
             if (i > 0)
               roles[i - 1] = CommunicationRole.NONE;
           }
 
-          // Make sure that the senders and recievers all are working with the same event
+          // Make sure that the senders and receivers all are working with the same event
           if (eventLabel != null && newEventLabel != null && !newEventLabel.equals(eventLabel)) {
             valid = false;
             break;
@@ -1692,7 +1692,7 @@ public class UStructure extends Automaton {
     for (NashCommunicationData communication : feasibleProtocol)
       crushNeedsToBeGenerated[communication.getIndexOfSender()] = true;
 
-    // Generate the neccessary Crushes, storing only the communication cost mappings
+    // Generate the necessary Crushes, storing only the communication cost mappings
     List<Map<String, Double>> costMappingsByCrush = new ArrayList<Map<String, Double>>();
     for (int i = 0; i < nControllers; i++)
       if (crushNeedsToBeGenerated[i]) {
@@ -1702,7 +1702,7 @@ public class UStructure extends Automaton {
       } else
         costMappingsByCrush.add(null);
 
-    // Clear set of communications (since we are creating new NashCommuniationData objects)
+    // Clear set of communications (since we are creating new NashCommunicationData objects)
     Set<NashCommunicationData> originalCommunicationData = new HashSet<NashCommunicationData>(feasibleProtocol);
     feasibleProtocol.clear();
 
@@ -2543,7 +2543,7 @@ public class UStructure extends Automaton {
   }
 
   /**
-   * Add an invalid communication (which are the communications that were added for mathmatical completeness but are not actually potential communications).
+   * Add an invalid communication (which are the communications that were added for mathematical completeness but are not actually potential communications).
    * @param initialStateID   The initial state
    * @param eventID          The event triggering the transition
    * @param targetStateID    The target state

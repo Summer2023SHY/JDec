@@ -17,7 +17,7 @@ import java.util.*;
  */
 public class ProtocolVector {
 
-    /* INSTANCE VARIBLES */
+    /* INSTANCE VARIABLES */
 
 	private NashCommunicationData[][] communications;
   private double[] value;
