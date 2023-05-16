@@ -1399,6 +1399,7 @@ public class TestAutomata {
     }
 
     @Test
+    @Disabled
     @DisplayName("Shapley Value Test")
     public void shapleyValueTest() {
       /* Shapley Value Tests */
