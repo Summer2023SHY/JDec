@@ -392,7 +392,7 @@ public class StateIO {
             throw new IllegalArgumentException("The provided state is not equal to the one stored in the automaton.");
         }
         baf.getRAFile().seek(state.getID() * automaton.getSizeOfState());
-        baf.getLogger().debug("StateIO.rewriteStatus() - FP: " + baf.getRAFile().getFilePointer());
+        baf.getLogger().trace("StateIO.rewriteStatus() - FP: " + baf.getRAFile().getFilePointer());
         byte newStatus = State.EXISTS_MASK;
         if (state.isMarked())
             newStatus |= State.MARKED_MASK;
