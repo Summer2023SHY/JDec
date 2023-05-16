@@ -17,18 +17,21 @@ package com.github.automaton.automata;
  *  -Accessor Methods
  */
 
+import static guru.nidi.graphviz.model.Factory.*;
+
 import java.util.*;
 import java.io.*;
 import java.math.*;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.logging.log4j.*;
 
 import com.github.automaton.automata.util.ByteManipulator;
 import com.github.automaton.io.*;
 
+import guru.nidi.graphviz.attribute.*;
 import guru.nidi.graphviz.engine.*;
 import guru.nidi.graphviz.model.*;
-import guru.nidi.graphviz.parse.*;
 
 /**
  * Class that is able to fully represent an automaton. The usage of .hdr and .bdy files
@@ -1012,28 +1015,26 @@ public class Automaton implements Closeable {
 
       /* Setup */
 
-    Stack<Long> stack = new Stack<Long>();
-    HashSet<Long> valuesInStack = new HashSet<Long>();
+    Stack<StateVector> stack = new Stack<StateVector>();
+    HashSet<StateVector> valuesInStack = new HashSet<StateVector>();
     UStructure uStructure = new UStructure(newHeaderFile, newBodyFile, nControllers, true);
 
       /* Add initial state to the stack */
 
     { // The only reason this is inside a scope is so that variable names could be re-used more cleanly
-      List<Long> listOfInitialIDs = new ArrayList<Long>();
-      String combinedStateLabel = "";
+      List<State> listOfInitialStates = new ArrayList<State>();
       State startingState = getState(initialState);
 
       // Create list of initial IDs and build the label
       for (int i = 0; i <= nControllers; i++) {
-        listOfInitialIDs.add(initialState);
-        combinedStateLabel += "_" + startingState.getLabel();
+        listOfInitialStates.add(startingState);
       }
 
-      long combinedID = combineIDs(listOfInitialIDs, nStates);
-      stack.push(combinedID);
-      valuesInStack.add(combinedID);
+      StateVector initialStateVector = new StateVector(listOfInitialStates, nStates);
+      stack.push(initialStateVector);
+      valuesInStack.add(initialStateVector);
 
-      uStructure.addStateAt(combinedStateLabel.substring(1), false, new ArrayList<Transition>(), true, combinedID);
+      uStructure.addStateAt(initialStateVector, true);
 
     }
 
@@ -1041,28 +1042,29 @@ public class Automaton implements Closeable {
 
     while (stack.size() > 0) {
       
-      long combinedID = stack.pop();
-      valuesInStack.remove(combinedID);
+      StateVector stateVector = stack.pop();
+      valuesInStack.remove(stateVector);
 
       // Get list of IDs and states
-      List<Long> listOfIDs = separateIDs(combinedID, nStates);
-      List<State> listOfStates = new ArrayList<State>();
-      for (long id : listOfIDs)
-        listOfStates.add(getState(id));
+      List<State> listOfStates = stateVector.getStates();
+      List<Long> listOfIDs = new ArrayList<Long>();
+      for (State s : listOfStates)
+        listOfIDs.add(s.getID());
 
       // For each transition in the system automaton
       outer: for (Transition t1 : listOfStates.get(0).getTransitions()) {
 
         Event e = t1.getEvent();
 
-        List<Long> listOfTargetIDs = new ArrayList<Long>();
-        listOfTargetIDs.add(t1.getTargetStateID());
+        List<State> targetStates = new ArrayList<State>();
+        State currTargetState = getState(t1.getTargetStateID());
+        targetStates.add(currTargetState);
 
-        String combinedEventLabel = e.getLabel();
-        String combinedStateLabel = getStateExcludingTransitions(t1.getTargetStateID()).getLabel();
+        List<String> combinedEvent = new ArrayList<>();
+        combinedEvent.add(e.getLabel());
 
         // If this is the system has a bad transition, then it is an unconditional violation by default until we've found a controller that prevents it
-        boolean isBadTransition = isBadTransition(listOfStates.get(0).getID(), e.getID(), t1.getTargetStateID());
+        boolean isBadTransition = isBadTransition(listOfStates.get(0), e, currTargetState);
         boolean isUnconditionalViolation = isBadTransition;
 
         // It is not a disablement decision by default, until we find a controller that can disable it
@@ -1090,25 +1092,22 @@ public class Automaton implements Closeable {
             observable[i] = true;
 
             // If the event is observable, but not possible at this current time, then we can skip this altogether
-            long targetID = 0;
-            String label = null;
+            State target = null;
             for (Transition t2 : listOfStates.get(i + 1).getTransitions())
               if (t2.getEvent().equals(e)) {
-                targetID = t2.getTargetStateID();
-                label = getStateExcludingTransitions(t2.getTargetStateID()).getLabel();
+                target = getState(t2.getTargetStateID());
               }
-            if (targetID == 0)
+            if (target == null)
               continue outer;
 
-            combinedEventLabel += "," + e.getLabel();
-            combinedStateLabel += "_" + label;
-            listOfTargetIDs.add(targetID);
+            combinedEvent.add(e.getLabel());
+            targetStates.add(target);
 
             if (e.isControllable()[i]) {
 
               controllable[i] = true;
 
-              TransitionData data = new TransitionData(listOfStates.get(i + 1).getID(), e.getID(), targetID);
+              TransitionData data = new TransitionData(listOfStates.get(i + 1), e, target);
 
               // Check to see if this controller can prevent an unconditional violation
               if (isUnconditionalViolation && badTransitions.contains(data))
@@ -1128,25 +1127,24 @@ public class Automaton implements Closeable {
 
           // Unobservable events by this controller
           } else {
-            combinedEventLabel += ",*";
-            combinedStateLabel += "_" + listOfStates.get(i + 1).getLabel();
-            listOfTargetIDs.add(listOfIDs.get(i + 1));
+            combinedEvent.add("*");
+            targetStates.add(listOfStates.get(i + 1));
           }
 
         } // for i
 
-        combinedEventLabel = "<" + combinedEventLabel + ">";
+        LabelVector eventLabelVector = new LabelVector(combinedEvent);
 
-        long combinedTargetID = combineIDs(listOfTargetIDs, nStates);
+        StateVector targetStateVector = new StateVector(targetStates, nStates);
 
         // Add event
-        uStructure.addEventIfNonExisting(combinedEventLabel, observable, controllable);
+        uStructure.addEventIfNonExisting(eventLabelVector, observable, controllable);
 
         // Add state if it doesn't already exist
-        if (!uStructure.stateExists(combinedTargetID)) {
+        if (!uStructure.stateExists(targetStateVector.getID())) {
 
           // Add state
-          if (!uStructure.addStateAt(combinedStateLabel, false, new ArrayList<Transition>(), false, combinedTargetID)) {
+          if (!uStructure.addStateAt(targetStateVector, false)) {
             OperationFailedException ofe = new OperationFailedException("Failed to add state");
             try {
               uStructure.close();
@@ -1157,22 +1155,65 @@ public class Automaton implements Closeable {
           }
           
           // Only add the ID if it's not already waiting to be processed
-          if (!valuesInStack.contains(combinedTargetID)) {
-              stack.push(combinedTargetID);
-              valuesInStack.add(combinedTargetID);
+          if (!valuesInStack.contains(targetStateVector)) {
+              stack.push(targetStateVector);
+              valuesInStack.add(targetStateVector);
           } else
             logger.debug("Prevented adding of state since it was already in the stack.");
             /* NOTE: Does this ever get printed to the console? Intuitively it should, but I have never seen it before. (from Micah Stairs) */
         }
 
         // Add transition
-        int eventID = uStructure.addTransition(combinedID, combinedEventLabel, combinedTargetID);
-        if (isUnconditionalViolation)
-          uStructure.addUnconditionalViolation(combinedID, eventID, combinedTargetID);
-        if (isConditionalViolation)
-          uStructure.addConditionalViolation(combinedID, eventID, combinedTargetID);
+        int eventID = uStructure.addTransition(stateVector, eventLabelVector, targetStateVector);
+
+        boolean suppressed = false;
+
+        if (isUnconditionalViolation) {
+          inner: for (int i = 0; i < nControllers; i++) {
+            State s = stateVector.getStateFor(i + 1);
+            for (Transition tran : s.getTransitions()) {
+              if (!tran.getEvent().isControllable()[i]) {
+                uStructure.addSuppressedTransition(stateVector.getID(), eventID, targetStateVector.getID());
+                suppressed = true;
+                break inner;
+              }
+            }
+          }
+          if (!suppressed) {
+            uStructure.addUnconditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
+            stateVector.setDisablement(true);
+          }
+        }
+        if (isConditionalViolation) {
+
+          inner: for (int i = 0; i < nControllers; i++) {
+            State s = stateVector.getStateFor(i + 1);
+            for (Transition tran : s.getTransitions()) {
+              if (!tran.getEvent().isControllable()[i]) {
+                uStructure.addSuppressedTransition(stateVector.getID(), eventID, targetStateVector.getID());
+                suppressed = true;
+                break inner;
+              }
+            }
+          }
+          if (!suppressed) {
+            uStructure.addConditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
+            stateVector.setEnablement(true);
+          }
+        }
         if (isDisablementDecision)
-          uStructure.addDisablementDecision(combinedID, eventID, combinedTargetID, disablementControllers);
+          uStructure.addDisablementDecision(stateVector.getID(), eventID, targetStateVector.getID(), disablementControllers);
+        try {
+          StateIO.rewriteStatus(uStructure, uStructure.baf, stateVector);
+        } catch (StateNotFoundException | IOException exc) {
+          OperationFailedException ofe = new OperationFailedException("Failed to update status of state", exc);
+          try {
+            uStructure.close();
+          } catch (IOException ioe2) {
+            ofe.addSuppressed(ioe2);
+          }
+          throw ofe;
+        }
 
       } // for
 
@@ -1182,40 +1223,36 @@ public class Automaton implements Closeable {
         for (Transition t : listOfStates.get(i + 1).getTransitions()) {
           if (!t.getEvent().isObservable()[i]) {
 
-            List<Long> listOfTargetIDs = new ArrayList<Long>();
-            String combinedEventLabel = "";
-            String combinedStateLabel = "";
+            List<State> targetStates = new ArrayList<State>();
+            List<String> combinedEvent = new ArrayList<>();
 
             for (int j = 0; j <= nControllers; j++) {
 
               // The current controller
               if (j == i + 1) {
-                listOfTargetIDs.add(t.getTargetStateID());
-                combinedEventLabel += "," + t.getEvent().getLabel();
-                combinedStateLabel += "_" + getStateExcludingTransitions(t.getTargetStateID()).getLabel();
+                combinedEvent.add(t.getEvent().getLabel());
+                targetStates.add(getState(t.getTargetStateID()));
               } else {
-                listOfTargetIDs.add(listOfIDs.get(j));
-                combinedEventLabel += ",*";
-                combinedStateLabel += "_" + listOfStates.get(j).getLabel(); 
+                combinedEvent.add("*");
+                targetStates.add(getState(listOfIDs.get(j)));
               }
 
             }
 
-            combinedEventLabel = "<" + combinedEventLabel.substring(1) + ">";
-            combinedStateLabel = combinedStateLabel.substring(1);
-            long combinedTargetID = combineIDs(listOfTargetIDs, nStates);
+            LabelVector eventLabelVector = new LabelVector(combinedEvent);
+            StateVector targetStateVector = new StateVector(targetStates, nStates);
 
             // Add event
             boolean[] observable = new boolean[nControllers];
             boolean[] controllable = new boolean[nControllers];
             controllable[i] = t.getEvent().isControllable()[i];
-            uStructure.addEventIfNonExisting(combinedEventLabel, observable, controllable);
+            uStructure.addEventIfNonExisting(eventLabelVector, observable, controllable);
 
             // Add state if it doesn't already exist
-            if (!uStructure.stateExists(combinedTargetID)) {
+            if (!uStructure.stateExists(targetStateVector)) {
 
               // Add state
-              if (!uStructure.addStateAt(combinedStateLabel, false, new ArrayList<Transition>(), false, combinedTargetID)) {
+              if (!uStructure.addStateAt(targetStateVector, false)) {
                 OperationFailedException ofe = new OperationFailedException("Failed to add state");
                 try {
                   uStructure.close();
@@ -1226,17 +1263,39 @@ public class Automaton implements Closeable {
               }
             
               // Only add the ID if it's not already waiting to be processed
-              if (!valuesInStack.contains(combinedTargetID)) {
-                stack.push(combinedTargetID);
-                valuesInStack.add(combinedTargetID);
+              if (!valuesInStack.contains(targetStateVector)) {
+                stack.push(targetStateVector);
+                valuesInStack.add(targetStateVector);
               } else
                 logger.debug("Prevented adding of state since it was already in the stack.");
 
             }
 
             // Add transition
-            if (uStructure.addTransition(combinedID, combinedEventLabel, combinedTargetID) == 0)
+            int eventID = uStructure.addTransition(stateVector, eventLabelVector, targetStateVector);
+            if (eventID == 0)
               logger.error("Failed to add transition.");
+
+            boolean suppressed = false;
+
+            if (combinedEvent.get(0).equals("*") && Objects.equals(stateVector, targetStateVector)) {
+              Iterator<State> stateIterator = stateVector.iterator();
+              stateIterator.next();
+              inner: while(stateIterator.hasNext()) {
+                State s = stateIterator.next();
+                logger.debug("s = " + s);
+                for (Transition tran : s.getTransitions()) {
+                  if (!BooleanUtils.or(tran.getEvent().isControllable())) {
+                    logger.debug("tran = " + tran);
+                    suppressed = true;
+                    break inner;
+                  }
+                }
+              }
+            }
+            if(suppressed) {
+              uStructure.addSuppressedTransition(stateVector.getID(), eventID, targetStateVector.getID());
+            }
 
           }
         }
@@ -1832,9 +1891,10 @@ public class Automaton implements Closeable {
     Objects.requireNonNull(outputFileName, "Output file name cannot be null");
     /* For backwards compatibility */
     try {
-      MutableGraph g = new Parser().read(generateDotString());
-      Graphviz.fromGraph(g).render(Format.SVG_STANDALONE).toFile(new File(outputFileName + "." + Format.SVG_STANDALONE.fileExtension));
-      Graphviz.fromGraph(g).render(Format.PNG).toFile(new File(outputFileName + "." + Format.PNG.fileExtension));
+      MutableGraph g = generateGraph();
+      Graphviz graphviz = Graphviz.fromGraph(g);
+      graphviz.render(Format.SVG_STANDALONE).toFile(new File(outputFileName + "." + Format.SVG_STANDALONE.fileExtension));
+      graphviz.render(Format.PNG).toFile(new File(outputFileName + "." + Format.PNG.fileExtension));
       return true;
     } catch (IOException e) {
       logger.catching(e);
@@ -1857,7 +1917,7 @@ public class Automaton implements Closeable {
 
       /* Generate image */
 
-    MutableGraph g = new Parser().read(generateDotString());
+    MutableGraph g = generateGraph();
     File destFile = new File(outputFileName + "." + format.fileExtension);
     Graphviz.fromGraph(g).render(format).toFile(destFile);
 
@@ -1866,10 +1926,115 @@ public class Automaton implements Closeable {
   }
 
   /**
+   * Generate a graph that represents this automaton
+   * 
+   * @return a Graphviz graph that represents this automaton
+   * @throws MissingOrCorruptBodyFileException If any of the states are unable to be read from the body file
+   * @since 2.0
+   */
+  private MutableGraph generateGraph() throws MissingOrCorruptBodyFileException {
+    MutableGraph g = mutGraph().setDirected(true);
+    g = g.graphAttrs().add(Color.TRANSPARENT, Attributes.attr("overlap", "scale"));
+    g = g.nodeAttrs().add(Shape.CIRCLE, Style.BOLD, Attributes.attr("constraint", false));
+    try {
+
+        /* Mark special transitions */
+
+      HashMap<String, Attributes<? extends ForLink>> additionalEdgeProperties = new HashMap<String, Attributes<? extends ForLink>>();
+      addAdditionalLinkProperties(additionalEdgeProperties);
+
+        /* Draw all states and their transitions */
+
+      for (long s = 1; s <= nStates; s++) {
+
+        // Get state from file
+        State state = getState(s);
+        String stateLabel = formatStateLabel(state);
+        MutableNode sourceNode = mutNode(stateLabel);
+        addAdditionalNodeProperties(state, sourceNode);
+
+        // Draw state
+        g = g.add(sourceNode.add(Attributes.attr("peripheries", state.isMarked() ? 2 : 1), Label.nodeName()));
+        
+        // Find and draw all of the special transitions 
+        ArrayList<Transition> transitionsToSkip = new ArrayList<Transition>();
+        for (Transition t : state.getTransitions()) {
+
+          State targetState = getStateExcludingTransitions(t.getTargetStateID());
+
+          // Check to see if this transition has additional properties (meaning it's a special transition)
+          String key = "" + stateLabel + " " + t.getEvent().getID() + " " + formatStateLabel(targetState);
+          Attributes<? extends ForLink> properties = additionalEdgeProperties.get(key);
+
+          if (properties != null) {
+
+            transitionsToSkip.add(t);
+
+            MutableNode targetNode = mutNode(formatStateLabel(targetState));
+            targetNode.addTo(g);
+            Link l = sourceNode.linkTo(targetNode);
+            l.add(Label.of(t.getEvent().getLabel()));
+            l.add(properties);
+            sourceNode.links().add(l);
+          }
+        }
+
+        // Draw all of the remaining (normal) transitions
+        for (Transition t1 : state.getTransitions()) {
+
+          // Skip it if this was already taken care of (grouped into another transition going to the same target state)
+          if (transitionsToSkip.contains(t1))
+            continue;
+
+          // Start building the label
+          String label = t1.getEvent().getLabel();
+          transitionsToSkip.add(t1);
+
+          // Look for all transitions that can be grouped with this one
+          for (Transition t2 : state.getTransitions()) {
+
+            // Skip it if this was already taken care of (grouped into another transition going to
+            // the same target state)
+            if (transitionsToSkip.contains(t2))
+              continue;
+
+            // Check to see if both transitions lead to the same event
+            if (t1.getTargetStateID() == t2.getTargetStateID()) {
+              label += "," + t2.getEvent().getLabel();
+              transitionsToSkip.add(t2);
+            }
+
+          }
+
+          // Add transition
+          MutableNode targetNode = mutNode(formatStateLabel(getStateExcludingTransitions(t1.getTargetStateID())));
+          targetNode.addTo(g);
+          Link l = sourceNode.linkTo(targetNode);
+          l.add(Label.of(label));
+          sourceNode.links().add(l);
+        }
+
+        if (initialState > 0) {
+          MutableNode startNode = mutNode("").add(Shape.PLAIN_TEXT);
+          MutableNode initNode = mutNode(formatStateLabel(getStateExcludingTransitions(initialState)));
+          Link init = startNode.linkTo(initNode);
+          init.add(Color.BLUE);
+          startNode.links().add(init);
+          startNode.addTo(g);
+        }
+      }
+    } catch (NullPointerException e) {
+      throw new MissingOrCorruptBodyFileException(e);
+    }
+    return g;
+  }
+
+  /**
    * Converts this automaton to Graphviz-recognizable {@code .dot} format
    * @return {@code .dot} representation of this automaton
    * @throws MissingOrCorruptBodyFileException If any of the states are unable to be read from the body file
    */
+  @Deprecated(since = "2.0", forRemoval = true)
   private String generateDotString() throws MissingOrCorruptBodyFileException {
     /* Setup */
 
@@ -1989,18 +2154,46 @@ public class Automaton implements Closeable {
 
     StringBuilder stringBuilder = new StringBuilder();
 
-    for (int i = 0; i < size; i++)
-      stringBuilder.append(labelVector.getLabelAtIndex(i) + "\\n");
+    for (String indexedLabel : labelVector)
+      stringBuilder.append(indexedLabel + "\\n");
 
     return stringBuilder.toString();
 
   }
 
   /**
+   * Add any additional node properties applicable to this automaton type, which is used in the graph generation.
+   * 
+   * @param state State in this automaton that corresponds to the node in the graph
+   * @param node Node in graph to add properties to
+   * 
+   * @since 2.0
+   */
+  protected void addAdditionalNodeProperties(State state, MutableNode node) {
+  }
+
+  /**
+   * Add any additional edge properties applicable to this automaton type, which is used in the graph generation.
+   * <p>EXAMPLE: This is used to color potential communications blue.
+   * @param map The mapping from edges to additional properties
+   * 
+   * @since 2.0
+   **/
+  protected void addAdditionalLinkProperties(Map<String, Attributes<? extends ForLink>> map) {
+
+    for (TransitionData data : badTransitions) {
+      combineAttributesInMap(map, createKey(data), Style.DOTTED);
+    }
+  }
+
+  /**
    * Add any additional edge properties applicable to this automaton type, which is used in the DOT output.
    * EXAMPLE: This is used to color potential communications blue.
    * @param map The mapping from edges to additional properties
+   * 
+   * @deprecated This method is no longer used. Use {@link #addAdditionalLinkProperties(Map)} instead.
    **/
+  @Deprecated(since = "2.0", forRemoval = true)
   protected void addAdditionalEdgeProperties(Map<String, String> map) {
 
     for (TransitionData data : badTransitions)
@@ -2024,8 +2217,27 @@ public class Automaton implements Closeable {
    * If the key was not previously in the map, then the value is simply added.
    * @param map   The relevant map
    * @param key   The key which is mapped to a value that is being appending to
-   * @param value The value to be appended
+   * @param value The attribute to be added
+   * 
+   * @since 2.0
    **/
+  protected static void combineAttributesInMap(Map<String, Attributes<? extends ForLink>> map, String key, Attributes<? extends ForLink> value) {
+    if (map.containsKey(key))
+      map.put(key, Attributes.attrs(map.get(key), value));
+    else
+      map.put(key, value); 
+  }
+
+  /**
+   * Helper method used to append a value to the pre-existing value of a particular key in a map.
+   * If the key was not previously in the map, then the value is simply added.
+   * @param map   The relevant map
+   * @param key   The key which is mapped to a value that is being appending to
+   * @param value The value to be appended
+   * 
+   * @deprecated This method is no longer used. Use {@link #combineAttributesInMap(Map, String, Attributes)} instead.
+   **/
+  @Deprecated(since = "2.0", forRemoval = true)
   protected void appendValueToMap(Map<String, String> map, String key, String value) {
     if (map.containsKey(key))
       map.put(key, map.get(key) + value);
@@ -2775,6 +2987,44 @@ public class Automaton implements Closeable {
   }
 
   /**
+   * Adds a transition based the label of the event (instead the ID).
+   * @param startingState The state where the transition originates from
+   * @param eventLabel    The label of the event that triggers the transition
+   * @param targetState   The state where the transition leads to
+   * @return              The ID of the event label (returns 0 if the addition was unsuccessful)
+   * 
+   * @since 2.0
+   **/
+  public int addTransition(State startingState, String eventLabel, State targetState) {
+
+    for (Event e : events)
+      if (eventLabel.equals(e.getLabel())) {
+        if (!addTransition(startingState.getID(), e.getID(), targetState.getID()))
+          return 0;
+        else
+          return e.getID();
+      }
+
+    return 0;
+
+  }
+
+  /**
+   * Adds a transition based the label of the event (instead the ID).
+   * @param startingState The state where the transition originates from
+   * @param labelVector    The label vector of the event that triggers the transition
+   * @param targetState   The state where the transition leads to
+   * @return              The ID of the event label (returns 0 if the addition was unsuccessful)
+   * 
+   * @since 2.0
+   **/
+  public int addTransition(State startingState, LabelVector labelVector, State targetState) {
+
+    return addTransition(startingState, labelVector.toString(), targetState);
+
+  }
+
+  /**
    * Adds a transition based on the specified IDs (which means that the states and event must already exist).
    * @implNote This method could be made more efficient since the entire state is written to file instead of only writing the new transition to file.
    * @param startingStateID The ID of the state where the transition originates from
@@ -3033,105 +3283,114 @@ public class Automaton implements Closeable {
    * @param id              The index where the state should be added at
    * @return                Whether or not the addition was successful (returns {@code false} if a state already existed there)
    **/
-  public boolean addStateAt(String label, boolean marked, ArrayList<Transition> transitions, boolean isInitialState, long id) {
+  public boolean addStateAt(String label, boolean marked, List<Transition> transitions, boolean isInitialState, long id) {
 
-    if (transitions == null)
-      transitions = new ArrayList<Transition>();
+    return addStateAt(new State(label, id, marked, Objects.requireNonNullElse(transitions, new ArrayList<Transition>())), isInitialState);
+  }
 
+  /**
+   * Add the specified state to this automaton.
+   * 
+   * @param state a state to add to this automaton
+   * @param isInitialState Whether or not this is the initial state
+   * @return Whether or not the addition was successful (returns {@code false} if a state already existed there)
+   * 
+   * @see #addStateAt(String, boolean, ArrayList, boolean, long)
+   * @since 2.0
+   */
+  public boolean addStateAt(State state, boolean isInitialState) {
       /* Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs) */
     
-    if (id > MAX_STATE_CAPACITY) {
-      logger.error("Could not write state to file (exceeded maximum state capacity).");
-      return false;
-    }
-
-      /* Increase the maximum allowed characters per state label */
-    
-    if (label.length() > labelLength) {
-
-      // If we cannot increase the capacity, indicate a failure
-      if (label.length() > MAX_LABEL_LENGTH) {
-        logger.error("Could not write state to file (exceeded maximum label length).");
+      if (state.getID() > MAX_STATE_CAPACITY) {
+        logger.error("Could not write state to file (exceeded maximum state capacity).");
         return false;
       }
-
-      recreateBodyFile(
-        eventCapacity,
-        stateCapacity,
-        transitionCapacity,
-        label.length(),
-        nBytesPerEventID,
-        nBytesPerStateID
-      );
-
-    }
-
-      /* Increase the maximum allowed transitions per state */
-
-    if (transitions.size() > transitionCapacity) {
-
-      // If we cannot increase the capacity, indicate a failure (NOTE: This will likely never happen)
-      if (transitions.size() > MAX_TRANSITION_CAPACITY) {
-        logger.error("Could not write state to file (exceeded maximum transition capacity).");
+  
+        /* Increase the maximum allowed characters per state label */
+      
+      if (state.getLabel().length() > labelLength) {
+  
+        // If we cannot increase the capacity, indicate a failure
+        if (state.getLabel().length() > MAX_LABEL_LENGTH) {
+          logger.error("Could not write state to file (exceeded maximum label length).");
+          return false;
+        }
+  
+        recreateBodyFile(
+          eventCapacity,
+          stateCapacity,
+          transitionCapacity,
+          state.getLabel().length(),
+          nBytesPerEventID,
+          nBytesPerStateID
+        );
+  
+      }
+  
+        /* Increase the maximum allowed transitions per state */
+  
+      if (state.getTransitions().size() > transitionCapacity) {
+  
+        // If we cannot increase the capacity, indicate a failure (NOTE: This will likely never happen)
+        if (state.getTransitions().size() > MAX_TRANSITION_CAPACITY) {
+          logger.error("Could not write state to file (exceeded maximum transition capacity).");
+          return false;
+        }
+  
+        recreateBodyFile(
+          eventCapacity,
+          stateCapacity,
+          state.getTransitions().size(),
+          labelLength,
+          nBytesPerEventID,
+          nBytesPerStateID
+        );
+  
+      }
+  
+        /* Increase the number of allowed states */
+  
+      if (state.getID() > stateCapacity) {
+  
+        // Determine how much stateCapacity and nBytesPerStateID need to be increased by
+        long newStateCapacity = stateCapacity;
+        int newNBytesPerStateID = nBytesPerStateID;
+        while (newStateCapacity < state.getID()) {
+          newStateCapacity = ((newStateCapacity + 1) << 8) - 1;
+          newNBytesPerStateID++;
+        }
+  
+        // Re-create binary file
+        recreateBodyFile(
+          eventCapacity,
+          newStateCapacity,
+          transitionCapacity,
+          labelLength,
+          nBytesPerEventID,
+          newNBytesPerStateID
+        );
+  
+      }
+  
+        /* Write new state to file */
+      
+      if (!StateIO.writeToFile(state, baf, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID)) {
+        logger.error("Could not write state to file.");
         return false;
       }
-
-      recreateBodyFile(
-        eventCapacity,
-        stateCapacity,
-        transitions.size(),
-        labelLength,
-        nBytesPerEventID,
-        nBytesPerStateID
-      );
-
-    }
-
-      /* Increase the number of allowed states */
-
-    if (id > stateCapacity) {
-
-      // Determine how much stateCapacity and nBytesPerStateID need to be increased by
-      long newStateCapacity = stateCapacity;
-      int newNBytesPerStateID = nBytesPerStateID;
-      while (newStateCapacity < id) {
-        newStateCapacity = ((newStateCapacity + 1) << 8) - 1;
-        newNBytesPerStateID++;
-      }
-
-      // Re-create binary file
-      recreateBodyFile(
-        eventCapacity,
-        newStateCapacity,
-        transitionCapacity,
-        labelLength,
-        nBytesPerEventID,
-        newNBytesPerStateID
-      );
-
-    }
-
-      /* Write new state to file */
-    
-    State state = new State(label, id, marked, transitions);
-    
-    if (!StateIO.writeToFile(state, baf, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID)) {
-      logger.error("Could not write state to file.");
-      return false;
-    }
-
-    nStates++;
-
-      /* Update initial state */
-    
-    if (isInitialState)
-      initialState = id;
-
-      /* Update header file */
-    
-    headerFileNeedsToBeWritten = true;
-
-    return true;
+  
+      nStates++;
+  
+        /* Update initial state */
+      
+      if (isInitialState)
+        initialState = state.getID();
+  
+        /* Update header file */
+      
+      headerFileNeedsToBeWritten = true;
+  
+      return true;
   }
 
   /**
@@ -3143,14 +3402,40 @@ public class Automaton implements Closeable {
    * @return              The ID of the added event (0 indicates failure)
    **/
   public int addEvent(String label, boolean[] observable, boolean[] controllable) {
+    if (!ensureEventCapacity()) return 0;
+    int id = events.size() + 1;
+    return addEvent(new Event(label, id, observable, controllable));
+  }
 
-      /* Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs) */
+  /**
+   * Add the specified event to the set.
+   * @implNote It is assumed that the new event is not already a member of the set (it is not checked for here for efficiency purposes).
+   * @param label         The "name" of the new event
+   * @param observable    Whether or not the event is observable
+   * @param controllable  Whether or not the event is controllable
+   * @return              The ID of the added event (0 indicates failure)
+   * 
+   * @since 2.0
+   **/
+  public int addEvent(LabelVector labelVector, boolean[] observable, boolean[] controllable) {
+    if (!ensureEventCapacity()) return 0;
+    int id = events.size() + 1;
+    return addEvent(new Event(labelVector, id, observable, controllable));
+  }
 
+  /**
+   * Helper method for ensuring there is enough space to add a new event
+   * @return {@code true} if there is enough space to add a new event
+   * 
+   * @see #addEvent(String, boolean[], boolean[])
+   * @see #addEvent(LabelVector, boolean[], boolean[])
+   * @since 2.0
+   */
+  private boolean ensureEventCapacity() {
     if (events.size() == MAX_EVENT_CAPACITY) {
       logger.error("Could not add event (reached maximum event capacity).");
-      return 0;
+      return false;
     }
-
       /* Check to see if we need to re-write the entire binary file */
     
     if (events.size() == eventCapacity) {
@@ -3167,10 +3452,20 @@ public class Automaton implements Closeable {
 
     }
 
-      /* Instantiate the event */
+    return true;
+  }
 
-    int id = events.size() + 1;
-    Event event = new Event(label, id, observable, controllable);
+  /**
+   * Helper method for adding a new event
+   * 
+   * @param event the event to add
+   * @return the ID of the added event, or {@code 0} if addition failed
+   * 
+   * @see #addEvent(String, boolean[], boolean[])
+   * @see #addEvent(LabelVector, boolean[], boolean[])
+   * @since 2.0
+   */
+  private int addEvent(Event event) {
 
       /* Add the event */
 
@@ -3179,14 +3474,13 @@ public class Automaton implements Closeable {
       return 0;
     }
 
-    eventsMap.put(label, event);
+    eventsMap.put(event.getLabel(), event);
 
       /* Update the header file */
 
     headerFileNeedsToBeWritten = true;
 
-    return id;
-
+    return event.getID();
   }
 
   /**
@@ -3203,6 +3497,27 @@ public class Automaton implements Closeable {
 
     if (event == null)
       return addEvent(label, observable, controllable);
+    else
+      return -event.getID();
+
+  }
+
+  /**
+   * Add the specified event to the set if it does not already exist.
+   * @param label         The "name" of the new event
+   * @param observable    Whether or not the event is observable
+   * @param controllable  Whether or not the event is controllable
+   * @return              The ID of the added event (negative ID indicates that the event already existed)
+   *                      or {@code 0}, which indicates failure (occurring when maximum number of events has been reached)
+   * 
+   * @since 2.0
+   **/
+  public int addEventIfNonExisting(LabelVector labelVector, boolean[] observable, boolean[] controllable) {
+    
+    Event event = getEvent(labelVector);
+
+    if (event == null)
+      return addEvent(labelVector, observable, controllable);
     else
       return -event.getID();
 
@@ -3320,6 +3635,21 @@ public class Automaton implements Closeable {
   }
 
   /**
+   * Check to see if a transition is bad.
+   * @param initialState  The initial state
+   * @param event         The event triggering the transition
+   * @param targetState   The target state
+   * @return              Whether or not the transition is bad
+   * 
+   * @since 2.0
+   **/
+  public boolean isBadTransition(State initialState, Event event, State targetState) {
+
+    return isBadTransition(initialState.getID(), event.getID(), targetState.getID());
+
+  }
+
+  /**
    * Check to see if a state exists.
    * @implNote This is a light-weight method which can be used instead of calling "{@code getState(id) != null}").
    * It does not load all of the state information, but only checks the first byte to see if it exists or not.
@@ -3327,6 +3657,18 @@ public class Automaton implements Closeable {
    **/
   public boolean stateExists(long id) {
     return StateIO.stateExists(this, baf, id);
+  }
+
+  /**
+   * Check to see if a state exists.
+   * @implNote This is a light-weight method which can be used instead of calling "{@code getState(id) != null}").
+   * It does not load all of the state information, but only checks the first byte to see if it exists or not.
+   * @param state  The state we are looking for
+   * 
+   * @since 2.0
+   **/
+  public boolean stateExists(State state) {
+    return StateIO.stateExists(this, baf, state);
   }
 
   /**
@@ -3416,6 +3758,17 @@ public class Automaton implements Closeable {
    **/
   public Event getEvent(String label) {
     return eventsMap.get(label);
+  }
+
+  /**
+   * Given the label vector of an event, get the event information.
+   * @param label  The unique label vector corresponding to the requested event
+   * @return       The requested event (or {@code null} if it does not exist)
+   * 
+   * @since 2.0
+   **/
+  public Event getEvent(LabelVector labelVector) {
+    return eventsMap.get(labelVector.toString());
   }
 
   /**

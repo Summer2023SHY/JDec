@@ -45,6 +45,20 @@ public class TransitionData {
       this.targetStateID = targetStateID;
   }
 
+  /**
+   * Construct a {@code TransitionData} object using the specified event and states.
+   * @param initialStateID  The initial state's ID
+   * @param eventID         The event's ID
+   * @param targetStateID   The target state's ID
+   * 
+   * @since 2.0
+   **/
+  public TransitionData(State initialState, Event event, State targetState) {
+    this.initialStateID = initialState.getID();
+    this.eventID = event.getID();
+    this.targetStateID = targetState.getID();
+  }
+
     /* METHOD */
 
   /**

@@ -10,13 +10,16 @@ package com.github.automaton.automata;
 
 import java.util.*;
 
+import org.apache.commons.lang3.*;
+
 /**
  * Used to take a string and vectorize it into its components using some
  * basic syntax.
  *
  * @author Micah Stairs
+ * @author Sung Ho Yoon
  */
-public class LabelVector {
+public class LabelVector implements Iterable<String> {
 
     /* INSTANCE VARIABLES */
 
@@ -38,6 +41,45 @@ public class LabelVector {
     if (label.charAt(0) == '<' && label.charAt(label.length() - 1) == '>')
       vector = label.substring(1, label.length() - 1).split(",");
 
+  }
+
+  /**
+   * Construct a {@code LabelVector} object from its vector components
+   * 
+   * @param labels components of this vector
+   * @throws NullPointerException if argument is {@code null}
+   * @throws IllegalArgumentException if any element of the argument is {@code null}
+   * 
+   * @since 2.0
+   */
+  public LabelVector(String[] labels) {
+    Objects.requireNonNull(labels);
+    if (ObjectUtils.anyNull((Object[]) labels)) {
+      throw new IllegalArgumentException("Argument contains null element");
+    }
+    this.vector = ArrayUtils.clone(labels);
+    StringBuilder labelBuilder = new StringBuilder();
+    labelBuilder.append('<');
+    for (String l : vector) {
+      labelBuilder.append(l);
+      labelBuilder.append(',');
+    }
+    labelBuilder.deleteCharAt(labelBuilder.length() - 1);
+    labelBuilder.append('>');
+    this.label = labelBuilder.toString();
+  }
+
+  /**
+   * Construct a {@code LabelVector} object from its vector components
+   * 
+   * @param labels components of this vector
+   * @throws NullPointerException if argument is {@code null}
+   * @throws IllegalArgumentException if any element of the argument is {@code null}
+   * 
+   * @since 2.0
+   */
+  public LabelVector(List<String> labels) {
+    this(Objects.requireNonNull(labels).toArray(new String[0]));
   }
 
     /* ACCESSOR METHODS */
@@ -76,6 +118,36 @@ public class LabelVector {
   }
 
     /* OVERRIDDEN METHODS */
+  /**
+   * Returns an iterator over the labels in this vector
+   * 
+   * @return an iterator
+   * @throws UnsupportedOperationException if this label is not a vector
+   * 
+   * @since 2.0
+   */
+  @Override
+  public Iterator<String> iterator() {
+    if (Objects.isNull(vector)) {
+      throw new UnsupportedOperationException("This label is not a vector");
+    }
+    return new Iterator<String>() {
+      private int index = 0;
+
+      @Override
+      public boolean hasNext() {
+        return index != vector.length;
+      }
+
+      @Override
+      public String next() {
+        if (!hasNext()) {
+          throw new NoSuchElementException("No more elements to iterate over");
+        }
+        return vector[index++];
+      }
+    };
+  }
 
   /** {@inheritDoc} */
   @Override

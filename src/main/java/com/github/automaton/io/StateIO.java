@@ -84,6 +84,8 @@ public class StateIO {
 
         boolean marked = (bytesRead[0] & State.MARKED_MASK) > 0;
         boolean exists = (bytesRead[0] & State.EXISTS_MASK) > 0;
+        boolean enablement = (bytesRead[0] & State.ENABLEMENT_MASK) > 0;
+        boolean disablement = (bytesRead[0] & State.DISABLEMENT_MASK) > 0;
 
         // Return null if this state doesn't actually exist
         if (!exists)
@@ -106,7 +108,7 @@ public class StateIO {
 
         }
 
-        return new State(new String(arr), id, marked, null);
+        return new State(new String(arr), id, marked, null, enablement, disablement);
 
     }
 
@@ -157,6 +159,8 @@ public class StateIO {
 
         boolean marked = (bytesRead[0] & State.MARKED_MASK) > 0;
         boolean exists = (bytesRead[0] & State.EXISTS_MASK) > 0;
+        boolean enablement = (bytesRead[0] & State.ENABLEMENT_MASK) > 0;
+        boolean disablement = (bytesRead[0] & State.DISABLEMENT_MASK) > 0;
 
         // Return null if this state doesn't actually exist
         if (!exists)
@@ -180,7 +184,7 @@ public class StateIO {
         }
 
         // Instantiate the state
-        State state = new State(new String(arr), id, marked);
+        State state = new State(new String(arr), id, marked, enablement, disablement);
 
         /* Transitions */
 
@@ -218,6 +222,22 @@ public class StateIO {
      **/
     public static boolean stateExists(Automaton automaton, BodyAccessFile bodyAccessFile, long id) {
         return stateExists(automaton, bodyAccessFile.getRAFile(), id);
+    }
+
+    /**
+     * Check to see if the specified state actually exists in the file (or if it's
+     * just a blank spot filled with padding).
+     * 
+     * @param automaton The automaton in consideration
+     * @param bodyAccessFile The {@link BodyAccessFile} containing the states associated with this
+     *                  automaton
+     * @param state     The state we are checking to see if it exists
+     * @return whether or not the state exists
+     * 
+     * @since 2.0
+     **/
+    public static boolean stateExists(Automaton automaton, BodyAccessFile bodyAccessFile, State state) {
+        return stateExists(automaton, bodyAccessFile, state.getID());
     }
 
     /**
@@ -301,6 +321,10 @@ public class StateIO {
         bytesToWrite[0] = (byte) (State.EXISTS_MASK);
         if (s.isMarked())
             bytesToWrite[0] |= State.MARKED_MASK;
+        if (s.isEnablementState())
+            bytesToWrite[0] |= State.ENABLEMENT_MASK;
+        else if (s.isDisablementState())
+            bytesToWrite[0] |= State.DISABLEMENT_MASK;
 
         /* State's label */
 
@@ -345,5 +369,39 @@ public class StateIO {
 
         }
 
+    }
+
+    /**
+     * Rewrites the status of a state in the given automaton
+     * 
+     * @param automaton the automaton that contains the given state
+     * @param state     the state with modified status
+     * @param baf       The {@link BodyAccessFile} containing the states associated
+     *                  with this automaton
+     * 
+     * @throws StateNotFoundException   if {@code automaton} does not contain a
+     *                                  state with the matching ID
+     * @throws IllegalArgumentException if {@code state} is not equal to the one
+     *                                  stored in {@code automaton}
+     * @throws IOException              if I/O error occurs
+     * 
+     * @since 2.0
+     */
+    public static void rewriteStatus(Automaton automaton, BodyAccessFile baf, State state) throws IOException {
+        if (!stateExists(automaton, baf, state.getID())) {
+            throw new StateNotFoundException(state.getID());
+        } else if (!Objects.equals(readFromFileExcludingTransitions(automaton, baf, state.getID()), state)) {
+            throw new IllegalArgumentException("The provided state is not equal to the one stored in the automaton.");
+        }
+        baf.getRAFile().seek(state.getID() * automaton.getSizeOfState());
+        baf.getLogger().trace("StateIO.rewriteStatus() - FP: " + baf.getRAFile().getFilePointer());
+        byte newStatus = State.EXISTS_MASK;
+        if (state.isMarked())
+            newStatus |= State.MARKED_MASK;
+        if (state.isEnablementState())
+            newStatus |= State.ENABLEMENT_MASK;
+        else if (state.isDisablementState())
+            newStatus |= State.DISABLEMENT_MASK;
+        baf.getRAFile().write(newStatus);
     }
 }
