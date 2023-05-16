@@ -36,10 +36,4 @@ public class StateVector extends State implements Iterable<State> {
     public Iterator<State> iterator() {
         return states.iterator();
     }
-
-    /** {@inheritDoc} */
-    @Override
-    public int hashCode() {
-        return states.hashCode();
-    }
 }
