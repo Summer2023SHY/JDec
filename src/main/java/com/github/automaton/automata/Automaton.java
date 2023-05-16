@@ -23,6 +23,7 @@ import java.util.*;
 import java.io.*;
 import java.math.*;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.logging.log4j.*;
 
 import com.github.automaton.automata.util.ByteManipulator;
@@ -1270,8 +1271,30 @@ public class Automaton implements Closeable {
             }
 
             // Add transition
-            if (uStructure.addTransition(stateVector, eventLabelVector, targetStateVector) == 0)
+            int eventID = uStructure.addTransition(stateVector, eventLabelVector, targetStateVector);
+            if (eventID == 0)
               logger.error("Failed to add transition.");
+
+            boolean suppressed = false;
+
+            if (combinedEvent.get(0).equals("*") && Objects.equals(stateVector, targetStateVector)) {
+              Iterator<State> stateIterator = stateVector.iterator();
+              stateIterator.next();
+              inner: while(stateIterator.hasNext()) {
+                State s = stateIterator.next();
+                logger.debug("s = " + s);
+                for (Transition tran : s.getTransitions()) {
+                  if (!BooleanUtils.or(tran.getEvent().isControllable())) {
+                    logger.debug("tran = " + tran);
+                    suppressed = true;
+                    break inner;
+                  }
+                }
+              }
+            }
+            if(suppressed) {
+              uStructure.addSuppressedTransition(stateVector.getID(), eventID, targetStateVector.getID());
+            }
 
           }
         }
