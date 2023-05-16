@@ -7,6 +7,8 @@ import javax.swing.*;
  * Used to add a tool-tip with the specified text to the left of the given component.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  **/
 public class TooltipComponent extends JPanel {
 

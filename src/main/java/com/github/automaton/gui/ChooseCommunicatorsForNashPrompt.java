@@ -6,7 +6,6 @@ package com.github.automaton.gui;
  *  -Overridden Method
  **/
 
-// import java.io.*;
 import java.util.*;
 import javax.swing.*;
 
@@ -20,6 +19,8 @@ import com.github.automaton.automata.UStructure;
  * once they have selected senders and receivers.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  * 
  * @deprecated Operations for Nash equilibria depend on {@link Crush}. As {@link Crush} is deprecated
    * and subject to removal, all Nash equilibria operations are deprecated.

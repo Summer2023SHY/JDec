@@ -12,6 +12,8 @@ package com.github.automaton.automata;
  * one of the receivers, or neither.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public enum CommunicationRole {
 

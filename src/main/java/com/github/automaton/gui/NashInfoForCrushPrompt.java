@@ -18,6 +18,8 @@ import com.github.automaton.automata.Crush;
  *
  * @author Micah Stairs
  * 
+ * @since 1.0
+ * 
 * @deprecated Crush is too restrictive in terms of its capabilities, and all operations related to it are subject to removal.
  */
 @Deprecated(forRemoval = true, since="1.1")

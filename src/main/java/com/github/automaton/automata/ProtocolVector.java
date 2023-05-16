@@ -14,6 +14,8 @@ import java.util.*;
  * index of the sending controller.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public class ProtocolVector {
 

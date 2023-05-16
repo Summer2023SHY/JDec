@@ -18,6 +18,8 @@ import org.apache.logging.log4j.*;
  * and which are the receivers.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public class CommunicationData extends TransitionData {
 

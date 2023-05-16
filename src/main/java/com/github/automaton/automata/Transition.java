@@ -21,6 +21,8 @@ import org.apache.logging.log4j.*;
  * no reference to its initial state ID).
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public class Transition {
 

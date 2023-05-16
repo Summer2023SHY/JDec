@@ -18,6 +18,8 @@ import java.util.*;
  *
  * @author Micah Stairs
  * @author Sung Ho Yoon
+ * 
+ * @since 1.0
  */
 public class State {
 

@@ -19,9 +19,9 @@ package com.github.automaton.automata;
 
 import static guru.nidi.graphviz.model.Factory.*;
 
-import java.util.*;
 import java.io.*;
 import java.math.*;
+import java.util.*;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.logging.log4j.*;
@@ -40,6 +40,8 @@ import guru.nidi.graphviz.model.*;
  *
  * @author Micah Stairs
  * @author Sung Ho Yoon
+ * 
+ * @since 1.0
  **/
 public class Automaton implements Closeable {
 

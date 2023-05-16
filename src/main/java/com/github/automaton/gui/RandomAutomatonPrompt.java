@@ -20,6 +20,8 @@ import com.github.automaton.automata.Automaton;
  * triggered when the user presses the "Generate" button in the popup.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public class RandomAutomatonPrompt extends JDialog {
 

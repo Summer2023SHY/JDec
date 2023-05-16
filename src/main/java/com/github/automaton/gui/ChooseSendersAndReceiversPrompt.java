@@ -10,7 +10,6 @@ package com.github.automaton.gui;
 import java.awt.Container;
 import java.awt.GridLayout;
 import java.awt.event.*;
-import java.util.*;
 import javax.swing.*;
 
 import com.github.automaton.automata.UStructure;
@@ -21,6 +20,8 @@ import com.github.automaton.automata.UStructure;
  * applicable feasible protocols, displaying them in another window.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public abstract class ChooseSendersAndReceiversPrompt extends JDialog {
 

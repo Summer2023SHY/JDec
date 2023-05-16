@@ -18,6 +18,8 @@ import com.github.automaton.io.StateIO;
  * Represents a pruned U-Structure.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public class PrunedUStructure extends UStructure {
 

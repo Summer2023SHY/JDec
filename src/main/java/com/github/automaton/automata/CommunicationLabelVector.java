@@ -14,6 +14,8 @@ import java.util.*;
  * implies that we are only using this for event labels, not state labels).
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 class CommunicationLabelVector extends LabelVector {
 

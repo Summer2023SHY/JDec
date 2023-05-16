@@ -22,6 +22,8 @@ import com.github.automaton.automata.UStructure;
  * The user has the ability to generate automata by applying any of the protocols in the list.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public class FeasibleProtocolOutput extends JDialog {
 

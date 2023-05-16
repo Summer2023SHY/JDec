@@ -18,6 +18,8 @@ import java.util.Arrays;
  * Nash equilibria.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public class NashCommunicationData extends CommunicationData implements Cloneable {
 

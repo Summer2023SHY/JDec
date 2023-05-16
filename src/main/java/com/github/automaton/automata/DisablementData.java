@@ -13,6 +13,8 @@ import java.util.*;
  * as information on which controllers are able to disable this transition.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public class DisablementData extends TransitionData {
 

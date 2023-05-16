@@ -7,18 +7,19 @@ package com.github.automaton.gui;
  *  -Method
  **/
 
+import java.util.*;
 import javax.swing.*;
 
 import com.github.automaton.automata.CommunicationData;
 import com.github.automaton.automata.CommunicationRole;
 import com.github.automaton.automata.UStructure;
 
-import java.util.*;
-
 /**
  * Generates all feasible protocols given the selected senders and receivers.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public class GenerateFeasibleProtocolsPrompt extends ChooseSendersAndReceiversPrompt {
 

@@ -20,6 +20,8 @@ import com.github.automaton.automata.UStructure;
  *
  * @author Micah Stairs
  * 
+ * @since 1.0
+ * 
  * @deprecated Data being displayed through this class depends on the
  * deprecated {@link UStructure#findShapleyValues()} method, and thus, this
  * class is also deprecated and subject to removal.

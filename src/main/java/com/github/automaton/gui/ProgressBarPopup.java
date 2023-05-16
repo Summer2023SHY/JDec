@@ -14,6 +14,8 @@ import javax.swing.*;
  * Used to show and update a progress bar inside of a dialog box.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public class ProgressBarPopup extends JDialog {
 

@@ -13,9 +13,9 @@ package com.github.automaton.automata;
  *  -Accessor Methods
  */
 
-import java.util.*;
 import java.io.*;
 import java.math.*;
+import java.util.*;
 
 import org.apache.logging.log4j.*;
 
@@ -30,6 +30,8 @@ import guru.nidi.graphviz.model.MutableNode;
  *
  * @author Micah Stairs
  * @author Sung Ho Yoon
+ * 
+ * @since 1.0
  */
 public class UStructure extends Automaton {
 

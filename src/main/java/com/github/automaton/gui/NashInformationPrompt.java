@@ -10,7 +10,6 @@ package com.github.automaton.gui;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.*;
 import javax.swing.*;
 import javax.swing.table.*;
 
@@ -24,6 +23,8 @@ import com.github.automaton.automata.UStructure;
  * unintuitive.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public abstract class NashInformationPrompt extends JDialog {
 

@@ -18,6 +18,9 @@ import java.util.*;
  * events that have labels formatted as vectors.
  *
  * @author Micah Stairs
+ * @author Sung Ho Yoon
+ * 
+ * @since 1.0
  */
 public class Event {
     

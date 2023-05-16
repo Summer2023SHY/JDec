@@ -17,6 +17,8 @@ package com.github.automaton.automata;
  * {@link Event} object instead of only holding onto its ID).</p>
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public class TransitionData {
 

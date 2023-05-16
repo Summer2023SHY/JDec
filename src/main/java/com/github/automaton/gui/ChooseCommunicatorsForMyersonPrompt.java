@@ -6,7 +6,6 @@ package com.github.automaton.gui;
  *  -Overridden Method
  **/
 
-// import java.io.*;
 import java.util.*;
 import javax.swing.*;
 
@@ -22,6 +21,8 @@ import com.github.automaton.automata.UStructure;
  * have selected senders and receivers.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public class ChooseCommunicatorsForMyersonPrompt extends ChooseSendersAndReceiversPrompt {
 

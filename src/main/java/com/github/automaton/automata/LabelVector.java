@@ -18,6 +18,8 @@ import org.apache.commons.lang3.*;
  *
  * @author Micah Stairs
  * @author Sung Ho Yoon
+ * 
+ * @since 1.0
  */
 public class LabelVector implements Iterable<String> {
 

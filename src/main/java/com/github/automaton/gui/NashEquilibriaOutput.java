@@ -6,6 +6,7 @@ package com.github.automaton.gui;
  *  -Methods
  */
 
+import java.awt.*;
 import java.util.*;
 import javax.swing.*;
 
@@ -13,14 +14,12 @@ import com.github.automaton.automata.CommunicationData;
 import com.github.automaton.automata.NashCommunicationData;
 import com.github.automaton.automata.UStructure;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-
 /**
  * Used to display a pop-up which contains a list of Nash equilibria.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public class NashEquilibriaOutput extends JDialog {
 

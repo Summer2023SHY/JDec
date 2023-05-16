@@ -43,6 +43,9 @@ import com.github.automaton.io.MissingOrCorruptBodyFileException;
  * and manipulate various structures such as Automata, U-Structures, and Crushes.
  *
  * @author Micah Stairs
+ * @author Sung Ho Yoon
+ * 
+ * @since 1.0
  */
 public class JDec extends JFrame implements ActionListener {
 

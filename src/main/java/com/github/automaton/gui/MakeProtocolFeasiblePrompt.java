@@ -24,6 +24,8 @@ import com.github.automaton.automata.UStructure;
  * them in another window.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public class MakeProtocolFeasiblePrompt extends JDialog {
 

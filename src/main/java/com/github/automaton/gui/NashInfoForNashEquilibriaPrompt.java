@@ -14,6 +14,8 @@ import javax.swing.*;
  *
  * @author Micah Stairs
  * 
+ * @since 1.0
+ * 
  * @deprecated Operations for Nash equilibria depend on
  * {@link com.github.automaton.automata.Crush Crush}. As
  * {@link com.github.automaton.automata.Crush Crush} is deprecated and subject
