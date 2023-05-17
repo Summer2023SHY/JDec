@@ -10,6 +10,7 @@ package com.github.automaton.automata;
 import java.io.*;
 import java.util.*;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.*;
 
 import com.github.automaton.io.StateIO;
@@ -107,7 +108,7 @@ public class PrunedUStructure extends UStructure {
 
       // System.out.println("\t\tProcessed: " + t);
 
-      boolean[] copy = Arrays.copyOf(vectorElementsFound, vectorElementsFound.length);
+      boolean[] copy = ArrayUtils.clone(vectorElementsFound);
 
       // Check to see if the event vector of this transition is compatible with what we've found so far
       for (int i = 0; i < t.getEvent().getVector().getSize(); i++) {

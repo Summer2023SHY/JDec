@@ -8,7 +8,7 @@ package com.github.automaton.automata;
  *  -Overridden Method
  */
 
-import java.util.Arrays;
+import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * Holds all 3 pieces of information needed to identify a transition, as well
@@ -74,7 +74,7 @@ public class NashCommunicationData extends CommunicationData implements Cloneabl
   /** {@inheritDoc} */
   @Override
   public Object clone() {
-    return new NashCommunicationData(initialStateID, eventID, targetStateID, Arrays.copyOf(roles, roles.length), cost, probability);
+    return new NashCommunicationData(initialStateID, eventID, targetStateID, ArrayUtils.clone(roles), cost, probability);
   }
 
 }

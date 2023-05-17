@@ -17,6 +17,7 @@ import java.io.*;
 import java.math.*;
 import java.util.*;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.*;
 
 import com.github.automaton.automata.util.ByteManipulator;
@@ -797,7 +798,7 @@ public class UStructure extends Automaton {
             for (NashCommunicationData communication : communicationsToBeCopied) {
 
               if (roles == null)
-                roles = (CommunicationRole[]) communication.roles.clone();
+                roles = ArrayUtils.clone(communication.roles);
               totalProbability += communication.probability;
             
               switch (combiningCostsMethod) {
@@ -1260,7 +1261,7 @@ public class UStructure extends Automaton {
 
     for (CommunicationData data : potentialCommunications)
       if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
-        uStructure.addPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID, (CommunicationRole[]) data.roles.clone());
+        uStructure.addPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID, ArrayUtils.clone(data.roles));
 
     for (TransitionData data : invalidCommunications)
       if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
@@ -1268,11 +1269,11 @@ public class UStructure extends Automaton {
 
     for (NashCommunicationData data : nashCommunications)
       if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
-        uStructure.addNashCommunication(data.initialStateID, data.eventID, data.targetStateID, (CommunicationRole[]) data.roles.clone(), data.cost, data.probability);
+        uStructure.addNashCommunication(data.initialStateID, data.eventID, data.targetStateID, ArrayUtils.clone(data.roles), data.cost, data.probability);
 
     for (DisablementData data : disablementDecisions)
       if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
-        uStructure.addDisablementDecision(data.initialStateID, data.eventID, data.targetStateID, (boolean[]) data.controllers.clone());
+        uStructure.addDisablementDecision(data.initialStateID, data.eventID, data.targetStateID, ArrayUtils.clone(data.controllers));
 
   }
 
@@ -1316,7 +1317,7 @@ public class UStructure extends Automaton {
     // Try all transitions leading from this state
     outer: for (Transition t : currentState.getTransitions()) {
 
-      boolean[] copy = (boolean[]) vectorElementsFound.clone();
+      boolean[] copy = ArrayUtils.clone(vectorElementsFound);
 
       // Check to see if the event vector of this transition is compatible with what we've found so far
       for (int i = 0; i < t.getEvent().getVector().getSize(); i++) {
@@ -1477,7 +1478,7 @@ public class UStructure extends Automaton {
 
             if (roles[i] == CommunicationRole.SENDER) {
 
-              CommunicationRole[] copy = (CommunicationRole[]) roles.clone();
+              CommunicationRole[] copy = ArrayUtils.clone(roles);
               
               // Remove all other senders
               for (int j = 0; j < copy.length; j++)

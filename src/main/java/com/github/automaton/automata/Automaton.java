@@ -23,7 +23,7 @@ import java.io.*;
 import java.math.*;
 import java.util.*;
 
-import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.*;
 import org.apache.logging.log4j.*;
 
 import com.github.automaton.automata.util.ByteManipulator;
@@ -3530,7 +3530,7 @@ public class Automaton implements Closeable {
   protected void addAllEvents(List<Event> newEvents) {
 
     for (Event e : newEvents)
-      addEvent(e.getLabel(), (boolean[]) e.isObservable().clone(), (boolean[]) e.isControllable().clone());
+      addEvent(e.getLabel(), ArrayUtils.clone(e.isObservable()), ArrayUtils.clone(e.isControllable()));
 
   }
 
@@ -3546,7 +3546,7 @@ public class Automaton implements Closeable {
       Event event2 = getEvent(event1.getLabel());
 
       if (event2 == null)
-        addEvent(event1.getLabel(), (boolean[]) event1.isObservable().clone(), (boolean[]) event1.isControllable().clone());
+        addEvent(event1.getLabel(), ArrayUtils.clone(event1.isObservable()), ArrayUtils.clone(event1.isControllable()));
       else if (!Arrays.equals(event1.isObservable(), event2.isObservable()) || !Arrays.equals(event1.isControllable(), event2.isControllable()))
         throw new IncompatibleAutomataException();
 
