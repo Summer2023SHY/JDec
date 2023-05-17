@@ -31,13 +31,13 @@ public class State {
   /** Bitmask for checking whether or not a state is marked */
   public static final int MARKED_MASK = 0b00000001;
   /**
-   * Bitmask for checking whether or not a state is marked
+   * Bitmask for checking whether or not a state is an enablement state
    * 
    * @since 2.0
    */
   public static final int ENABLEMENT_MASK = 0b00000100;
   /**
-   * Bitmask for checking whether or not a state is marked
+   * Bitmask for checking whether or not a state is a disablement state
    * 
    * @since 2.0
    */
