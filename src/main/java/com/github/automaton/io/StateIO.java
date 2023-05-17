@@ -3,6 +3,7 @@ package com.github.automaton.io;
 import java.io.*;
 import java.util.*;
 
+import org.apache.commons.lang3.BitField;
 import org.apache.logging.log4j.*;
 
 import com.github.automaton.automata.*;
@@ -18,6 +19,35 @@ import com.github.automaton.automata.util.ByteManipulator;
  * @since 1.1
  */
 public class StateIO {
+
+    /**
+     * Bit field for checking whether or not a state actually exists
+     * 
+     * @see State#EXISTS_MASK
+     * @since 2.0
+     */
+    private static final BitField EXISTS_FIELD = new BitField(State.EXISTS_MASK);
+    /**
+     * Bit field for checking whether or not a state is marked
+     * 
+     * @see State#MARKED_MASK
+     * @since 2.0
+     */
+    private static final BitField MARKED_FIELD = new BitField(State.MARKED_MASK);
+    /**
+     * Bit field for checking whether or not a state actually exists
+     * 
+     * @see State#ENABLEMENT_MASK
+     * @since 2.0
+     */
+    private static final BitField ENABLEMENT_FIELD = new BitField(State.ENABLEMENT_MASK);
+    /**
+     * Bit field for checking whether or not a state is a disablement state
+     * 
+     * @see State#DISABLEMENT_MASK
+     * @since 2.0
+     */
+    private static final BitField DISABLEMENT_FIELD = new BitField(State.DISABLEMENT_MASK);
 
     private static Logger logger = LogManager.getLogger();
 
@@ -82,10 +112,10 @@ public class StateIO {
 
         /* Exists and marked status */
 
-        boolean marked = (bytesRead[0] & State.MARKED_MASK) > 0;
-        boolean exists = (bytesRead[0] & State.EXISTS_MASK) > 0;
-        boolean enablement = (bytesRead[0] & State.ENABLEMENT_MASK) > 0;
-        boolean disablement = (bytesRead[0] & State.DISABLEMENT_MASK) > 0;
+        boolean marked = MARKED_FIELD.isSet(bytesRead[0]);
+        boolean exists = EXISTS_FIELD.isSet(bytesRead[0]);
+        boolean enablement = ENABLEMENT_FIELD.isSet(bytesRead[0]);
+        boolean disablement = DISABLEMENT_FIELD.isSet(bytesRead[0]);
 
         // Return null if this state doesn't actually exist
         if (!exists)
@@ -157,10 +187,10 @@ public class StateIO {
 
         /* Exists and marked status */
 
-        boolean marked = (bytesRead[0] & State.MARKED_MASK) > 0;
-        boolean exists = (bytesRead[0] & State.EXISTS_MASK) > 0;
-        boolean enablement = (bytesRead[0] & State.ENABLEMENT_MASK) > 0;
-        boolean disablement = (bytesRead[0] & State.DISABLEMENT_MASK) > 0;
+        boolean marked = MARKED_FIELD.isSet(bytesRead[0]);
+        boolean exists = EXISTS_FIELD.isSet(bytesRead[0]);
+        boolean enablement = ENABLEMENT_FIELD.isSet(bytesRead[0]);
+        boolean disablement = DISABLEMENT_FIELD.isSet(bytesRead[0]);
 
         // Return null if this state doesn't actually exist
         if (!exists)
@@ -319,12 +349,9 @@ public class StateIO {
         /* Exists and marked status */
 
         bytesToWrite[0] = (byte) (State.EXISTS_MASK);
-        if (s.isMarked())
-            bytesToWrite[0] |= State.MARKED_MASK;
-        if (s.isEnablementState())
-            bytesToWrite[0] |= State.ENABLEMENT_MASK;
-        else if (s.isDisablementState())
-            bytesToWrite[0] |= State.DISABLEMENT_MASK;
+        bytesToWrite[0] = MARKED_FIELD.setByteBoolean(bytesToWrite[0], s.isMarked());
+        bytesToWrite[0] = ENABLEMENT_FIELD.setByteBoolean(bytesToWrite[0], s.isEnablementState());
+        bytesToWrite[0] = DISABLEMENT_FIELD.setByteBoolean(bytesToWrite[0], s.isDisablementState());
 
         /* State's label */
 
