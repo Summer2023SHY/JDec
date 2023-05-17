@@ -32,7 +32,6 @@ import org.apache.batik.swing.svg.JSVGComponent;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.logging.log4j.*;
-import org.apache.logging.log4j.core.config.Configurator;
 import org.w3c.dom.*;
 import org.xml.sax.*;
 
@@ -52,17 +51,6 @@ import com.github.automaton.io.MissingOrCorruptBodyFileException;
 public class JDec extends JFrame implements ActionListener {
 
     /* CLASS CONSTANTS */
-
-  /**
-   * When debug mode is on some processes will take longer since extra checks are being done.
-   * All events with the logging level of {@link Level#DEBUG DEBUG} or above will be logged.
-   **/
-  public static final boolean DEBUG_MODE = true;
-  {
-    if (DEBUG_MODE) {
-      Configurator.setAllLevels(LogManager.getRootLogger().getName(), Level.DEBUG);
-    }
-  }
 
   public static final int PREFERRED_DIALOG_WIDTH  = 500;
   public static final int PREFERRED_DIALOG_HEIGHT = 500;
