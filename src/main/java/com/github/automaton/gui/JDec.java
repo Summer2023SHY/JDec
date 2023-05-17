@@ -29,6 +29,8 @@ import javax.xml.transform.dom.*;
 import javax.xml.transform.stream.*;
 
 import org.apache.batik.swing.svg.JSVGComponent;
+import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.logging.log4j.*;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.w3c.dom.*;
@@ -90,7 +92,7 @@ public class JDec extends JFrame implements ActionListener {
   private java.util.List<Component> componentsWhichRequireAnyUStructure    = new ArrayList<Component>();
 
   // Miscellaneous
-  private File currentDirectory = new File(System.getProperty("user.dir"));;
+  private File currentDirectory = new File(SystemUtils.USER_DIR);
   private int temporaryFileIndex = 1;
   private JLabel noTabsMessage;
 
@@ -1045,7 +1047,7 @@ public class JDec extends JFrame implements ActionListener {
     // Try to load image from file
     try {
       if (Desktop.isDesktopSupported()) {
-        if (System.getProperty("os.name").startsWith("Windows")) {
+        if (SystemUtils.IS_OS_WINDOWS) {
           Desktop.getDesktop().open(new File(fileName.replaceAll(" ", "%20")));
         } else {
           // NOTE: There is the possibility that I am missing some characters that should be encoded
@@ -2198,7 +2200,7 @@ public class JDec extends JFrame implements ActionListener {
     public void refreshGUI() {
 
       logger.info("Starting refresh...");
-      long s = System.currentTimeMillis();
+      StopWatch stopWatch = StopWatch.createStarted();
 
       automaton.generateInputForGUI();
 
@@ -2207,7 +2209,7 @@ public class JDec extends JFrame implements ActionListener {
       stateInput.setText(automaton.getStateInput());
       transitionInput.setText(automaton.getTransitionInput());
       
-      logger.debug("Finished in " + (System.currentTimeMillis() - s) + "ms.");
+      logger.debug("Finished in " + stopWatch.getTime() + "ms.");
 
     }
 
