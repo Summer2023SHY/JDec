@@ -23,7 +23,7 @@
         <scope>test</scope>
     </dependency>
     <dependency>
-        <groupId>guru.nidi</groupId>
+      <groupId>guru.nidi</groupId>
       <artifactId>graphviz-java-min-deps</artifactId>
       <version>0.18.1</version>
     </dependency>
