@@ -1,9 +1,10 @@
 package com.github.automaton.io;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.*;
 
-import org.apache.commons.lang3.BitField;
+import org.apache.commons.lang3.*;
 import org.apache.logging.log4j.*;
 
 import com.github.automaton.automata.*;
@@ -19,6 +20,13 @@ import com.github.automaton.automata.util.ByteManipulator;
  * @since 1.1
  */
 public class StateIO {
+
+    /** 
+     * The UTF-8 Charset used for state label encoding
+     * 
+     * @since 2.0
+     */
+    private static final Charset UTF8_CHARSET = Charset.forName("UTF-8");
 
     /**
      * Bit field for checking whether or not a state actually exists
@@ -123,22 +131,13 @@ public class StateIO {
 
         /* State's label */
 
-        char[] arr = new char[automaton.getLabelLength()];
-        for (int i = 0; i < arr.length; i++) {
+        byte[] arr = new byte[automaton.getLabelLength()];
+        System.arraycopy(bytesRead, 1, arr, 0, arr.length);
 
-            // Indicates end of label
-            if (bytesRead[i + 1] == 0) {
+        int labelLength = ArrayUtils.indexOf(arr, (byte) 0);
+        labelLength = labelLength == ArrayUtils.INDEX_NOT_FOUND ? arr.length : labelLength;
 
-                arr = Arrays.copyOfRange(arr, 0, i);
-                break;
-
-                // Read and store character
-            } else
-                arr[i] = (char) bytesRead[i + 1];
-
-        }
-
-        return new State(new String(arr), id, marked, null, enablement, disablement);
+        return new State(new String(arr, 0, labelLength, UTF8_CHARSET), id, marked, null, enablement, disablement);
 
     }
 
@@ -198,23 +197,14 @@ public class StateIO {
 
         /* State's label */
 
-        char[] arr = new char[automaton.getLabelLength()];
-        for (int i = 0; i < arr.length; i++) {
+        byte[] arr = new byte[automaton.getLabelLength()];
+        System.arraycopy(bytesRead, 1, arr, 0, arr.length);
 
-            // Indicates end of label
-            if (bytesRead[i + 1] == 0) {
-
-                arr = Arrays.copyOfRange(arr, 0, i);
-                break;
-
-                // Read and store character
-            } else
-                arr[i] = (char) bytesRead[i + 1];
-
-        }
+        int labelLength = ArrayUtils.indexOf(arr, (byte) 0);
+        labelLength = labelLength == ArrayUtils.INDEX_NOT_FOUND ? arr.length : labelLength;
 
         // Instantiate the state
-        State state = new State(new String(arr), id, marked, enablement, disablement);
+        State state = new State(new String(arr, 0, labelLength, UTF8_CHARSET), id, marked, enablement, disablement);
 
         /* Transitions */
 
@@ -355,14 +345,7 @@ public class StateIO {
 
         /* State's label */
 
-        for (int i = 0; i < s.getLabel().length(); i++) {
-            bytesToWrite[i + 1] = (byte) s.getLabel().charAt(i);
-
-            // Double-check to make sure we can retrieve this character
-            if ((char) bytesToWrite[i + 1] != s.getLabel().charAt(i))
-                logger.error(
-                        "Unsupported character '" + s.getLabel().charAt(i) + "' was written to file in a state label.");
-        }
+        System.arraycopy(s.getLabel().getBytes(UTF8_CHARSET), 0, bytesToWrite, 1, Math.min(labelLength, s.getLabel().length()));
 
         /* Transitions */
 
