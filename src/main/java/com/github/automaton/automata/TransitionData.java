@@ -49,9 +49,9 @@ public class TransitionData {
 
   /**
    * Construct a {@code TransitionData} object using the specified event and states.
-   * @param initialStateID  The initial state's ID
-   * @param eventID         The event's ID
-   * @param targetStateID   The target state's ID
+   * @param initialState    The initial state
+   * @param event           The event
+   * @param targetState     The target state
    * 
    * @since 2.0
    **/

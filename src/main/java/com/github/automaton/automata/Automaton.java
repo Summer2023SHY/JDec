@@ -404,6 +404,8 @@ public class Automaton implements Closeable {
 
   /**
    * A helper method used to generate the accessible portion of this automaton.
+   * 
+   * @param <T>       The type of automaton
    * @param automaton The generic automaton object
    * @return          The same automaton that was passed into the method, now containing the accessible part of this automaton
    **/
@@ -479,7 +481,7 @@ public class Automaton implements Closeable {
 
   /**
    * Create a new copy of this automaton that has all states removed which are unable to reach a marked state.
-   * @implNote This method should be overridden by subclasses, using the {@link #coaccessibleHelper()} method.
+   * @implNote This method should be overridden by subclasses, using the {@link #coaccessibleHelper(Automaton,Automaton)} method.
    * @param newHeaderFile  The header file where the new automaton should be stored
    * @param newBodyFile    The body file where the new automaton should be stored
    * @return               The co-accessible automaton
@@ -490,7 +492,9 @@ public class Automaton implements Closeable {
 
   /**
    * A helper method used to generate the co-accessible portion of this automaton.
+   * @param <T>       The type of automaton
    * @param automaton The generic automaton object
+   * @param invertedAutomaton The inverted automaton object
    * @return          The same automaton that was passed into the method, now containing the co-accessible
    *                  part of this automaton
    **/
@@ -573,7 +577,7 @@ public class Automaton implements Closeable {
   /**
    * Create a new copy of this automaton that has the marking status of all states toggled, and that has an added
    * 'dead' or 'dump' state where all undefined transitions lead.
-   * @implNote This method should be overridden by subclasses, using the {@link #complementHelper()} method.
+   * @implNote This method should be overridden by subclasses, using the {@link #complementHelper(Automaton)} method.
    * @param newHeaderFile             The header file where the new automaton should be stored
    * @param newBodyFile               The body file where the new automaton should be stored
    * @return                          The complement automaton
@@ -598,6 +602,7 @@ public class Automaton implements Closeable {
 
   /**
    * A helper method used to generate complement of this automaton.
+   * @param <T>                       The type of automaton
    * @param automaton                 The generic automaton object
    * @return                          The same automaton that was passed into the method, now containing
    *                                  the complement of this automaton
@@ -675,7 +680,7 @@ public class Automaton implements Closeable {
   /**
    * Creates a new copy of this automaton that is trim (both accessible and co-accessible).
    * @implNote I am taking the accessible part of the automaton before the co-accessible part of the automaton
-   * because the {@link #accessible()} method has less overhead than the {@link #coaccessible(File, File)} method.
+   * because the {@link #accessible(File,File)} method has less overhead than the {@link #coaccessible(File,File)} method.
    * @param newHeaderFile  The header file where the new automaton should be stored
    * @param newBodyFile    The body file where the new automaton should be stored
    * @return               The trim automaton, or {@code null} if there was no initial state specified
@@ -702,6 +707,8 @@ public class Automaton implements Closeable {
    * @implNote The states in the inverted automaton should still have the same IDs.
    * @implNote This automaton is lightweight, meaning it has no special transition information, only the
    *       states, events, and transitions.
+   * 
+   * @param <T>       The type of automaton
    * @param automaton The generic automaton object
    * @return          The same automaton that was passed into the method, now containing the inverse of this automaton
    **/
@@ -2356,7 +2363,9 @@ public class Automaton implements Closeable {
   /**
    * Get the GUI input code correlating with the special transition data for the specified transition.
    * @param data transition data
-   * @apiNote This method is intended to be overridden when subclassing **/
+   * @return input code for the special transition
+   * @apiNote This method is intended to be overridden when subclassing
+   */
   protected String getInputCodeForSpecialTransitions(TransitionData data) {
 
     return (badTransitions.contains(data)) ? ",BAD" : "";
@@ -3295,7 +3304,7 @@ public class Automaton implements Closeable {
    * @param isInitialState Whether or not this is the initial state
    * @return Whether or not the addition was successful (returns {@code false} if a state already existed there)
    * 
-   * @see #addStateAt(String, boolean, ArrayList, boolean, long)
+   * @see #addStateAt(String, boolean, List, boolean, long)
    * @since 2.0
    */
   public boolean addStateAt(State state, boolean isInitialState) {
@@ -3410,7 +3419,7 @@ public class Automaton implements Closeable {
   /**
    * Add the specified event to the set.
    * @implNote It is assumed that the new event is not already a member of the set (it is not checked for here for efficiency purposes).
-   * @param label         The "name" of the new event
+   * @param labelVector   The label vector that represents the new event
    * @param observable    Whether or not the event is observable
    * @param controllable  Whether or not the event is controllable
    * @return              The ID of the added event (0 indicates failure)
@@ -3504,7 +3513,7 @@ public class Automaton implements Closeable {
 
   /**
    * Add the specified event to the set if it does not already exist.
-   * @param label         The "name" of the new event
+   * @param labelVector   The label vector that represents the new event
    * @param observable    Whether or not the event is observable
    * @param controllable  Whether or not the event is controllable
    * @return              The ID of the added event (negative ID indicates that the event already existed)
@@ -3654,6 +3663,7 @@ public class Automaton implements Closeable {
    * @implNote This is a light-weight method which can be used instead of calling "{@code getState(id) != null}").
    * It does not load all of the state information, but only checks the first byte to see if it exists or not.
    * @param id  The unique identifier corresponding to the state we are looking for
+   * @return {@code true} if the state with the matching ID exists
    **/
   public boolean stateExists(long id) {
     return StateIO.stateExists(this, baf, id);
@@ -3664,6 +3674,7 @@ public class Automaton implements Closeable {
    * @implNote This is a light-weight method which can be used instead of calling "{@code getState(id) != null}").
    * It does not load all of the state information, but only checks the first byte to see if it exists or not.
    * @param state  The state we are looking for
+   * @return {@code true} if the state exists
    * 
    * @since 2.0
    **/
@@ -3762,8 +3773,8 @@ public class Automaton implements Closeable {
 
   /**
    * Given the label vector of an event, get the event information.
-   * @param label  The unique label vector corresponding to the requested event
-   * @return       The requested event (or {@code null} if it does not exist)
+   * @param labelVector The unique label vector corresponding to the requested event
+   * @return            The requested event (or {@code null} if it does not exist)
    * 
    * @since 2.0
    **/

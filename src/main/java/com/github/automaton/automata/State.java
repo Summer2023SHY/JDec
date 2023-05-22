@@ -279,7 +279,7 @@ public class State {
   /**
    * Indicates whether an object is "equal to" this state
    * 
-   * @param obj the reference object with which to compare
+   * @param other the reference object with which to compare
    * @return {@code true} if this state is the same as the argument
    */
   @Override

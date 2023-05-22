@@ -55,6 +55,7 @@ public final class AutomatonGenerator {
 
   /**
    * Generate an automaton using the given GUI input code in the form of a string.
+   * @param <T>                 The type of automaton
    * @param automaton           The empty automaton in which the generated data will be inserted
    * @param eventInputText      The event input text
    * @param stateInputText      The state input text
@@ -80,8 +81,9 @@ public final class AutomatonGenerator {
   }
 
   /**
-   * Generate an automaton using the given GUI input code. If the text panes are not null, then
+   * Generate an automaton using the given GUI input code. If the text panes are not {@code null}, then
    * lines that could not be parsed are stylized red.
+   * @param <T>                 The type of automaton
    * @param automaton           The empty automaton in which the generated data will be inserted
    * @param eventInputText      The event input text
    * @param stateInputText      The state input text

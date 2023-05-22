@@ -2160,6 +2160,8 @@ public class JDec extends JFrame implements ActionListener {
 
     /**
      * Update the saved status, making the necessary updates to the tab's GUI.
+     * 
+     * @param newSavedStatus the new saved status
      **/
     public void setSaved(boolean newSavedStatus) {
 

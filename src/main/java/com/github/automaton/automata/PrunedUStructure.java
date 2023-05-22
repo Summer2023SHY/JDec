@@ -55,6 +55,7 @@ public class PrunedUStructure extends UStructure {
 
   /**
    * Using recursion, starting at a given state, prune away all necessary transitions.
+   * @param <T>                         The type of communication data
    * @param protocol                    The chosen protocol (which must be feasible)
    * @param communication               The event vector representing the chosen communication
    * @param initialStateID              The ID of the state where the pruning begins at
@@ -75,6 +76,7 @@ public class PrunedUStructure extends UStructure {
 
   /**
    * Helper method used to prune the U-Structure.
+   * @param <T>                         The type of communication data
    * @param protocol                    The chosen protocol (which must be feasible)
    * @param communication               The event vector representing the chosen communication
    * @param vectorElementsFound         Indicates which elements of the vector have already been found

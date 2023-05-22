@@ -289,8 +289,9 @@ public class UStructure extends Automaton {
 
   /**
    * Checking the feasibility for all possible communication protocols, generate a list of the feasible protocols.
+   * @param <T>                         The type of communication data
    * @param communications              The communications to be considered
-   *                                    NOTE: These should be a subset of the potentialCommunications list of this U-Structure
+   *                                    <p>NOTE: These should be a subset of the {@link #potentialCommunications} list of this U-Structure
    * @param mustAlsoSolveControlProblem Whether or not the generated protocols must also solve the control problem
    * @return                            The feasible protocols, sorted smallest to largest
    **/
@@ -331,7 +332,7 @@ public class UStructure extends Automaton {
 
   /**
    * Generate a list of the smallest possible feasible protocols (in terms of the number of communications).
-   * @param communications  The communications to be considered (which should be a subset of the potentialCommunications list of this U-Structure)
+   * @param communications  The communications to be considered (which should be a subset of the {@link #potentialCommunications} list of this U-Structure)
    * @return                The feasible protocols
    **/
   public List<Set<CommunicationData>> generateSmallestFeasibleProtocols(List<CommunicationData> communications) {
@@ -378,7 +379,7 @@ public class UStructure extends Automaton {
 
   /**
    * Greedily generate a feasible protocol (optimality is not guaranteed).
-   * @param communications  The communications to be considered (which should be a subset of the potentialCommunications/nashCommunications lists of this U-Structure)
+   * @param communications  The communications to be considered (which should be a subset of the {@link #potentialCommunications}/{@link #nashCommunications} lists of this U-Structure)
    * @return                The feasible protocol
    **/
   public Set<CommunicationData> generateFeasibleProtocol(List<CommunicationData> communications) {
@@ -465,6 +466,7 @@ public class UStructure extends Automaton {
 
   /**
    * Refine this U-Structure by applying the specified communication protocol, and doing the necessary pruning.
+   * @param <T>                         The type of communication data
    * @param protocol                    The chosen protocol
    * @param newHeaderFile               The header file where the new U-Structure should be stored
    * @param newBodyFile                 The body file where the new U-Structure should be stored
@@ -603,7 +605,7 @@ public class UStructure extends Automaton {
         int diff1 = Math.abs(v1.getCommunications(0).length - v1.getCommunications(1).length);
         int diff2 = Math.abs(v2.getCommunications(0).length - v2.getCommunications(1).length);
         if (diff1 != diff2)
-          return Integer.valueOf(diff1).compareTo(diff2);
+          return Integer.valueOf(sum1).compareTo(sum2);
       
         // In the event of a tie, place smaller protocols first
         int sum1 = v1.getCommunications(0).length + v1.getCommunications(1).length;
@@ -848,7 +850,7 @@ public class UStructure extends Automaton {
 
   /**
    * Take the crush with respect to a particular controller.
-   * NOTE: All Nash information (cost and probability) will be ignored by this method.
+   * <p>NOTE: All Nash information (cost and probability) will be ignored by this method.
    * @param newHeaderFile         The file where the header should be stored
    * @param newBodyFile           The file where the body should be stored
    * @param indexOfController     The index of the controller in which the crush is taken with respect to (1-based)
@@ -985,8 +987,8 @@ public class UStructure extends Automaton {
 
   /**
    * Find the Shapley values for each coalition.
-   * NOTE: This can also be used to find the Myerson values once the U-Structure has been pruned.
-   * @return  The mapping between the coalitions and their respective values (or null if there were violations)
+   * <p>NOTE: This can also be used to find the Myerson values once the U-Structure has been pruned.
+   * @return  The mapping between the coalitions and their respective values (or {@code null} if there were violations)
    * 
    * @deprecated Crush is too restrictive in terms of its capabilities, and all operations related to it are subject to removal.
    **/
@@ -1120,7 +1122,7 @@ public class UStructure extends Automaton {
    * @param violation           The violation that we are trying to avoid
    * @param originalUStructure  The original U-Structure
    * @param preExistingProtocol The protocol that we have currently found so far for the original U-Structure
-   * @return                    The communication which should be added (null if nothing was found, which should not happen)
+   * @return                    The communication which should be added ({@code null} if nothing was found, which should not happen)
    **/
   private CommunicationData findCommunicationToBeAdded(TransitionData violation, UStructure originalUStructure, Set<CommunicationData> preExistingProtocol) {
 
@@ -1282,7 +1284,7 @@ public class UStructure extends Automaton {
    * @param communication       The event vector representing the communication
    * @param vectorElementsFound Indicates which elements of the vector have been found
    * @param currentState        The state that we are currently on
-   * @return                    The destination state (or null if the communication does not lead to a state)
+   * @return                    The destination state (or {@code null} if the communication does not lead to a state)
    **/
   private State findWhereCommunicationLeads(LabelVector communication,
                                             boolean[] vectorElementsFound,
@@ -1359,7 +1361,8 @@ public class UStructure extends Automaton {
 
   /**
    * Encode the current method's state in order to use it as a key in a hash map.
-   * NOTE: This makes the assumption that commas don't appear in event labels (which JDec prevents)
+   * <p>NOTE: This makes the assumption that commas don't appear in event labels
+   * (which {@link com.github.automaton.gui.JDec JDec} prevents)
    * @param communication       The event vector representing the communication
    * @param vectorElementsFound Indicates which elements of the vector have been found
    * @param currentState        The state that we are currently on
@@ -1568,7 +1571,7 @@ public class UStructure extends Automaton {
 
   /**
    * Check to see if the specified protocol is feasible.
-   * NOTE: This method works under the assumption that the protocol has at least one communication.
+   * <p>NOTE: This method works under the assumption that the protocol has at least one communication.
    * @param protocol                    The protocol that is being checked for feasibility
    * @param mustAlsoSolveControlProblem Whether or not the protocol must solve the control problem (meaning
    *                                    there are no violations after pruning)
@@ -1639,7 +1642,7 @@ public class UStructure extends Automaton {
    * Using recursion, determine which states are reachable through transitions which are unobservable to the sender.
    * @param uStructure          The relevant U-Structure
    * @param invertedUStructure  A U-Structure identical to the previous (except all transitions are going the opposite direction)
-   *                            NOTE: There is no need for extra information (such as special transitions) to be in the inverted automaton
+   *                            <p>NOTE: There is no need for extra information (such as special transitions) to be in the inverted automaton
    * @param reachableStates     The set of reachable states that are being built during this recursive process
    * @param currentStateID      The current state
    * @param vectorIndexOfSender The index in the event vector which corresponds to the sending controller
@@ -1669,10 +1672,10 @@ public class UStructure extends Automaton {
   /**
    * For a given feasible protocol (that solves the control problem), combine communication costs using
    * the specified technique.
-   * NOTE: Most methods will need to apply the protocol, then generate 1 or more Crush structures.
-   * NOTE: This method was made public in order to be able to test it using another
+   * <p>NOTE: Most methods will need to apply the protocol, then generate 1 or more Crush structures.</p>
+   * <p>NOTE: This method was made public in order to be able to test it using another</p>
    * @param feasibleProtocol      The list of Nash communications in which costs will be combined
-   *                              NOTE: Unless unit costs are used, then new NashCommunicationData objects
+   *                              <p>NOTE: Unless unit costs are used, then new {@link NashCommunicationData} objects
    *                                    will be created (since those objects could be referenced in other
    *                                    protocols, and we do not want to interfere with them)
    * @param combiningCostsMethod  The method in which the communications are being combined
@@ -1768,7 +1771,7 @@ public class UStructure extends Automaton {
    * @param uStructure          The relevant U-Structure
    * @param invertedUStructure  The relevant inverted U-Structure
    * @param set                 The set of connected states, which will be populated by this method
-   * @param currentState        The current state ID
+   * @param currentStateID      The current state ID
    * @param indexOfController   The index of the controller
    **/
   protected static void findConnectingStates(UStructure uStructure, UStructure invertedUStructure, Set<Long> set, long currentStateID, int indexOfController) {
@@ -1898,10 +1901,10 @@ public class UStructure extends Automaton {
    * Find a counter-example, if one exists. The counter-example is returned in the form of a list
    * of sequences of event labels. There will be one sequence for the system, plus one more for each
    * controller that can control the final event.
-   * @param findShortest  If true, the first path to a unconditional violation found will be selected as a
-   *                      counter-example. If false, then the shortest paths to all unconditional violations
+   * @param findShortest  If {@code true}, the first path to a unconditional violation found will be selected as a
+   *                      counter-example. If {@code false}, then the shortest paths to all unconditional violations
    *                      will be found, and then the longest one will be returned 
-   * @return              The list of sequences of event labels (or null if there are no counter-examples)
+   * @return              The list of sequences of event labels (or {@code null} if there are no counter-examples)
    **/
   public List<List<String>> findCounterExample(boolean findShortest) {
 
@@ -2492,6 +2495,8 @@ public class UStructure extends Automaton {
    * @param initialStateID   The initial state
    * @param eventID          The event triggering the transition
    * @param targetStateID    The target state
+   * 
+   * @since 2.0
    **/
   public void addSuppressedTransition(long initialStateID, int eventID, long targetStateID) {
     suppressedTransitions.add(new TransitionData(initialStateID, eventID, targetStateID));
@@ -2601,7 +2606,7 @@ public class UStructure extends Automaton {
 
   /**
    * Check to see if this U-Structure contains violations.
-   * NOTE: Conditional violations are not included for out purposes.
+   * <p>NOTE: Conditional violations are not included for our purposes.
    * @return  Whether or not there are one or more violations
    **/
   public boolean hasViolations() {
@@ -2611,7 +2616,7 @@ public class UStructure extends Automaton {
   /**
    * Find an arbitrary unconditional violation leading from this state, if one exists.
    * @param startingState The state in which the unconditional violation should come from
-   * @return              The violation data (or null, if none existed)
+   * @return              The violation data (or {@code null}, if none existed)
    **/
   public TransitionData findUnconditionalViolation(State startingState) {
 

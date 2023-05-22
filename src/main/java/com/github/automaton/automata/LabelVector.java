@@ -160,7 +160,7 @@ public class LabelVector implements Iterable<String> {
   /**
    * Indicates whether an object is "equal to" this label vector
    * 
-   * @param obj the reference object with which to compare
+   * @param other the reference object with which to compare
    * @return {@code true} if this label vector is the same as the argument
    */
   @Override
