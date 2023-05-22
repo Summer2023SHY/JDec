@@ -406,12 +406,9 @@ public class StateIO {
         baf.getRAFile().seek(state.getID() * automaton.getSizeOfState());
         baf.getLogger().trace("StateIO.rewriteStatus() - FP: " + baf.getRAFile().getFilePointer());
         byte newStatus = State.EXISTS_MASK;
-        if (state.isMarked())
-            newStatus |= State.MARKED_MASK;
-        if (state.isEnablementState())
-            newStatus |= State.ENABLEMENT_MASK;
-        else if (state.isDisablementState())
-            newStatus |= State.DISABLEMENT_MASK;
+        newStatus = MARKED_FIELD.setByteBoolean(newStatus, state.isMarked());
+        newStatus = ENABLEMENT_FIELD.setByteBoolean(newStatus, state.isEnablementState());
+        newStatus = DISABLEMENT_FIELD.setByteBoolean(newStatus, state.isDisablementState());
         baf.getRAFile().write(newStatus);
     }
 }
