@@ -29,6 +29,7 @@ import javax.xml.transform.dom.*;
 import javax.xml.transform.stream.*;
 
 import org.apache.batik.swing.svg.JSVGComponent;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.logging.log4j.*;
@@ -1028,7 +1029,7 @@ public class JDec extends JFrame implements ActionListener {
 
     int index = tabbedPane.getSelectedIndex();
     AutomatonTab tab = tabs.get(index);
-    String fileName = currentDirectory + File.separator + removeExtension(tab.headerFile.getName()) + ".svg";
+    String fileName = currentDirectory + File.separator + FilenameUtils.removeExtension(tab.headerFile.getName()) + ".svg";
 
     boolean successful = false;
 
@@ -1176,7 +1177,7 @@ public class JDec extends JFrame implements ActionListener {
     AutomatonTab tab = tabs.get(tabbedPane.getSelectedIndex());
 
     // Create destination file name (excluding extension)
-    String destinationFileName = currentDirectory + "/" + removeExtension(tab.headerFile.getName());
+    String destinationFileName = currentDirectory + File.separator + FilenameUtils.removeExtension(tab.headerFile.getName());
 
     try {
 
@@ -1485,7 +1486,7 @@ public class JDec extends JFrame implements ActionListener {
 
       // Get files
       File headerFile = fileChooser.getSelectedFile();
-      File bodyFile = new File(headerFile.getParentFile() + "/" + removeExtension(headerFile.getName()) + ".bdy");
+      File bodyFile = new File(headerFile.getParentFile() + File.separator + FilenameUtils.removeExtension(headerFile.getName()) + ".bdy");
      
       // Create new tab (if requested)
       if (index == -1) {
@@ -1555,7 +1556,7 @@ public class JDec extends JFrame implements ActionListener {
     if (name.indexOf(".") != -1)
       name = name.substring(0, name.indexOf("."));
 
-    String prefix   = fileChooser.getSelectedFile().getParentFile() + "/" + name;
+    String prefix   = fileChooser.getSelectedFile().getParentFile() + File.separator + name;
     File headerFile = new File(prefix + ".hdr");
     File bodyFile   = new File(prefix + ".bdy");
     File svgFile    = new File(prefix + ".svg");
@@ -1621,7 +1622,7 @@ public class JDec extends JFrame implements ActionListener {
         continue;
 
       // Add automaton to list of options
-      optionsList.add(removeExtension(tab.headerFile.getAbsolutePath()));
+      optionsList.add(FilenameUtils.removeExtension(tab.headerFile.getAbsolutePath()));
 
     }
 
@@ -1649,7 +1650,7 @@ public class JDec extends JFrame implements ActionListener {
       /* Return index of chosen automaton */
 
     for (int i = 0; i < tabbedPane.getTabCount(); i++)
-      if (tabs.get(i).headerFile != null && removeExtension(tabs.get(i).headerFile.getAbsolutePath()).equals(choice))
+      if (tabs.get(i).headerFile != null && FilenameUtils.removeExtension(tabs.get(i).headerFile.getAbsolutePath()).equals(choice))
         return i;
 
     return -1;
@@ -1817,15 +1818,6 @@ public class JDec extends JFrame implements ActionListener {
     dialog.setAlwaysOnTop(true);
     dialog.setVisible(true);
 
-  }
-
-  /**
-   * Removes the last 4 characters of the string, which is used to trim either '.hdr' or '.bdy' off the end.
-   * @param str The string to be trimmed
-   * @return    The trimmed string
-   **/
-  private String removeExtension(String str) {
-    return str.substring(0, str.length() - 4);  
   }
 
   /**
@@ -2148,7 +2140,7 @@ public class JDec extends JFrame implements ActionListener {
      **/
     private void updateTabTitle() {
 
-      String title = removeExtension(headerFile.getName());
+      String title = FilenameUtils.removeExtension(headerFile.getName());
 
       // Temporary files are always considered unsaved, since the directory is wiped upon closing of the program
       if (!saved || usingTemporaryFiles())

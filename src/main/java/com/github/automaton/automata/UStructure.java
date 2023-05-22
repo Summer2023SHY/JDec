@@ -17,6 +17,7 @@ import java.io.*;
 import java.math.*;
 import java.util.*;
 
+import org.apache.commons.io.RandomAccessFileMode;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.*;
 
@@ -533,7 +534,7 @@ public class UStructure extends Automaton {
       return null;
 
     // Change the first byte (which indicates the automaton type)
-    try (RandomAccessFile raFile = new RandomAccessFile(newHeaderFile, "rw")) {
+    try (RandomAccessFile raFile = RandomAccessFileMode.READ_WRITE.create(newHeaderFile)) {
       raFile.writeByte((byte) Type.PRUNED_U_STRUCTURE.getNumericValue());
     } catch (IOException e) {
       logger.catching(e);

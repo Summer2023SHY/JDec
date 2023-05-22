@@ -34,6 +34,12 @@
       <version>3.12.0</version>
       <scope>compile</scope>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.12.0</version>
+    </dependency>
     <!-- https://mvnrepository.com/artifact/org.apache.xmlgraphics/batik-swing -->
     <dependency>
       <groupId>org.apache.xmlgraphics</groupId>

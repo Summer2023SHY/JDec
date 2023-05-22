@@ -23,6 +23,7 @@ import java.io.*;
 import java.math.*;
 import java.util.*;
 
+import org.apache.commons.io.RandomAccessFileMode;
 import org.apache.commons.lang3.*;
 import org.apache.logging.log4j.*;
 
@@ -217,7 +218,7 @@ public class Automaton implements Closeable {
      **/
     public static Type getType(File file) {
 
-      try (RandomAccessFile raf = (new RandomAccessFile(file, "r"))) {
+      try (RandomAccessFile raf = RandomAccessFileMode.READ_ONLY.create(file)) {
       
         return Automaton.Type.getType(raf.readByte());
       
@@ -1635,7 +1636,7 @@ public class Automaton implements Closeable {
         /* Create a file containing the mappings (where the new IDs can be indexed using the old IDs) */
 
       File mappingFile = IOUtility.getTemporaryFile();
-      RandomAccessFile mappingRAFile = new RandomAccessFile(mappingFile, "rw");
+      RandomAccessFile mappingRAFile = RandomAccessFileMode.READ_WRITE.create(mappingFile);
 
       long newID = 1;
       for (long s = 1; s <= getStateCapacity(); s++)
@@ -1651,7 +1652,7 @@ public class Automaton implements Closeable {
         /* Create new .bdy file with renumbered states */
 
       File newBodyFile = IOUtility.getTemporaryFile();
-      RandomAccessFile newBodyRAFile = new RandomAccessFile(newBodyFile, "rw");
+      RandomAccessFile newBodyRAFile = RandomAccessFileMode.READ_WRITE.create(newBodyFile);
 
       for (long s = 1; s <= getStateCapacity(); s++) {
 
@@ -2798,7 +2799,7 @@ public class Automaton implements Closeable {
 
     try {
     
-      newBodyRAFile = new RandomAccessFile(newBodyFile, "rw");
+      newBodyRAFile = RandomAccessFileMode.READ_WRITE.create(newBodyFile);
 
     } catch (FileNotFoundException e) {
       logger.catching(e);
