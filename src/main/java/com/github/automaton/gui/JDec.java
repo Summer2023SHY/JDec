@@ -1826,7 +1826,7 @@ public class JDec extends JFrame implements ActionListener {
    *          both the .bdy and .hdr files)
    **/
   public String getTemporaryFileName() {
-    return TEMPORARY_DIRECTORY.getAbsolutePath() + "/untitled" + temporaryFileIndex++;
+    return TEMPORARY_DIRECTORY.getAbsolutePath() + File.separator + "untitled" + temporaryFileIndex++;
   }
 
   /**
@@ -1835,9 +1835,7 @@ public class JDec extends JFrame implements ActionListener {
    **/
   private void loadCurrentDirectory() {
 
-    try {
-
-      Scanner sc = new Scanner(new File(GUI_DATA_FILE_NAME));
+    try (Scanner sc = new Scanner(new File(GUI_DATA_FILE_NAME))) {
 
       if (sc.hasNextLine())
         currentDirectory = new File(sc.nextLine());
@@ -1856,11 +1854,9 @@ public class JDec extends JFrame implements ActionListener {
 
     if (currentDirectory != null) {
 
-      try {
+      try (PrintWriter writer = new PrintWriter(new FileWriter(GUI_DATA_FILE_NAME, false))) {
 
-        PrintWriter writer = new PrintWriter(new FileWriter(GUI_DATA_FILE_NAME, false));
         writer.println(currentDirectory.getPath());
-        writer.close();
 
       } catch (IOException e) {
         logger.catching(e);

@@ -18,7 +18,7 @@ import java.math.*;
 import java.util.*;
 
 import org.apache.commons.io.RandomAccessFileMode;
-import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.*;
 import org.apache.logging.log4j.*;
 
 import com.github.automaton.automata.util.ByteManipulator;
@@ -322,7 +322,7 @@ public class UStructure extends Automaton {
 
     Collections.sort(feasibleProtocols, new Comparator<Set<?>>() {
         @Override public int compare(Set<?> set1, Set<?> set2) {
-          return Integer.valueOf(set1.size()).compareTo(set2.size());
+          return Integer.compare(set1.size(), set2.size());
         }
       }
     );
@@ -347,7 +347,7 @@ public class UStructure extends Automaton {
 
     Collections.sort(protocols, new Comparator<Set<?>>() {
         @Override public int compare(Set<?> set1, Set<?> set2) {
-          return Integer.valueOf(set1.size()).compareTo(set2.size());
+          return Integer.compare(set1.size(), set2.size());
         }
       }
     );
@@ -456,7 +456,7 @@ public class UStructure extends Automaton {
 
     Collections.sort(feasibleProtocols, new Comparator<Set<?>>() {
         @Override public int compare(Set<?> set1, Set<?> set2) {
-          return Integer.valueOf(set1.size()).compareTo(set2.size());
+          return Integer.compare(set1.size(), set2.size());
         }
       }
     );
@@ -606,12 +606,12 @@ public class UStructure extends Automaton {
         int diff1 = Math.abs(v1.getCommunications(0).length - v1.getCommunications(1).length);
         int diff2 = Math.abs(v2.getCommunications(0).length - v2.getCommunications(1).length);
         if (diff1 != diff2)
-          return Integer.valueOf(sum1).compareTo(sum2);
+          return Integer.compare(diff1, diff2);
       
         // In the event of a tie, place smaller protocols first
         int sum1 = v1.getCommunications(0).length + v1.getCommunications(1).length;
         int sum2 = v2.getCommunications(0).length + v2.getCommunications(1).length;
-        return Integer.valueOf(sum1).compareTo(sum2);
+        return Integer.compare(sum1, sum2);
       
       }
     });
@@ -2160,7 +2160,7 @@ public class UStructure extends Automaton {
       if (transitionData.equals(disablementData)) {
         str += ",DISABLEMENT_DECISION-";
         for (boolean b : disablementData.controllers)
-          str += (b ? "T" : "F");
+          str += BooleanUtils.toString(b, "T", "F");
         break;
       }
     
@@ -2303,7 +2303,7 @@ public class UStructure extends Automaton {
       index += 8;
 
       for (boolean b : data.controllers)
-        buffer[index++] = (byte) (b ? 1 : 0);
+        buffer[index++] = (byte) BooleanUtils.toInteger(b);
       
       haf.write(buffer);
 
@@ -2381,7 +2381,7 @@ public class UStructure extends Automaton {
       long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
       index += 8;
       
-      int eventID = (int) ByteManipulator.readBytesAsLong(buffer, index, 4);
+      int eventID = ByteManipulator.readBytesAsInt(buffer, index, 4);
       index += 4;
       
       long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
@@ -2414,7 +2414,7 @@ public class UStructure extends Automaton {
       long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
       index += 8;
       
-      int eventID = (int) ByteManipulator.readBytesAsLong(buffer, index, 4);
+      int eventID = ByteManipulator.readBytesAsInt(buffer, index, 4);
       index += 4;
       
       long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
@@ -2453,7 +2453,7 @@ public class UStructure extends Automaton {
       long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
       index += 8;
       
-      int eventID = (int) ByteManipulator.readBytesAsLong(buffer, index, 4);
+      int eventID = ByteManipulator.readBytesAsInt(buffer, index, 4);
       index += 4;
       
       long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);

@@ -2284,12 +2284,12 @@ public class Automaton implements Closeable {
       // Observability properties
       eventInputBuilder.append(",");
       for (int i = 0; i < nControllers; i++)
-        eventInputBuilder.append((e.isObservable()[i] ? "T" : "F"));
+        eventInputBuilder.append(BooleanUtils.toString(e.isObservable()[i], "T", "F"));
 
       // Controllability properties
       eventInputBuilder.append(",");
       for (int i = 0; i < nControllers; i++)
-        eventInputBuilder.append((e.isControllable()[i] ? "T" : "F"));
+        eventInputBuilder.append(BooleanUtils.toString(e.isControllable()[i], "T", "F"));
 
       // End of line character
       if (++counter < events.size())
@@ -2325,7 +2325,7 @@ public class Automaton implements Closeable {
       // Append label and properties
       stateInputBuilder.append(state.getLabel());
       if (type == Type.AUTOMATON)
-        stateInputBuilder.append((state.isMarked() ? ",T" : ",F"));
+        stateInputBuilder.append(BooleanUtils.toString(state.isMarked(), ",T", ",F"));
       
       // Add line separator after unless this is the last state
       if (s < nStates)
