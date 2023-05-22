@@ -1253,6 +1253,10 @@ public class UStructure extends Automaton {
 
     UStructure uStructure = (UStructure) automaton;
 
+    for (TransitionData data : suppressedTransitions)
+      if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
+          uStructure.addSuppressedTransition(data.initialStateID, data.eventID, data.targetStateID);
+
     for (TransitionData data : unconditionalViolations)
       if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
         uStructure.addUnconditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
@@ -2189,7 +2193,7 @@ public class UStructure extends Automaton {
     ByteManipulator.writeLongAsBytes(buffer, 12, invalidCommunications.size(),   4);
     ByteManipulator.writeLongAsBytes(buffer, 16, nashCommunications.size(),      4);
     ByteManipulator.writeLongAsBytes(buffer, 20, disablementDecisions.size(),    4);
-    ByteManipulator.writeLongAsBytes(buffer, 24,  suppressedTransitions.size(), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 24, suppressedTransitions.size(),   4);
     haf.write(buffer);
 
       /* Write special transitions to the .hdr file */
@@ -2312,13 +2316,13 @@ public class UStructure extends Automaton {
 
     byte[] buffer = haf.readHeaderBytes(28);
 
-    int nUnconditionalViolations = (int) ByteManipulator.readBytesAsLong(buffer, 0,  4);
-    int nConditionalViolations   = (int) ByteManipulator.readBytesAsLong(buffer, 4,  4);
-    int nPotentialCommunications = (int) ByteManipulator.readBytesAsLong(buffer, 8,  4);
-    int nInvalidCommunications   = (int) ByteManipulator.readBytesAsLong(buffer, 12, 4);
-    int nNashCommunications      = (int) ByteManipulator.readBytesAsLong(buffer, 16, 4);
-    int nDisablementDecisions    = (int) ByteManipulator.readBytesAsLong(buffer, 20, 4);
-    int nSuppressedTransitions = (int) ByteManipulator.readBytesAsLong(buffer, 0,  24);
+    int nUnconditionalViolations = ByteManipulator.readBytesAsInt(buffer, 0,  4);
+    int nConditionalViolations   = ByteManipulator.readBytesAsInt(buffer, 4,  4);
+    int nPotentialCommunications = ByteManipulator.readBytesAsInt(buffer, 8,  4);
+    int nInvalidCommunications   = ByteManipulator.readBytesAsInt(buffer, 12, 4);
+    int nNashCommunications      = ByteManipulator.readBytesAsInt(buffer, 16, 4);
+    int nDisablementDecisions    = ByteManipulator.readBytesAsInt(buffer, 20, 4);
+    int nSuppressedTransitions   = ByteManipulator.readBytesAsInt(buffer, 24, 4);
 
       /* Read in special transitions from the .hdr file */
     
