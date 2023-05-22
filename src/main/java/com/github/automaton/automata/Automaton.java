@@ -1940,9 +1940,16 @@ public class Automaton implements Closeable {
    * @throws MissingOrCorruptBodyFileException If any of the states are unable to be read from the body file
    * @since 2.0
    */
+  @SuppressWarnings("unchecked")
   private MutableGraph generateGraph() throws MissingOrCorruptBodyFileException {
     MutableGraph g = mutGraph().setDirected(true);
-    g = g.graphAttrs().add(Color.TRANSPARENT, Attributes.attr("overlap", "scale"));
+    g.graphAttrs().add(
+      Color.TRANSPARENT.background(),
+      GraphAttr.splines(GraphAttr.SplineMode.POLYLINE),
+      Attributes.attr("nodesep", 0.5),
+      Rank.sep(2),
+      Attributes.attr("overlap", "scale")
+    );
     g = g.nodeAttrs().add(Shape.CIRCLE, Style.BOLD, Attributes.attr("constraint", false));
     try {
 
@@ -1980,10 +1987,12 @@ public class Automaton implements Closeable {
 
             MutableNode targetNode = mutNode(formatStateLabel(targetState));
             targetNode.addTo(g);
-            Link l = sourceNode.linkTo(targetNode);
-            l.add(Label.of(t.getEvent().getLabel()));
-            l.add(properties);
-            sourceNode.links().add(l);
+            if (!Objects.equals(properties.get("color"), "transparent")) {
+              Link l = sourceNode.linkTo(targetNode);
+              l.add(Label.of(t.getEvent().getLabel()));
+              l.add(properties);
+              sourceNode.links().add(l);
+            }
           }
         }
 
