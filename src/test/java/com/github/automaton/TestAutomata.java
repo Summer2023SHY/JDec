@@ -1266,48 +1266,50 @@ public class TestAutomata {
 
   }
 
-  @Test
+  @Nested
   @DisplayName("SPECIAL TRANSITIONS")
-  public void runSpecialTransitionsTestRoutine() {
+  @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+  @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+  class SpecialTransitionsTest {
 
-    String testRoutineName = "SPECIAL TRANSITIONS";
+    TestCounter counter;
+    Automaton automaton;
+    UStructure uStructure;
 
-    printTestOutput("RUNNING " + testRoutineName + " TESTS...", 1);
+    @BeforeEach
+    void setup() {
+      counter = new TestCounter();
+      automaton = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
+        new Automaton(null, null, 2),
+        "a,TF,FF\nb,FT,FF\nc,TT,FT", // Events
+        "@0,F\n1,F\n2,F\n3,F\n4,F", // States
+        "0,a,1\n0,b,2\n1,c,3\n2,c,4:BAD" // Transitions
+      ));
+    }
 
-    TestCounter counter = new TestCounter();
+    @Test
+    @DisplayName("Synchronized composition test")
+    @Order(1)
+    public void testSynchronizedCompositionOperation() {
+      uStructure = automaton.synchronizedComposition(null, null);
+      uStructure.generateInputForGUI();
+      printTestCase("Ensuring the events are correct", new TestResult(uStructure.getEventInput(), "<a,a,*>,TF,FF\n<b,*,b>,FT,FF\n<*,b,*>,FF,FF\n<*,*,a>,FF,FF\n<c,c,c>,TT,FT"), counter);
+      printTestCase("Ensuring the states are correct", new TestResult(uStructure.getStateInput(), "@0_0_0\n0_0_1\n0_2_0\n0_2_1\n1_1_0\n1_1_1\n2_0_2\n2_2_2\n3_3_3\n4_4_4"), counter);
+      printTestCase("Ensuring the transitions are correct", new TestResult(uStructure.getTransitionInput(), "0_0_0,<a,a,*>,1_1_0\n0_0_0,<b,*,b>,2_0_2\n0_0_0,<*,b,*>,0_2_0\n0_0_0,<*,*,a>,0_0_1\n0_0_1,<a,a,*>,1_1_1\n0_0_1,<*,b,*>,0_2_1\n0_2_0,<b,*,b>,2_2_2\n0_2_0,<*,*,a>,0_2_1\n1_1_0,<*,*,a>,1_1_1\n1_1_1,<c,c,c>,3_3_3\n2_0_2,<*,b,*>,2_2_2\n2_2_2,<c,c,c>,4_4_4:DISABLEMENT_DECISION-FT"), counter);
+    }
 
-      /* Controllability Tests */
+    @Test
+    @DisplayName("Crush test")
+    @Order(2)
+    public void testCrush() {
 
-    printTestOutput("DISABLEMENT DECISIONS: ", 2);
+      Crush crush = uStructure.crush(null, null, 1);
+      crush.generateInputForGUI();
+      printTestCase("Ensuring the events are correct", new TestResult(crush.getEventInput(), "<a,a,*>,TF,FF\n<c,c,c>,TT,FT"), counter);
+      printTestCase("Ensuring the states are correct", new TestResult(crush.getStateInput(), "@<0_0_0,0_0_1,0_2_0,0_2_1,2_0_2,2_2_2>\n<1_1_0,1_1_1>\n<3_3_3>\n<4_4_4>"), counter);
+      printTestCase("Ensuring the transitions are correct", new TestResult(crush.getTransitionInput(), "<0_0_0,0_0_1,0_2_0,0_2_1,2_0_2,2_2_2>,<a,a,*>,<1_1_0,1_1_1>\n<0_0_0,0_0_1,0_2_0,0_2_1,2_0_2,2_2_2>,<c,c,c>,<4_4_4>:DISABLEMENT_DECISION-FT\n<1_1_0,1_1_1>,<c,c,c>,<3_3_3>"), counter);
 
-    printTestOutput("Instantiating an Automaton...", 3);
-
-    Automaton automaton = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-      new Automaton(null, null, 2),
-      "a,TF,FF\nb,FT,FF\nc,TT,FT", // Events
-      "@0,F\n1,F\n2,F\n3,F\n4,F", // States
-      "0,a,1\n0,b,2\n1,c,3\n2,c,4:BAD" // Transitions
-    ));
-
-    printTestOutput("Performing synchronized composition on the automaton...", 3);
-    UStructure uStructure = automaton.synchronizedComposition(null, null);
-    uStructure.generateInputForGUI();
-    printTestCase("Ensuring the events are correct", new TestResult(uStructure.getEventInput(), "<a,a,*>,TF,FF\n<b,*,b>,FT,FF\n<*,b,*>,FF,FF\n<*,*,a>,FF,FF\n<c,c,c>,TT,FT"), counter);
-    printTestCase("Ensuring the states are correct", new TestResult(uStructure.getStateInput(), "@0_0_0\n0_0_1\n0_2_0\n0_2_1\n1_1_0\n1_1_1\n2_0_2\n2_2_2\n3_3_3\n4_4_4"), counter);
-    printTestCase("Ensuring the transitions are correct", new TestResult(uStructure.getTransitionInput(), "0_0_0,<a,a,*>,1_1_0\n0_0_0,<b,*,b>,2_0_2\n0_0_0,<*,b,*>,0_2_0\n0_0_0,<*,*,a>,0_0_1\n0_0_1,<a,a,*>,1_1_1\n0_0_1,<*,b,*>,0_2_1\n0_2_0,<b,*,b>,2_2_2\n0_2_0,<*,*,a>,0_2_1\n1_1_0,<*,*,a>,1_1_1\n1_1_1,<c,c,c>,3_3_3\n2_0_2,<*,b,*>,2_2_2\n2_2_2,<c,c,c>,4_4_4:DISABLEMENT_DECISION-FT"), counter);
-
-    printTestOutput("Taking the crush of the U-Structure...", 3);
-    Crush crush = uStructure.crush(null, null, 1);
-    crush.generateInputForGUI();
-    printTestCase("Ensuring the events are correct", new TestResult(crush.getEventInput(), "<a,a,*>,TF,FF\n<c,c,c>,TT,FT"), counter);
-    printTestCase("Ensuring the states are correct", new TestResult(crush.getStateInput(), "@<0_0_0,0_0_1,0_2_0,0_2_1,2_0_2,2_2_2>\n<1_1_0,1_1_1>\n<3_3_3>\n<4_4_4>"), counter);
-    printTestCase("Ensuring the transitions are correct", new TestResult(crush.getTransitionInput(), "<0_0_0,0_0_1,0_2_0,0_2_1,2_0_2,2_2_2>,<a,a,*>,<1_1_0,1_1_1>\n<0_0_0,0_0_1,0_2_0,0_2_1,2_0_2,2_2_2>,<c,c,c>,<4_4_4>:DISABLEMENT_DECISION-FT\n<1_1_0,1_1_1>,<c,c,c>,<3_3_3>"), counter);
-
-      /* Print summary of this test routine */
-
-    printTestRoutineSummary(testRoutineName, counter);
-
-    
+    }
 
   }
 
