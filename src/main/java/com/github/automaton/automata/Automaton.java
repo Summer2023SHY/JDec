@@ -3006,7 +3006,7 @@ public class Automaton implements Closeable {
   }
 
   /**
-   * Adds a transition based the label of the event (instead the ID).
+   * Adds a transition based on the label of the event (instead the ID).
    * @param startingState The state where the transition originates from
    * @param eventLabel    The label of the event that triggers the transition
    * @param targetState   The state where the transition leads to
@@ -3029,7 +3029,7 @@ public class Automaton implements Closeable {
   }
 
   /**
-   * Adds a transition based the label of the event (instead the ID).
+   * Adds a transition based on the label of the event (instead the ID).
    * @param startingState The state where the transition originates from
    * @param labelVector    The label vector of the event that triggers the transition
    * @param targetState   The state where the transition leads to
@@ -3192,7 +3192,7 @@ public class Automaton implements Closeable {
    * Add the specified state to the automaton.
    * @param label           The "name" of the new state
    * @param marked          Whether or not the states is marked
-   * @param transitions     The list of transitions (if null, then an empty list is made)
+   * @param transitions     The list of transitions (if {@code null}, then an empty list is made)
    * @param isInitialState  Whether or not this is the initial state
    * @return                The ID of the added state; or {@code 0} if the addition was unsuccessful
    **/
@@ -3297,7 +3297,7 @@ public class Automaton implements Closeable {
    * spots in the {@code .bdy} file where states don't actually exist (this happens during automata operations such as intersection).
    * @param label           The "name" of the new state
    * @param marked          Whether or not the states is marked
-   * @param transitions     The list of transitions (if null, then a new list is made)
+   * @param transitions     The list of transitions (if {@code null}, then a new list is made)
    * @param isInitialState  Whether or not this is the initial state
    * @param id              The index where the state should be added at
    * @return                Whether or not the addition was successful (returns {@code false} if a state already existed there)
