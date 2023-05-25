@@ -219,7 +219,26 @@
                 <goal>download-licenses</goal>
               </goals>
             </execution>
+            <execution>
+              <id>header-update</id>
+              <goals>
+                <goal>update-file-header</goal>
+              </goals>
+              <phase>process-sources</phase>
+            </execution>
           </executions>
+          <configuration>
+            <inceptionYear>2023</inceptionYear>
+            <organizationName>Mount Allison University</organizationName>
+            <copyrightOwners>Micah Stairs, Sung Ho Yoon</copyrightOwners>
+            <licenseName>mit</licenseName>
+            <licenseFile>${basedir}/LICENSE</licenseFile>
+            <licenseMerges>
+              <licenseMerge>Apache License, Version 2.0|The Apache Software License, Version 2.0|The Apache License, Version 2.0|Apache-2.0</licenseMerge>
+              <licenseMerge>MIT License|MIT</licenseMerge>
+            </licenseMerges>
+            <excludedScopes>system,test,provided</excludedScopes>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
