@@ -26,6 +26,28 @@
       <groupId>guru.nidi</groupId>
       <artifactId>graphviz-java-min-deps</artifactId>
       <version>0.18.1</version>
+      <exclusions>
+        <exclusion>
+          <groupId>guru.nidi.com.eclipsesource.j2v8</groupId>
+          <artifactId>j2v8_win32_x86_64</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>guru.nidi.com.eclipsesource.j2v8</groupId>
+          <artifactId>j2v8_linux_x86_64</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>guru.nidi.com.eclipsesource.j2v8</groupId>
+          <artifactId>j2v8_macosx_x86_64</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>guru.nidi.com.eclipsesource.j2v8</groupId>
+          <artifactId>j2v8_win32_x86_64</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>guru.nidi.com.eclipsesource.j2v8</groupId>
+          <artifactId>j2v8_win32_x86</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
     <dependency>
@@ -62,6 +84,12 @@
       <groupId>org.openjdk.nashorn</groupId>
       <artifactId>nashorn-core</artifactId>
       <version>15.4</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.arnx</groupId>
+      <artifactId>nashorn-promise</artifactId>
+      <version>0.1.3</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
@@ -179,7 +207,20 @@
               <link>https://www.javadoc.io/doc/guru.nidi/graphviz-java/0.18.1/</link>
             </links>
           </configuration>
-      </plugin>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>license-maven-plugin</artifactId>
+          <version>2.0.1</version>
+          <executions>
+            <execution>
+              <id>download-licenses</id>
+              <goals>
+                <goal>download-licenses</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>

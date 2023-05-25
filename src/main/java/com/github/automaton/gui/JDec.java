@@ -37,6 +37,7 @@ import org.w3c.dom.*;
 import org.xml.sax.*;
 
 import com.github.automaton.automata.*;
+import com.github.automaton.automata.graphviz.GraphvizEngineInitializer;
 import com.github.automaton.gui.util.*;
 import com.github.automaton.io.MissingOrCorruptBodyFileException;
 
@@ -62,6 +63,12 @@ public class JDec extends JFrame implements ActionListener {
   );
   private static final String GUI_DATA_FILE_NAME  = "gui.data";
 
+  /**
+   * Whether drawing of automata via Graphviz is enabled
+   * 
+   * @since 2.0
+   */
+  private static final boolean DRAW_ENABLED = GraphvizEngineInitializer.setupGraphvizEngines();
   private static final int N_STATES_TO_AUTOMATICALLY_DRAW = 20;
 
   private static Logger logger = LogManager.getLogger();
@@ -959,7 +966,9 @@ public class JDec extends JFrame implements ActionListener {
 
       /* Generate an image (unless it's quite large) */
 
-    if (tab.automaton.getNumberOfStates() <= N_STATES_TO_AUTOMATICALLY_DRAW) {
+    if (!DRAW_ENABLED) {
+      tab.generateImageButton.setEnabled(false);
+    } else if (tab.automaton.getNumberOfStates() <= N_STATES_TO_AUTOMATICALLY_DRAW) {
       generateImage();
       tab.generateImageButton.setEnabled(false);
     } else
