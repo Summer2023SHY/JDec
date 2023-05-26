@@ -66,7 +66,7 @@ public class JDec extends JFrame implements ActionListener {
   /**
    * Whether drawing of automata via Graphviz is enabled
    * 
-   * @since 2.0
+   * @since 1.3
    */
   private static final boolean DRAW_ENABLED = GraphvizEngineInitializer.setupGraphvizEngines();
   private static final int N_STATES_TO_AUTOMATICALLY_DRAW = 20;

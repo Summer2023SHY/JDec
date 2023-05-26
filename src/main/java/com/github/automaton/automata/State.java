@@ -33,13 +33,13 @@ public class State {
   /**
    * Bitmask for checking whether or not a state is an enablement state
    * 
-   * @since 2.0
+   * @since 1.3
    */
   public static final int ENABLEMENT_MASK = 0b00000100;
   /**
    * Bitmask for checking whether or not a state is a disablement state
    * 
-   * @since 2.0
+   * @since 1.3
    */
   public static final int DISABLEMENT_MASK = 0b00001000;
     
@@ -58,7 +58,7 @@ public class State {
    * Default constructor. All instances created using this constructor
    * must update the instance variables using the respective mutator methods.
    * 
-   * @since 2.0
+   * @since 1.3
    */
   State() {
     transitions = new ArrayList<Transition>();
@@ -74,7 +74,7 @@ public class State {
    * @param disablement Whether or not the state is an disablement state
    * @throws IllegalArgumentException if {@code enablement && disablement} is {@code true}
    * 
-   * @since 2.0
+   * @since 1.3
    **/
   public State(String label, long id, boolean marked, List<Transition> transitions, boolean enablement, boolean disablement) {
     this(label, id, marked, transitions);
@@ -108,7 +108,7 @@ public class State {
    * @param disablement Whether or not the state is an disablement state
    * @throws IllegalArgumentException if {@code enablement && disablement} is {@code true}
    * 
-   * @since 2.0
+   * @since 1.3
    **/
   public State(String label, long id, boolean marked, boolean enablement, boolean disablement) {
     this(label, id, marked, new ArrayList<Transition>(), enablement, disablement);
@@ -133,7 +133,7 @@ public class State {
    * Changes the label of this state.
    * @param label new label for this state
    * @throws NullPointerException if argument is {@code null}
-   * @since 2.0
+   * @since 1.3
    */
   void setLabel(String label) {
     this.label = Objects.requireNonNull(label);
@@ -159,7 +159,7 @@ public class State {
    * Change the enablement status of this state.
    * @param enablement  Whether or not this state is an enablement state
    * 
-   * @since 2.0
+   * @since 1.3
    */
   void setEnablement(boolean enablement) {
     this.enablement = enablement;
@@ -169,7 +169,7 @@ public class State {
    * Change the disablement status of this state.
    * @param disablement  Whether or not this state is an disablement state
    * 
-   * @since 2.0
+   * @since 1.3
    */
   void setDisablement(boolean disablement) {
     this.disablement = disablement;
@@ -206,7 +206,7 @@ public class State {
    * Checks whether this state is an enablement state
    * @return Whether or not this state is an enablement state
    *
-   * @since 2.0
+   * @since 1.3
    */
   public boolean isEnablementState() {
     return enablement;
@@ -216,7 +216,7 @@ public class State {
    * Checks whether this state is a disablement state
    * @return Whether or not this state is a disablement state
    * 
-   * @since 2.0
+   * @since 1.3
    */
   public boolean isDisablementState() {
     return disablement;

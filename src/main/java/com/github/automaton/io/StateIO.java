@@ -24,7 +24,7 @@ public class StateIO {
     /** 
      * The UTF-8 Charset used for state label encoding
      * 
-     * @since 2.0
+     * @since 1.3
      */
     private static final Charset UTF8_CHARSET = Charset.forName("UTF-8");
 
@@ -32,28 +32,28 @@ public class StateIO {
      * Bit field for checking whether or not a state actually exists
      * 
      * @see State#EXISTS_MASK
-     * @since 2.0
+     * @since 1.3
      */
     private static final BitField EXISTS_FIELD = new BitField(State.EXISTS_MASK);
     /**
      * Bit field for checking whether or not a state is marked
      * 
      * @see State#MARKED_MASK
-     * @since 2.0
+     * @since 1.3
      */
     private static final BitField MARKED_FIELD = new BitField(State.MARKED_MASK);
     /**
      * Bit field for checking whether or not a state actually exists
      * 
      * @see State#ENABLEMENT_MASK
-     * @since 2.0
+     * @since 1.3
      */
     private static final BitField ENABLEMENT_FIELD = new BitField(State.ENABLEMENT_MASK);
     /**
      * Bit field for checking whether or not a state is a disablement state
      * 
      * @see State#DISABLEMENT_MASK
-     * @since 2.0
+     * @since 1.3
      */
     private static final BitField DISABLEMENT_FIELD = new BitField(State.DISABLEMENT_MASK);
 
@@ -254,7 +254,7 @@ public class StateIO {
      * @param state     The state we are checking to see if it exists
      * @return whether or not the state exists
      * 
-     * @since 2.0
+     * @since 1.3
      **/
     public static boolean stateExists(Automaton automaton, BodyAccessFile bodyAccessFile, State state) {
         return stateExists(automaton, bodyAccessFile, state.getID());
@@ -395,7 +395,7 @@ public class StateIO {
      *                                  stored in {@code automaton}
      * @throws IOException              if I/O error occurs
      * 
-     * @since 2.0
+     * @since 1.3
      */
     public static void rewriteStatus(Automaton automaton, BodyAccessFile baf, State state) throws IOException {
         if (!stateExists(automaton, baf, state.getID())) {

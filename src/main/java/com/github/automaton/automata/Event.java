@@ -63,7 +63,7 @@ public class Event {
    * @param observable    Whether or not the event can be observed
    * @param controllable  Whether or not the event can be controlled
    * 
-   * @since 2.0
+   * @since 1.3
    */
   public Event(LabelVector labelVector, int id, boolean[] observable, boolean[] controllable) {
     this.label = labelVector.toString();

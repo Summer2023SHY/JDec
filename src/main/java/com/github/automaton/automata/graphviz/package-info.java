@@ -5,6 +5,6 @@
  * 
  * @author Sung Ho Yoon
  * 
- * @since 2.0
+ * @since 1.3
  */
 package com.github.automaton.automata.graphviz;

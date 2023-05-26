@@ -1938,7 +1938,7 @@ public class Automaton implements Closeable {
    * 
    * @return a Graphviz graph that represents this automaton
    * @throws MissingOrCorruptBodyFileException If any of the states are unable to be read from the body file
-   * @since 2.0
+   * @since 1.3
    */
   @SuppressWarnings("unchecked")
   private MutableGraph generateGraph() throws MissingOrCorruptBodyFileException {
@@ -2051,7 +2051,7 @@ public class Automaton implements Closeable {
    * @return {@code .dot} representation of this automaton
    * @throws MissingOrCorruptBodyFileException If any of the states are unable to be read from the body file
    */
-  @Deprecated(since = "2.0", forRemoval = true)
+  @Deprecated(since = "1.3", forRemoval = true)
   private String generateDotString() throws MissingOrCorruptBodyFileException {
     /* Setup */
 
@@ -2184,7 +2184,7 @@ public class Automaton implements Closeable {
    * @param state State in this automaton that corresponds to the node in the graph
    * @param node Node in graph to add properties to
    * 
-   * @since 2.0
+   * @since 1.3
    */
   protected void addAdditionalNodeProperties(State state, MutableNode node) {
   }
@@ -2194,7 +2194,7 @@ public class Automaton implements Closeable {
    * <p>EXAMPLE: This is used to color potential communications blue.
    * @param map The mapping from edges to additional properties
    * 
-   * @since 2.0
+   * @since 1.3
    **/
   protected void addAdditionalLinkProperties(Map<String, Attributes<? extends ForLink>> map) {
 
@@ -2210,7 +2210,7 @@ public class Automaton implements Closeable {
    * 
    * @deprecated This method is no longer used. Use {@link #addAdditionalLinkProperties(Map)} instead.
    **/
-  @Deprecated(since = "2.0", forRemoval = true)
+  @Deprecated(since = "1.3", forRemoval = true)
   protected void addAdditionalEdgeProperties(Map<String, String> map) {
 
     for (TransitionData data : badTransitions)
@@ -2236,7 +2236,7 @@ public class Automaton implements Closeable {
    * @param key   The key which is mapped to a value that is being appending to
    * @param value The attribute to be added
    * 
-   * @since 2.0
+   * @since 1.3
    **/
   protected static void combineAttributesInMap(Map<String, Attributes<? extends ForLink>> map, String key, Attributes<? extends ForLink> value) {
     if (map.containsKey(key))
@@ -2254,7 +2254,7 @@ public class Automaton implements Closeable {
    * 
    * @deprecated This method is no longer used. Use {@link #combineAttributesInMap(Map, String, Attributes)} instead.
    **/
-  @Deprecated(since = "2.0", forRemoval = true)
+  @Deprecated(since = "1.3", forRemoval = true)
   protected void appendValueToMap(Map<String, String> map, String key, String value) {
     if (map.containsKey(key))
       map.put(key, map.get(key) + value);
@@ -3012,7 +3012,7 @@ public class Automaton implements Closeable {
    * @param targetState   The state where the transition leads to
    * @return              The ID of the event label (returns 0 if the addition was unsuccessful)
    * 
-   * @since 2.0
+   * @since 1.3
    **/
   public int addTransition(State startingState, String eventLabel, State targetState) {
 
@@ -3035,7 +3035,7 @@ public class Automaton implements Closeable {
    * @param targetState   The state where the transition leads to
    * @return              The ID of the event label (returns 0 if the addition was unsuccessful)
    * 
-   * @since 2.0
+   * @since 1.3
    **/
   public int addTransition(State startingState, LabelVector labelVector, State targetState) {
 
@@ -3315,7 +3315,7 @@ public class Automaton implements Closeable {
    * @return Whether or not the addition was successful (returns {@code false} if a state already existed there)
    * 
    * @see #addStateAt(String, boolean, List, boolean, long)
-   * @since 2.0
+   * @since 1.3
    */
   public boolean addStateAt(State state, boolean isInitialState) {
       /* Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs) */
@@ -3434,7 +3434,7 @@ public class Automaton implements Closeable {
    * @param controllable  Whether or not the event is controllable
    * @return              The ID of the added event (0 indicates failure)
    * 
-   * @since 2.0
+   * @since 1.3
    **/
   public int addEvent(LabelVector labelVector, boolean[] observable, boolean[] controllable) {
     if (!ensureEventCapacity()) return 0;
@@ -3448,7 +3448,7 @@ public class Automaton implements Closeable {
    * 
    * @see #addEvent(String, boolean[], boolean[])
    * @see #addEvent(LabelVector, boolean[], boolean[])
-   * @since 2.0
+   * @since 1.3
    */
   private boolean ensureEventCapacity() {
     if (events.size() == MAX_EVENT_CAPACITY) {
@@ -3482,7 +3482,7 @@ public class Automaton implements Closeable {
    * 
    * @see #addEvent(String, boolean[], boolean[])
    * @see #addEvent(LabelVector, boolean[], boolean[])
-   * @since 2.0
+   * @since 1.3
    */
   private int addEvent(Event event) {
 
@@ -3529,7 +3529,7 @@ public class Automaton implements Closeable {
    * @return              The ID of the added event (negative ID indicates that the event already existed)
    *                      or {@code 0}, which indicates failure (occurring when maximum number of events has been reached)
    * 
-   * @since 2.0
+   * @since 1.3
    **/
   public int addEventIfNonExisting(LabelVector labelVector, boolean[] observable, boolean[] controllable) {
     
@@ -3660,7 +3660,7 @@ public class Automaton implements Closeable {
    * @param targetState   The target state
    * @return              Whether or not the transition is bad
    * 
-   * @since 2.0
+   * @since 1.3
    **/
   public boolean isBadTransition(State initialState, Event event, State targetState) {
 
@@ -3686,7 +3686,7 @@ public class Automaton implements Closeable {
    * @param state  The state we are looking for
    * @return {@code true} if the state exists
    * 
-   * @since 2.0
+   * @since 1.3
    **/
   public boolean stateExists(State state) {
     return StateIO.stateExists(this, baf, state);
@@ -3786,7 +3786,7 @@ public class Automaton implements Closeable {
    * @param labelVector The unique label vector corresponding to the requested event
    * @return            The requested event (or {@code null} if it does not exist)
    * 
-   * @since 2.0
+   * @since 1.3
    **/
   public Event getEvent(LabelVector labelVector) {
     return eventsMap.get(labelVector.toString());

@@ -50,7 +50,7 @@ public class UStructure extends Automaton {
   /**
    * Transitions that are graphically suppressed for readability
    * 
-   * @since 2.0
+   * @since 1.3
    */
   protected List<TransitionData> suppressedTransitions;
   protected List<TransitionData> unconditionalViolations;
@@ -2053,7 +2053,7 @@ public class UStructure extends Automaton {
   /**
    * {@inheritDoc}
    * 
-   * @since 2.0
+   * @since 1.3
    */
   @Override
   protected void addAdditionalNodeProperties(State state, MutableNode node) {
@@ -2067,7 +2067,7 @@ public class UStructure extends Automaton {
   /**
    * {@inheritDoc}
    * 
-   * @since 2.0
+   * @since 1.3
    */
   @Override
   protected void addAdditionalLinkProperties(Map<String, Attributes<? extends ForLink>> map) {
@@ -2102,7 +2102,7 @@ public class UStructure extends Automaton {
    * @deprecated This method is no longer used. Use {@link #addAdditionalLinkProperties(Map)} instead.
    */
   @Override
-  @Deprecated(since = "2.0", forRemoval = true)
+  @Deprecated(since = "1.3", forRemoval = true)
   protected void addAdditionalEdgeProperties(Map<String, String> map) {
 
     for (TransitionData data : unconditionalViolations)
@@ -2502,7 +2502,7 @@ public class UStructure extends Automaton {
    * @param eventID          The event triggering the transition
    * @param targetStateID    The target state
    * 
-   * @since 2.0
+   * @since 1.3
    **/
   public void addSuppressedTransition(long initialStateID, int eventID, long targetStateID) {
     suppressedTransitions.add(new TransitionData(initialStateID, eventID, targetStateID));

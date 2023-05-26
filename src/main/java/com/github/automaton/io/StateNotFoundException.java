@@ -6,7 +6,7 @@ import com.github.automaton.automata.AutomatonException;
  * Thrown to indicate that the requested state does not exist.
  *
  * @author Sung Ho Yoon
- * @since 2.0
+ * @since 1.3
  **/
 public class StateNotFoundException extends AutomatonException {
     /**
