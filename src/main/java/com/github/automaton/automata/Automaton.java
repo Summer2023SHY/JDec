@@ -447,7 +447,9 @@ public class Automaton implements Closeable {
         state.isMarked(),
         new ArrayList<Transition>(),
         id == getInitialStateID(),
-        id
+        id,
+        state.isEnablementState(),
+        state.isDisablementState()
       );
 
       // Traverse each transition
@@ -3305,6 +3307,27 @@ public class Automaton implements Closeable {
   public boolean addStateAt(String label, boolean marked, List<Transition> transitions, boolean isInitialState, long id) {
 
     return addStateAt(new State(label, id, marked, Objects.requireNonNullElse(transitions, new ArrayList<Transition>())), isInitialState);
+  }
+
+  /**
+   * Add the specified state to the automaton.
+   * @implNote This method assumes that no state already exists with the specified ID.
+   * @implNote The method {@link #renumberStates()} must be called some time after using this method has been called since it can create empty
+   * spots in the {@code .bdy} file where states don't actually exist (this happens during automata operations such as intersection).
+   * @param label           The "name" of the new state
+   * @param marked          Whether or not the states is marked
+   * @param transitions     The list of transitions (if {@code null}, then a new list is made)
+   * @param isInitialState  Whether or not this is the initial state
+   * @param id              The index where the state should be added at
+   * @param enablement      Whether or not this is an enablement state
+   * @param disablement     Whether or not this is a disablement state
+   * @return                Whether or not the addition was successful (returns {@code false} if a state already existed there)
+   * 
+   * @since 2.0
+   **/
+  public boolean addStateAt(String label, boolean marked, List<Transition> transitions, boolean isInitialState, long id, boolean enablement, boolean disablement) {
+
+    return addStateAt(new State(label, id, marked, Objects.requireNonNullElse(transitions, new ArrayList<Transition>()), enablement, disablement), isInitialState);
   }
 
   /**
