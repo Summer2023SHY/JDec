@@ -17,6 +17,7 @@ import java.io.*;
 import java.math.*;
 import java.util.*;
 
+import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.io.RandomAccessFileMode;
 import org.apache.commons.lang3.*;
 import org.apache.logging.log4j.*;
@@ -544,6 +545,120 @@ public class UStructure extends Automaton {
 
     return new PrunedUStructure(newHeaderFile, newBodyFile);    
 
+  }
+
+  /**
+   * Runs subset construction on this U-Structure.
+   * 
+   * @param newHeaderFile   The header file where the new automaton should be stored
+   * @param newBodyFile     The body file where the new automaton should be stored
+   * 
+   * @return subset construction of this U-structure w.r.t. controller 0
+   * @since 2.0
+   */
+  public Automaton subsetConstruction(File newHeaderFile, File newBodyFile) {
+
+    return subsetConstruction(newHeaderFile, newBodyFile, 0);
+  }
+
+  /**
+   * Runs subset construction on this U-Structure.
+   * 
+   * @param newHeaderFile   The header file where the new automaton should be stored
+   * @param newBodyFile     The body file where the new automaton should be stored
+   * @param controller      The controller to perform subset construction with
+   * 
+   * @return subset construction of this U-structure w.r.t. the specified controller
+   * @throws IndexOutOfBoundsException  if {@code controller} is negative or {@code controller}
+   *                                    is greater than or equal to {@link #nControllers}
+   * 
+   * @since 2.0
+   */
+  public Automaton subsetConstruction(File newHeaderFile, File newBodyFile, int controller) {
+
+    if (controller < 0 || controller >= nControllers) {
+      throw new IndexOutOfBoundsException(controller);
+    }
+
+    Automaton subsetConstruction = new Automaton(newHeaderFile, newBodyFile, nControllers);
+
+    subsetConstruction(subsetConstruction, controller);
+
+    return subsetConstruction;
+  }
+
+  /**
+   * Runs subset construction w.r.t. the specified controller
+   * 
+   * @param automaton
+   * @param controller the controller to perform subset construction with
+   * 
+   */
+  private void subsetConstruction(Automaton automaton, int controller) {
+
+    automaton.addAllEvents(events);
+
+    Queue<StateSet> stateQueue = new ArrayDeque<>();
+
+    {
+      StateSet initialState = nullClosure(getState(this.initialState), controller);
+      automaton.addStateAt(initialState, true);
+      stateQueue.add(initialState);
+    }
+
+    while (!stateQueue.isEmpty()) {
+      StateSet u = stateQueue.remove();
+      if (!automaton.stateExists(u)) {
+        automaton.addStateAt(u, false);
+      }
+      for (Transition t : u.getObservableTransitions(controller)) {
+        StateSet ss = nullClosure(getState(t.getTargetStateID()), controller);
+        automaton.addStateAt(ss, false);
+        
+        if (!automaton.containsTransition(u, t.getEvent(), ss.getID())) {
+          automaton.addTransition(u, t.getEvent().getLabel(), ss);
+          stateQueue.add(ss);
+        }
+      }
+    }
+
+    /* Re-number states (by removing empty ones) */
+
+    automaton.renumberStates();
+
+     /* Ensure that the header file has been written to disk */
+
+     automaton.writeHeaderFile();
+
+  }
+
+  /**
+   * Performs null closure w.r.t. the specified controller.
+   * 
+   * @param state 
+   * @param controller the controller to perform subset construction with
+   * 
+   * @since 2.0
+   */
+  private StateSet nullClosure(State state, int controller) {
+    Set<State> indistinguishableStates = new HashSet<>();
+    nullClosure(indistinguishableStates, state, controller);
+    return new StateSet(indistinguishableStates, nStates);
+  }
+
+  private void nullClosure(Set<State> stateSet, State curr, int controller) {
+    stateSet.add(curr);
+    Iterator<Transition> nullTransitions = IteratorUtils.filteredIterator(
+      curr.getTransitions().iterator(),
+      t -> t.getEvent().getVector().getLabelAtIndex(controller).equals("*")
+    );
+    while (nullTransitions.hasNext()) {
+      Transition t = nullTransitions.next();
+      State targetState = getState(t.getTargetStateID());
+      if (!stateSet.contains(targetState)) {
+        nullClosure(stateSet, targetState, controller);
+      }
+    }
   }
 
   /**

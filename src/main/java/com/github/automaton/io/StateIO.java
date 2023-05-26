@@ -192,8 +192,10 @@ public class StateIO {
         boolean disablement = DISABLEMENT_FIELD.isSet(bytesRead[0]);
 
         // Return null if this state doesn't actually exist
-        if (!exists)
+        if (!exists) {
+            logger.debug("State with ID " + id + " does not exist.");
             return null;
+        }
 
         /* State's label */
 
@@ -366,7 +368,7 @@ public class StateIO {
 
         try {
 
-            file.seek(s.getID() * nBytesPerState);
+            file.seek(Math.multiplyExact(s.getID(), nBytesPerState));
             file.write(bytesToWrite);
 
             return true;

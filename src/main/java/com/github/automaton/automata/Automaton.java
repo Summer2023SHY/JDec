@@ -3132,6 +3132,40 @@ public class Automaton implements Closeable {
   }
 
   /**
+   * Checks whether a transition already exists.
+   * 
+   * @param startingStateID The ID of the state where the transition originates from
+   * @param eventID         The ID of the event that triggers the transition
+   * @param targetStateID   The ID of the state where the transition leads to
+   * @return                Whether or not the matching transition exists
+   * 
+   * @since 2.0
+   */
+  public boolean containsTransition(long startingStateID, int eventID, long targetStateID) {
+    State startingState = getState(startingStateID);
+    Event event = getEvent(eventID);
+    if (startingState == null) return false;
+    else if (event == null) return false;
+    return startingState.getTransitions().contains(new Transition(event, targetStateID));
+  }
+
+  /**
+   * Checks whether a transition already exists.
+   * 
+   * @param startingState   The state where the transition originates from
+   * @param event           The event that triggers the transition
+   * @param targetStateID   The ID of the state where the transition leads to
+   * @return                Whether or not the matching transition exists
+   * 
+   * @since 2.0
+   */
+  public boolean containsTransition(State startingState, Event event, long targetStateID) {
+    if (startingState == null) return false;
+    else if (event == null) return false;
+    return startingState.getTransitions().contains(new Transition(event, targetStateID));
+  }
+
+  /**
    * Removes the specified transition.
    * @param startingStateID The ID of the state where the transition originates from
    * @param eventID         The ID of the event that triggers the transition
