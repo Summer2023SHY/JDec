@@ -195,6 +195,7 @@ public class PrunedUStructure extends UStructure {
     // Update event IDs in header file
     for (Event e : getEvents())
       e.setID(mapping.get(e.getID()));
+    renumberEventsInTransitionData(mapping, suppressedTransitions);
     renumberEventsInTransitionData(mapping, unconditionalViolations);
     renumberEventsInTransitionData(mapping, conditionalViolations);
     renumberEventsInTransitionData(mapping, potentialCommunications);
