@@ -517,7 +517,8 @@ public class UStructure extends Automaton {
 
   /**
    * Duplicate this U-Structure as a pruned U-Structure.
-   * NOTE: This only works because the pruned U-Structure currently has identical .bdy and .hdr formats.
+   * <p>NOTE: This only works because the pruned U-Structure currently
+   * has identical {@code .bdy} and {@code .hdr} formats.
    * @param newHeaderFile The header file where the pruned U-Structure should be stored
    * @param newBodyFile   The body file where the pruned U-Structure should be stored
    * @return              The duplicated U-Structure (as a pruned U-Structure)
