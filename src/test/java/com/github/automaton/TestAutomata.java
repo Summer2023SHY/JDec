@@ -9,7 +9,6 @@ import org.junit.jupiter.api.*;
 
 import com.github.automaton.automata.Automaton;
 import com.github.automaton.automata.CommunicationData;
-import com.github.automaton.automata.Crush;
 import com.github.automaton.automata.DoesNotSatisfyObservabilityException;
 import com.github.automaton.automata.IncompatibleAutomataException;
 import com.github.automaton.automata.NashCommunicationData;
@@ -184,94 +183,6 @@ public class TestAutomata {
       expectedIndexes.add(1);
       printTestCase("Ensuring that the Pareto ranks could be generated", new TestResult(new ArrayList<Integer>(Arrays.asList(getParetoRanks(x, y))), expectedIndexes), counter);
     }
-
-    @Test
-    @Disabled
-    @DisplayName("combineCommunicationCosts() Tests")
-    public void testCombineCommunicationCosts() {
-
-      /* combineCommunicationCosts() Tests */
-
-      printTestOutput("Combining Communication Costs - combineCommunicationCosts(): ", 2);
-
-      // NOTE: These tests do not check each individual cost to make sure it is correct,
-      //       but instead, the costs are simply added together and compared to the expected sum.
-
-      UStructure uStructure = saveAndLoadUStructure(AutomatonGenerator.generateFromGUICode(
-        new UStructure(null, null, 2),
-        "<a,a,*>,TF,TF\n<b,*,b>,FT,FT\n<*,b,*>,FF,FF\n<*,*,a>,FF,FF\n<o,o,o>,TT,TT\n<*,b,a>,FF,FF\n<b,b,b>,FT,FT\n<a,a,a>,TF,TF", // Events
-        "@1_1_1\n1_1_2\n1_3_1\n1_3_2\n2_2_1\n2_2_2\n2_4_1\n2_4_2\n2_5_1\n2_5_2\n3_1_3\n3_1_4\n3_1_5\n3_3_3\n3_3_4\n3_3_5\n4_2_3\n4_2_4\n4_2_5\n4_4_3\n4_4_4\n4_4_5\n4_5_3\n4_5_4\n4_5_5\n5_2_3\n5_2_4\n5_2_5\n5_4_3\n5_4_4\n5_4_5\n5_5_3\n5_5_4\n5_5_5\n6_6_6\n6_6_7\n6_7_6\n6_7_7\n7_6_6\n7_6_7\n7_7_6\n7_7_7", // States
-        "1_1_1,<a,a,*>,2_2_1\n1_1_1,<b,*,b>,3_1_3\n1_1_1,<*,b,*>,1_3_1\n1_1_1,<*,*,a>,1_1_2\n1_1_1,<*,b,a>,1_3_2:INVALID_COMMUNICATION\n1_1_1,<b,b,b>,3_3_3:NASH_COMMUNICATION-RS-0.125-0.125\n1_1_1,<a,a,a>,2_2_2:NASH_COMMUNICATION-SR-0.125-0.125\n1_1_2,<a,a,*>,2_2_2\n1_1_2,<b,*,b>,3_1_4\n1_1_2,<*,b,*>,1_3_2\n1_1_2,<b,b,b>,3_3_4:NASH_COMMUNICATION-RS-0.125-0.125\n1_3_1,<a,a,*>,2_5_1\n1_3_1,<b,*,b>,3_3_3\n1_3_1,<*,*,a>,1_3_2\n1_3_1,<a,a,a>,2_5_2:NASH_COMMUNICATION-SR-0.625-0.125\n1_3_2,<a,a,*>,2_5_2\n1_3_2,<b,*,b>,3_3_4\n2_2_1,<b,*,b>,4_2_3\n2_2_1,<*,b,*>,2_4_1\n2_2_1,<*,*,a>,2_2_2\n2_2_1,<*,b,a>,2_4_2:INVALID_COMMUNICATION\n2_2_1,<b,b,b>,4_4_3:NASH_COMMUNICATION-RS-0.125-0.125\n2_2_2,<b,*,b>,4_2_4\n2_2_2,<*,b,*>,2_4_2\n2_2_2,<b,b,b>,4_4_4:NASH_COMMUNICATION-RS-0.125-0.125\n2_4_1,<b,*,b>,4_4_3\n2_4_1,<*,*,a>,2_4_2\n2_4_2,<b,*,b>,4_4_4\n2_5_1,<b,*,b>,4_5_3\n2_5_1,<*,*,a>,2_5_2\n2_5_2,<b,*,b>,4_5_4\n3_1_3,<a,a,*>,5_2_3\n3_1_3,<*,b,*>,3_3_3\n3_1_3,<*,*,a>,3_1_5\n3_1_3,<*,b,a>,3_3_5:INVALID_COMMUNICATION\n3_1_3,<a,a,a>,5_2_5:NASH_COMMUNICATION-SR-0.625-0.125\n3_1_4,<a,a,*>,5_2_4\n3_1_4,<*,b,*>,3_3_4\n3_1_5,<a,a,*>,5_2_5\n3_1_5,<*,b,*>,3_3_5\n3_3_3,<a,a,*>,5_5_3\n3_3_3,<*,*,a>,3_3_5\n3_3_3,<a,a,a>,5_5_5:NASH_COMMUNICATION-SR-0.125-0.125\n3_3_4,<a,a,*>,5_5_4\n3_3_5,<a,a,*>,5_5_5\n4_2_3,<*,b,*>,4_4_3\n4_2_3,<*,*,a>,4_2_5\n4_2_3,<*,b,a>,4_4_5:INVALID_COMMUNICATION\n4_2_4,<*,b,*>,4_4_4\n4_2_5,<*,b,*>,4_4_5\n4_4_3,<*,*,a>,4_4_5\n4_4_4,<o,o,o>,6_6_6\n4_4_5,<o,o,o>,6_6_7\n4_5_3,<*,*,a>,4_5_5\n4_5_4,<o,o,o>,6_7_6\n4_5_5,<o,o,o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*,b,*>,5_4_3\n5_2_3,<*,*,a>,5_2_5\n5_2_3,<*,b,a>,5_4_5:INVALID_COMMUNICATION\n5_2_4,<*,b,*>,5_4_4\n5_2_5,<*,b,*>,5_4_5\n5_4_3,<*,*,a>,5_4_5\n5_4_4,<o,o,o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o,o,o>,7_6_7\n5_5_3,<*,*,a>,5_5_5\n5_5_4,<o,o,o>,7_7_6\n5_5_5,<o,o,o>,7_7_7" // Transitions
-      ));
-      List<Set<NashCommunicationData>> feasibleProtocols = uStructure.generateAllFeasibleProtocols(uStructure.getNashCommunications(), true);
-
-      printTestOutput("Using protocol with four <a,a,a> event vectors...", 3);
-      Set<NashCommunicationData> desiredProtocol = null;
-      outer: for (Set<NashCommunicationData> protocol : feasibleProtocols) {
-        for (NashCommunicationData communication : protocol)
-          if (!uStructure.getEvent(communication.eventID).getLabel().equals("<a,a,a>"))
-            continue outer;
-        desiredProtocol = protocol;
-        break;
-      }
-      
-      double total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.MAX);
-      printTestCase("Ensuring that the communication costs were correct when taking the max", new TestResult(total, 2.5), counter);
-      total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.AVERAGE);
-      printTestCase("Ensuring that the communication costs were correct when averaging", new TestResult(total, 1.5), counter);
-      total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.SUM);
-      printTestCase("Ensuring that the communication costs were correct when taking the sum", new TestResult(total, 6.0), counter);
-      total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.UNIT);
-      printTestCase("Ensuring that the communication costs were correct when using unit costs", new TestResult(total, 1.5), counter);
-
-      printTestOutput("Using protocol with two <a,a,a> and two <b,b,b> event vectors...", 3);
-      desiredProtocol = null;
-      outer: for (Set<NashCommunicationData> protocol : feasibleProtocols) {
-        int aaa = 0, bbb = 0;
-        for (NashCommunicationData communication : protocol)
-          if (uStructure.getEvent(communication.eventID).getLabel().equals("<a,a,a>"))
-            aaa++;
-          else if (uStructure.getEvent(communication.eventID).getLabel().equals("<b,b,b>"))
-            bbb++;
-        if (aaa == 2 && bbb == 2) {
-          desiredProtocol = protocol;
-          break;
-        }
-      }
-
-      total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.MAX);
-      printTestCase("Ensuring that the communication costs were correct when taking the max", new TestResult(total, 0.5), counter);
-      total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.AVERAGE);
-      printTestCase("Ensuring that the communication costs were correct when averaging", new TestResult(total, 0.5), counter);
-      total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.SUM);
-      printTestCase("Ensuring that the communication costs were correct when taking the sum", new TestResult(total, 0.5), counter);
-      total = combineCommunicationCostsHelper(uStructure, desiredProtocol, Crush.CombiningCosts.UNIT);
-      printTestCase("Ensuring that the communication costs were correct when using unit costs", new TestResult(total, 0.5), counter);
-    }
-
-  }
-
-  private static double combineCommunicationCostsHelper(UStructure uStructure,
-                                                     Set<NashCommunicationData> protocol,
-                                                     Crush.CombiningCosts combiningCostsMethod) {   
-
-    if (protocol == null)
-      return 0;
-
-    double total = 0;
-
-    // Create copy in order to preserve original protocol
-    Set<NashCommunicationData> copy = new HashSet<NashCommunicationData>();
-    for (NashCommunicationData communication : protocol)
-      copy.add((NashCommunicationData) communication.clone());
-    
-    // Combine costs, then calculate the total
-    uStructure.combineCommunicationCosts(copy, combiningCostsMethod);
-    for (NashCommunicationData communication : copy)
-      total += communication.cost;
-    
-    return total;
-
   }
 
   @Nested
@@ -1296,19 +1207,6 @@ public class TestAutomata {
       printTestCase("Ensuring the events are correct", new TestResult(uStructure.getEventInput(), "<a,a,*>,TF,FF\n<b,*,b>,FT,FF\n<*,b,*>,FF,FF\n<*,*,a>,FF,FF\n<c,c,c>,TT,FT"), counter);
       printTestCase("Ensuring the states are correct", new TestResult(uStructure.getStateInput(), "@0_0_0\n0_0_1\n0_2_0\n0_2_1\n1_1_0\n1_1_1\n2_0_2\n2_2_2\n3_3_3\n4_4_4"), counter);
       printTestCase("Ensuring the transitions are correct", new TestResult(uStructure.getTransitionInput(), "0_0_0,<a,a,*>,1_1_0\n0_0_0,<b,*,b>,2_0_2\n0_0_0,<*,b,*>,0_2_0\n0_0_0,<*,*,a>,0_0_1\n0_0_1,<a,a,*>,1_1_1\n0_0_1,<*,b,*>,0_2_1\n0_2_0,<b,*,b>,2_2_2\n0_2_0,<*,*,a>,0_2_1\n1_1_0,<*,*,a>,1_1_1\n1_1_1,<c,c,c>,3_3_3\n2_0_2,<*,b,*>,2_2_2\n2_2_2,<c,c,c>,4_4_4:DISABLEMENT_DECISION-FT"), counter);
-    }
-
-    @Test
-    @DisplayName("Crush test")
-    @Order(2)
-    public void testCrush() {
-
-      Crush crush = uStructure.crush(null, null, 1);
-      crush.generateInputForGUI();
-      printTestCase("Ensuring the events are correct", new TestResult(crush.getEventInput(), "<a,a,*>,TF,FF\n<c,c,c>,TT,FT"), counter);
-      printTestCase("Ensuring the states are correct", new TestResult(crush.getStateInput(), "@<0_0_0,0_0_1,0_2_0,0_2_1,2_0_2,2_2_2>\n<1_1_0,1_1_1>\n<3_3_3>\n<4_4_4>"), counter);
-      printTestCase("Ensuring the transitions are correct", new TestResult(crush.getTransitionInput(), "<0_0_0,0_0_1,0_2_0,0_2_1,2_0_2,2_2_2>,<a,a,*>,<1_1_0,1_1_1>\n<0_0_0,0_0_1,0_2_0,0_2_1,2_0_2,2_2_2>,<c,c,c>,<4_4_4>:DISABLEMENT_DECISION-FT\n<1_1_0,1_1_1>,<c,c,c>,<3_3_3>"), counter);
-
     }
 
   }
