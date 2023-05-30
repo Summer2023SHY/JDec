@@ -194,7 +194,7 @@ public class JDec extends JFrame implements ActionListener {
 
     // File menu
     menuBar.add(createMenu("File",
-      "New Tab->New Automaton,New U-Structure,New Pruned U-Structure,New Crush",
+      "New Tab->New Automaton,New U-Structure,New Pruned U-Structure",
       "Open",
       "Save As...[TAB]",
       "Refresh Tab[TAB]",
@@ -231,18 +231,14 @@ public class JDec extends JFrame implements ActionListener {
       null,
       "Add Communications[U_STRUCTURE]",
       "Feasible Protocols->Generate All[U_STRUCTURE],Make Protocol Feasible[U_STRUCTURE],Find Smallest[U_STRUCTURE],Find First[U_STRUCTURE]",
-      "Crush[ANY_U_STRUCTURE]",
-      null,
-      "Quantitative Communication->Nash[U_STRUCTURE]"
+      null
     ));
 
     // Properties menu
     menuBar.add(createMenu("Properties",
       "Test Observability[BASIC_AUTOMATON]",
       "Test Controllability[BASIC_AUTOMATON]",
-      null,
-      "Shapley Values[U_STRUCTURE]",
-      "Myerson Values[U_STRUCTURE]"
+      null
     ));
     
     // Generate menu
@@ -374,10 +370,6 @@ public class JDec extends JFrame implements ActionListener {
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, shortcutKey | InputEvent.SHIFT_DOWN_MASK));
         break;
 
-      case "Nash":
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, shortcutKey | InputEvent.SHIFT_DOWN_MASK));
-        break;
-
       case "Random Automaton":
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, shortcutKey));
         break;
@@ -482,7 +474,6 @@ public class JDec extends JFrame implements ActionListener {
    * This method handles all of the actions triggered when the user interacts with the main menu.
    * @param event The triggered event
    **/
-  @SuppressWarnings({"deprecation", "removal"})
   public void actionPerformed(ActionEvent event) {
 
     int index = tabbedPane.getSelectedIndex();
@@ -522,11 +513,6 @@ public class JDec extends JFrame implements ActionListener {
       case "New Pruned U-Structure":
 
         createTab(true, Automaton.Type.PRUNED_U_STRUCTURE);
-        break;
-
-      case "New Crush":
-
-        createTab(true, Automaton.Type.CRUSH);
         break;
 
       case "Save As...":
@@ -728,45 +714,9 @@ public class JDec extends JFrame implements ActionListener {
 
         break;
 
-      case "Crush":
-
-        //TODO: Get rid of Crush operations
-
-        UStructure uStructure = ((UStructure) tab.automaton);
-
-        if (uStructure.hasViolations()) {
-          displayErrorMessage("Operation Aborted", "This structure contains one or more violations.");
-          break;
-        }
-
-        // With Nash communications
-        if (uStructure.getPotentialCommunications().size() == 0)
-          new NashInfoForCrushPrompt(this, tab, "Cost and Probability Values", "Specify costs and probabilities for each communication.");
-
-        // Without Nash communications
-        // NOTE: If there are a mix of potential and Nash communications, all Nash information will be ignored
-        else {
-        
-          // Select controller to take the crush with respect to
-          int selectedController = pickController("Which component would you like to take the crush with respect to?", false);
-          if (selectedController == -1)
-            return;
-
-          // Get temporary files to store the crush in
-          fileName = getTemporaryFileName();
-          headerFile = new File(fileName + ".hdr");
-          bodyFile = new File(fileName + ".bdy");
-
-          // Create new tab with the generated crush
-          createTab(uStructure.crush(headerFile, bodyFile, selectedController));
-
-        }
-
-        break;
-
       case "Add Communications": 
 
-        uStructure = ((UStructure) tab.automaton);
+        UStructure uStructure = ((UStructure) tab.automaton);
 
         // Display error message if there was not enough controllers
         if (uStructure.getNumberOfControllers() == 1) {
@@ -844,18 +794,6 @@ public class JDec extends JFrame implements ActionListener {
         }
         break;
 
-      case "Nash":
-        // TODO: Handle use of deprecated method
-        uStructure = ((UStructure) tab.automaton);
-
-        if (uStructure.hasSelfLoop(uStructure.getPotentialAndNashCommunications()))
-          displayErrorMessage("Operation Aborted", "There exists one or more communications that are self-loops.");
-        else if (uStructure.getSizeOfPotentialAndNashCommunications() == 0)
-          displayErrorMessage("Operation Aborted", "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.");
-        else
-          new NashInfoForNashEquilibriaPrompt(this, tab, "Cost and Probability Values", "Specify costs and probabilities for each communication.");
-        break;
-
       case "Test Observability":
 
         if (tab.automaton.testObservability())
@@ -870,23 +808,6 @@ public class JDec extends JFrame implements ActionListener {
           displayMessage("Passed Test", "The system is controllable.", JOptionPane.INFORMATION_MESSAGE);
         else
           displayMessage("Failed Test", "The system is not controllable.", JOptionPane.INFORMATION_MESSAGE);
-        break;
-
-      case "Shapley Values":
-
-        uStructure = (UStructure) tab.automaton;
-
-        if (uStructure.hasViolations()) {
-          displayErrorMessage("Operation Aborted", "This structure contains one or more violations.");
-          break;
-        }
-
-        new ShapleyValuesOutput(this, uStructure, "Shapley Values", "Shapley values by controller:", "Shapley values by coalition:");
-        break;
-
-      case "Myerson Values":
-
-        new ChooseCommunicatorsForMyersonPrompt(this, (UStructure) tab.automaton, "Myerson Values", " Specify whether or not a controller is allowed to send to or receive from a particular controller (NOTE: Communications are allowed to be relayed): ");
         break;
 
       case "Random Automaton":
@@ -1133,21 +1054,6 @@ public class JDec extends JFrame implements ActionListener {
         );
         break;
 
-      case CRUSH:
-        // TODO: Get rid of Crush operations
-        nControllers = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
-        tab.automaton = AutomatonGenerator.generateFromGUICode(
-          new Crush(tab.headerFile, tab.bodyFile, nControllers),
-          tab.eventInput.getText(),
-          tab.stateInput.getText(),
-          tab.transitionInput.getText(),
-          tab.eventInput,
-          tab.stateInput,
-          tab.transitionInput,
-          this
-        );
-        break;
-
       default:
 
         // NOTE: The following error should never appear to the user, and it indicates a bug in the program
@@ -1291,11 +1197,6 @@ public class JDec extends JFrame implements ActionListener {
 
           case PRUNED_U_STRUCTURE:
             tab.automaton = new PrunedUStructure(tab.headerFile, tab.bodyFile);
-            break;
-
-          case CRUSH:
-            // TODO: Get rid of Crush operations
-            tab.automaton = new Crush(tab.headerFile, tab.bodyFile);
             break;
 
           default:

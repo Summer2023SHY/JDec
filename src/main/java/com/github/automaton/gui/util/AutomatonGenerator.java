@@ -455,8 +455,8 @@ public final class AutomatonGenerator {
 
       }
 
-      // Applies to U-Structures, pruned U-Structures, and Crushes
-      if (automatonType == Automaton.Type.U_STRUCTURE || automatonType == Automaton.Type.PRUNED_U_STRUCTURE || automatonType == Automaton.Type.CRUSH) {
+      // Applies to U-Structures and pruned U-Structures
+      if (automatonType == Automaton.Type.U_STRUCTURE || automatonType == Automaton.Type.PRUNED_U_STRUCTURE) {
 
         UStructure uStructure = (UStructure) automaton;
 
