@@ -69,7 +69,7 @@ public abstract class AutomatonAccessFile implements Closeable {
      * is specified by calling {@link Class#getName()} on {@link #getClass()}.
      * @return the internally used logger
      * 
-     * @since 2.0
+     * @since 1.3
      */
     protected final Logger getLogger() {
         return logger;

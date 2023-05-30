@@ -12,7 +12,7 @@ import org.apache.batik.swing.svg.SVGUserAgent;
  * {@link JSVGCanvas} with "friendlier" mouse interaction support.
  * 
  * @author Sung Ho Yoon
- * @since 2.0
+ * @since 1.3
  */
 class ScrollableSVGCanvas extends JSVGCanvas implements MouseWheelListener {
 

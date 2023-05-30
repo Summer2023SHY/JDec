@@ -52,7 +52,7 @@ public class LabelVector implements Iterable<String> {
    * @throws NullPointerException if argument is {@code null}
    * @throws IllegalArgumentException if any element of the argument is {@code null}
    * 
-   * @since 2.0
+   * @since 1.3
    */
   public LabelVector(String[] labels) {
     Objects.requireNonNull(labels);
@@ -78,7 +78,7 @@ public class LabelVector implements Iterable<String> {
    * @throws NullPointerException if argument is {@code null}
    * @throws IllegalArgumentException if any element of the argument is {@code null}
    * 
-   * @since 2.0
+   * @since 1.3
    */
   public LabelVector(List<String> labels) {
     this(Objects.requireNonNull(labels).toArray(new String[0]));
@@ -126,7 +126,7 @@ public class LabelVector implements Iterable<String> {
    * @return an iterator
    * @throws UnsupportedOperationException if this label is not a vector
    * 
-   * @since 2.0
+   * @since 1.3
    */
   @Override
   public Iterator<String> iterator() {

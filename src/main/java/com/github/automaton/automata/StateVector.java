@@ -10,7 +10,7 @@ import java.util.*;
  * stores the state w.r.t. the controller {@code j}.
  * 
  * @author Sung Ho Yoon
- * @since 2.0
+ * @since 1.3
  */
 public class StateVector extends State implements Iterable<State> {
     private List<State> states;

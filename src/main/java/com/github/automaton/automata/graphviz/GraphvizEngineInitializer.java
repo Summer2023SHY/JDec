@@ -17,7 +17,7 @@ import guru.nidi.graphviz.engine.*;
  * 
  * @author Sung Ho Yoon
  * 
- * @since 2.0
+ * @since 1.3
  */
 public class GraphvizEngineInitializer {
 

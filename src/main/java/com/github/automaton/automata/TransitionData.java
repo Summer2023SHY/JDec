@@ -53,7 +53,7 @@ public class TransitionData {
    * @param event           The event
    * @param targetState     The target state
    * 
-   * @since 2.0
+   * @since 1.3
    **/
   public TransitionData(State initialState, Event event, State targetState) {
     this.initialStateID = initialState.getID();

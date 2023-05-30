@@ -9,7 +9,7 @@ import guru.nidi.graphviz.engine.*;
  * standalone <a href="https://github.com/openjdk/nashorn">Nashorn Engine</a>.
  * 
  * @author Sung Ho Yoon
- * @since 2.0
+ * @since 1.3
  */
 public class NashornStandaloneEngine extends AbstractJavascriptEngine {
     private static final ScriptEngine ENGINE = new ScriptEngineManager().getEngineByName("nashorn");
