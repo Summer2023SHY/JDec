@@ -7,11 +7,13 @@ import javax.swing.*;
  * Used to add a tool-tip with the specified text to the left of the given component.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  **/
 public class TooltipComponent extends JPanel {
 
   /**
-   * This value is injected into the HTML by replacing occurences of 'TOOL_TIP_WIDTH' text with the number,
+   * This value is injected into the HTML by replacing occurrences of 'TOOL_TIP_WIDTH' text with the number,
    * which cause the width of the tool-tip to adjust accordingly.
    **/
   private static final int TOOL_TIP_WIDTH = 450;

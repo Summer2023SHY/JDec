@@ -4,8 +4,9 @@ package com.github.automaton.automata;
  * Thrown when an operation fails for some reason.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  **/
-
 public class OperationFailedException extends AutomatonException {
     /**
      * Constructs a {@code OperationFailedException} with no

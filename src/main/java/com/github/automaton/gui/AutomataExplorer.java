@@ -9,8 +9,6 @@ package com.github.automaton.gui;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
-import java.util.*;
 import javax.swing.*;
 
 import com.github.automaton.automata.Automaton;
@@ -22,6 +20,8 @@ import com.github.automaton.automata.Transition;
  * Used to display a pop-up that allows the user to interactively explore the specified automaton.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public class AutomataExplorer extends JDialog {
 

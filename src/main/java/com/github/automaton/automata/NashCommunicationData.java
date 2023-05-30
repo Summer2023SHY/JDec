@@ -5,19 +5,21 @@ package com.github.automaton.automata;
  *  -Instance Variables
  *  -Constructor
  *  -Method
- *  -Overidden Method
+ *  -Overridden Method
  */
 
-import java.util.Arrays;
+import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * Holds all 3 pieces of information needed to identify a transition, as well
  * as an enumeration array to indicate which controller is the sender
- * and which are the recievers and the additional information of both cost
+ * and which are the receivers and the additional information of both cost
  * and probability values. This information is particularly useful when finding
  * Nash equilibria.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public class NashCommunicationData extends CommunicationData implements Cloneable {
 
@@ -33,7 +35,7 @@ public class NashCommunicationData extends CommunicationData implements Cloneabl
    * @param initialStateID  The initial state's ID
    * @param eventID         The event's ID
    * @param targetStateID   The target state's ID
-   * @param roles           The array of communication roles (sender, reciever, or none)
+   * @param roles           The array of communication roles (sender, receiver, or none)
    * @param cost            The cost of this communication
    * @param probability     The probability of choosing this communication (a value between 0 and 1, inclusive)
    **/
@@ -68,11 +70,11 @@ public class NashCommunicationData extends CommunicationData implements Cloneabl
     return super.toString(automaton) + "," + cost + "," + probability;
   }
 
-    /* OVERIDDEN METHOD */
+    /* OVERRIDDEN METHOD */
   /** {@inheritDoc} */
   @Override
   public Object clone() {
-    return new NashCommunicationData(initialStateID, eventID, targetStateID, Arrays.copyOf(roles, roles.length), cost, probability);
+    return new NashCommunicationData(initialStateID, eventID, targetStateID, ArrayUtils.clone(roles), cost, probability);
   }
 
 }

@@ -10,14 +10,21 @@ package com.github.automaton.automata;
 import java.io.*;
 import java.util.*;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.logging.log4j.*;
+
 import com.github.automaton.io.StateIO;
 
 /**
  * Represents a pruned U-Structure.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public class PrunedUStructure extends UStructure {
+
+  private static Logger logger = LogManager.getLogger();
 
     /* CONSTRUCTORS */
 
@@ -48,6 +55,7 @@ public class PrunedUStructure extends UStructure {
 
   /**
    * Using recursion, starting at a given state, prune away all necessary transitions.
+   * @param <T>                         The type of communication data
    * @param protocol                    The chosen protocol (which must be feasible)
    * @param communication               The event vector representing the chosen communication
    * @param initialStateID              The ID of the state where the pruning begins at
@@ -68,6 +76,7 @@ public class PrunedUStructure extends UStructure {
 
   /**
    * Helper method used to prune the U-Structure.
+   * @param <T>                         The type of communication data
    * @param protocol                    The chosen protocol (which must be feasible)
    * @param communication               The event vector representing the chosen communication
    * @param vectorElementsFound         Indicates which elements of the vector have already been found
@@ -101,7 +110,7 @@ public class PrunedUStructure extends UStructure {
 
       // System.out.println("\t\tProcessed: " + t);
 
-      boolean[] copy = Arrays.copyOf(vectorElementsFound, vectorElementsFound.length);
+      boolean[] copy = ArrayUtils.clone(vectorElementsFound);
 
       // Check to see if the event vector of this transition is compatible with what we've found so far
       for (int i = 0; i < t.getEvent().getVector().getSize(); i++) {
@@ -159,7 +168,7 @@ public class PrunedUStructure extends UStructure {
     for (int id = 1; id <= maxID; id++) {
       if (!active[id]) {
         if (!removeEvent(id))
-          System.err.println("ERROR: Failed to remove inactive event.");
+          logger.error("Failed to remove inactive event.");
       } else 
         mapping.put(id, newID++);
     }
@@ -179,13 +188,14 @@ public class PrunedUStructure extends UStructure {
 
       // Write updated state to file
       if (!StateIO.writeToFile(state, baf, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID))
-        System.err.println("ERROR: Could not write state to file.");
+        logger.error("Could not write state to file.");
 
     }
 
     // Update event IDs in header file
     for (Event e : getEvents())
       e.setID(mapping.get(e.getID()));
+    renumberEventsInTransitionData(mapping, suppressedTransitions);
     renumberEventsInTransitionData(mapping, unconditionalViolations);
     renumberEventsInTransitionData(mapping, conditionalViolations);
     renumberEventsInTransitionData(mapping, potentialCommunications);

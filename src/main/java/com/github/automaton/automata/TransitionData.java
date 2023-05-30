@@ -17,6 +17,8 @@ package com.github.automaton.automata;
  * {@link Event} object instead of only holding onto its ID).</p>
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public class TransitionData {
 
@@ -43,6 +45,20 @@ public class TransitionData {
       this.initialStateID = initialStateID;
       this.eventID = eventID;
       this.targetStateID = targetStateID;
+  }
+
+  /**
+   * Construct a {@code TransitionData} object using the specified event and states.
+   * @param initialState    The initial state
+   * @param event           The event
+   * @param targetState     The target state
+   * 
+   * @since 1.3
+   **/
+  public TransitionData(State initialState, Event event, State targetState) {
+    this.initialStateID = initialState.getID();
+    this.eventID = event.getID();
+    this.targetStateID = targetState.getID();
   }
 
     /* METHOD */

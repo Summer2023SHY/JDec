@@ -3,7 +3,7 @@ package com.github.automaton.gui;
 /*
  * TABLE OF CONTENTS:
  *  -Constructor
- *  -Overidden Method
+ *  -Overridden Method
  **/
 
 import javax.swing.*;
@@ -13,6 +13,8 @@ import javax.swing.*;
  * choosing the cost and probability values for the Nash communications.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  * 
  * @deprecated Operations for Nash equilibria depend on
  * {@link com.github.automaton.automata.Crush Crush}. As
@@ -37,7 +39,7 @@ public class NashInfoForNashEquilibriaPrompt extends NashInformationPrompt {
 
   }
 
-    /* OVERIDDEN METHOD */
+    /* OVERRIDDEN METHOD */
   /** {@inheritDoc} */
 	@Override
   protected void performAction() {

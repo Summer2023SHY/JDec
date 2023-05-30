@@ -3,10 +3,9 @@ package com.github.automaton.gui;
 /*
  * TABLE OF CONTENTS:
  *  -Constructor
- *  -Overidden Method
+ *  -Overridden Method
  **/
 
-// import java.io.*;
 import java.util.*;
 import javax.swing.*;
 
@@ -17,15 +16,17 @@ import com.github.automaton.automata.UStructure;
 
 /**
  * Guides the user through the process of finding Nash equilibria
- * once they have selected senders and recievers.
+ * once they have selected senders and receivers.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  * 
  * @deprecated Operations for Nash equilibria depend on {@link Crush}. As {@link Crush} is deprecated
    * and subject to removal, all Nash equilibria operations are deprecated.
  */
 @Deprecated(since="1.1")
-public class ChooseCommunicatorsForNashPrompt extends ChooseSendersAndRecieversPrompt {
+public class ChooseCommunicatorsForNashPrompt extends ChooseSendersAndReceiversPrompt {
 
     /* CONSTRUCTOR */
 
@@ -42,7 +43,7 @@ public class ChooseCommunicatorsForNashPrompt extends ChooseSendersAndRecieversP
 
   }
 
-    /* OVERIDDEN METHOD */
+    /* OVERRIDDEN METHOD */
   /** {@inheritDoc} */
   @Override
   protected boolean performAction() {
@@ -52,7 +53,7 @@ public class ChooseCommunicatorsForNashPrompt extends ChooseSendersAndRecieversP
     // Ensure that there is at least one feasible protocol
     if (feasibleProtocols.size() == 0) {
 
-      JOptionPane.showMessageDialog(null, "There were no feasible protocols that solve the control problem found with the specified senders and recievers\nNOTE: If you selected all possible senders and recievers, then the system does not satisfy observability.", "No Feasible Protocols", JOptionPane.INFORMATION_MESSAGE);
+      JOptionPane.showMessageDialog(null, "There were no feasible protocols that solve the control problem found with the specified senders and receivers\nNOTE: If you selected all possible senders and receivers, then the system does not satisfy observability.", "No Feasible Protocols", JOptionPane.INFORMATION_MESSAGE);
       return false;
 
     }
@@ -83,7 +84,7 @@ public class ChooseCommunicatorsForNashPrompt extends ChooseSendersAndRecieversP
   }
 
   /**
-   * Generate the feasible protocols based on the selected senders and recievers.
+   * Generate the feasible protocols based on the selected senders and receivers.
    * @return  The list of feasible protocols
    **/
   protected List<Set<NashCommunicationData>> generateFeasibleProtocols() {
@@ -97,7 +98,7 @@ public class ChooseCommunicatorsForNashPrompt extends ChooseSendersAndRecieversP
 
       // Check for communication that isn't allowed
       for (int i = 0; i < data.roles.length; i++)
-        if (data.roles[i] == CommunicationRole.RECIEVER && !checkBoxes[sender][i].isSelected())
+        if (data.roles[i] == CommunicationRole.RECEIVER && !checkBoxes[sender][i].isSelected())
           continue outer;
 
       // If we got this far then we can add it

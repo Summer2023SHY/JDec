@@ -6,6 +6,8 @@ package com.github.automaton.automata;
  * same name but with different properties.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  **/
 public class IncompatibleAutomataException extends IllegalArgumentException {
     /**

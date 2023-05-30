@@ -7,6 +7,7 @@ import javax.imageio.*;
 import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
 import org.apache.batik.dom.svg.SVGDocumentFactory;
 import org.apache.batik.util.XMLResourceDescriptor;
+import org.apache.logging.log4j.*;
 import org.w3c.dom.svg.SVGDocument;
 
 /**
@@ -17,6 +18,8 @@ import org.w3c.dom.svg.SVGDocument;
  * @since 1,1
  */
 public final class ImageLoader {
+
+    private static Logger logger = LogManager.getLogger();
 
     /** Internally used {@link SVGDocumentFactory} object */
     private static SVGDocumentFactory svgFactory = new SAXSVGDocumentFactory(XMLResourceDescriptor.getXMLParserClassName());
@@ -34,7 +37,7 @@ public final class ImageLoader {
         try {
             return ImageIO.read(new File(fileName));
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.catching(e);
             return null;
         }
     }

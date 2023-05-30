@@ -10,7 +10,6 @@ package com.github.automaton.gui;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.*;
 import javax.swing.*;
 import javax.swing.table.*;
 
@@ -24,6 +23,8 @@ import com.github.automaton.automata.UStructure;
  * unintuitive.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public abstract class NashInformationPrompt extends JDialog {
 
@@ -139,7 +140,7 @@ public abstract class NashInformationPrompt extends JDialog {
 
     final TableModel tableModel = new DefaultTableModel(tableData, columnNames) {
 
-      // Automatially adjust entered values to reflect how they are being interpreted
+      // Automatically adjust entered values to reflect how they are being interpreted
       @Override
       public void setValueAt(Object value, int row, int column) {
 
@@ -221,7 +222,7 @@ public abstract class NashInformationPrompt extends JDialog {
           if (cellEditor != null)
             cellEditor.stopCellEditing();
 
-          // Ensure that there are no vaidation errors
+          // Ensure that there are no validation errors
           double[] costs          = new double[nCommunications];
           double[] probabilities  = new double[nCommunications];
           double totalProbability = 0.0;

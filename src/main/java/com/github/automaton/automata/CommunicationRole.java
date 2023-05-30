@@ -9,22 +9,24 @@ package com.github.automaton.automata;
 
 /**
  * Enumeration used to help indicate whether a controller is the sender,
- * one of the recievers, or neither.
+ * one of the receivers, or neither.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public enum CommunicationRole {
 
     /* ENUMERATION VALUES */
 
-  /** This role is associated with a controller who is neither the sender nor the reciever. */
+  /** This role is associated with a controller who is neither the sender nor the receiver. */
   NONE((byte) 0, '*'),
 
   /** This role is associated with a controller who is the sender. */
   SENDER((byte) 1, 'S'),
 
-  /** This role is associated with a controller who is a reciever. */
-  RECIEVER((byte) 2, 'R');
+  /** This role is associated with a controller who is a receiver. */
+  RECEIVER((byte) 2, 'R');
 
     /* INSTANCE VARIABLES */
 

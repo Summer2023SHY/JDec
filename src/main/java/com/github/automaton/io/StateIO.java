@@ -1,7 +1,11 @@
 package com.github.automaton.io;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.*;
+
+import org.apache.commons.lang3.*;
+import org.apache.logging.log4j.*;
 
 import com.github.automaton.automata.*;
 import com.github.automaton.automata.util.ByteManipulator;
@@ -16,6 +20,44 @@ import com.github.automaton.automata.util.ByteManipulator;
  * @since 1.1
  */
 public class StateIO {
+
+    /** 
+     * The UTF-8 Charset used for state label encoding
+     * 
+     * @since 1.3
+     */
+    private static final Charset UTF8_CHARSET = Charset.forName("UTF-8");
+
+    /**
+     * Bit field for checking whether or not a state actually exists
+     * 
+     * @see State#EXISTS_MASK
+     * @since 1.3
+     */
+    private static final BitField EXISTS_FIELD = new BitField(State.EXISTS_MASK);
+    /**
+     * Bit field for checking whether or not a state is marked
+     * 
+     * @see State#MARKED_MASK
+     * @since 1.3
+     */
+    private static final BitField MARKED_FIELD = new BitField(State.MARKED_MASK);
+    /**
+     * Bit field for checking whether or not a state actually exists
+     * 
+     * @see State#ENABLEMENT_MASK
+     * @since 1.3
+     */
+    private static final BitField ENABLEMENT_FIELD = new BitField(State.ENABLEMENT_MASK);
+    /**
+     * Bit field for checking whether or not a state is a disablement state
+     * 
+     * @see State#DISABLEMENT_MASK
+     * @since 1.3
+     */
+    private static final BitField DISABLEMENT_FIELD = new BitField(State.DISABLEMENT_MASK);
+
+    private static Logger logger = LogManager.getLogger();
 
     /** Private constructor */
     private StateIO() {}
@@ -71,15 +113,17 @@ public class StateIO {
 
         } catch (IOException e) {
 
-            e.printStackTrace();
+            logger.catching(e);
             return null;
 
         }
 
         /* Exists and marked status */
 
-        boolean marked = (bytesRead[0] & State.MARKED_MASK) > 0;
-        boolean exists = (bytesRead[0] & State.EXISTS_MASK) > 0;
+        boolean marked = MARKED_FIELD.isSet(bytesRead[0]);
+        boolean exists = EXISTS_FIELD.isSet(bytesRead[0]);
+        boolean enablement = ENABLEMENT_FIELD.isSet(bytesRead[0]);
+        boolean disablement = DISABLEMENT_FIELD.isSet(bytesRead[0]);
 
         // Return null if this state doesn't actually exist
         if (!exists)
@@ -87,22 +131,13 @@ public class StateIO {
 
         /* State's label */
 
-        char[] arr = new char[automaton.getLabelLength()];
-        for (int i = 0; i < arr.length; i++) {
+        byte[] arr = new byte[automaton.getLabelLength()];
+        System.arraycopy(bytesRead, 1, arr, 0, arr.length);
 
-            // Indicates end of label
-            if (bytesRead[i + 1] == 0) {
+        int labelLength = ArrayUtils.indexOf(arr, (byte) 0);
+        labelLength = labelLength == ArrayUtils.INDEX_NOT_FOUND ? arr.length : labelLength;
 
-                arr = Arrays.copyOfRange(arr, 0, i);
-                break;
-
-                // Read and store character
-            } else
-                arr[i] = (char) bytesRead[i + 1];
-
-        }
-
-        return new State(new String(arr), id, marked, null);
+        return new State(new String(arr, 0, labelLength, UTF8_CHARSET), id, marked, null, enablement, disablement);
 
     }
 
@@ -144,15 +179,17 @@ public class StateIO {
 
         } catch (IOException e) {
 
-            e.printStackTrace();
+            logger.catching(e);
             return null;
 
         }
 
         /* Exists and marked status */
 
-        boolean marked = (bytesRead[0] & State.MARKED_MASK) > 0;
-        boolean exists = (bytesRead[0] & State.EXISTS_MASK) > 0;
+        boolean marked = MARKED_FIELD.isSet(bytesRead[0]);
+        boolean exists = EXISTS_FIELD.isSet(bytesRead[0]);
+        boolean enablement = ENABLEMENT_FIELD.isSet(bytesRead[0]);
+        boolean disablement = DISABLEMENT_FIELD.isSet(bytesRead[0]);
 
         // Return null if this state doesn't actually exist
         if (!exists)
@@ -160,23 +197,14 @@ public class StateIO {
 
         /* State's label */
 
-        char[] arr = new char[automaton.getLabelLength()];
-        for (int i = 0; i < arr.length; i++) {
+        byte[] arr = new byte[automaton.getLabelLength()];
+        System.arraycopy(bytesRead, 1, arr, 0, arr.length);
 
-            // Indicates end of label
-            if (bytesRead[i + 1] == 0) {
-
-                arr = Arrays.copyOfRange(arr, 0, i);
-                break;
-
-                // Read and store character
-            } else
-                arr[i] = (char) bytesRead[i + 1];
-
-        }
+        int labelLength = ArrayUtils.indexOf(arr, (byte) 0);
+        labelLength = labelLength == ArrayUtils.INDEX_NOT_FOUND ? arr.length : labelLength;
 
         // Instantiate the state
-        State state = new State(new String(arr), id, marked);
+        State state = new State(new String(arr, 0, labelLength, UTF8_CHARSET), id, marked, enablement, disablement);
 
         /* Transitions */
 
@@ -221,6 +249,22 @@ public class StateIO {
      * just a blank spot filled with padding).
      * 
      * @param automaton The automaton in consideration
+     * @param bodyAccessFile The {@link BodyAccessFile} containing the states associated with this
+     *                  automaton
+     * @param state     The state we are checking to see if it exists
+     * @return whether or not the state exists
+     * 
+     * @since 1.3
+     **/
+    public static boolean stateExists(Automaton automaton, BodyAccessFile bodyAccessFile, State state) {
+        return stateExists(automaton, bodyAccessFile, state.getID());
+    }
+
+    /**
+     * Check to see if the specified state actually exists in the file (or if it's
+     * just a blank spot filled with padding).
+     * 
+     * @param automaton The automaton in consideration
      * @param file      The {@code .bdy} file containing the states associated with this
      *                  automaton
      * @param id        The ID of the state we are checking to see if it exists
@@ -242,7 +286,7 @@ public class StateIO {
 
         } catch (IOException e) {
 
-            e.printStackTrace();
+            logger.catching(e);
             return false;
 
         }
@@ -295,19 +339,13 @@ public class StateIO {
         /* Exists and marked status */
 
         bytesToWrite[0] = (byte) (State.EXISTS_MASK);
-        if (s.isMarked())
-            bytesToWrite[0] |= State.MARKED_MASK;
+        bytesToWrite[0] = MARKED_FIELD.setByteBoolean(bytesToWrite[0], s.isMarked());
+        bytesToWrite[0] = ENABLEMENT_FIELD.setByteBoolean(bytesToWrite[0], s.isEnablementState());
+        bytesToWrite[0] = DISABLEMENT_FIELD.setByteBoolean(bytesToWrite[0], s.isDisablementState());
 
         /* State's label */
 
-        for (int i = 0; i < s.getLabel().length(); i++) {
-            bytesToWrite[i + 1] = (byte) s.getLabel().charAt(i);
-
-            // Double-check to make sure we can retrieve this character
-            if ((char) bytesToWrite[i + 1] != s.getLabel().charAt(i))
-                System.err.println(
-                        "ERROR: Unsupported character '" + s.getLabel().charAt(i) + "' was written to file in a state label.");
-        }
+        System.arraycopy(s.getLabel().getBytes(UTF8_CHARSET), 0, bytesToWrite, 1, Math.min(labelLength, s.getLabel().length()));
 
         /* Transitions */
 
@@ -335,11 +373,42 @@ public class StateIO {
 
         } catch (IOException e) {
 
-            e.printStackTrace();
+            logger.catching(e);
 
             return false;
 
         }
 
+    }
+
+    /**
+     * Rewrites the status of a state in the given automaton
+     * 
+     * @param automaton the automaton that contains the given state
+     * @param state     the state with modified status
+     * @param baf       The {@link BodyAccessFile} containing the states associated
+     *                  with this automaton
+     * 
+     * @throws StateNotFoundException   if {@code automaton} does not contain a
+     *                                  state with the matching ID
+     * @throws IllegalArgumentException if {@code state} is not equal to the one
+     *                                  stored in {@code automaton}
+     * @throws IOException              if I/O error occurs
+     * 
+     * @since 1.3
+     */
+    public static void rewriteStatus(Automaton automaton, BodyAccessFile baf, State state) throws IOException {
+        if (!stateExists(automaton, baf, state.getID())) {
+            throw new StateNotFoundException(state.getID());
+        } else if (!Objects.equals(readFromFileExcludingTransitions(automaton, baf, state.getID()), state)) {
+            throw new IllegalArgumentException("The provided state is not equal to the one stored in the automaton.");
+        }
+        baf.getRAFile().seek(state.getID() * automaton.getSizeOfState());
+        baf.getLogger().trace("StateIO.rewriteStatus() - FP: " + baf.getRAFile().getFilePointer());
+        byte newStatus = State.EXISTS_MASK;
+        newStatus = MARKED_FIELD.setByteBoolean(newStatus, state.isMarked());
+        newStatus = ENABLEMENT_FIELD.setByteBoolean(newStatus, state.isEnablementState());
+        newStatus = DISABLEMENT_FIELD.setByteBoolean(newStatus, state.isDisablementState());
+        baf.getRAFile().write(newStatus);
     }
 }

@@ -5,6 +5,8 @@ package com.github.automaton.io;
  * {@code .bdy} file, this exception should be thrown.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  **/
 public class MissingOrCorruptBodyFileException extends java.io.IOException {
     /**

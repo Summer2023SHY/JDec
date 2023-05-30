@@ -1,5 +1,7 @@
 package com.github.automaton.automata.util;
 
+import org.apache.logging.log4j.*;
+
 import com.github.automaton.gui.JDec;
 
 /**
@@ -10,6 +12,8 @@ import com.github.automaton.gui.JDec;
  **/
 
 public final class ByteManipulator {
+
+  private static Logger logger = LogManager.getLogger();
 
   private ByteManipulator() {}
   
@@ -67,10 +71,6 @@ public final class ByteManipulator {
 
     for (int i = nBytes - 1; i >= 0; i--)
       arr[index++] = (byte) (n >> (i*8));
-
-    // Error-checking
-    if (JDec.DEBUG_MODE && readBytesAsLong(arr, index - nBytes, nBytes) != n)
-      System.err.println("CRUCIAL ERROR: Byte manipulator wrote a value which will not be read properly.");
 
   }
 

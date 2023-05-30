@@ -10,18 +10,24 @@ package com.github.automaton.automata;
 
 import java.util.*;
 
+import org.apache.logging.log4j.*;
+
 /**
  * Holds all 3 pieces of information needed to identify a transition, as well
  * as an enumeration array to indicate which controller is the sender
- * and which are the recievers.
+ * and which are the receivers.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public class CommunicationData extends TransitionData {
 
+  private static Logger logger = LogManager.getLogger();
+
     /* INSTANCE VARIABLES */
 
-  /** Holds the role for each of the controllers (sender, reciever, or none) */
+  /** Holds the role for each of the controllers (sender, receivers, or none) */
   public CommunicationRole[] roles;
 
   private int indexOfSender = -1;
@@ -29,11 +35,11 @@ public class CommunicationData extends TransitionData {
     /* CONSTRUCTOR */
 
   /**
-   * Construct a CommunicationData object, which can be used to represent a communication (including the sending and recieving roles).
+   * Construct a CommunicationData object, which can be used to represent a communication (including the sending and receiving roles).
    * @param initialStateID  The initial state's ID
    * @param eventID         The event's ID
    * @param targetStateID   The target state's ID
-   * @param roles           The array of communication roles (sender, reciever, or none)
+   * @param roles           The array of communication roles (sender, receivers, or none)
    **/
   public CommunicationData(long initialStateID, int eventID, long targetStateID, CommunicationRole[] roles) {
     
@@ -53,7 +59,7 @@ public class CommunicationData extends TransitionData {
       /* Print error message to the console if there is not exactly one sender */
 
     if (nSenders != 1)
-      System.err.println("ERROR: A communication must contain exactly one sender. " + nSenders + " senders were found.");
+      logger.error("A communication must contain exactly one sender. " + nSenders + " senders were found.");
       
   }
 

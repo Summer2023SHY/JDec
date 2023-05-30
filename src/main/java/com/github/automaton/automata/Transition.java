@@ -9,6 +9,10 @@ package com.github.automaton.automata;
  *  -Overridden Methods
  */
 
+import static org.apache.commons.lang3.exception.ExceptionUtils.*;
+
+import org.apache.logging.log4j.*;
+
 /**
  * Represents a transition in an automaton.
  *
@@ -17,8 +21,12 @@ package com.github.automaton.automata;
  * no reference to its initial state ID).
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public class Transition {
+
+  private static Logger logger = LogManager.getLogger();
 
     /* INSTANCE VARIABLES */
   
@@ -34,12 +42,7 @@ public class Transition {
    **/
   public Transition(Event event, long targetStateID) {
     this.event = event;
-    this.targetStateID = targetStateID;
-
-    if (targetStateID == 0) {
-      System.out.println("WARNING: The target state ID was specified as 0 (which is null).");
-      Thread.dumpStack();
-    }
+    setTargetStateID(targetStateID);
   }
 
     /* MUTATOR METHOD */
@@ -51,8 +54,8 @@ public class Transition {
   public void setTargetStateID(long id) {
     targetStateID = id;
     if (targetStateID == 0) {
-      System.out.println("WARNING: Setting target state ID to 0 (which is null).");
-      Thread.dumpStack();
+      logger.warn("Setting target state ID to 0 (which is null).");
+      logger.warn(getStackTrace(new Exception()));
     }
   }
 

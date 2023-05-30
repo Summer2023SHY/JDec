@@ -4,6 +4,8 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
+import org.apache.commons.io.RandomAccessFileMode;
+
 /**
  * I/O handler for {@code .bdy} files.
  * 
@@ -11,6 +13,7 @@ import java.util.*;
  * @since 1.1
  */
 public final class BodyAccessFile extends AutomatonAccessFile {
+
     /** List each state in the automaton, with the transitions */
     private RandomAccessFile bodyRAFile;
 
@@ -22,7 +25,7 @@ public final class BodyAccessFile extends AutomatonAccessFile {
      */
     public BodyAccessFile(File bodyFile) throws FileNotFoundException {
         super(bodyFile);
-        bodyRAFile = new RandomAccessFile(bodyFile, "rw");
+        bodyRAFile = RandomAccessFileMode.READ_WRITE.create(bodyFile);
     }
 
     /**
@@ -35,10 +38,10 @@ public final class BodyAccessFile extends AutomatonAccessFile {
             bodyRAFile.close();
             getFile().delete();
             getFile().createNewFile();
-            bodyRAFile = new RandomAccessFile(getFile(), "rw");
+            bodyRAFile = RandomAccessFileMode.READ_WRITE.create(getFile());
             return true;
         } catch (IOException e) {
-            e.printStackTrace();
+            getLogger().catching(e);
             return false;
         }
     }
@@ -54,7 +57,7 @@ public final class BodyAccessFile extends AutomatonAccessFile {
     public void copyTo(File newFile) throws IOException {
         bodyRAFile.close();
         super.copyTo(newFile);
-        bodyRAFile = new RandomAccessFile(getFile(), "rw");
+        bodyRAFile = RandomAccessFileMode.READ_WRITE.create(getFile());
     }
 
     /**
@@ -72,7 +75,7 @@ public final class BodyAccessFile extends AutomatonAccessFile {
         }
         bodyRAFile.close();
         Files.copy(srcFile.toPath(), getFile().toPath(), StandardCopyOption.REPLACE_EXISTING);
-        bodyRAFile = new RandomAccessFile(getFile(), "rw");
+        bodyRAFile = RandomAccessFileMode.READ_WRITE.create(getFile());
     }
 
     /**

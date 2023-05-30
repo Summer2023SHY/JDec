@@ -20,6 +20,8 @@ import com.github.automaton.automata.Automaton;
  * triggered when the user presses the "Generate" button in the popup.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  */
 public class RandomAutomatonPrompt extends JDialog {
 
@@ -43,7 +45,7 @@ public class RandomAutomatonPrompt extends JDialog {
 
   /**
    * Construct a RandomAutomatonPrompt object.
-   * @param gui A reference to the GUI which will be recieving the generated automaton request.
+   * @param gui A reference to the GUI which will be receiving the generated automaton request.
    **/
   public RandomAutomatonPrompt(JDec gui) {
 

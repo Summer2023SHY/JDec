@@ -18,6 +18,9 @@ import java.util.*;
  * events that have labels formatted as vectors.
  *
  * @author Micah Stairs
+ * @author Sung Ho Yoon
+ * 
+ * @since 1.0
  */
 public class Event {
     
@@ -28,7 +31,7 @@ public class Event {
   private boolean[] observable, controllable;
 
   /**
-   * Events can sometimes be vectors (for example, automata created by synchonrized composition use them).
+   * Events can sometimes be vectors (for example, automata created by synchronized composition use them).
    * Example of syntax: "&lt;a,b,d>" actually represents an event vector: {"a", "b", "d"}. This instance
    * variable holds a reference to the vectorized event label.
    **/
@@ -51,6 +54,23 @@ public class Event {
     this.controllable = controllable;
     this.vector = new LabelVector(label);
 
+  }
+
+  /**
+   * Construct a new event with the specified properties
+   * @param labelVector the label vector
+   * @param id            The ID of the event
+   * @param observable    Whether or not the event can be observed
+   * @param controllable  Whether or not the event can be controlled
+   * 
+   * @since 1.3
+   */
+  public Event(LabelVector labelVector, int id, boolean[] observable, boolean[] controllable) {
+    this.label = labelVector.toString();
+    this.vector = labelVector;
+    this.id = id;
+    this.observable = observable;
+    this.controllable = controllable;
   }
 
     /* MUTATOR METHOD */

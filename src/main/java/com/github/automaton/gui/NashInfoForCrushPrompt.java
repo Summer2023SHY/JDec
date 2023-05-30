@@ -3,7 +3,7 @@ package com.github.automaton.gui;
 /*
  * TABLE OF CONTENTS:
  *  -Constructor
- *  -Overidden Method
+ *  -Overridden Method
  *  -Method
  **/
 
@@ -17,6 +17,8 @@ import com.github.automaton.automata.Crush;
  * the cost and probability values for the Nash communications.
  *
  * @author Micah Stairs
+ * 
+ * @since 1.0
  * 
 * @deprecated Crush is too restrictive in terms of its capabilities, and all operations related to it are subject to removal.
  */
@@ -38,7 +40,7 @@ public class NashInfoForCrushPrompt extends NashInformationPrompt {
 
   }
 
-    /* OVERIDDEN METHOD */
+    /* OVERRIDDEN METHOD */
   /** {@inheritDoc} */
   @Override
   protected void performAction() {

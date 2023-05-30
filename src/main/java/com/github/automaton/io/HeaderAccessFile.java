@@ -3,6 +3,8 @@ package com.github.automaton.io;
 import java.io.*;
 import java.util.*;
 
+import org.apache.commons.io.RandomAccessFileMode;
+
 /**
  * I/O handler for {@code .hdr} files.
  * 
@@ -25,7 +27,7 @@ public final class HeaderAccessFile extends AutomatonAccessFile {
      */
     public HeaderAccessFile(File headerFile) throws FileNotFoundException {
         super(headerFile);
-        headerRAFile = new RandomAccessFile(headerFile, "rw");
+        headerRAFile = RandomAccessFileMode.READ_WRITE.create(headerFile);
     }
 
     /**
@@ -38,10 +40,10 @@ public final class HeaderAccessFile extends AutomatonAccessFile {
             headerRAFile.close();
             getFile().delete();
             getFile().createNewFile();
-            headerRAFile = new RandomAccessFile(getFile(), "rw");
+            headerRAFile = RandomAccessFileMode.READ_WRITE.create(getFile());
             return true;
         } catch (IOException e) {
-            e.printStackTrace();
+            getLogger().catching(e);
             return false;
         }
     }
@@ -100,7 +102,7 @@ public final class HeaderAccessFile extends AutomatonAccessFile {
     public void copyTo(File newFile) throws IOException {
         headerRAFile.close();
         super.copyTo(newFile);
-        headerRAFile = new RandomAccessFile(getFile(), "rw");
+        headerRAFile = RandomAccessFileMode.READ_WRITE.create(getFile());
     }
 
     /**

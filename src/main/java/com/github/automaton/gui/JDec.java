@@ -16,7 +16,6 @@ package com.github.automaton.gui;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.*;
 import java.io.*;
 import java.net.*;
 import java.nio.file.*;
@@ -30,10 +29,15 @@ import javax.xml.transform.dom.*;
 import javax.xml.transform.stream.*;
 
 import org.apache.batik.swing.svg.JSVGComponent;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.time.StopWatch;
+import org.apache.logging.log4j.*;
 import org.w3c.dom.*;
 import org.xml.sax.*;
 
 import com.github.automaton.automata.*;
+import com.github.automaton.automata.graphviz.GraphvizEngineInitializer;
 import com.github.automaton.gui.util.*;
 import com.github.automaton.io.MissingOrCorruptBodyFileException;
 
@@ -42,17 +46,13 @@ import com.github.automaton.io.MissingOrCorruptBodyFileException;
  * and manipulate various structures such as Automata, U-Structures, and Crushes.
  *
  * @author Micah Stairs
+ * @author Sung Ho Yoon
+ * 
+ * @since 1.0
  */
 public class JDec extends JFrame implements ActionListener {
 
     /* CLASS CONSTANTS */
-
-  /**
-   * When debug mode is on some processes will take longer since extra checks are being done.
-   * If any problems are found, then they will be printed out on the console.
-   * NOTE: This hasn't been taken advantage of yet.
-   **/
-  public static final boolean DEBUG_MODE = true;
 
   public static final int PREFERRED_DIALOG_WIDTH  = 500;
   public static final int PREFERRED_DIALOG_HEIGHT = 500;
@@ -63,7 +63,15 @@ public class JDec extends JFrame implements ActionListener {
   );
   private static final String GUI_DATA_FILE_NAME  = "gui.data";
 
+  /**
+   * Whether drawing of automata via Graphviz is enabled
+   * 
+   * @since 1.3
+   */
+  private static final boolean DRAW_ENABLED = GraphvizEngineInitializer.setupGraphvizEngines();
   private static final int N_STATES_TO_AUTOMATICALLY_DRAW = 20;
+
+  private static Logger logger = LogManager.getLogger();
 
     /* INSTANCE VARIABLES */
 
@@ -80,7 +88,7 @@ public class JDec extends JFrame implements ActionListener {
   private java.util.List<Component> componentsWhichRequireAnyUStructure    = new ArrayList<Component>();
 
   // Miscellaneous
-  private File currentDirectory = new File(System.getProperty("user.dir"));;
+  private File currentDirectory = new File(SystemUtils.USER_DIR);
   private int temporaryFileIndex = 1;
   private JLabel noTabsMessage;
 
@@ -96,10 +104,10 @@ public class JDec extends JFrame implements ActionListener {
         getResourceURL("tooltips.xml").toURI().toString()
       );
     } catch (ParserConfigurationException | SAXException | IOException | URISyntaxException e) {
-      e.printStackTrace();
+      logger.error(e);
       tooltipDocument = null;
     } catch (FactoryConfigurationError fce) {
-      fce.printStackTrace();
+      logger.error(fce);
       tooltipDocument = null;
     }
 
@@ -111,7 +119,7 @@ public class JDec extends JFrame implements ActionListener {
     try {
       TEMPORARY_DIRECTORY = Files.createTempDirectory(null).toFile();
     } catch (Exception e) {
-      System.out.println("WARNING: Temporary directory could not be created.");
+      logger.warn("Temporary directory could not be created.", e);
       TEMPORARY_DIRECTORY = new File("JDec_Temporary_Files");
     }
   }
@@ -142,7 +150,7 @@ public class JDec extends JFrame implements ActionListener {
 
     setMinimumSize(new Dimension(1280, 720));
 
-      /* Create message to dislay when there are no tabs */
+      /* Create message to display when there are no tabs */
 
     noTabsMessage = new JLabel("You do not have any tabs open.");
     noTabsMessage.setHorizontalAlignment(JLabel.CENTER);
@@ -958,7 +966,9 @@ public class JDec extends JFrame implements ActionListener {
 
       /* Generate an image (unless it's quite large) */
 
-    if (tab.automaton.getNumberOfStates() <= N_STATES_TO_AUTOMATICALLY_DRAW) {
+    if (!DRAW_ENABLED) {
+      tab.generateImageButton.setEnabled(false);
+    } else if (tab.automaton.getNumberOfStates() <= N_STATES_TO_AUTOMATICALLY_DRAW) {
       generateImage();
       tab.generateImageButton.setEnabled(false);
     } else
@@ -1028,14 +1038,14 @@ public class JDec extends JFrame implements ActionListener {
 
     int index = tabbedPane.getSelectedIndex();
     AutomatonTab tab = tabs.get(index);
-    String fileName = currentDirectory + File.separator + removeExtension(tab.headerFile.getName()) + ".svg";
+    String fileName = currentDirectory + File.separator + FilenameUtils.removeExtension(tab.headerFile.getName()) + ".svg";
 
     boolean successful = false;
 
     // Try to load image from file
     try {
       if (Desktop.isDesktopSupported()) {
-        if (System.getProperty("os.name").startsWith("Windows")) {
+        if (SystemUtils.IS_OS_WINDOWS) {
           Desktop.getDesktop().open(new File(fileName.replaceAll(" ", "%20")));
         } else {
           // NOTE: There is the possibility that I am missing some characters that should be encoded
@@ -1045,7 +1055,7 @@ public class JDec extends JFrame implements ActionListener {
 
       }
     } catch (IOException | URISyntaxException e) {
-      e.printStackTrace();
+      logger.catching(e);
     }
     
     // Display the proper error message
@@ -1176,7 +1186,7 @@ public class JDec extends JFrame implements ActionListener {
     AutomatonTab tab = tabs.get(tabbedPane.getSelectedIndex());
 
     // Create destination file name (excluding extension)
-    String destinationFileName = currentDirectory + "/" + removeExtension(tab.headerFile.getName());
+    String destinationFileName = currentDirectory + File.separator + FilenameUtils.removeExtension(tab.headerFile.getName());
 
     try {
 
@@ -1197,7 +1207,7 @@ public class JDec extends JFrame implements ActionListener {
     } catch (MissingOrCorruptBodyFileException e) {
       displayErrorMessage("Corrupt or Missing File", "Please ensure that the .bdy file associated with this automaton is not corrupt or missing.");
     } catch (IOException e) {
-      displayErrorMessage("I/O Error", "An I/O error occured.");
+      displayErrorMessage("I/O Error", "An I/O error occurred.");
     }
 
   }
@@ -1485,7 +1495,7 @@ public class JDec extends JFrame implements ActionListener {
 
       // Get files
       File headerFile = fileChooser.getSelectedFile();
-      File bodyFile = new File(headerFile.getParentFile() + "/" + removeExtension(headerFile.getName()) + ".bdy");
+      File bodyFile = new File(headerFile.getParentFile() + File.separator + FilenameUtils.removeExtension(headerFile.getName()) + ".bdy");
      
       // Create new tab (if requested)
       if (index == -1) {
@@ -1555,7 +1565,7 @@ public class JDec extends JFrame implements ActionListener {
     if (name.indexOf(".") != -1)
       name = name.substring(0, name.indexOf("."));
 
-    String prefix   = fileChooser.getSelectedFile().getParentFile() + "/" + name;
+    String prefix   = fileChooser.getSelectedFile().getParentFile() + File.separator + name;
     File headerFile = new File(prefix + ".hdr");
     File bodyFile   = new File(prefix + ".bdy");
     File svgFile    = new File(prefix + ".svg");
@@ -1621,7 +1631,7 @@ public class JDec extends JFrame implements ActionListener {
         continue;
 
       // Add automaton to list of options
-      optionsList.add(removeExtension(tab.headerFile.getAbsolutePath()));
+      optionsList.add(FilenameUtils.removeExtension(tab.headerFile.getAbsolutePath()));
 
     }
 
@@ -1649,7 +1659,7 @@ public class JDec extends JFrame implements ActionListener {
       /* Return index of chosen automaton */
 
     for (int i = 0; i < tabbedPane.getTabCount(); i++)
-      if (tabs.get(i).headerFile != null && removeExtension(tabs.get(i).headerFile.getAbsolutePath()).equals(choice))
+      if (tabs.get(i).headerFile != null && FilenameUtils.removeExtension(tabs.get(i).headerFile.getAbsolutePath()).equals(choice))
         return i;
 
     return -1;
@@ -1766,7 +1776,7 @@ public class JDec extends JFrame implements ActionListener {
       Node node3 = element2.getElementsByTagName(automatonType.name()).item(0);
       Element element3 = (Element) node3;
 
-      // Generate a string of this element and its descendents, including tags
+      // Generate a string of this element and its descendants, including tags
       StringWriter buffer = new StringWriter();
       Transformer xform = TransformerFactory.newInstance().newTransformer();
       xform.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
@@ -1788,7 +1798,7 @@ public class JDec extends JFrame implements ActionListener {
    * @param exception Exception to display
    **/
   public void displayException(Exception exception) {
-    
+    logger.catching(exception);
     displayMessage("Exception: " + exception.getClass().getName(), exception.getMessage(), JOptionPane.ERROR_MESSAGE);
   }
 
@@ -1798,7 +1808,7 @@ public class JDec extends JFrame implements ActionListener {
    * @param message The message to display in the dialog box
    **/
   public void displayErrorMessage(String title, String message) {
-    
+    logger.error(title + ": " + message);
     displayMessage(title, message, JOptionPane.ERROR_MESSAGE);
 
   }
@@ -1808,7 +1818,7 @@ public class JDec extends JFrame implements ActionListener {
    * at all times.
    * @param title       The title to display in the dialog box
    * @param message     The message to display in the dialog box
-   * @param messageType The type of message (using JOptionPane constants)
+   * @param messageType The type of message (using {@link JOptionPane} constants)
    **/
   public void displayMessage(String title, String message, int messageType) {
     
@@ -1820,21 +1830,12 @@ public class JDec extends JFrame implements ActionListener {
   }
 
   /**
-   * Removes the last 4 characters of the string, which is used to trim either '.hdr' or '.bdy' off the end.
-   * @param str The string to be trimmed
-   * @return    The trimmed string
-   **/
-  private String removeExtension(String str) {
-    return str.substring(0, str.length() - 4);  
-  }
-
-  /**
    * Get a temporary filename (prefixed by 'untitled') which is stored in the temporary directory.
    * @return  The temporary filename, which does not contain an extension (since it will be used for
    *          both the .bdy and .hdr files)
    **/
   public String getTemporaryFileName() {
-    return TEMPORARY_DIRECTORY.getAbsolutePath() + "/untitled" + temporaryFileIndex++;
+    return TEMPORARY_DIRECTORY.getAbsolutePath() + File.separator + "untitled" + temporaryFileIndex++;
   }
 
   /**
@@ -1843,9 +1844,7 @@ public class JDec extends JFrame implements ActionListener {
    **/
   private void loadCurrentDirectory() {
 
-    try {
-
-      Scanner sc = new Scanner(new File(GUI_DATA_FILE_NAME));
+    try (Scanner sc = new Scanner(new File(GUI_DATA_FILE_NAME))) {
 
       if (sc.hasNextLine())
         currentDirectory = new File(sc.nextLine());
@@ -1864,14 +1863,12 @@ public class JDec extends JFrame implements ActionListener {
 
     if (currentDirectory != null) {
 
-      try {
+      try (PrintWriter writer = new PrintWriter(new FileWriter(GUI_DATA_FILE_NAME, false))) {
 
-        PrintWriter writer = new PrintWriter(new FileWriter(GUI_DATA_FILE_NAME, false));
         writer.println(currentDirectory.getPath());
-        writer.close();
 
       } catch (IOException e) {
-        e.printStackTrace();
+        logger.catching(e);
       }
 
     }
@@ -1930,7 +1927,7 @@ public class JDec extends JFrame implements ActionListener {
 
       // Create containers
       Container inputContainer = createInputContainer(type);
-      canvas = new JSVGComponent(null, true, false);
+      canvas = new ScrollableSVGCanvas();
 
       // Create a split pane with the two scroll panes in it
       splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, inputContainer, canvas);
@@ -2070,7 +2067,7 @@ public class JDec extends JFrame implements ActionListener {
       c.ipady = 0; c.weightx = 0.5; c.weighty = 1.0; c.gridx = 0; c.gridy = 7;
       container.add(viewImageInBrowserButton, c);
 
-        /* Exaplore Automaton Button */
+        /* Explore Automaton Button */
 
       exploreAutomatonButton = new JButton("Explore");
       exploreAutomatonButton.setFocusable(false);
@@ -2148,7 +2145,7 @@ public class JDec extends JFrame implements ActionListener {
      **/
     private void updateTabTitle() {
 
-      String title = removeExtension(headerFile.getName());
+      String title = FilenameUtils.removeExtension(headerFile.getName());
 
       // Temporary files are always considered unsaved, since the directory is wiped upon closing of the program
       if (!saved || usingTemporaryFiles())
@@ -2160,6 +2157,8 @@ public class JDec extends JFrame implements ActionListener {
 
     /**
      * Update the saved status, making the necessary updates to the tab's GUI.
+     * 
+     * @param newSavedStatus the new saved status
      **/
     public void setSaved(boolean newSavedStatus) {
 
@@ -2187,8 +2186,8 @@ public class JDec extends JFrame implements ActionListener {
      **/
     public void refreshGUI() {
 
-      // System.out.println("Starting refresh...");
-      // long s = System.currentTimeMillis();
+      logger.info("Starting refresh...");
+      StopWatch stopWatch = StopWatch.createStarted();
 
       automaton.generateInputForGUI();
 
@@ -2197,7 +2196,7 @@ public class JDec extends JFrame implements ActionListener {
       stateInput.setText(automaton.getStateInput());
       transitionInput.setText(automaton.getTransitionInput());
       
-      // System.out.println("Finished in " + (System.currentTimeMillis() - s) + "ms.");
+      logger.debug("Finished in " + stopWatch.getTime() + "ms.");
 
     }
 

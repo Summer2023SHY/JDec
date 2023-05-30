@@ -14,6 +14,8 @@ import java.io.*;
  *
  * @author Micah Stairs
  * 
+ * @since 1.0
+ * 
  * @deprecated Crush is too restrictive in terms of its capabilities, and is subject to removal. See
  * <a href="https://github.com/Summer2023SHY/Automata/issues/28">Automata#28</a> for more information.
  */

@@ -13,28 +13,46 @@ package com.github.automaton.automata;
  *  -Accessor Methods
  */
 
-import java.util.*;
 import java.io.*;
 import java.math.*;
+import java.util.*;
+
+import org.apache.commons.io.RandomAccessFileMode;
+import org.apache.commons.lang3.*;
+import org.apache.logging.log4j.*;
 
 import com.github.automaton.automata.util.ByteManipulator;
 import com.github.automaton.io.IOUtility;
+
+import guru.nidi.graphviz.attribute.*;
+import guru.nidi.graphviz.model.MutableNode;
 
 /**
  * Represents an un-pruned U-Structure.
  *
  * @author Micah Stairs
+ * @author Sung Ho Yoon
+ * 
+ * @since 1.0
  */
 public class UStructure extends Automaton {
 
     /* CLASS CONSTANTS */
 
-  /** Whether or not invalid communications should be added for mathmatical completeness, or supressed for efficiency purposes */
+  /** Whether or not invalid communications should be added for mathematical completeness, or suppressed for efficiency purposes */
   public static boolean SUPPRESS_INVALID_COMMUNICATIONS = true;
+
+  private static Logger logger = LogManager.getLogger();
 
     /* INSTANCE VARIABLES */
 
   // Special transitions
+  /**
+   * Transitions that are graphically suppressed for readability
+   * 
+   * @since 1.3
+   */
+  protected List<TransitionData> suppressedTransitions;
   protected List<TransitionData> unconditionalViolations;
   protected List<TransitionData> conditionalViolations;
   protected List<CommunicationData> potentialCommunications;
@@ -121,6 +139,7 @@ public class UStructure extends Automaton {
 
     super.initializeLists();
 
+    suppressedTransitions = new ArrayList<TransitionData>();
     unconditionalViolations = new ArrayList<TransitionData>();
     conditionalViolations   = new ArrayList<TransitionData>();
     potentialCommunications = new ArrayList<CommunicationData>();
@@ -249,7 +268,7 @@ public class UStructure extends Automaton {
             // If there were no potential communications, then it must be a invalid communication
             if (!found) {
               if (SUPPRESS_INVALID_COMMUNICATIONS)
-                System.err.println("ERROR: Invalid communication was not supressed: " + vector);
+                logger.error("Invalid communication was not suppressed: " + vector);
               uStructure.addInvalidCommunication(startingState.getID(), id, destinationState.getID());
             }
     
@@ -271,8 +290,9 @@ public class UStructure extends Automaton {
 
   /**
    * Checking the feasibility for all possible communication protocols, generate a list of the feasible protocols.
+   * @param <T>                         The type of communication data
    * @param communications              The communications to be considered
-   *                                    NOTE: These should be a subset of the potentialCommunications list of this U-Structure
+   *                                    <p>NOTE: These should be a subset of the {@link #potentialCommunications} list of this U-Structure
    * @param mustAlsoSolveControlProblem Whether or not the generated protocols must also solve the control problem
    * @return                            The feasible protocols, sorted smallest to largest
    **/
@@ -302,7 +322,7 @@ public class UStructure extends Automaton {
 
     Collections.sort(feasibleProtocols, new Comparator<Set<?>>() {
         @Override public int compare(Set<?> set1, Set<?> set2) {
-          return Integer.valueOf(set1.size()).compareTo(set2.size());
+          return Integer.compare(set1.size(), set2.size());
         }
       }
     );
@@ -313,7 +333,7 @@ public class UStructure extends Automaton {
 
   /**
    * Generate a list of the smallest possible feasible protocols (in terms of the number of communications).
-   * @param communications  The communications to be considered (which should be a subset of the potentialCommunications list of this U-Structure)
+   * @param communications  The communications to be considered (which should be a subset of the {@link #potentialCommunications} list of this U-Structure)
    * @return                The feasible protocols
    **/
   public List<Set<CommunicationData>> generateSmallestFeasibleProtocols(List<CommunicationData> communications) {
@@ -327,7 +347,7 @@ public class UStructure extends Automaton {
 
     Collections.sort(protocols, new Comparator<Set<?>>() {
         @Override public int compare(Set<?> set1, Set<?> set2) {
-          return Integer.valueOf(set1.size()).compareTo(set2.size());
+          return Integer.compare(set1.size(), set2.size());
         }
       }
     );
@@ -360,7 +380,7 @@ public class UStructure extends Automaton {
 
   /**
    * Greedily generate a feasible protocol (optimality is not guaranteed).
-   * @param communications  The communications to be considered (which should be a subset of the potentialCommunications/nashCommunications lists of this U-Structure)
+   * @param communications  The communications to be considered (which should be a subset of the {@link #potentialCommunications}/{@link #nashCommunications} lists of this U-Structure)
    * @return                The feasible protocol
    **/
   public Set<CommunicationData> generateFeasibleProtocol(List<CommunicationData> communications) {
@@ -374,18 +394,18 @@ public class UStructure extends Automaton {
 
       // System.out.println(uStructure.unconditionalViolations.size() + " " + uStructure.conditionalViolations.size() + " " + uStructure.getNumberOfStates());
 
-      // Choose an abitrary violation
+      // Choose an arbitrary violation
       TransitionData chosenViolation = (uStructure.conditionalViolations.size() > 0 ? uStructure.conditionalViolations.get(0) : uStructure.unconditionalViolations.get(0));
       // System.out.println(chosenViolation.toString(uStructure));
       // System.out.println(uStructure.getState(chosenViolation.initialStateID));
 
       // Determine a communication which is necessary in order to help prevent this violation
-      // NOTE: It is possible that more than one communication will be neccessary, but this will
+      // NOTE: It is possible that more than one communication will be necessary, but this will
       //       be taken care of in subsequent iterations
       CommunicationData associatedCommunication = uStructure.findCommunicationToBeAdded(chosenViolation, this, protocol);
 
       if (protocol.contains(associatedCommunication)) {
-        System.err.println("ERROR : There was an infinite loop detected.");
+        logger.error("ERROR : There was an infinite loop detected.");
         break;
       }
       protocol.addAll(addCommunicationsToEnsureFeasibility(associatedCommunication));
@@ -436,7 +456,7 @@ public class UStructure extends Automaton {
 
     Collections.sort(feasibleProtocols, new Comparator<Set<?>>() {
         @Override public int compare(Set<?> set1, Set<?> set2) {
-          return Integer.valueOf(set1.size()).compareTo(set2.size());
+          return Integer.compare(set1.size(), set2.size());
         }
       }
     );
@@ -447,6 +467,7 @@ public class UStructure extends Automaton {
 
   /**
    * Refine this U-Structure by applying the specified communication protocol, and doing the necessary pruning.
+   * @param <T>                         The type of communication data
    * @param protocol                    The chosen protocol
    * @param newHeaderFile               The header file where the new U-Structure should be stored
    * @param newBodyFile                 The body file where the new U-Structure should be stored
@@ -496,7 +517,8 @@ public class UStructure extends Automaton {
 
   /**
    * Duplicate this U-Structure as a pruned U-Structure.
-   * NOTE: This only works because the pruned U-Structure currently has identical .bdy and .hdr formats.
+   * <p>NOTE: This only works because the pruned U-Structure currently
+   * has identical {@code .bdy} and {@code .hdr} formats.
    * @param newHeaderFile The header file where the pruned U-Structure should be stored
    * @param newBodyFile   The body file where the pruned U-Structure should be stored
    * @return              The duplicated U-Structure (as a pruned U-Structure)
@@ -513,10 +535,10 @@ public class UStructure extends Automaton {
       return null;
 
     // Change the first byte (which indicates the automaton type)
-    try (RandomAccessFile raFile = new RandomAccessFile(newHeaderFile, "rw")) {
+    try (RandomAccessFile raFile = RandomAccessFileMode.READ_WRITE.create(newHeaderFile)) {
       raFile.writeByte((byte) Type.PRUNED_U_STRUCTURE.getNumericValue());
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.catching(e);
       return null;
     }
 
@@ -585,12 +607,12 @@ public class UStructure extends Automaton {
         int diff1 = Math.abs(v1.getCommunications(0).length - v1.getCommunications(1).length);
         int diff2 = Math.abs(v2.getCommunications(0).length - v2.getCommunications(1).length);
         if (diff1 != diff2)
-          return Integer.valueOf(diff1).compareTo(diff2);
+          return Integer.compare(diff1, diff2);
       
         // In the event of a tie, place smaller protocols first
         int sum1 = v1.getCommunications(0).length + v1.getCommunications(1).length;
         int sum2 = v2.getCommunications(0).length + v2.getCommunications(1).length;
-        return Integer.valueOf(sum1).compareTo(sum2);
+        return Integer.compare(sum1, sum2);
       
       }
     });
@@ -667,7 +689,7 @@ public class UStructure extends Automaton {
                      Crush.CombiningCosts combiningCostsMethod) {
 
     if (potentialCommunications.size() > 0)
-      System.err.println("WARNING: " + potentialCommunications.size() + " communications were ignored. Only Nash communications are being considered.");
+      logger.warn(potentialCommunications.size() + " communications were ignored. Only Nash communications are being considered.");
 
       /* Setup */
 
@@ -780,7 +802,7 @@ public class UStructure extends Automaton {
             for (NashCommunicationData communication : communicationsToBeCopied) {
 
               if (roles == null)
-                roles = (CommunicationRole[]) communication.roles.clone();
+                roles = ArrayUtils.clone(communication.roles);
               totalProbability += communication.probability;
             
               switch (combiningCostsMethod) {
@@ -794,7 +816,7 @@ public class UStructure extends Automaton {
                   break;
 
                 default:
-                  System.err.println("ERROR: Could not combine communication costs as requested.");
+                  logger.error("Could not combine communication costs as requested.");
                   break;
               }
 
@@ -830,7 +852,7 @@ public class UStructure extends Automaton {
 
   /**
    * Take the crush with respect to a particular controller.
-   * NOTE: All Nash information (cost and probability) will be ignored by this method.
+   * <p>NOTE: All Nash information (cost and probability) will be ignored by this method.
    * @param newHeaderFile         The file where the header should be stored
    * @param newBodyFile           The file where the body should be stored
    * @param indexOfController     The index of the controller in which the crush is taken with respect to (1-based)
@@ -844,14 +866,14 @@ public class UStructure extends Automaton {
                      int indexOfController) {
 
     if (nashCommunications.size() > 0)
-      System.err.println("WARNING: Nash information was ignored.");
+      logger.warn("Nash information was ignored.");
 
       /* Setup */
 
     // Invert this U-Structure (so that we can travel backwards over transitions)
     UStructure invertedUStructure = invert();
 
-    // Create empty crush, copy over events oberservable by the controller
+    // Create empty crush, copy over events observable by the controller
     Crush crush = new Crush(newHeaderFile, newBodyFile, nControllers);
     for (Event e : events)
       if (!e.getVector().isUnobservableToController(indexOfController))
@@ -967,8 +989,8 @@ public class UStructure extends Automaton {
 
   /**
    * Find the Shapley values for each coalition.
-   * NOTE: This can also be used to find the Myerson values once the U-Structure has been pruned.
-   * @return  The mapping between the coalitions and their respective values (or null if there were violations)
+   * <p>NOTE: This can also be used to find the Myerson values once the U-Structure has been pruned.
+   * @return  The mapping between the coalitions and their respective values (or {@code null} if there were violations)
    * 
    * @deprecated Crush is too restrictive in terms of its capabilities, and all operations related to it are subject to removal.
    **/
@@ -1102,7 +1124,7 @@ public class UStructure extends Automaton {
    * @param violation           The violation that we are trying to avoid
    * @param originalUStructure  The original U-Structure
    * @param preExistingProtocol The protocol that we have currently found so far for the original U-Structure
-   * @return                    The communication which should be added (null if nothing was found, which should not happen)
+   * @return                    The communication which should be added ({@code null} if nothing was found, which should not happen)
    **/
   private CommunicationData findCommunicationToBeAdded(TransitionData violation, UStructure originalUStructure, Set<CommunicationData> preExistingProtocol) {
 
@@ -1158,7 +1180,7 @@ public class UStructure extends Automaton {
 
     }
 
-    System.err.println("ERROR: Could not locate communication to be removed.");
+    logger.error("Could not locate communication to be removed.");
 
     return null;
 
@@ -1216,7 +1238,7 @@ public class UStructure extends Automaton {
 
     // Error checking
     if (n < 0 || n > 12) {
-      System.err.println("ERROR: Factorial value of " + n + " is outside allowed range.");
+      logger.error("Factorial value of " + n + " is outside allowed range.");
       return -1;
     }
     
@@ -1233,6 +1255,10 @@ public class UStructure extends Automaton {
 
     UStructure uStructure = (UStructure) automaton;
 
+    for (TransitionData data : suppressedTransitions)
+      if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
+          uStructure.addSuppressedTransition(data.initialStateID, data.eventID, data.targetStateID);
+
     for (TransitionData data : unconditionalViolations)
       if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
         uStructure.addUnconditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
@@ -1243,7 +1269,7 @@ public class UStructure extends Automaton {
 
     for (CommunicationData data : potentialCommunications)
       if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
-        uStructure.addPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID, (CommunicationRole[]) data.roles.clone());
+        uStructure.addPotentialCommunication(data.initialStateID, data.eventID, data.targetStateID, ArrayUtils.clone(data.roles));
 
     for (TransitionData data : invalidCommunications)
       if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
@@ -1251,11 +1277,11 @@ public class UStructure extends Automaton {
 
     for (NashCommunicationData data : nashCommunications)
       if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
-        uStructure.addNashCommunication(data.initialStateID, data.eventID, data.targetStateID, (CommunicationRole[]) data.roles.clone(), data.cost, data.probability);
+        uStructure.addNashCommunication(data.initialStateID, data.eventID, data.targetStateID, ArrayUtils.clone(data.roles), data.cost, data.probability);
 
     for (DisablementData data : disablementDecisions)
       if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
-        uStructure.addDisablementDecision(data.initialStateID, data.eventID, data.targetStateID, (boolean[]) data.controllers.clone());
+        uStructure.addDisablementDecision(data.initialStateID, data.eventID, data.targetStateID, ArrayUtils.clone(data.controllers));
 
   }
 
@@ -1264,7 +1290,7 @@ public class UStructure extends Automaton {
    * @param communication       The event vector representing the communication
    * @param vectorElementsFound Indicates which elements of the vector have been found
    * @param currentState        The state that we are currently on
-   * @return                    The destination state (or null if the communication does not lead to a state)
+   * @return                    The destination state (or {@code null} if the communication does not lead to a state)
    **/
   private State findWhereCommunicationLeads(LabelVector communication,
                                             boolean[] vectorElementsFound,
@@ -1299,7 +1325,7 @@ public class UStructure extends Automaton {
     // Try all transitions leading from this state
     outer: for (Transition t : currentState.getTransitions()) {
 
-      boolean[] copy = (boolean[]) vectorElementsFound.clone();
+      boolean[] copy = ArrayUtils.clone(vectorElementsFound);
 
       // Check to see if the event vector of this transition is compatible with what we've found so far
       for (int i = 0; i < t.getEvent().getVector().getSize(); i++) {
@@ -1341,7 +1367,8 @@ public class UStructure extends Automaton {
 
   /**
    * Encode the current method's state in order to use it as a key in a hash map.
-   * NOTE: This makes the assumption that commas don't appear in event labels (which JDec prevents)
+   * <p>NOTE: This makes the assumption that commas don't appear in event labels
+   * (which {@link com.github.automaton.gui.JDec JDec} prevents)
    * @param communication       The event vector representing the communication
    * @param vectorElementsFound Indicates which elements of the vector have been found
    * @param currentState        The state that we are currently on
@@ -1384,7 +1411,7 @@ public class UStructure extends Automaton {
         observableLabels.add(v);
     }
 
-    // Find all LUB's of the unobservable labels (which will add communications where there is more than one reciever)
+    // Find all LUB's of the unobservable labels (which will add communications where there is more than one receiver)
     generateLeastUpperBounds(unobservableLabels);
 
       /* Find potential communications */
@@ -1397,7 +1424,7 @@ public class UStructure extends Automaton {
           /* Error checking */
 
         if (v1.getSize() == -1 || v2.getSize() == -1 || v1.getSize() != v2.getSize()) {
-          System.err.println("ERROR: Bad event vectors. Least upper bounds generation aborted.");
+          logger.error("Bad event vectors. Least upper bounds generation aborted.");
           return null;
         }
 
@@ -1433,14 +1460,14 @@ public class UStructure extends Automaton {
             potentialCommunication += "," + label2;
             newEventLabel = label2;
             if (i > 0)
-              roles[i - 1] = CommunicationRole.RECIEVER;
+              roles[i - 1] = CommunicationRole.RECEIVER;
           } else {
             potentialCommunication += ",*";
             if (i > 0)
               roles[i - 1] = CommunicationRole.NONE;
           }
 
-          // Make sure that the senders and recievers all are working with the same event
+          // Make sure that the senders and receivers all are working with the same event
           if (eventLabel != null && newEventLabel != null && !newEventLabel.equals(eventLabel)) {
             valid = false;
             break;
@@ -1460,7 +1487,7 @@ public class UStructure extends Automaton {
 
             if (roles[i] == CommunicationRole.SENDER) {
 
-              CommunicationRole[] copy = (CommunicationRole[]) roles.clone();
+              CommunicationRole[] copy = ArrayUtils.clone(roles);
               
               // Remove all other senders
               for (int j = 0; j < copy.length; j++)
@@ -1503,7 +1530,7 @@ public class UStructure extends Automaton {
             /* Error checking */
 
           if (v1.getSize() == -1 || v2.getSize() == -1 || v1.getSize() != v2.getSize()) {
-            System.err.println("ERROR: Bad event vectors. Pair of label vectors skipped.");
+            logger.error("Bad event vectors. Pair of label vectors skipped.");
             continue;
           }
 
@@ -1550,7 +1577,7 @@ public class UStructure extends Automaton {
 
   /**
    * Check to see if the specified protocol is feasible.
-   * NOTE: This method works under the assumption that the protocol has at least one communication.
+   * <p>NOTE: This method works under the assumption that the protocol has at least one communication.
    * @param protocol                    The protocol that is being checked for feasibility
    * @param mustAlsoSolveControlProblem Whether or not the protocol must solve the control problem (meaning
    *                                    there are no violations after pruning)
@@ -1621,7 +1648,7 @@ public class UStructure extends Automaton {
    * Using recursion, determine which states are reachable through transitions which are unobservable to the sender.
    * @param uStructure          The relevant U-Structure
    * @param invertedUStructure  A U-Structure identical to the previous (except all transitions are going the opposite direction)
-   *                            NOTE: There is no need for extra information (such as special transitions) to be in the inverted automaton
+   *                            <p>NOTE: There is no need for extra information (such as special transitions) to be in the inverted automaton
    * @param reachableStates     The set of reachable states that are being built during this recursive process
    * @param currentStateID      The current state
    * @param vectorIndexOfSender The index in the event vector which corresponds to the sending controller
@@ -1651,10 +1678,10 @@ public class UStructure extends Automaton {
   /**
    * For a given feasible protocol (that solves the control problem), combine communication costs using
    * the specified technique.
-   * NOTE: Most methods will need to apply the protocol, then generate 1 or more Crush structures.
-   * NOTE: This method was made public in order to be able to test it using another
+   * <p>NOTE: Most methods will need to apply the protocol, then generate 1 or more Crush structures.</p>
+   * <p>NOTE: This method was made public in order to be able to test it using another</p>
    * @param feasibleProtocol      The list of Nash communications in which costs will be combined
-   *                              NOTE: Unless unit costs are used, then new NashCommunicationData objects
+   *                              <p>NOTE: Unless unit costs are used, then new {@link NashCommunicationData} objects
    *                                    will be created (since those objects could be referenced in other
    *                                    protocols, and we do not want to interfere with them)
    * @param combiningCostsMethod  The method in which the communications are being combined
@@ -1677,7 +1704,7 @@ public class UStructure extends Automaton {
     for (NashCommunicationData communication : feasibleProtocol)
       crushNeedsToBeGenerated[communication.getIndexOfSender()] = true;
 
-    // Generate the neccessary Crushes, storing only the communication cost mappings
+    // Generate the necessary Crushes, storing only the communication cost mappings
     List<Map<String, Double>> costMappingsByCrush = new ArrayList<Map<String, Double>>();
     for (int i = 0; i < nControllers; i++)
       if (crushNeedsToBeGenerated[i]) {
@@ -1687,7 +1714,7 @@ public class UStructure extends Automaton {
       } else
         costMappingsByCrush.add(null);
 
-    // Clear set of communications (since we are creating new NashCommuniationData objects)
+    // Clear set of communications (since we are creating new NashCommunicationData objects)
     Set<NashCommunicationData> originalCommunicationData = new HashSet<NashCommunicationData>(feasibleProtocol);
     feasibleProtocol.clear();
 
@@ -1750,7 +1777,7 @@ public class UStructure extends Automaton {
    * @param uStructure          The relevant U-Structure
    * @param invertedUStructure  The relevant inverted U-Structure
    * @param set                 The set of connected states, which will be populated by this method
-   * @param currentState        The current state ID
+   * @param currentStateID      The current state ID
    * @param indexOfController   The index of the controller
    **/
   protected static void findConnectingStates(UStructure uStructure, UStructure invertedUStructure, Set<Long> set, long currentStateID, int indexOfController) {
@@ -1866,6 +1893,7 @@ public class UStructure extends Automaton {
 
   @Override protected void renumberStatesInAllTransitionData(RandomAccessFile mappingRAFile) throws IOException {
 
+    renumberStatesInTransitionData(mappingRAFile, suppressedTransitions);
     renumberStatesInTransitionData(mappingRAFile, unconditionalViolations);
     renumberStatesInTransitionData(mappingRAFile, conditionalViolations);
     renumberStatesInTransitionData(mappingRAFile, potentialCommunications);
@@ -1879,10 +1907,10 @@ public class UStructure extends Automaton {
    * Find a counter-example, if one exists. The counter-example is returned in the form of a list
    * of sequences of event labels. There will be one sequence for the system, plus one more for each
    * controller that can control the final event.
-   * @param findShortest  If true, the first path to a unconditional violation found will be selected as a
-   *                      counter-example. If false, then the shortest paths to all unconditional violations
+   * @param findShortest  If {@code true}, the first path to a unconditional violation found will be selected as a
+   *                      counter-example. If {@code false}, then the shortest paths to all unconditional violations
    *                      will be found, and then the longest one will be returned 
-   * @return              The list of sequences of event labels (or null if there are no counter-examples)
+   * @return              The list of sequences of event labels (or {@code null} if there are no counter-examples)
    **/
   public List<List<String>> findCounterExample(boolean findShortest) {
 
@@ -1890,7 +1918,7 @@ public class UStructure extends Automaton {
       return null;
 
     if (nStates + 1 > Integer.MAX_VALUE)
-      System.err.println("ERROR: Integer overflow due to too many states.");
+      logger.error("Integer overflow due to too many states.");
 
       /* Find counter-examples using a breadth-first search */
     
@@ -2022,7 +2050,60 @@ public class UStructure extends Automaton {
 
     /* IMAGE GENERATION */
 
-  @Override protected void addAdditionalEdgeProperties(Map<String, String> map) {
+  /**
+   * {@inheritDoc}
+   * 
+   * @since 1.3
+   */
+  @Override
+  protected void addAdditionalNodeProperties(State state, MutableNode node) {
+    if (state.isEnablementState()) {
+      node.add(Color.GREEN3);
+    } else if (state.isDisablementState()) {
+      node.add(Color.RED);
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @since 1.3
+   */
+  @Override
+  protected void addAdditionalLinkProperties(Map<String, Attributes<? extends ForLink>> map) {
+
+    for (TransitionData data : suppressedTransitions) {
+      combineAttributesInMap(map, createKey(data), Attributes.attrs(Color.TRANSPARENT, Label.of("")));
+    }
+
+    for (TransitionData data : unconditionalViolations) {
+      combineAttributesInMap(map, createKey(data), Attributes.attrs(Color.RED, Color.RED.font()));
+    }
+
+    for (TransitionData data : conditionalViolations) {
+      combineAttributesInMap(map, createKey(data), Attributes.attrs(Color.GREEN3, Color.GREEN3.font()));
+    }
+
+    for (TransitionData data : getPotentialCommunications()) {
+      combineAttributesInMap(map, createKey(data), Attributes.attrs(Color.BLUE, Color.BLUE.font()));
+    }
+
+    for (TransitionData data : getNashCommunications()) {
+      combineAttributesInMap(map, createKey(data), Attributes.attrs(Color.BLUE, Color.BLUE.font()));
+    }
+
+    for (TransitionData data : getNashCommunications()) {
+      combineAttributesInMap(map, createKey(data), Style.DOTTED);
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   * @deprecated This method is no longer used. Use {@link #addAdditionalLinkProperties(Map)} instead.
+   */
+  @Override
+  @Deprecated(since = "1.3", forRemoval = true)
+  protected void addAdditionalEdgeProperties(Map<String, String> map) {
 
     for (TransitionData data : unconditionalViolations)
       appendValueToMap(map, createKey(data), ",color=red,fontcolor=red");
@@ -2080,7 +2161,7 @@ public class UStructure extends Automaton {
       if (transitionData.equals(disablementData)) {
         str += ",DISABLEMENT_DECISION-";
         for (boolean b : disablementData.controllers)
-          str += (b ? "T" : "F");
+          str += BooleanUtils.toString(b, "T", "F");
         break;
       }
     
@@ -2107,13 +2188,14 @@ public class UStructure extends Automaton {
 
       /* Write numbers to indicate how many special transitions are in the file */
 
-    byte[] buffer = new byte[24];
+    byte[] buffer = new byte[28];
     ByteManipulator.writeLongAsBytes(buffer, 0,  unconditionalViolations.size(), 4);
     ByteManipulator.writeLongAsBytes(buffer, 4,  conditionalViolations.size(),   4);
     ByteManipulator.writeLongAsBytes(buffer, 8,  potentialCommunications.size(), 4);
     ByteManipulator.writeLongAsBytes(buffer, 12, invalidCommunications.size(),   4);
     ByteManipulator.writeLongAsBytes(buffer, 16, nashCommunications.size(),      4);
     ByteManipulator.writeLongAsBytes(buffer, 20, disablementDecisions.size(),    4);
+    ByteManipulator.writeLongAsBytes(buffer, 24, suppressedTransitions.size(),   4);
     haf.write(buffer);
 
       /* Write special transitions to the .hdr file */
@@ -2124,6 +2206,7 @@ public class UStructure extends Automaton {
     writeTransitionDataToHeader(invalidCommunications);
     writeNashCommunicationDataToHeader(nashCommunications);
     writeDisablementDataToHeader(disablementDecisions);
+    writeTransitionDataToHeader(suppressedTransitions);
 
   }
 
@@ -2221,7 +2304,7 @@ public class UStructure extends Automaton {
       index += 8;
 
       for (boolean b : data.controllers)
-        buffer[index++] = (byte) (b ? 1 : 0);
+        buffer[index++] = (byte) BooleanUtils.toInteger(b);
       
       haf.write(buffer);
 
@@ -2233,14 +2316,15 @@ public class UStructure extends Automaton {
 
       /* Read the number which indicates how many special transitions are in the file */
 
-    byte[] buffer = haf.readHeaderBytes(24);
+    byte[] buffer = haf.readHeaderBytes(28);
 
-    int nUnconditionalViolations = (int) ByteManipulator.readBytesAsLong(buffer, 0,  4);
-    int nConditionalViolations   = (int) ByteManipulator.readBytesAsLong(buffer, 4,  4);
-    int nPotentialCommunications = (int) ByteManipulator.readBytesAsLong(buffer, 8,  4);
-    int nInvalidCommunications   = (int) ByteManipulator.readBytesAsLong(buffer, 12, 4);
-    int nNashCommunications      = (int) ByteManipulator.readBytesAsLong(buffer, 16, 4);
-    int nDisablementDecisions    = (int) ByteManipulator.readBytesAsLong(buffer, 20, 4);
+    int nUnconditionalViolations = ByteManipulator.readBytesAsInt(buffer, 0,  4);
+    int nConditionalViolations   = ByteManipulator.readBytesAsInt(buffer, 4,  4);
+    int nPotentialCommunications = ByteManipulator.readBytesAsInt(buffer, 8,  4);
+    int nInvalidCommunications   = ByteManipulator.readBytesAsInt(buffer, 12, 4);
+    int nNashCommunications      = ByteManipulator.readBytesAsInt(buffer, 16, 4);
+    int nDisablementDecisions    = ByteManipulator.readBytesAsInt(buffer, 20, 4);
+    int nSuppressedTransitions   = ByteManipulator.readBytesAsInt(buffer, 24, 4);
 
       /* Read in special transitions from the .hdr file */
     
@@ -2274,6 +2358,11 @@ public class UStructure extends Automaton {
       readDisablementDataFromHeader(nDisablementDecisions, disablementDecisions);
     }
 
+    if (nSuppressedTransitions > 0) {
+      suppressedTransitions = new ArrayList<TransitionData>();
+      readTransitionDataFromHeader(nSuppressedTransitions, suppressedTransitions);
+    }
+
   }
 
   /**
@@ -2293,7 +2382,7 @@ public class UStructure extends Automaton {
       long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
       index += 8;
       
-      int eventID = (int) ByteManipulator.readBytesAsLong(buffer, index, 4);
+      int eventID = ByteManipulator.readBytesAsInt(buffer, index, 4);
       index += 4;
       
       long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
@@ -2326,7 +2415,7 @@ public class UStructure extends Automaton {
       long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
       index += 8;
       
-      int eventID = (int) ByteManipulator.readBytesAsLong(buffer, index, 4);
+      int eventID = ByteManipulator.readBytesAsInt(buffer, index, 4);
       index += 4;
       
       long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
@@ -2365,7 +2454,7 @@ public class UStructure extends Automaton {
       long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
       index += 8;
       
-      int eventID = (int) ByteManipulator.readBytesAsLong(buffer, index, 4);
+      int eventID = ByteManipulator.readBytesAsInt(buffer, index, 4);
       index += 4;
       
       long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
@@ -2388,6 +2477,8 @@ public class UStructure extends Automaton {
    * @param data  The transition data associated with the special transitions to be removed
    **/
   @Override protected void removeTransitionData(TransitionData data) {
+
+    suppressedTransitions.remove(data);
     
     unconditionalViolations.remove(data);
 
@@ -2403,6 +2494,19 @@ public class UStructure extends Automaton {
 
     disablementDecisions.remove(data);
 
+  }
+
+  /**
+   * Add a suppressed transition.
+   * @param initialStateID   The initial state
+   * @param eventID          The event triggering the transition
+   * @param targetStateID    The target state
+   * 
+   * @since 1.3
+   **/
+  public void addSuppressedTransition(long initialStateID, int eventID, long targetStateID) {
+    suppressedTransitions.add(new TransitionData(initialStateID, eventID, targetStateID));
+    headerFileNeedsToBeWritten = true;
   }
 
   /**
@@ -2453,7 +2557,7 @@ public class UStructure extends Automaton {
   }
 
   /**
-   * Add an invalid communication (which are the communications that were added for mathmatical completeness but are not actually potential communications).
+   * Add an invalid communication (which are the communications that were added for mathematical completeness but are not actually potential communications).
    * @param initialStateID   The initial state
    * @param eventID          The event triggering the transition
    * @param targetStateID    The target state
@@ -2508,7 +2612,7 @@ public class UStructure extends Automaton {
 
   /**
    * Check to see if this U-Structure contains violations.
-   * NOTE: Conditional violations are not included for out purposes.
+   * <p>NOTE: Conditional violations are not included for our purposes.
    * @return  Whether or not there are one or more violations
    **/
   public boolean hasViolations() {
@@ -2518,7 +2622,7 @@ public class UStructure extends Automaton {
   /**
    * Find an arbitrary unconditional violation leading from this state, if one exists.
    * @param startingState The state in which the unconditional violation should come from
-   * @return              The violation data (or null, if none existed)
+   * @return              The violation data (or {@code null}, if none existed)
    **/
   public TransitionData findUnconditionalViolation(State startingState) {
 
