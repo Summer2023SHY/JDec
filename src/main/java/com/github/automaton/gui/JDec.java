@@ -231,17 +231,14 @@ public class JDec extends JFrame implements ActionListener {
       null,
       "Add Communications[U_STRUCTURE]",
       "Feasible Protocols->Generate All[U_STRUCTURE],Make Protocol Feasible[U_STRUCTURE],Find Smallest[U_STRUCTURE],Find First[U_STRUCTURE]",
-      null,
-      "Quantitative Communication->Nash[U_STRUCTURE]"
+      null
     ));
 
     // Properties menu
     menuBar.add(createMenu("Properties",
       "Test Observability[BASIC_AUTOMATON]",
       "Test Controllability[BASIC_AUTOMATON]",
-      null,
-      "Shapley Values[U_STRUCTURE]",
-      "Myerson Values[U_STRUCTURE]"
+      null
     ));
     
     // Generate menu
@@ -373,10 +370,6 @@ public class JDec extends JFrame implements ActionListener {
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, shortcutKey | InputEvent.SHIFT_DOWN_MASK));
         break;
 
-      case "Nash":
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, shortcutKey | InputEvent.SHIFT_DOWN_MASK));
-        break;
-
       case "Random Automaton":
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, shortcutKey));
         break;
@@ -481,7 +474,6 @@ public class JDec extends JFrame implements ActionListener {
    * This method handles all of the actions triggered when the user interacts with the main menu.
    * @param event The triggered event
    **/
-  @SuppressWarnings({"deprecation", "removal"})
   public void actionPerformed(ActionEvent event) {
 
     int index = tabbedPane.getSelectedIndex();
@@ -802,18 +794,6 @@ public class JDec extends JFrame implements ActionListener {
         }
         break;
 
-      case "Nash":
-        // TODO: Handle use of deprecated method
-        uStructure = ((UStructure) tab.automaton);
-
-        if (uStructure.hasSelfLoop(uStructure.getPotentialAndNashCommunications()))
-          displayErrorMessage("Operation Aborted", "There exists one or more communications that are self-loops.");
-        else if (uStructure.getSizeOfPotentialAndNashCommunications() == 0)
-          displayErrorMessage("Operation Aborted", "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.");
-        else
-          new NashInfoForNashEquilibriaPrompt(this, tab, "Cost and Probability Values", "Specify costs and probabilities for each communication.");
-        break;
-
       case "Test Observability":
 
         if (tab.automaton.testObservability())
@@ -828,23 +808,6 @@ public class JDec extends JFrame implements ActionListener {
           displayMessage("Passed Test", "The system is controllable.", JOptionPane.INFORMATION_MESSAGE);
         else
           displayMessage("Failed Test", "The system is not controllable.", JOptionPane.INFORMATION_MESSAGE);
-        break;
-
-      case "Shapley Values":
-
-        uStructure = (UStructure) tab.automaton;
-
-        if (uStructure.hasViolations()) {
-          displayErrorMessage("Operation Aborted", "This structure contains one or more violations.");
-          break;
-        }
-
-        new ShapleyValuesOutput(this, uStructure, "Shapley Values", "Shapley values by controller:", "Shapley values by coalition:");
-        break;
-
-      case "Myerson Values":
-
-        new ChooseCommunicatorsForMyersonPrompt(this, (UStructure) tab.automaton, "Myerson Values", " Specify whether or not a controller is allowed to send to or receive from a particular controller (NOTE: Communications are allowed to be relayed): ");
         break;
 
       case "Random Automaton":
