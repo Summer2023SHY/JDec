@@ -151,13 +151,7 @@ public class Automaton implements Closeable {
     U_STRUCTURE((byte) 1, UStructure.class),
 
     /** The pruned U-Structure */
-    PRUNED_U_STRUCTURE((byte) 2, PrunedUStructure.class),
-
-    /**
-     * A pruned U-Structure after being 'crushed' with respect to a given controller 
-     */
-    @Deprecated(forRemoval = true, since="1.1")
-    CRUSH((byte) 3, Crush.class);
+    PRUNED_U_STRUCTURE((byte) 2, PrunedUStructure.class);
 
     // Private variables
     private final byte numericValue;
@@ -249,9 +243,6 @@ public class Automaton implements Closeable {
         case PRUNED_U_STRUCTURE:
           return "Pruned U-Structure";
         
-        case CRUSH:
-          return "Crush";
-      
       }
 
       return null;
