@@ -13,16 +13,14 @@ package com.github.automaton.automata;
  *  -Accessor Methods
  */
 
-import java.io.*;
 import java.math.*;
 import java.util.*;
 
-import org.apache.commons.io.RandomAccessFileMode;
 import org.apache.commons.lang3.*;
 import org.apache.logging.log4j.*;
 
-import com.github.automaton.automata.util.ByteManipulator;
-import com.github.automaton.io.IOUtility;
+import com.github.automaton.io.json.JsonUtils;
+import com.google.gson.*;
 
 import guru.nidi.graphviz.attribute.*;
 import guru.nidi.graphviz.model.MutableNode;
@@ -63,52 +61,14 @@ public class UStructure extends Automaton {
     /* CONSTRUCTORS */
 
   /**
-   * Implicit constructor: used to load the U-Structure from file.
-   * @param headerFile  The file where the header should be stored
-   * @param bodyFile    The file where the body should be stored
-   **/
-  public UStructure(File headerFile, File bodyFile) {
-    this(
-      headerFile,
-      bodyFile,
-      -1, // This value will be overwritten when the header file is read
-      false
-    );
-  }
-
-  /**
-   * Implicit constructor: used when creating a new U-Structure.
-   * @param headerFile    The file where the header should be stored
-   * @param bodyFile      The file where the body should be stored
-   * @param nControllers  The number of controllers
-   **/
-  public UStructure(File headerFile, File bodyFile, int nControllers) {
-    this(
-      headerFile,
-      bodyFile,
-      nControllers,
-      true
-    );
-  }
-
-  /**
    * Implicit constructor: used to load the U-Structure from file or when creating a new U-Structure.
    * @param headerFile    The file where the header should be stored
    * @param bodyFile      The file where the body should be stored
    * @param nControllers  The number of controllers
    * @param clearFiles    Whether or not the header and body files should be wiped before use
    **/
-  public UStructure(File headerFile, File bodyFile, int nControllers, boolean clearFiles) {
-    this(
-      headerFile,
-      bodyFile,
-      DEFAULT_EVENT_CAPACITY,
-      DEFAULT_STATE_CAPACITY,
-      DEFAULT_TRANSITION_CAPACITY,
-      DEFAULT_LABEL_LENGTH,
-      nControllers,
-      clearFiles
-    );
+  public UStructure(int nControllers) {
+    super(nControllers);
   }
 	
 	/**
@@ -122,20 +82,14 @@ public class UStructure extends Automaton {
    * @param nControllers        The number of controllers
    * @param clearFiles          Whether or not the header and body files should be cleared prior to use
    **/
-  public UStructure(File headerFile,
-                    File bodyFile,
-                    int eventCapacity,
-                    long stateCapacity,
-                    int transitionCapacity,
-                    int labelLength,
-                    int nControllers,
-                    boolean clearFiles) {
+  UStructure(JsonObject jsonObject) {
     
-    super(headerFile, bodyFile, eventCapacity, stateCapacity, transitionCapacity, labelLength, nControllers, clearFiles);
+    super(jsonObject);
     
 	}
 
-  @Override protected void initializeLists() {
+  @Override
+  protected void initializeLists() {
 
     super.initializeLists();
 
@@ -151,8 +105,9 @@ public class UStructure extends Automaton {
 
     /* AUTOMATA OPERATIONS */
 
-  @Override public UStructure accessible(File newHeaderFile, File newBodyFile) {
-    return accessibleHelper(new UStructure(newHeaderFile, newBodyFile, nControllers));
+  @Override
+  public UStructure accessible() {
+    return accessibleHelper(new UStructure(nControllers));
   }
 
   // NOTE: This method works, but it is simply unnecessary, so I commented it out.
@@ -175,7 +130,7 @@ public class UStructure extends Automaton {
 
   @Override
   public UStructure invert() {
-    return invertHelper(new UStructure(null, null, eventCapacity, stateCapacity, transitionCapacity, labelLength, nControllers, true));
+    return invertHelper(new UStructure(nControllers));
   }
 
   /**
@@ -184,7 +139,7 @@ public class UStructure extends Automaton {
    * @param newBodyFile   The body file where the new U-Structure should be stored
    * @return              The U-Structure with the added transitions
    **/
-  public UStructure addCommunications(File newHeaderFile, File newBodyFile) {
+  public UStructure addCommunications() {
     
       /* Setup */
 
@@ -214,7 +169,7 @@ public class UStructure extends Automaton {
     } else
       generateLeastUpperBounds(leastUpperBounds);
 
-    UStructure uStructure = duplicate(newHeaderFile, newBodyFile);
+    UStructure uStructure = (UStructure) clone();
 
       /* Add communications (marking the potential communications) */
 
@@ -279,10 +234,6 @@ public class UStructure extends Automaton {
       }
 
     }
-
-      /* Ensure that the header file has been written to disk */
-
-    uStructure.writeHeaderFile();
 
     return uStructure;
     
@@ -413,7 +364,7 @@ public class UStructure extends Automaton {
       // System.out.println("communications added. protocol size is now: " + protocol.size());
 
       // Apply the protocol, pruning as necessary
-      uStructure = applyProtocol(protocol, null, null, false);
+      uStructure = applyProtocol(protocol, false);
 
       // System.out.println("protocol applied. number of states is now: " + uStructure.getNumberOfStates());
       // System.out.println("actual number of communications left in u-structure: " + uStructure.getSizeOfPotentialAndNashCommunications());
@@ -475,11 +426,9 @@ public class UStructure extends Automaton {
    * @return                            This pruned U-Structure that had the specified protocol applied
    **/
   public <T extends CommunicationData> PrunedUStructure applyProtocol(Set<T> protocol,
-                                                                      File newHeaderFile,
-                                                                      File newBodyFile,
                                                                       boolean discardUnusedCommunications) {
 
-    PrunedUStructure prunedUStructure = duplicateAsPrunedUStructure(null, null);
+    PrunedUStructure prunedUStructure = duplicateAsPrunedUStructure();
 
       /* Remove all communications that are not part of the protocol */
 
@@ -501,16 +450,12 @@ public class UStructure extends Automaton {
     
       /* Get the accessible part of the U-Structure */
 
-    prunedUStructure = prunedUStructure.accessible(newHeaderFile, newBodyFile);
+    prunedUStructure = prunedUStructure.accessible();
 
       /* Remove all inactive events */
 
     prunedUStructure.removeInactiveEvents();
 
-      /* Write header file */
-
-    prunedUStructure.writeHeaderFile();
-    
     return prunedUStructure;
 
   }
@@ -523,30 +468,13 @@ public class UStructure extends Automaton {
    * @param newBodyFile   The body file where the pruned U-Structure should be stored
    * @return              The duplicated U-Structure (as a pruned U-Structure)
    **/
-  public PrunedUStructure duplicateAsPrunedUStructure(File newHeaderFile, File newBodyFile) {
+  public PrunedUStructure duplicateAsPrunedUStructure() {
 
-    if (newHeaderFile == null)
-      newHeaderFile = IOUtility.getTemporaryFile();
-
-    if (newBodyFile == null)
-      newBodyFile = IOUtility.getTemporaryFile();
-
-    if (!duplicateHelper(newHeaderFile, newBodyFile))
-      return null;
-
-    // Change the first byte (which indicates the automaton type)
-    try (RandomAccessFile raFile = RandomAccessFileMode.READ_WRITE.create(newHeaderFile)) {
-      raFile.writeByte((byte) Type.PRUNED_U_STRUCTURE.getNumericValue());
-    } catch (IOException e) {
-      logger.catching(e);
-      return null;
-    }
-
-    return new PrunedUStructure(newHeaderFile, newBodyFile);    
-
+    JsonObject jsonObj = toJsonObject();
+    jsonObj.remove("type");
+    jsonObj.addProperty("type", Type.PRUNED_U_STRUCTURE.getNumericValue());
+    return new PrunedUStructure(jsonObj);
   }
-
-
 
 
 
@@ -1056,8 +984,8 @@ public class UStructure extends Automaton {
    **/
   private boolean isFeasibleProtocol(Set<CommunicationData> protocol, boolean mustAlsoSolveControlProblem) {
 
-    UStructure copy = duplicate();
-    copy = copy.applyProtocol(protocol, null, null, true);
+    UStructure copy = (UStructure) clone();
+    copy = copy.applyProtocol(protocol, true);
 
     // If it must also solve the control problem, but there are still violations, then return false
     if (mustAlsoSolveControlProblem)
@@ -1201,7 +1129,6 @@ public class UStructure extends Automaton {
 
   }
 
-
   /**
    * Generate a list of all possible sets in the powerset which contain the required elements.
    * @param results           This is a list of sets where all of the sets in the powerset will be stored
@@ -1265,15 +1192,16 @@ public class UStructure extends Automaton {
 
   }
 
-  @Override protected void renumberStatesInAllTransitionData(RandomAccessFile mappingRAFile) throws IOException {
+  @Override
+  protected void renumberStatesInAllTransitionData(Map<Long, Long> mappingHashMap) {
 
-    renumberStatesInTransitionData(mappingRAFile, suppressedTransitions);
-    renumberStatesInTransitionData(mappingRAFile, unconditionalViolations);
-    renumberStatesInTransitionData(mappingRAFile, conditionalViolations);
-    renumberStatesInTransitionData(mappingRAFile, potentialCommunications);
-    renumberStatesInTransitionData(mappingRAFile, invalidCommunications);
-    renumberStatesInTransitionData(mappingRAFile, nashCommunications);
-    renumberStatesInTransitionData(mappingRAFile, disablementDecisions);
+    renumberStatesInTransitionData(mappingHashMap, suppressedTransitions);
+    renumberStatesInTransitionData(mappingHashMap, unconditionalViolations);
+    renumberStatesInTransitionData(mappingHashMap, conditionalViolations);
+    renumberStatesInTransitionData(mappingHashMap, potentialCommunications);
+    renumberStatesInTransitionData(mappingHashMap, invalidCommunications);
+    renumberStatesInTransitionData(mappingHashMap, nashCommunications);
+    renumberStatesInTransitionData(mappingHashMap, disablementDecisions);
 
   }
 
@@ -1545,303 +1473,35 @@ public class UStructure extends Automaton {
 
     /* WORKING WITH FILES */
 
-  @Override public UStructure duplicate() {
-    return duplicate(IOUtility.getTemporaryFile(), IOUtility.getTemporaryFile());
+  @Override
+  public Object clone() {
+    return new UStructure(toJsonObject());
   }
 
-  @Override public UStructure duplicate(File newHeaderFile, File newBodyFile) {
-
-    if (!duplicateHelper(newHeaderFile, newBodyFile))
-      return null;
-
-    return new UStructure(newHeaderFile, newBodyFile);
-
-  }
-
-  @Override protected void writeSpecialTransitionsToHeader() throws IOException {
-
-      /* Write numbers to indicate how many special transitions are in the file */
-
-    byte[] buffer = new byte[28];
-    ByteManipulator.writeLongAsBytes(buffer, 0,  unconditionalViolations.size(), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 4,  conditionalViolations.size(),   4);
-    ByteManipulator.writeLongAsBytes(buffer, 8,  potentialCommunications.size(), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 12, invalidCommunications.size(),   4);
-    ByteManipulator.writeLongAsBytes(buffer, 16, nashCommunications.size(),      4);
-    ByteManipulator.writeLongAsBytes(buffer, 20, disablementDecisions.size(),    4);
-    ByteManipulator.writeLongAsBytes(buffer, 24, suppressedTransitions.size(),   4);
-    haf.write(buffer);
+  @Override
+  protected void addSpecialTransitionsToJsonObject(JsonObject jsonObj) {
 
       /* Write special transitions to the .hdr file */
 
-    writeTransitionDataToHeader(unconditionalViolations);
-    writeTransitionDataToHeader(conditionalViolations);
-    writeCommunicationDataToHeader(potentialCommunications);
-    writeTransitionDataToHeader(invalidCommunications);
-    writeNashCommunicationDataToHeader(nashCommunications);
-    writeDisablementDataToHeader(disablementDecisions);
-    writeTransitionDataToHeader(suppressedTransitions);
+    addTransitionDataToJsonObject(jsonObj, "unconditionalViolations", unconditionalViolations);
+    addTransitionDataToJsonObject(jsonObj, "conditionalViolations", conditionalViolations);
+    JsonUtils.addListPropertyToJsonObject(jsonObj, "potentialCommunications", potentialCommunications, CommunicationData.class);
+    addTransitionDataToJsonObject(jsonObj, "invalidCommunications", invalidCommunications);
+    JsonUtils.addListPropertyToJsonObject(jsonObj, "nashCommunications", nashCommunications, NashCommunicationData.class);
+    JsonUtils.addListPropertyToJsonObject(jsonObj, "disablementDecisions", disablementDecisions, DisablementData.class);
+    addTransitionDataToJsonObject(jsonObj, "suppressedTransitions", suppressedTransitions);
 
   }
 
-  /**
-   * A helper method to write a list of communications to the header file.
-   * NOTE: This could be made more efficient by using one buffer for all communication data. This
-   * is possible because each piece of data in the list is supposed to have the same number of roles.
-   * @param list          The list of communication data
-   * @throws IOException  If there was problems writing to file
-   **/
-  private void writeCommunicationDataToHeader(List<CommunicationData> list) throws IOException {
-
-    for (CommunicationData data : list) {
-
-      byte[] buffer = new byte[20 + data.roles.length];
-      int index = 0;
-
-      ByteManipulator.writeLongAsBytes(buffer, index, data.initialStateID, 8);
-      index += 8;
-
-      ByteManipulator.writeLongAsBytes(buffer, index, data.eventID, 4);
-      index += 4;
-
-      ByteManipulator.writeLongAsBytes(buffer, index, data.targetStateID, 8);
-      index += 8;
-
-      for (CommunicationRole role : data.roles)
-        buffer[index++] = role.getNumericValue();
-      
-      haf.write(buffer);
-
-    }
-
-  }
-
-  /**
-   * A helper method to write a list of communications to the header file.
-   * NOTE: This could be made more efficient by using one buffer for all communication data. This
-   * is possible because each piece of data in the list is supposed to have the same number of roles.
-   * @param list          The list of nash communication data
-   * @throws IOException  If there was problems writing to file
-   **/
-  private void writeNashCommunicationDataToHeader(List<NashCommunicationData> list) throws IOException {
-
-
-    for (NashCommunicationData data : list) {
-
-      byte[] buffer = new byte[36 + data.roles.length];
-      int index = 0;
-
-      ByteManipulator.writeLongAsBytes(buffer, index, data.initialStateID, 8);
-      index += 8;
-
-      ByteManipulator.writeLongAsBytes(buffer, index, data.eventID, 4);
-      index += 4;
-
-      ByteManipulator.writeLongAsBytes(buffer, index, data.targetStateID, 8);
-      index += 8;
-
-      ByteManipulator.writeLongAsBytes(buffer, index, Double.doubleToLongBits(data.cost), 8);
-      index += 8;
-
-      ByteManipulator.writeLongAsBytes(buffer, index, Double.doubleToLongBits(data.probability), 8);
-      index += 8;
-
-      for (CommunicationRole role : data.roles)
-        buffer[index++] = role.getNumericValue();
-      
-      haf.write(buffer);
-
-    }
-
-  }
-
-  /**
-   * A helper method to write a list of disablement decisions to the header file.
-   * NOTE: This could be made more efficient by using one buffer for all disablement decisions.
-   * @param list          The list of disablement decisions
-   * @throws IOException  If there were any problems writing to file
-   **/
-  private void writeDisablementDataToHeader(List<DisablementData> list) throws IOException {
-
-    for (DisablementData data : list) {
-
-      byte[] buffer = new byte[20 + data.controllers.length];
-      int index = 0;
-
-      ByteManipulator.writeLongAsBytes(buffer, index, data.initialStateID, 8);
-      index += 8;
-
-      ByteManipulator.writeLongAsBytes(buffer, index, data.eventID, 4);
-      index += 4;
-
-      ByteManipulator.writeLongAsBytes(buffer, index, data.targetStateID, 8);
-      index += 8;
-
-      for (boolean b : data.controllers)
-        buffer[index++] = (byte) BooleanUtils.toInteger(b);
-      
-      haf.write(buffer);
-
-    }
-
-  }
-
-  @Override protected void readSpecialTransitionsFromHeader() throws IOException {
-
-      /* Read the number which indicates how many special transitions are in the file */
-
-    byte[] buffer = haf.readHeaderBytes(28);
-
-    int nUnconditionalViolations = ByteManipulator.readBytesAsInt(buffer, 0,  4);
-    int nConditionalViolations   = ByteManipulator.readBytesAsInt(buffer, 4,  4);
-    int nPotentialCommunications = ByteManipulator.readBytesAsInt(buffer, 8,  4);
-    int nInvalidCommunications   = ByteManipulator.readBytesAsInt(buffer, 12, 4);
-    int nNashCommunications      = ByteManipulator.readBytesAsInt(buffer, 16, 4);
-    int nDisablementDecisions    = ByteManipulator.readBytesAsInt(buffer, 20, 4);
-    int nSuppressedTransitions   = ByteManipulator.readBytesAsInt(buffer, 24, 4);
-
-      /* Read in special transitions from the .hdr file */
-    
-    if (nUnconditionalViolations > 0) {
-      unconditionalViolations = new ArrayList<TransitionData>();
-      readTransitionDataFromHeader(nUnconditionalViolations, unconditionalViolations);
-    }
-    
-    if (nConditionalViolations > 0) {
-      conditionalViolations = new ArrayList<TransitionData>();
-      readTransitionDataFromHeader(nConditionalViolations, conditionalViolations);
-    }
-    
-    if (nPotentialCommunications > 0) {
-      potentialCommunications = new ArrayList<CommunicationData>();
-      readCommunicationDataFromHeader(nPotentialCommunications, potentialCommunications);
-    }
-
-    if (nInvalidCommunications > 0) {
-      invalidCommunications = new ArrayList<TransitionData>();
-      readTransitionDataFromHeader(nInvalidCommunications, invalidCommunications);
-    }
-
-    if (nNashCommunications > 0) {
-      nashCommunications = new ArrayList<NashCommunicationData>();
-      readNashCommunicationDataFromHeader(nNashCommunications, nashCommunications);
-    }
-
-    if (nDisablementDecisions > 0) {
-      disablementDecisions = new ArrayList<DisablementData>();
-      readDisablementDataFromHeader(nDisablementDecisions, disablementDecisions);
-    }
-
-    if (nSuppressedTransitions > 0) {
-      suppressedTransitions = new ArrayList<TransitionData>();
-      readTransitionDataFromHeader(nSuppressedTransitions, suppressedTransitions);
-    }
-
-  }
-
-  /**
-   * A helper method to read a list of communication transitions from the header file.
-   * @param nCommunications The number of communications that need to be read
-   * @param list            The list of communication data
-   * @throws IOException    If there was problems reading from file
-   **/
-  private void readCommunicationDataFromHeader(int nCommunications,
-                                               List<CommunicationData> list) throws IOException {
-
-    byte[] buffer = haf.readHeaderBytes(nCommunications * (20 + nControllers));
-    int index = 0;
-
-    for (int i = 0; i < nCommunications; i++) {
-
-      long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-      index += 8;
-      
-      int eventID = ByteManipulator.readBytesAsInt(buffer, index, 4);
-      index += 4;
-      
-      long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-      index += 8;
-
-      CommunicationRole[] roles = new CommunicationRole[nControllers];
-      for (int j = 0; j < roles.length; j++)
-        roles[j] = CommunicationRole.getRole(buffer[index++]);
-      
-      list.add(new CommunicationData(initialStateID, eventID, targetStateID, roles));
-    
-    }
-
-  }
-
-  /**
-   * A helper method to read a list of nash communication transitions from the header file.
-   * @param nCommunications The number of communications that need to be read
-   * @param list            The list of nash communication data
-   * @throws IOException    If there was problems reading from file
-   **/
-  private void readNashCommunicationDataFromHeader(int nCommunications,
-                                                   List<NashCommunicationData> list) throws IOException {
-
-    byte[] buffer = haf.readHeaderBytes(nCommunications * (36 + nControllers));
-    int index = 0;
-
-    for (int i = 0; i < nCommunications; i++) {
-
-      long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-      index += 8;
-      
-      int eventID = ByteManipulator.readBytesAsInt(buffer, index, 4);
-      index += 4;
-      
-      long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-      index += 8;
-
-      double cost = Double.longBitsToDouble(ByteManipulator.readBytesAsLong(buffer, index, 8));
-      index += 8;
-
-      double probability = Double.longBitsToDouble(ByteManipulator.readBytesAsLong(buffer, index, 8));
-      index += 8;
-
-      CommunicationRole[] roles = new CommunicationRole[nControllers];
-      for (int j = 0; j < roles.length; j++)
-        roles[j] = CommunicationRole.getRole(buffer[index++]);
-      
-      list.add(new NashCommunicationData(initialStateID, eventID, targetStateID, roles, cost, probability));
-    
-    }
-
-  }
-
-  /**
-   * A helper method to read a list of disablement decisions from the header file.
-   * @param nDisablements The number of disablement decisions that need to be read
-   * @param list          The list of disablement decisions
-   * @throws IOException  If there were any problems reading from file
-   **/
-  private void readDisablementDataFromHeader(int nDisablements,
-                                             List<DisablementData> list) throws IOException {
-
-    byte[] buffer = haf.readHeaderBytes(nDisablements * (20 + nControllers));
-    int index = 0;
-
-    for (int i = 0; i < nDisablements; i++) {
-
-      long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-      index += 8;
-      
-      int eventID = ByteManipulator.readBytesAsInt(buffer, index, 4);
-      index += 4;
-      
-      long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-      index += 8;
-
-      boolean[] controllers = new boolean[nControllers];
-      for (int j = 0; j < controllers.length; j++)
-        controllers[j] = (buffer[index++] == 1);
-      
-      list.add(new DisablementData(initialStateID, eventID, targetStateID, controllers));
-    
-    }
-
+  @Override
+  protected void readSpecialTransitionsFromJsonObject(JsonObject jsonObj) {
+    unconditionalViolations = readTransitionDataFromJsonObject(jsonObj, "unconditionalViolations");
+    conditionalViolations = readTransitionDataFromJsonObject(jsonObj, "conditionalViolations");
+    potentialCommunications = JsonUtils.readListPropertyFromJsonObject(jsonObj, "potentialCommunications", CommunicationData.class);
+    invalidCommunications = readTransitionDataFromJsonObject(jsonObj, "invalidCommunications");
+    nashCommunications = JsonUtils.readListPropertyFromJsonObject(jsonObj, "nashCommunications", NashCommunicationData.class);
+    disablementDecisions = JsonUtils.readListPropertyFromJsonObject(jsonObj, "disablementDecisions", DisablementData.class);
+    suppressedTransitions = readTransitionDataFromJsonObject(jsonObj, "suppressedTransitions");
   }
 
     /* MUTATOR METHODS */
@@ -1880,7 +1540,6 @@ public class UStructure extends Automaton {
    **/
   public void addSuppressedTransition(long initialStateID, int eventID, long targetStateID) {
     suppressedTransitions.add(new TransitionData(initialStateID, eventID, targetStateID));
-    headerFileNeedsToBeWritten = true;
   }
 
   /**
@@ -1891,7 +1550,6 @@ public class UStructure extends Automaton {
    **/
   public void addUnconditionalViolation(long initialStateID, int eventID, long targetStateID) {
     unconditionalViolations.add(new TransitionData(initialStateID, eventID, targetStateID));
-    headerFileNeedsToBeWritten = true;
   }
 
   /**
@@ -1902,7 +1560,6 @@ public class UStructure extends Automaton {
    **/
   public void addConditionalViolation(long initialStateID, int eventID, long targetStateID) {
     conditionalViolations.add(new TransitionData(initialStateID, eventID, targetStateID));
-    headerFileNeedsToBeWritten = true;
   }
 
   /**
@@ -1918,8 +1575,6 @@ public class UStructure extends Automaton {
                                         CommunicationRole[] communicationRoles) {
 
     potentialCommunications.add(new CommunicationData(initialStateID, eventID, targetStateID, communicationRoles));
-    headerFileNeedsToBeWritten = true;
-
   }
 
   /**
@@ -1927,7 +1582,6 @@ public class UStructure extends Automaton {
    **/
   public void removeAllPotentialCommunications() {
     potentialCommunications.clear();
-    headerFileNeedsToBeWritten = true;
   }
 
   /**
@@ -1938,7 +1592,6 @@ public class UStructure extends Automaton {
    **/
   public void addInvalidCommunication(long initialStateID, int eventID, long targetStateID) {
     invalidCommunications.add(new TransitionData(initialStateID, eventID, targetStateID));
-    headerFileNeedsToBeWritten = true;
   }
 
   /**
@@ -1958,7 +1611,6 @@ public class UStructure extends Automaton {
                                    double probability) {
 
     nashCommunications.add(new NashCommunicationData(initialStateID, eventID, targetStateID, roles, cost, probability));
-    headerFileNeedsToBeWritten = true;
 
   }
 
@@ -1967,7 +1619,6 @@ public class UStructure extends Automaton {
    **/
   public void removeAllNashCommunications() {
     nashCommunications.clear();
-    headerFileNeedsToBeWritten = true;
   }
 
   /**
@@ -1979,7 +1630,6 @@ public class UStructure extends Automaton {
    **/
   public void addDisablementDecision(long initialStateID, int eventID, long targetStateID, boolean[] controllers) {
     disablementDecisions.add(new DisablementData(initialStateID, eventID, targetStateID, controllers));
-    headerFileNeedsToBeWritten = true;
   }
 
     /* ACCESSOR METHODS */

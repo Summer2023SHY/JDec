@@ -9,6 +9,8 @@ package com.github.automaton.automata;
 
 import java.util.*;
 
+import org.apache.commons.lang3.*;
+
 /**
  * Represents both a vector label and its associated communication roles (which
  * implies that we are only using this for event labels, not state labels).
@@ -24,6 +26,16 @@ class CommunicationLabelVector extends LabelVector {
   public CommunicationRole[] roles;
 
     /* CONSTRUCTOR */
+
+  /**
+   * Private constructor for compatibility with gson
+   * 
+   * @since 2.0
+   */
+  private CommunicationLabelVector() {
+    super(StringUtils.EMPTY);
+    this.roles = (CommunicationRole[]) ArrayUtils.EMPTY_OBJECT_ARRAY;
+  }
 
   /**
    * Construct a CommunicationLabelVector object, given it's label and each controller's communication roles.

@@ -1,4 +1,4 @@
-package com.github.automaton.io;
+package com.github.automaton.io.legacy;
 /**
  * Thrown when the {@code .bdy} file is not able to be interpreted as indicated
  * by its header file. So when anything unexpected happens while reading the

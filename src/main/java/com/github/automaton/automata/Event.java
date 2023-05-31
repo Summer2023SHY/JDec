@@ -11,6 +11,8 @@ package com.github.automaton.automata;
 
 import java.util.*;
 
+import org.apache.commons.lang3.*;
+
 /**
  * Represents an event in an automaton. It supports both centralized and
  * decentralized control, which means that it can have observability and
@@ -38,6 +40,15 @@ public class Event {
   private LabelVector vector = null;
 
     /* CONSTRUCTOR */
+
+  /**
+   * Private constructor for compatibility with gson
+   * 
+   * @since 2.0
+   */
+  private Event() {
+    this(StringUtils.EMPTY, -1, ArrayUtils.EMPTY_BOOLEAN_ARRAY, ArrayUtils.EMPTY_BOOLEAN_ARRAY);
+  }
 
   /**
    * Construct a new event with the specified properties.

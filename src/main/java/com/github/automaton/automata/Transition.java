@@ -35,6 +35,11 @@ public class Transition {
 
     /* CONSTRUCTOR */
 
+  private Transition() {
+    this.event = null;
+    targetStateID = 0;
+  }
+
   /**
    * Constructs a Transition object.
    * @param event         The event triggering this transition

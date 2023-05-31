@@ -263,7 +263,7 @@ public class State {
   @Override
   public String toString() {
     return "("
-      + "\"" + label + "\",ID:"
+      + "\"" + Objects.toString(label) + "\",ID:"
       + id + ","
       + (marked ? "Marked" : "Unmarked") + ","
       + "# Transitions: " + transitions.size()

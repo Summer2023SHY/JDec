@@ -36,6 +36,15 @@ public class TransitionData {
     /* CONSTRUCTOR */
 
   /**
+   * Private constructor for compatibility with gson
+   * 
+   * @since 2.0
+   */
+  private TransitionData() {
+    this(0, -1, 0);
+  }
+
+  /**
    * Construct a TransitionData object using the IDs of the associated event and states.
    * @param initialStateID  The initial state's ID
    * @param eventID         The event's ID
@@ -71,9 +80,9 @@ public class TransitionData {
   public String toString(Automaton automaton) {
     return String.format(
       "%s,%s,%s",
-      automaton.getStateExcludingTransitions(initialStateID).getLabel(),
+      automaton.getState(initialStateID).getLabel(),
       automaton.getEvent(eventID).getLabel(),
-      automaton.getStateExcludingTransitions(targetStateID).getLabel()
+      automaton.getState(targetStateID).getLabel()
     );
   }
 
