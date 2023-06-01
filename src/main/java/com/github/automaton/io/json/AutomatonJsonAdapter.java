@@ -19,7 +19,13 @@ public class AutomatonJsonAdapter implements AutomatonAdapter {
 
     private Automaton automaton;
 
-
+    private transient Gson gson;
+    {
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.setPrettyPrinting();
+        gsonBuilder.disableHtmlEscaping();
+        gson = gsonBuilder.create();
+    }
 
     /**
      * Constructs a new {@code AutomatonAccessFile} with the given file
@@ -70,7 +76,7 @@ public class AutomatonJsonAdapter implements AutomatonAdapter {
         try {
             FileUtils.delete(file);
             try (Writer writer = IOUtils.buffer(new FileWriter(file))) {
-                writer.write(automaton.toJsonObject().toString());
+                gson.toJson(automaton.toJsonObject(), writer);
             }
         } catch (IOException ioe) {
             throw logger.throwing(ioe);
