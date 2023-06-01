@@ -8,7 +8,6 @@ import org.apache.commons.lang3.*;
 import org.apache.logging.log4j.*;
 
 import com.github.automaton.automata.*;
-import com.github.automaton.automata.util.ByteManipulator;
 
 /**
  * I/O Utility class for {@link State}s.

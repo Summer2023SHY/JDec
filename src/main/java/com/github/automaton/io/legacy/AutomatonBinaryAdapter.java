@@ -8,7 +8,6 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.reflect.TypeUtils;
 
 import com.github.automaton.automata.*;
-import com.github.automaton.automata.util.ByteManipulator;
 import com.github.automaton.io.AutomatonAdapter;
 import com.github.automaton.io.json.JsonUtils;
 import com.google.gson.*;

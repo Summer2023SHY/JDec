@@ -1169,14 +1169,9 @@ public class JDec extends JFrame implements ActionListener {
                                       int nBadTransitions,
                                       JLabel progressIndicator) {
 
-    // Get a temporary file name
-    String fileName = getTemporaryFileName();
-
     // Generate random automaton
     Automaton automaton = RandomAutomatonGenerator.generateRandom(
       prompt,
-      new File(fileName + ".hdr"),
-      new File(fileName + ".bdy"),
       nEvents,
       nStates,
       minTransitionsPerState,

@@ -1,7 +1,6 @@
 package com.github.automaton.gui.util;
 
 import java.awt.EventQueue;
-import java.io.*;
 import java.util.*;
 import javax.swing.*;
 
@@ -39,8 +38,6 @@ public class RandomAutomatonGenerator {
    * @return                        The randomly generated automaton (or null if the process was aborted)
    **/
   public static Automaton generateRandom(RandomAutomatonPrompt prompt,
-                                         File headerFile,
-                                         File bodyFile,
                                          int nEvents,
                                          int nStates,
                                          int minTransitionsPerState,
