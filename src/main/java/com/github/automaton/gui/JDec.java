@@ -29,6 +29,7 @@ import javax.xml.transform.dom.*;
 import javax.xml.transform.stream.*;
 
 import org.apache.batik.swing.svg.JSVGComponent;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.time.StopWatch;
@@ -39,7 +40,10 @@ import org.xml.sax.*;
 import com.github.automaton.automata.*;
 import com.github.automaton.automata.graphviz.GraphvizEngineInitializer;
 import com.github.automaton.gui.util.*;
-import com.github.automaton.io.MissingOrCorruptBodyFileException;
+import com.github.automaton.io.AutomatonAdapter;
+import com.github.automaton.io.json.AutomatonJsonAdapter;
+import com.github.automaton.io.legacy.AutomatonBinaryAdapter;
+import com.github.automaton.io.legacy.MissingOrCorruptBodyFileException;
 
 /**
  * A Java application for Decentralized Control. This application has been design to build
@@ -518,10 +522,10 @@ public class JDec extends JFrame implements ActionListener {
       case "Save As...":
 
         // Prompt user to save Automaton to the specified file
-        if (saveFile("Choose .hdr File") != null) {
+        if (saveFile("Choose file") != null) {
           tab.updateTabTitle();
           if (tab.automaton != null)
-            tab.automaton = tab.automaton.duplicate(tab.headerFile, tab.bodyFile);
+            tab.automaton = tab.ioAdapter.getAutomaton();
         }
           
         break;
@@ -578,10 +582,7 @@ public class JDec extends JFrame implements ActionListener {
 
       case "Accessible":
 
-        String fileName = getTemporaryFileName();
-        File headerFile = new File(fileName + ".hdr");
-        File bodyFile = new File(fileName + ".bdy");
-        Automaton automaton = tab.automaton.accessible(headerFile, bodyFile);
+        Automaton automaton = tab.automaton.accessible();
 
         // Create new tab for the accessible automaton
         if (automaton == null) {
@@ -593,21 +594,13 @@ public class JDec extends JFrame implements ActionListener {
 
       case "Co-Accessible":
 
-        fileName = getTemporaryFileName();
-        headerFile = new File(fileName + ".hdr");
-        bodyFile = new File(fileName + ".bdy");
-
         // Create new tab for the co-accessible automaton
-        createTab(tab.automaton.coaccessible(headerFile, bodyFile));
+        createTab(tab.automaton.coaccessible());
         break;
 
       case "Trim":
 
-        fileName = getTemporaryFileName();
-        headerFile = new File(fileName + ".hdr");
-        bodyFile = new File(fileName + ".bdy");
-        
-        automaton = tab.automaton.trim(headerFile, bodyFile);
+        automaton = tab.automaton.trim();
 
         // Create new tab for the trim automaton
         if (automaton == null) {
@@ -619,13 +612,11 @@ public class JDec extends JFrame implements ActionListener {
 
       case "Complement":
 
-        fileName = getTemporaryFileName();
-        headerFile = new File(fileName + ".hdr");
-        bodyFile = new File(fileName + ".bdy");
         try {
           // Create new tab with the complement
-          createTab(tab.automaton.complement(headerFile, bodyFile));
+          createTab(tab.automaton.complement());
         } catch(OperationFailedException e) {
+          logger.catching(e);
           temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
           displayErrorMessage("Operation Failed", "There already exists a dump state, so the complement could not be taken again.");
         }
@@ -633,12 +624,8 @@ public class JDec extends JFrame implements ActionListener {
 
       case "Generate Twin Plant":
 
-        fileName = getTemporaryFileName();
-        headerFile = new File(fileName + ".hdr");
-        bodyFile = new File(fileName + ".bdy");
-        
         // Create new tab with the twin plant
-        createTab(tab.automaton.generateTwinPlant2(headerFile, bodyFile));
+        createTab(tab.automaton.generateTwinPlant2());
         break;
 
       case "Intersection":
@@ -649,15 +636,11 @@ public class JDec extends JFrame implements ActionListener {
           break;
         Automaton otherAutomaton = tabs.get(otherIndex).automaton;
 
-        // Set up files
-        fileName = getTemporaryFileName();
-        headerFile = new File(fileName + ".hdr");
-        bodyFile = new File(fileName + ".bdy");
-
         try {
           // Create new tab with the intersection
-          createTab(Automaton.intersection(tab.automaton, otherAutomaton, headerFile, bodyFile));
+          createTab(Automaton.intersection(tab.automaton, otherAutomaton));
         } catch(IncompatibleAutomataException e) {
+          logger.catching(e);
           temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
           displayErrorMessage("Operation Failed", "Please ensure that both automata have the same number of controllers and that there are no incompatible events (meaning that events share the same name but have different properties).");
         }
@@ -672,14 +655,11 @@ public class JDec extends JFrame implements ActionListener {
           break;
         otherAutomaton = tabs.get(otherIndex).automaton;
 
-        fileName = getTemporaryFileName();
-        headerFile = new File(fileName + ".hdr");
-        bodyFile = new File(fileName + ".bdy");
-
         try {
           // Create new tab with the union
-          createTab(Automaton.union(tab.automaton, otherAutomaton, headerFile, bodyFile));
+          createTab(Automaton.union(tab.automaton, otherAutomaton));
         } catch(IncompatibleAutomataException e) {
+          logger.catching(e);
           temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
           displayErrorMessage("Operation Failed", "Please ensure that both automata have the same number of controllers and that there are no incompatible events (meaning that events share the same name but have different properties).");
         }
@@ -688,10 +668,6 @@ public class JDec extends JFrame implements ActionListener {
 
       case "Synchronized Composition":
 
-        fileName = getTemporaryFileName();
-        headerFile = new File(fileName + ".hdr");
-        bodyFile = new File(fileName + ".bdy");
-
         // Check for unmarked states and display warning.
         if (tab.automaton.hasUnmarkedState())
           displayMessage("Unmarked States", "There are 1 or more states that are unmarked. Since it is assumed that\nthe system is prefix-closed, those states will be considered marked.", JOptionPane.WARNING_MESSAGE);
@@ -699,14 +675,16 @@ public class JDec extends JFrame implements ActionListener {
         // Create new tab with the U-structure generated by synchronized composition
         setBusyCursor(true);
         try {
-          automaton = tab.automaton.synchronizedComposition(headerFile, bodyFile);
+          automaton = tab.automaton.synchronizedComposition();
           createTab(automaton);
           setBusyCursor(false);
         } catch (NoInitialStateException e) {
+          logger.catching(e);
           temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
           setBusyCursor(false);   
           displayErrorMessage("Operation Failed", "Please ensure that you have specified a starting state (using an '@' symbol).");
         } catch (OperationFailedException e) {
+          logger.catching(e);
           temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
           setBusyCursor(false);   
           displayErrorMessage("Operation Failed", "Failed to add state.");
@@ -731,12 +709,8 @@ public class JDec extends JFrame implements ActionListener {
 
         setBusyCursor(true);
 
-        fileName = getTemporaryFileName();
-        headerFile = new File(fileName + ".hdr");
-        bodyFile = new File(fileName + ".bdy");
-
         // Create a copy of the current automaton with all communications added and potential communications marked
-        UStructure uStructureWithCommunications = uStructure.addCommunications(headerFile, bodyFile);
+        UStructure uStructureWithCommunications = uStructure.addCommunications();
         createTab(uStructureWithCommunications);
 
         setBusyCursor(false);
@@ -837,11 +811,16 @@ public class JDec extends JFrame implements ActionListener {
     tabbedPane.addTab(null, null, tab, "");
     tabbedPane.setSelectedIndex(index);
 
-    if (assignTemporaryFiles) {
-      String fileName = getTemporaryFileName();
-      tab.headerFile = new File(fileName + ".hdr");
-      tab.bodyFile = new File(fileName + ".bdy");
-      tab.updateTabTitle();
+    try {
+      if (assignTemporaryFiles) {
+        String fileName = getTemporaryFileName();
+        File tempFile = new File(fileName + ".json");
+        FileUtils.touch(tempFile);
+        tab.ioAdapter = new AutomatonJsonAdapter(tempFile, false);
+        tab.updateTabTitle();
+      }
+    } catch (IOException ioe) {
+      throw new UncheckedIOException(logger.throwing(ioe));
     }
 
       /* Re-activate appropriate components if this is the first tab */
@@ -864,24 +843,44 @@ public class JDec extends JFrame implements ActionListener {
 
   }
 
-  /**
-   * Create a tab, and load in an automaton.
-   * @param automaton   The automaton object
-   **/
   public void createTab(Automaton automaton) {
+    AutomatonJsonAdapter jsonIOAdapter;
+    try {
+      jsonIOAdapter = AutomatonJsonAdapter.wrap(automaton, new File(getTemporaryFileName() + ".json"));
+    } catch (IOException ioe) {
+      throw new UncheckedIOException(logger.throwing(ioe));
+    }
 
-      /* Create new tab */
-
-    createTab(false, Automaton.Type.getType(automaton.getClass()));
+    createJsonTab(jsonIOAdapter);
     int newIndex = tabbedPane.getTabCount() - 1;
 
       /* Set tab values */
 
     AutomatonTab tab = tabs.get(newIndex);
-    tab.headerFile   = automaton.getHeaderFile();
-    tab.bodyFile     = automaton.getBodyFile();
 
-    tab.automaton    = automaton;
+    tab.ioAdapter    = jsonIOAdapter;
+    tab.automaton    = tab.ioAdapter.getAutomaton();
+    tab.refreshGUI();
+    tab.setSaved(true);
+  }
+
+  /**
+   * Create a tab, and load in an automaton.
+   * @param automaton   The automaton object
+   **/
+  public void createLegacyTab(AutomatonBinaryAdapter binaryAutomatonAdapter) {
+
+      /* Create new tab */
+
+    createTab(false, Automaton.Type.getType(binaryAutomatonAdapter.getAutomaton().getClass()));
+    int newIndex = tabbedPane.getTabCount() - 1;
+
+      /* Set tab values */
+
+    AutomatonTab tab = tabs.get(newIndex);
+
+    tab.ioAdapter    = binaryAutomatonAdapter;
+    tab.automaton    = binaryAutomatonAdapter.getAutomaton();
     tab.refreshGUI();
     tab.setSaved(true);
 
@@ -896,6 +895,38 @@ public class JDec extends JFrame implements ActionListener {
       tab.generateImageButton.setEnabled(true);
 
   }
+
+  /**
+   * Create a tab, and load in an automaton.
+   * @param automaton   The automaton object
+   **/
+  public void createJsonTab(AutomatonJsonAdapter jsonAutomatonAdapter) {
+
+    /* Create new tab */
+
+  createTab(false, Automaton.Type.getType(jsonAutomatonAdapter.getAutomaton().getClass()));
+  int newIndex = tabbedPane.getTabCount() - 1;
+
+    /* Set tab values */
+
+  AutomatonTab tab = tabs.get(newIndex);
+
+  tab.ioAdapter    = jsonAutomatonAdapter;
+  tab.automaton    = jsonAutomatonAdapter.getAutomaton();
+  tab.refreshGUI();
+  tab.setSaved(true);
+
+    /* Generate an image (unless it's quite large) */
+
+  if (!DRAW_ENABLED) {
+    tab.generateImageButton.setEnabled(false);
+  } else if (tab.automaton.getNumberOfStates() <= N_STATES_TO_AUTOMATICALLY_DRAW) {
+    generateImage();
+    tab.generateImageButton.setEnabled(false);
+  } else
+    tab.generateImageButton.setEnabled(true);
+
+}
 
   /**
    * Close the current tab, displaying a warning message if the current tab is unsaved.
@@ -959,7 +990,7 @@ public class JDec extends JFrame implements ActionListener {
 
     int index = tabbedPane.getSelectedIndex();
     AutomatonTab tab = tabs.get(index);
-    String fileName = currentDirectory + File.separator + FilenameUtils.removeExtension(tab.headerFile.getName()) + ".svg";
+    String fileName = currentDirectory + File.separator + FilenameUtils.removeExtension(tab.ioAdapter.getFile().getName()) + ".svg";
 
     boolean successful = false;
 
@@ -998,13 +1029,13 @@ public class JDec extends JFrame implements ActionListener {
     // Get the current tab
     int index = tabbedPane.getSelectedIndex();
     AutomatonTab tab = tabs.get(index);
-    if (tab.automaton != null) {
+    /*if (tab.automaton != null) {
       try {
         tab.automaton.close();
       } catch (IOException ioe) {
         throw new UncheckedIOException(ioe);
       }
-    }
+    }*/
 
     // Create automaton from input code
     switch (tab.type) {
@@ -1013,7 +1044,7 @@ public class JDec extends JFrame implements ActionListener {
 
         int nControllers = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
         tab.automaton = AutomatonGenerator.generateFromGUICode(
-          new Automaton(tab.headerFile, tab.bodyFile, nControllers),
+          new Automaton(nControllers),
           tab.eventInput.getText(),
           tab.stateInput.getText(),
           tab.transitionInput.getText(),
@@ -1028,7 +1059,7 @@ public class JDec extends JFrame implements ActionListener {
 
         nControllers = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
         tab.automaton = AutomatonGenerator.generateFromGUICode(
-          new UStructure(tab.headerFile, tab.bodyFile, nControllers),
+          new UStructure(nControllers),
           tab.eventInput.getText(),
           tab.stateInput.getText(),
           tab.transitionInput.getText(),
@@ -1043,7 +1074,7 @@ public class JDec extends JFrame implements ActionListener {
 
         nControllers = (Integer) tabs.get(tabbedPane.getSelectedIndex()).controllerInput.getValue();
         tab.automaton = AutomatonGenerator.generateFromGUICode(
-          new PrunedUStructure(tab.headerFile, tab.bodyFile, nControllers),
+          new PrunedUStructure(nControllers),
           tab.eventInput.getText(),
           tab.stateInput.getText(),
           tab.transitionInput.getText(),
@@ -1092,7 +1123,7 @@ public class JDec extends JFrame implements ActionListener {
     AutomatonTab tab = tabs.get(tabbedPane.getSelectedIndex());
 
     // Create destination file name (excluding extension)
-    String destinationFileName = currentDirectory + File.separator + FilenameUtils.removeExtension(tab.headerFile.getName());
+    String destinationFileName = currentDirectory + File.separator + FilenameUtils.removeExtension(tab.ioAdapter.getFile().getName());
 
     try {
 
@@ -1176,7 +1207,7 @@ public class JDec extends JFrame implements ActionListener {
       @Override public void run() {
 
         AutomatonTab tab = tabs.get(index);
-        Automaton.Type type = Automaton.Type.getType(tab.headerFile);
+        Automaton.Type type = Automaton.Type.getType(tab.automaton.getClass());
         if (type == null) {
           displayErrorMessage("Missing File", "The header file for this automaton could not be found.");
           return;
@@ -1185,10 +1216,10 @@ public class JDec extends JFrame implements ActionListener {
         // final ProgressBarPopup progressBarPopup = new ProgressBarPopup(JDec.this, "Loading...", 3);
 
         // Instantiate automaton
-        switch (type) {
+        /*switch (type) {
 
           case AUTOMATON:
-            tab.automaton = new Automaton(tab.headerFile, tab.bodyFile, false);
+            tab.automaton = new Automaton(tab.headerFile, false);
             break;
 
           case U_STRUCTURE:
@@ -1203,7 +1234,7 @@ public class JDec extends JFrame implements ActionListener {
             displayErrorMessage("Unrecognized Type", "This version of JDec does not support this type of automaton.");
             return;
 
-        }
+        }*/
 
         tab.refreshGUI();
 
@@ -1370,8 +1401,10 @@ public class JDec extends JFrame implements ActionListener {
       /* Filter .hdr files */
 
     fileChooser.setAcceptAllFileFilterUsed(false);
-    FileNameExtensionFilter filter = new FileNameExtensionFilter("Automaton files", "hdr");
-    fileChooser.setFileFilter(filter);
+    FileNameExtensionFilter binaryFilter = new FileNameExtensionFilter("Automaton files", "hdr");
+    FileNameExtensionFilter jsonFilter = new FileNameExtensionFilter("JSON files", "json");
+    fileChooser.addChoosableFileFilter(binaryFilter);
+    fileChooser.addChoosableFileFilter(jsonFilter);
 
       /* Begin at the most recently accessed directory */
 
@@ -1383,40 +1416,91 @@ public class JDec extends JFrame implements ActionListener {
     if (fileChooser.showOpenDialog(null) != JFileChooser.APPROVE_OPTION)
       return null;
 
+    switch (FilenameUtils.getExtension(fileChooser.getSelectedFile().getName())) {
+      case "hdr":
+        return loadBinaryAutomatonFile(fileChooser.getSelectedFile(), index);
+      case "json":
+        return loadJsonAutomatonFile(fileChooser.getSelectedFile(), index);
+      default:
+        throw logger.throwing(new UnsupportedOperationException("Unsupported file extension"));
+    }
+
+  }
+
+  private File loadBinaryAutomatonFile(File selectedFile, int index) {
       /* Update files in the tab and update current directory */
 
-    if (fileChooser.getSelectedFile() != null) {
+    if (selectedFile != null) {
 
       // Check to see if that file is already open
       for (AutomatonTab tab : tabs)
-        if (tab.headerFile.equals(fileChooser.getSelectedFile())) {
+        if (tab.ioAdapter.getFile().equals(selectedFile)) {
           displayErrorMessage("File Already Open", "The specified file is already open in another tab.");
           return null;
         }
 
       // Get files
-      File headerFile = fileChooser.getSelectedFile();
+      File headerFile = selectedFile;
       File bodyFile = new File(headerFile.getParentFile() + File.separator + FilenameUtils.removeExtension(headerFile.getName()) + ".bdy");
      
       // Create new tab (if requested)
       if (index == -1) {
-        createTab(false, Automaton.Type.getType(headerFile));
+        createLegacyTab(new AutomatonBinaryAdapter(headerFile, bodyFile));
         index = tabbedPane.getSelectedIndex();
       }
       AutomatonTab tab = tabs.get(index);
       
       // Update files
-      tab.headerFile = headerFile;
-      tab.bodyFile = bodyFile;
+      tab.ioAdapter = new AutomatonBinaryAdapter(headerFile, bodyFile);
 
       // Update current directory
-      currentDirectory = fileChooser.getSelectedFile().getParentFile();
+      currentDirectory = selectedFile.getParentFile();
       saveCurrentDirectory();
 
     }
 
-    return fileChooser.getSelectedFile();
-    
+    return selectedFile;
+  }
+
+  private File loadJsonAutomatonFile(File selectedFile, int index) {
+        /* Update files in the tab and update current directory */
+
+    if (selectedFile != null) {
+
+      // Check to see if that file is already open
+      for (AutomatonTab tab : tabs)
+        if (tab.ioAdapter.getFile().equals(selectedFile)) {
+          displayErrorMessage("File Already Open", "The specified file is already open in another tab.");
+          return null;
+        }
+
+      // Get files
+      AutomatonJsonAdapter jsonAdapter;
+
+      try {
+        jsonAdapter = new AutomatonJsonAdapter(selectedFile);
+      } catch (IOException ioe) {
+        throw new UncheckedIOException(logger.throwing(ioe));
+      }
+     
+      // Create new tab (if requested)
+      if (index == -1) {
+        createTab(false, jsonAdapter.getAutomaton().getType());
+        index = tabbedPane.getSelectedIndex();
+      }
+      AutomatonTab tab = tabs.get(index);
+      
+      // Update files
+      tab.ioAdapter = jsonAdapter;
+      tab.automaton = tab.ioAdapter.getAutomaton();
+
+      // Update current directory
+      currentDirectory = selectedFile.getParentFile();
+      saveCurrentDirectory();
+
+    }
+
+    return selectedFile;
   }
 
   /**
@@ -1441,8 +1525,10 @@ public class JDec extends JFrame implements ActionListener {
       /* Filter .hdr files */
 
     fileChooser.setAcceptAllFileFilterUsed(false);
-    FileNameExtensionFilter filter = new FileNameExtensionFilter("Automaton files", "hdr");
-    fileChooser.setFileFilter(filter);
+    FileNameExtensionFilter binaryFilter = new FileNameExtensionFilter("Automaton files", "hdr");
+    FileNameExtensionFilter jsonFilter = new FileNameExtensionFilter("JSON files", "json");
+    fileChooser.addChoosableFileFilter(binaryFilter);
+    fileChooser.addChoosableFileFilter(jsonFilter);
 
       /* Begin at the most recently accessed directory */
     
@@ -1458,25 +1544,85 @@ public class JDec extends JFrame implements ActionListener {
     if (result != JFileChooser.APPROVE_OPTION || fileChooser.getSelectedFile() == null)
       return null;
 
-      /* Add .hdr extension if the user didn't put it there */
+    FileNameExtensionFilter usedFilter = (FileNameExtensionFilter) fileChooser.getFileFilter();
 
-    String name = fileChooser.getSelectedFile().getName();
+    if (!FilenameUtils.isExtension(fileChooser.getSelectedFile().getName(), usedFilter.getExtensions())) {
+      fileChooser.setSelectedFile(new File(
+        fileChooser.getSelectedFile().getAbsolutePath()
+        + FilenameUtils.EXTENSION_SEPARATOR
+        + usedFilter.getExtensions()[0]
+      ));
+    }
 
-    // Remove anything after the period
-    if (name.indexOf(".") != -1)
-      name = name.substring(0, name.indexOf("."));
+    switch (FilenameUtils.getExtension(fileChooser.getSelectedFile().getName())) {
+      case "hdr":
+        return saveBinaryFile(fileChooser.getSelectedFile());
+      case "json":
+        return saveJsonFile(fileChooser.getSelectedFile());
+      default:
+        throw logger.throwing(new UnsupportedOperationException("Unsupported file extension"));
+    }
+    
+  }
 
-    String prefix   = fileChooser.getSelectedFile().getParentFile() + File.separator + name;
+  private File saveBinaryFile(File selectedFile) {
+
+    String prefix   = FilenameUtils.removeExtension(selectedFile.getAbsolutePath());
     File headerFile = new File(prefix + ".hdr");
     File bodyFile   = new File(prefix + ".bdy");
     File svgFile    = new File(prefix + ".svg");
+  
+    AutomatonTab currentTab = tabs.get(tabbedPane.getSelectedIndex());
+  
+        /* Check to see if that file is already open */
+  
+    for (AutomatonTab tab : tabs)
+      if (tab.ioAdapter.getFile().equals(headerFile) && currentTab.index != tab.index) {
+        displayErrorMessage("File Is Open", "The specified file is open in another tab. Please choose a different filename.");
+        return null;
+      }
+  
+        /* If it exists, copy the .SVG file to the new location */
+  
+      try {
+  
+        // Copy the file if it exists
+        if (currentTab.svgFile != null && currentTab.svgFile.exists()) {
+          Files.copy(currentTab.svgFile.toPath(), svgFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+          currentTab.svgFile = svgFile;
+        }
+  
+      } catch (IOException e) {
+  
+        // Allow the user to re-generate the image if there was nothing to copy
+        currentTab.svgFile = null;
+        currentTab.generateImageButton.setEnabled(true);
+  
+      }
+  
+        /* Update last file opened and update current directory */
+  
+      currentTab.ioAdapter = new AutomatonBinaryAdapter(headerFile, bodyFile);
+  
+      currentDirectory = headerFile.getParentFile();
+      saveCurrentDirectory();
+  
+      return headerFile;
+  }
+
+  private File saveJsonFile(File selectedFile) {
+
+    
+    File jsonFile = selectedFile;
+    String prefix = FilenameUtils.removeExtension(selectedFile.getAbsolutePath());
+    File svgFile = new File(prefix + ".svg");
 
     AutomatonTab currentTab = tabs.get(tabbedPane.getSelectedIndex());
 
       /* Check to see if that file is already open */
 
     for (AutomatonTab tab : tabs)
-      if (tab.headerFile.equals(headerFile) && currentTab.index != tab.index) {
+      if (tab.ioAdapter.getFile().equals(jsonFile) && currentTab.index != tab.index) {
         displayErrorMessage("File Is Open", "The specified file is open in another tab. Please choose a different filename.");
         return null;
       }
@@ -1501,15 +1647,17 @@ public class JDec extends JFrame implements ActionListener {
 
       /* Update last file opened and update current directory */
 
-    currentTab.headerFile = headerFile;
-    currentTab.bodyFile   = bodyFile;
+    try {
+      currentTab.ioAdapter = AutomatonJsonAdapter.wrap(currentTab.automaton, jsonFile);
+    } catch (IOException ioe) {
+      throw new UncheckedIOException(logger.throwing(ioe));
+    }
 
-    currentDirectory = headerFile.getParentFile();
+    currentDirectory = jsonFile.getParentFile();
     saveCurrentDirectory();
 
-    return headerFile;
-    
-  }
+    return jsonFile;
+}
 
   /**
    * Allow the user to select an automaton that is currently open.
@@ -1532,7 +1680,7 @@ public class JDec extends JFrame implements ActionListener {
         continue;
 
       // Add automaton to list of options
-      optionsList.add(FilenameUtils.removeExtension(tab.headerFile.getAbsolutePath()));
+      optionsList.add(FilenameUtils.removeExtension(tab.ioAdapter.getFile().getAbsolutePath()));
 
     }
 
@@ -1560,7 +1708,7 @@ public class JDec extends JFrame implements ActionListener {
       /* Return index of chosen automaton */
 
     for (int i = 0; i < tabbedPane.getTabCount(); i++)
-      if (tabs.get(i).headerFile != null && FilenameUtils.removeExtension(tabs.get(i).headerFile.getAbsolutePath()).equals(choice))
+      if (tabs.get(i).ioAdapter.getFile() != null && FilenameUtils.removeExtension(tabs.get(i).ioAdapter.getFile().getAbsolutePath()).equals(choice))
         return i;
 
     return -1;
@@ -1795,8 +1943,9 @@ public class JDec extends JFrame implements ActionListener {
     public JSVGComponent canvas = null;
 
     // Automaton properties
+    public AutomatonAdapter ioAdapter;
     public Automaton automaton;
-    public File headerFile, bodyFile, svgFile;
+    public File svgFile;
     public Automaton.Type type;
 
     // Tab properties
@@ -2046,7 +2195,7 @@ public class JDec extends JFrame implements ActionListener {
      **/
     private void updateTabTitle() {
 
-      String title = FilenameUtils.removeExtension(headerFile.getName());
+      String title = FilenameUtils.getBaseName(ioAdapter.getFile().getName());
 
       // Temporary files are always considered unsaved, since the directory is wiped upon closing of the program
       if (!saved || usingTemporaryFiles())
@@ -2133,7 +2282,7 @@ public class JDec extends JFrame implements ActionListener {
      **/
     public boolean usingTemporaryFiles() {
 
-      return headerFile.getParentFile().getAbsolutePath().equals(TEMPORARY_DIRECTORY.getAbsolutePath());
+      return ioAdapter.getFile().getParentFile().getAbsolutePath().equals(TEMPORARY_DIRECTORY.getAbsolutePath());
 
     }
 

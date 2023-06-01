@@ -36,7 +36,8 @@ public class LabelVector implements Iterable<String> {
    * @since 2.0
    */
   private LabelVector() {
-    this(StringUtils.EMPTY);
+    this.label = StringUtils.EMPTY;
+    this.vector = null;
   }
 
   /**

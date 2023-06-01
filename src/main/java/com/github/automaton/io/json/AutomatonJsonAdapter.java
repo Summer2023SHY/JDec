@@ -19,6 +19,8 @@ public class AutomatonJsonAdapter implements AutomatonAdapter {
 
     private Automaton automaton;
 
+
+
     /**
      * Constructs a new {@code AutomatonAccessFile} with the given file
      * @param file an automaton data file
@@ -29,30 +31,38 @@ public class AutomatonJsonAdapter implements AutomatonAdapter {
         this(file, true);
     }
 
-    private AutomatonJsonAdapter(File file, boolean load) throws IOException {
+    public AutomatonJsonAdapter(File file, boolean load) throws IOException {
         this.file = Objects.requireNonNull(file);
         this.fileName = this.file.getAbsolutePath();
         this.logger = LogManager.getLogger(this.getClass().getName() + "(" + this.file.getName() +")");
-        if (!this.file.isFile()) {
+        if (load && !this.file.isFile()) {
             throw logger.throwing(new FileNotFoundException(file + " is not a file"));
         }
-        try (Reader reader = IOUtils.buffer(new FileReader(file))) {
-            JsonElement jsonElement = JsonParser.parseReader(reader);
-            if (!jsonElement.isJsonObject()) {
-                throw logger.throwing(new IllegalAutomatonJsonException("File does not contain a JSON object"));
+        if (load) {
+            try (Reader reader = IOUtils.buffer(new FileReader(file))) {
+                JsonElement jsonElement = JsonParser.parseReader(reader);
+                if (!jsonElement.isJsonObject()) {
+                    throw logger.throwing(new IllegalAutomatonJsonException("File does not contain a JSON object"));
+                }
+                JsonObject jsonObj = jsonElement.getAsJsonObject();
+                this.automaton = Automaton.buildAutomaton(jsonObj);
+            } catch (IOException ioe) {
+                throw logger.throwing(ioe);
             }
-            JsonObject jsonObj = jsonElement.getAsJsonObject();
-            this.automaton = Automaton.buildAutomaton(jsonObj);
-        } catch (IOException ioe) {
-            throw logger.throwing(ioe);
         }
     }
 
     public static <T extends Automaton> AutomatonJsonAdapter wrap(T automaton, File file) throws IOException {
         AutomatonJsonAdapter adapter = new AutomatonJsonAdapter(file, false);
         adapter.automaton = Objects.requireNonNull(automaton);
+        FileUtils.touch(file);
         adapter.save();
         return adapter;
+    }
+
+    @Override
+    public File getFile() {
+        return file;
     }
 
     @Override

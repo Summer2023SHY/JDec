@@ -489,7 +489,7 @@ public class AutomatonBinaryAdapter implements AutomatonAdapter, Closeable {
 
     private void parseBodyFile(JsonObject jsonObj, List<Event> events, Map<String, Number> properties) {
 
-        long nStates = jsonObj.getAsJsonPrimitive("type").getAsLong();
+        long nStates = jsonObj.getAsJsonPrimitive("nStates").getAsLong();
 
         long counter = 0; // Keeps track of blank states
 
@@ -499,7 +499,7 @@ public class AutomatonBinaryAdapter implements AutomatonAdapter, Closeable {
 
         for (long s = 1; s <= nStates + counter; s++) {
 
-            State state = StateIO.readFromFile(events, properties, baf, counter);
+            State state = StateIO.readFromFile(events, properties, baf, s);
 
             // Check for non-existent state
             if (state == null) {
@@ -522,6 +522,19 @@ public class AutomatonBinaryAdapter implements AutomatonAdapter, Closeable {
     }
 
     @Override
+    public File getFile() {
+        return getHeaderFile();
+    }
+
+    public File getHeaderFile() {
+        return haf.getFile();
+    }
+
+    public File getBodyFile() {
+        return baf.getFile();
+    }
+
+    @Override
     public void save() throws IOException {
         // TODO Auto-generated method stub
         throw new NotImplementedException();
@@ -531,6 +544,16 @@ public class AutomatonBinaryAdapter implements AutomatonAdapter, Closeable {
     public void close() throws IOException {
         haf.close();
         baf.close();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        else if (obj instanceof AutomatonBinaryAdapter) {
+            AutomatonBinaryAdapter other = (AutomatonBinaryAdapter) obj;
+            return Objects.equals(this.haf, other.haf) && Objects.equals(this.baf, other.baf);
+        }
+        else return false;
     }
 
 }

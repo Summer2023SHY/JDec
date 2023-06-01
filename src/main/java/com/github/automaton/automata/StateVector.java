@@ -13,7 +13,7 @@ import java.util.*;
  * @since 1.3
  */
 public class StateVector extends State implements Iterable<State> {
-    private List<State> states;
+    private transient List<State> states;
 
     /**
      * Constructs a new {@code StateVector}.

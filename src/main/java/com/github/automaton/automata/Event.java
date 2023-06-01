@@ -47,7 +47,11 @@ public class Event {
    * @since 2.0
    */
   private Event() {
-    this(StringUtils.EMPTY, -1, ArrayUtils.EMPTY_BOOLEAN_ARRAY, ArrayUtils.EMPTY_BOOLEAN_ARRAY);
+    this.label = StringUtils.EMPTY;
+    this.id = -1;
+    this.observable = ArrayUtils.EMPTY_BOOLEAN_ARRAY;
+    this.controllable = ArrayUtils.EMPTY_BOOLEAN_ARRAY;
+    this.vector = null;
   }
 
   /**

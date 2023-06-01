@@ -64,16 +64,7 @@ public class RandomAutomatonGenerator {
 
         /* Create empty automaton with capacities that should prevent the need to re-create the body file */
 
-      automaton = new Automaton(
-        null,
-        null,
-        nEvents,
-        nStates,
-        maxTransitionsPerState,
-        String.valueOf(nStates).length(),
-        nControllers,
-        true
-      );
+      automaton = new Automaton(nControllers);
 
         /* Generate events */
 
@@ -178,7 +169,7 @@ public class RandomAutomatonGenerator {
           /* Check for Accessibility */
 
         updateProgressIndicator(progressIndicator, "Checking accessibility...", nAttempts);
-        Automaton accessibleAutomaton = automaton.accessible(null, null);
+        Automaton accessibleAutomaton = automaton.accessible();
         if (accessibleAutomaton.getNumberOfStates() == nStates)
           isAccessible = true;
 
@@ -208,10 +199,10 @@ public class RandomAutomatonGenerator {
     
     updateProgressIndicator(progressIndicator, "Returning result...", nAttempts);
     
-    if (headerFile == null || bodyFile == null)
-      return automaton.duplicate();
+    //if (headerFile == null || bodyFile == null)
+    //  return automaton;
 
-    return automaton.duplicate(headerFile, bodyFile);
+    return automaton;
 
   }
 

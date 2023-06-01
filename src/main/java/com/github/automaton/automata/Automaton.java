@@ -228,6 +228,7 @@ public class Automaton {
    * @param clearFiles           Whether or not the header and body files should be cleared prior to use
    **/
   public Automaton(int nControllers) {
+    this.nControllers = nControllers;
     initializeLists();
     initializeVariables();
     type = Type.getType(this.getClass());
@@ -401,7 +402,7 @@ public class Automaton {
     Stack<Long> stack = new Stack<Long>();
     for (long s = 1; s <= nStates; s++) {
 
-      State state = invertedAutomaton.getStateExcludingTransitions(s);
+      State state = invertedAutomaton.getState(s);
 
       if (state.isMarked())
         stack.push(s);
@@ -596,7 +597,7 @@ public class Automaton {
 
     // Add states
     for (long s = 1; s <= getNumberOfStates(); s++) {
-      State state = getStateExcludingTransitions(s);
+      State state = getState(s);
       automaton.addState(state.getLabel(), state.isMarked(), s == initialState);
     }
 
@@ -1432,11 +1433,22 @@ public class Automaton {
     for (State s : states.values()) {
       long origID = s.getID();
       s.setID(newID);
-      newStateMap.put(newID, s);
+      newStateMap.put(newID++, s);
       mappingHashMap.put(origID, s.getID());
     }
 
     states = newStateMap;
+
+    /* Update transitions */
+
+    for (State s : states.values()) {
+      for (Transition t : s.getTransitions()) {
+        t.setTargetStateID(mappingHashMap.get(t.getTargetStateID()));
+      }
+    }
+
+    /* Update initial state */
+    setInitialStateID(mappingHashMap.get(initialState));
 
     /* Update the special transitions */
 
@@ -1692,7 +1704,7 @@ public class Automaton {
         ArrayList<Transition> transitionsToSkip = new ArrayList<Transition>();
         for (Transition t : state.getTransitions()) {
 
-          State targetState = getStateExcludingTransitions(t.getTargetStateID());
+          State targetState = getState(t.getTargetStateID());
 
           // Check to see if this transition has additional properties (meaning it's a special transition)
           String key = "" + stateLabel + " " + t.getEvent().getID() + " " + formatStateLabel(targetState);
@@ -1741,7 +1753,7 @@ public class Automaton {
           }
 
           // Add transition
-          MutableNode targetNode = mutNode(formatStateLabel(getStateExcludingTransitions(t1.getTargetStateID())));
+          MutableNode targetNode = mutNode(formatStateLabel(getState(t1.getTargetStateID())));
           targetNode.addTo(g);
           Link l = sourceNode.linkTo(targetNode);
           l.add(Label.of(label));
@@ -1750,7 +1762,7 @@ public class Automaton {
 
         if (initialState > 0) {
           MutableNode startNode = mutNode("").add(Shape.PLAIN_TEXT);
-          MutableNode initNode = mutNode(formatStateLabel(getStateExcludingTransitions(initialState)));
+          MutableNode initNode = mutNode(formatStateLabel(getState(initialState)));
           Link init = startNode.linkTo(initNode);
           init.add(Color.BLUE);
           startNode.links().add(init);
@@ -1802,7 +1814,7 @@ public class Automaton {
         ArrayList<Transition> transitionsToSkip = new ArrayList<Transition>();
         for (Transition t : state.getTransitions()) {
 
-          State targetState = getStateExcludingTransitions(t.getTargetStateID());
+          State targetState = getState(t.getTargetStateID());
 
           // Check to see if this transition has additional properties (meaning it's a special transition)
           String key = "" + stateLabel + " " + t.getEvent().getID() + " " + formatStateLabel(targetState);
@@ -1849,7 +1861,7 @@ public class Automaton {
           }
 
           // Add transition
-          String edge = "\"_" + stateLabel + "\" -> \"_" + formatStateLabel(getStateExcludingTransitions(t1.getTargetStateID())) + "\"";
+          String edge = "\"_" + stateLabel + "\" -> \"_" + formatStateLabel(getState(t1.getTargetStateID())) + "\"";
           str.append(edge);
           str.append(" [label=\"" + label + "\"]");
 
@@ -1861,7 +1873,7 @@ public class Automaton {
 
       if (initialState > 0) {
         str.append("node [shape=plaintext];");
-        str.append("\" \"-> \"_" + formatStateLabel(getStateExcludingTransitions(initialState)) + "\" [color=blue];");
+        str.append("\" \"-> \"_" + formatStateLabel(getState(initialState)) + "\" [color=blue];");
       }
 
       str.append("}");
@@ -1943,7 +1955,7 @@ public class Automaton {
   protected String createKey(TransitionData data) {
     return "" + formatStateLabel(getState(data.initialStateID)) + " "
               + data.eventID + " "
-              + formatStateLabel(getStateExcludingTransitions(data.targetStateID));
+              + formatStateLabel(getState(data.targetStateID));
   }
 
   /**
@@ -2070,7 +2082,7 @@ public class Automaton {
         transitionInputBuilder.append(
             state.getLabel()
             + "," + t.getEvent().getLabel()
-            + "," + getStateExcludingTransitions(t.getTargetStateID()).getLabel()
+            + "," + getState(t.getTargetStateID()).getLabel()
           );
 
           /* Append special transition information */
@@ -2161,7 +2173,7 @@ public class Automaton {
 
     jsonObj.addProperty("type", type.numericValue);
     JsonUtils.addListPropertyToJsonObject(jsonObj, "events", events, Event.class);
-    jsonObj.add("states", gson.toJsonTree(states.values(), TypeUtils.parameterize(states.values().getClass(), State.class)));
+    jsonObj.add("states", gson.toJsonTree(states.values(), TypeUtils.parameterize(Collection.class, State.class)));
 
     addSpecialTransitionsToJsonObject(jsonObj);
 
@@ -2690,18 +2702,6 @@ public class Automaton {
     }
 
     return null;
-  }
-
-  /**
-   * Given the ID number of a state, get the state information (excluding transitions).
-   * @implNote This is a light-weight method which is used when accessing or modifying the transitions is not needed.
-   * @param id  The unique identifier corresponding to the requested state
-   * @return    The requested state
-   * 
-   **/
-  @Deprecated(since = "2.0", forRemoval = true)
-  public State getStateExcludingTransitions(long id) {
-    return getState(id);
   }
 
   /**

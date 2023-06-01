@@ -1,6 +1,6 @@
 package com.github.automaton.io;
 
-import java.io.IOException;
+import java.io.*;
 
 import com.github.automaton.automata.*;
 import com.github.automaton.io.json.AutomatonJsonAdapter;
@@ -21,7 +21,7 @@ public interface AutomatonAdapter {
         }
     }
 
-    
+    public File getFile();
 
     public Automaton getAutomaton();
 

@@ -4,6 +4,7 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.Objects;
 
+import org.apache.commons.io.file.FilesUncheck;
 import org.apache.logging.log4j.*;
 
 /**
@@ -73,6 +74,15 @@ public abstract class AutomatonAccessFile implements Closeable {
      */
     protected final Logger getLogger() {
         return logger;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        else if (obj instanceof AutomatonAccessFile) {
+            return FilesUncheck.isSameFile(this.file.toPath(), ((AutomatonAccessFile) obj).file.toPath());
+        }
+        else return false;
     }
 
     /**

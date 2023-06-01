@@ -13,6 +13,7 @@ import java.awt.event.*;
 import javax.swing.*;
 
 import com.github.automaton.automata.Automaton;
+import com.github.automaton.io.legacy.AutomatonBinaryAdapter;
 
 /**
  * Displays a popup box which allows the user to specify the properties of a random
@@ -89,7 +90,7 @@ public class RandomAutomatonPrompt extends JDialog {
     c.gridx = 0; c.gridy = 1;
     add(nEventsLabel, c);
 
-    nEvents = new JSpinner(new SpinnerNumberModel(nEventsDefault, 0, Automaton.MAX_EVENT_CAPACITY, 1));
+    nEvents = new JSpinner(new SpinnerNumberModel(nEventsDefault, 0, AutomatonBinaryAdapter.MAX_EVENT_CAPACITY, 1));
     c.gridx = 1; c.gridy = 1;
     add(nEvents, c);
 
@@ -109,7 +110,7 @@ public class RandomAutomatonPrompt extends JDialog {
     c.gridx = 0; c.gridy = 3;
     add(minTransitionsLabel, c);
 
-    minTransitions = new JSpinner(new SpinnerNumberModel(minTransitionsDefault, 0, Automaton.MAX_TRANSITION_CAPACITY, 1));
+    minTransitions = new JSpinner(new SpinnerNumberModel(minTransitionsDefault, 0, AutomatonBinaryAdapter.MAX_TRANSITION_CAPACITY, 1));
     c.gridx = 1; c.gridy = 3;
     add(minTransitions, c);
 
@@ -117,7 +118,7 @@ public class RandomAutomatonPrompt extends JDialog {
     c.gridx = 0; c.gridy = 4;
     add(maxTransitionsLabel, c);
 
-    maxTransitions = new JSpinner(new SpinnerNumberModel(maxTransitionsDefault, 1, Automaton.MAX_TRANSITION_CAPACITY, 1));
+    maxTransitions = new JSpinner(new SpinnerNumberModel(maxTransitionsDefault, 1, AutomatonBinaryAdapter.MAX_TRANSITION_CAPACITY, 1));
     c.gridx = 1; c.gridy = 4;
     add(maxTransitions, c);
 
