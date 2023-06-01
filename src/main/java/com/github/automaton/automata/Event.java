@@ -37,7 +37,7 @@ public class Event {
    * Example of syntax: "&lt;a,b,d>" actually represents an event vector: {"a", "b", "d"}. This instance
    * variable holds a reference to the vectorized event label.
    **/
-  private LabelVector vector = null;
+  private transient LabelVector vector = null;
 
     /* CONSTRUCTOR */
 
@@ -137,6 +137,9 @@ public class Event {
    * @return  The event vector
    **/
   public LabelVector getVector() {
+    if (this.vector == null) {
+      this.vector = new LabelVector(label);
+    }
     return vector;
   }
 
