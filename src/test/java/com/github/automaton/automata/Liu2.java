@@ -2,6 +2,10 @@ package com.github.automaton.automata;
 import java.io.*;
 import java.util.*;
 
+import org.apache.commons.lang3.ObjectUtils;
+
+import com.github.automaton.io.legacy.AutomatonBinaryAdapter;
+
 public class Liu2 {
 
   enum FirstCriteria {
@@ -46,14 +50,21 @@ public class Liu2 {
   static Map<String, UStructure> storedUStructures = new HashMap<String, UStructure>();
   static Map<String, Long> storedTime = new HashMap<String, Long>();
 
-  public static void main(String[] args) throws IncompatibleAutomataException {
+  public static void main(String[] args) throws IOException {
 
     // Large Example
     List<Automaton> plants = new ArrayList<Automaton>();
-    plants.add(duplicate(new Automaton(new File("Thesis/Large/NAME.hdr"), new File("Thesis/Large/NAME.bdy"), false)));
+    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/Large/NAME.hdr"), new File("Thesis/Large/NAME.bdy"))) {
+      plants.add(binary.getAutomaton());
+    }
     List<Automaton> specs = new ArrayList<Automaton>();
-    specs.add(duplicate(new Automaton(new File("Thesis/Large/NAME.hdr"), new File("Thesis/Large/NAME.bdy"), false)));
-    Automaton gSigmaStar = new Automaton(new File("Thesis/Large/G_SIGMA_STAR.hdr"), new File("Thesis/Large/G_SIGMA_STAR.bdy"), false);
+    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/Large/NAME.hdr"), new File("Thesis/Large/NAME.bdy"))) {
+      specs.add(binary.getAutomaton());
+    }
+    Automaton gSigmaStar;
+    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/Large/G_SIGMA_STAR.hdr"), new File("Thesis/Large/G_SIGMA_STAR.bdy"))) {
+      gSigmaStar = binary.getAutomaton();
+    }
 
     // First Example
     // List<Automaton> plants = new ArrayList<Automaton>();
@@ -403,7 +414,7 @@ public class Liu2 {
       System.err.printf("\t\tStarting outer loop iteration #%d.\n", iterationOuter);
 
       Automaton kPrime = specs.get(0);
-      Automaton lPrime = gSigmaStar.duplicate();
+      Automaton lPrime = ObjectUtils.clone(gSigmaStar);
 
       // Temporary
       List<Automaton> automataInKPrime = new ArrayList<Automaton>();
@@ -538,7 +549,7 @@ public class Liu2 {
         if (choosePlantFirst) {
           if (chosenPlant != null) {
             Automaton automaton = plants.get(chosenPlant);
-            lPrime = Automaton.intersection(lPrime, automaton, null, null);
+            lPrime = Automaton.intersection(lPrime, automaton);
             System.err.println("\t\t\t\tPicking automaton from L\\L': " + automaton);
             automataInLPrime.add(automaton);
             System.err.println("\t\t\t\tSize of L': " + lPrime.getNumberOfStates());
@@ -546,7 +557,7 @@ public class Liu2 {
             continue loop;
           } else if (chosenSpec != null) {
             Automaton automaton = specs.get(chosenSpec);
-            kPrime = Automaton.intersection(kPrime, automaton, null, null);
+            kPrime = Automaton.intersection(kPrime, automaton);
             System.err.println("\t\t\t\tPicking automaton from K\\K': " + automaton);
             automataInKPrime.add(automaton);
             System.err.println("\t\t\t\tSize of K': " + kPrime.getNumberOfStates());
@@ -556,7 +567,7 @@ public class Liu2 {
         } else {
           if (chosenSpec != null) {
             Automaton automaton = specs.get(chosenSpec);
-            kPrime = Automaton.intersection(kPrime, automaton, null, null);
+            kPrime = Automaton.intersection(kPrime, automaton);
             System.err.println("\t\t\t\tPicking automaton from K\\K': " + automaton);
             automataInKPrime.add(automaton);
             System.err.println("\t\t\t\tSize of K': " + kPrime.getNumberOfStates());
@@ -564,7 +575,7 @@ public class Liu2 {
             continue loop;
           } else if (chosenPlant != null) {
             Automaton automaton = plants.get(chosenPlant);
-            lPrime = Automaton.intersection(lPrime, automaton, null, null);
+            lPrime = Automaton.intersection(lPrime, automaton);
             System.err.println("\t\t\t\tPicking automaton from L\\L': " + automaton);
             automataInLPrime.add(automaton);
             System.err.println("\t\t\t\tSize of L': " + lPrime.getNumberOfStates());
@@ -615,14 +626,6 @@ public class Liu2 {
 
   // }
 
-  public static Automaton duplicate(Automaton a) {
-
-    File newHeaderFile = append(a.getHeaderFile(), "d");
-    File newBodyFile = append(a.getBodyFile(), "d");
-    return a.duplicate(newHeaderFile, newBodyFile);
-
-  }
-
   public static void addSelfLoops(List<Automaton> automata) {
 
     for (Automaton a : automata) {
@@ -647,8 +650,8 @@ public class Liu2 {
       timeElapsed[combinationIndex] += storedTime.get(encoded);
     } else {
       long startTime = System.nanoTime();
-      Automaton automaton = kPrime.generateTwinPlant2(null, null);
-      uStructure = Automaton.union(lPrime, automaton, null, null).synchronizedComposition(null, null);
+      Automaton automaton = kPrime.generateTwinPlant2();
+      uStructure = Automaton.union(lPrime, automaton).synchronizedComposition();
       long endTime = System.nanoTime();
       storedUStructures.put(encoded, uStructure);
       storedTime.put(encoded, (endTime - startTime));

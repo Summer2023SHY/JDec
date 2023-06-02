@@ -2,27 +2,41 @@ package com.github.automaton.automata;
 import java.io.*;
 import java.util.*;
 
+import org.apache.commons.lang3.ObjectUtils;
+
+import com.github.automaton.io.legacy.AutomatonBinaryAdapter;
+
 public class Liu {
 
   static Map<String, UStructure> storedUStructures = new HashMap<String, UStructure>();
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
     perms();
     // permsFirstAutomaton();
   }
 
-	public static void perms() {
+	public static void perms() throws IOException {
 
     // Plants
     List<Automaton> plants = new ArrayList<Automaton>();
-    plants.add(new Automaton(new File("Thesis/SecondExample/SenderB.hdr"), new File("Thesis/SecondExample/SenderB.bdy"), false));
-    plants.add(new Automaton(new File("Thesis/SecondExample/ReceiverB.hdr"), new File("Thesis/SecondExample/ReceiverB.bdy"), false));
-    plants.add(new Automaton(new File("Thesis/SecondExample/ChannelRS.hdr"), new File("Thesis/SecondExample/ChannelRS.bdy"), false));
-    plants.add(new Automaton(new File("Thesis/SecondExample/ChannelSR.hdr"), new File("Thesis/SecondExample/ChannelSR.bdy"), false));
+    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/SecondExample/SenderB.hdr"), new File("Thesis/SecondExample/SenderB.bdy"))) {
+      plants.add(binary.getAutomaton());
+    }
+    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/SecondExample/ReceiverB.hdr"), new File("Thesis/SecondExample/ReceiverB.bdy"))) {
+      plants.add(binary.getAutomaton());
+    }
+    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/SecondExample/ChannelRS.hdr"), new File("Thesis/SecondExample/ChannelRS.bdy"))) {
+      plants.add(binary.getAutomaton());
+    }
+    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/SecondExample/ChannelSR.hdr"), new File("Thesis/SecondExample/ChannelSR.bdy"))) {
+      plants.add(binary.getAutomaton());
+    }
 
     // Specifications
     List<Automaton> specs = new ArrayList<Automaton>();
-    specs.add(new Automaton(new File("Thesis/SecondExample/Specification.hdr"), new File("Thesis/SecondExample/Specification.bdy"), false));
+    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/SecondExample/Specification.hdr"), new File("Thesis/SecondExample/Specification.bdy"))) {
+      plants.add(binary.getAutomaton());
+    }
 
     // // Plants
     // List<Automaton> plants = new ArrayList<Automaton>();
@@ -38,7 +52,10 @@ public class Liu {
 
     // G{Sigma*}
     // Automaton gSigmaStar = new Automaton(new File("Thesis/G_SIGMA_STAR.hdr"), new File("Thesis/G_SIGMA_STAR.bdy"), false);
-    Automaton gSigmaStar = new Automaton(new File("Thesis/SecondExample/G_SIGMA_STAR.hdr"), new File("Thesis/SecondExample/G_SIGMA_STAR.bdy"), false);
+    Automaton gSigmaStar;
+    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/SecondExample/G_SIGMA_STAR.hdr"), new File("Thesis/SecondExample/G_SIGMA_STAR.bdy"))) {
+      gSigmaStar = binary.getAutomaton();
+    }
 
     try {
       
@@ -117,7 +134,7 @@ public class Liu {
       System.out.printf("\t\tStarting outer loop iteration #%d.\n", iterationOuter);
 
       Automaton kPrime = specs.get(0);
-      Automaton lPrime = gSigmaStar.duplicate();
+      Automaton lPrime = ObjectUtils.clone(gSigmaStar);
 
       // Temporary
       List<Automaton> automataInKPrime = new ArrayList<Automaton>();
@@ -172,13 +189,13 @@ public class Liu {
         if (choosePlantFirst) {
           if (chosenPlant != null) {
             Automaton automaton = plants.get(chosenPlant);
-            lPrime = Automaton.intersection(lPrime, automaton, null, null);
+            lPrime = Automaton.intersection(lPrime, automaton);
             System.out.println("\t\t\t\tPicking automaton from L\\L': " + automaton);
             automataInLPrime.add(automaton);
             continue loop;
           } else if (chosenSpec != null) {
             Automaton automaton = specs.get(chosenSpec);
-            kPrime = Automaton.intersection(kPrime, automaton, null, null);
+            kPrime = Automaton.intersection(kPrime, automaton);
             System.out.println("\t\t\t\tPicking automaton from K\\K': " + automaton);
             automataInKPrime.add(automaton);
             continue loop;
@@ -186,13 +203,13 @@ public class Liu {
         } else {
           if (chosenSpec != null) {
             Automaton automaton = specs.get(chosenSpec);
-            kPrime = Automaton.intersection(kPrime, automaton, null, null);
+            kPrime = Automaton.intersection(kPrime, automaton);
             System.out.println("\t\t\t\tPicking automaton from K\\K': " + automaton);
             automataInKPrime.add(automaton);
             continue loop;
           } else if (chosenPlant != null) {
             Automaton automaton = plants.get(chosenPlant);
-            lPrime = Automaton.intersection(lPrime, automaton, null, null);
+            lPrime = Automaton.intersection(lPrime, automaton);
             System.out.println("\t\t\t\tPicking automaton from L\\L': " + automaton);
             automataInLPrime.add(automaton);
             continue loop;
@@ -228,9 +245,7 @@ public class Liu {
     List<Automaton> duplicatedAutomata = new ArrayList<Automaton>();
 
     for (Automaton a : automata) {
-      File newHeaderFile = append(a.getHeaderFile(), "d");
-      File newBodyFile = append(a.getBodyFile(), "d");
-      duplicatedAutomata.add(a.duplicate(newHeaderFile, newBodyFile));
+      duplicatedAutomata.add(ObjectUtils.clone(a));
     }
 
     return duplicatedAutomata;
@@ -258,8 +273,8 @@ public class Liu {
       System.out.println("already calculated!");
       uStructure = stored;
     } else {
-      Automaton automaton = kPrime.generateTwinPlant2(null, null);
-      uStructure = Automaton.union(lPrime, automaton, null, null).synchronizedComposition(null, null);
+      Automaton automaton = kPrime.generateTwinPlant2();
+      uStructure = Automaton.union(lPrime, automaton).synchronizedComposition();
       storedUStructures.put(encoded, uStructure);
     }
     
@@ -287,18 +302,28 @@ public class Liu {
 **/
 
 
-    public static void permsFirstAutomaton() {
+    public static void permsFirstAutomaton() throws IOException {
 
       // Plants
     List<Automaton> plants = new ArrayList<Automaton>();
-    plants.add(new Automaton(new File("Thesis/SecondExample/SenderB.hdr"), new File("Thesis/SecondExample/SenderB.bdy"), false));
-    plants.add(new Automaton(new File("Thesis/SecondExample/ReceiverB.hdr"), new File("Thesis/SecondExample/ReceiverB.bdy"), false));
-    plants.add(new Automaton(new File("Thesis/SecondExample/ChannelRS.hdr"), new File("Thesis/SecondExample/ChannelRS.bdy"), false));
-    plants.add(new Automaton(new File("Thesis/SecondExample/ChannelSR.hdr"), new File("Thesis/SecondExample/ChannelSR.bdy"), false));
+    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/SecondExample/SenderB.hdr"), new File("Thesis/SecondExample/SenderB.bdy"))) {
+      plants.add(binary.getAutomaton());
+    }
+    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/SecondExample/ReceiverB.hdr"), new File("Thesis/SecondExample/ReceiverB.bdy"))) {
+      plants.add(binary.getAutomaton());
+    }
+    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/SecondExample/ChannelRS.hdr"), new File("Thesis/SecondExample/ChannelRS.bdy"))) {
+      plants.add(binary.getAutomaton());
+    }
+    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/SecondExample/ChannelSR.hdr"), new File("Thesis/SecondExample/ChannelSR.bdy"))) {
+      plants.add(binary.getAutomaton());
+    }
 
     // Specifications
     List<Automaton> specs = new ArrayList<Automaton>();
-    specs.add(new Automaton(new File("Thesis/SecondExample/Specification.hdr"), new File("Thesis/SecondExample/Specification.bdy"), false));
+    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/SecondExample/Specification.hdr"), new File("Thesis/SecondExample/Specification.bdy"))) {
+      specs.add(binary.getAutomaton());
+    }
 
     // // Plants
     // List<Automaton> plants = new ArrayList<Automaton>();
@@ -314,7 +339,10 @@ public class Liu {
 
     // G{Sigma*}
     // Automaton gSigmaStar = new Automaton(new File("Thesis/G_SIGMA_STAR.hdr"), new File("Thesis/G_SIGMA_STAR.bdy"), false);
-    Automaton gSigmaStar = new Automaton(new File("Thesis/SecondExample/G_SIGMA_STAR.hdr"), new File("Thesis/SecondExample/G_SIGMA_STAR.bdy"), false);
+    Automaton gSigmaStar;
+    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/SecondExample/G_SIGMA_STAR.hdr"), new File("Thesis/SecondExample/G_SIGMA_STAR.bdy"))) {
+      gSigmaStar = binary.getAutomaton();
+    }
 
     try {
       
@@ -373,7 +401,7 @@ public class Liu {
       System.out.printf("\t\tStarting outer loop iteration #%d.\n", iterationOuter);
 
       Automaton kPrime = specs.get(0);
-      Automaton lPrime = gSigmaStar.duplicate();
+      Automaton lPrime = ObjectUtils.clone(gSigmaStar);
 
       // Temporary
       List<Automaton> automataInKPrime = new ArrayList<Automaton>();
@@ -394,7 +422,7 @@ public class Liu {
 
           for (Automaton automaton : plants) {
             if (!automataInLPrime.contains(automaton) && automaton.acceptsCounterExample(counterExample) != -1) {
-              lPrime = Automaton.intersection(lPrime, automaton, null, null);
+              lPrime = Automaton.intersection(lPrime, automaton);
               System.out.println("\t\t\t\tPicking automaton from L\\L': " + automaton);
               automataInLPrime.add(automaton);
               continue loop;
@@ -403,7 +431,7 @@ public class Liu {
 
           for (Automaton automaton : specs) {
             if (!automataInKPrime.contains(automaton) && automaton.acceptsCounterExample(counterExample) != -1) {
-              kPrime = Automaton.intersection(kPrime, automaton, null, null);
+              kPrime = Automaton.intersection(kPrime, automaton);
               System.out.println("\t\t\t\tPicking automaton from K\\K': " + automaton);
               automataInKPrime.add(automaton);
               continue loop;
@@ -414,7 +442,7 @@ public class Liu {
 
           for (Automaton automaton : specs) {
             if (!automataInKPrime.contains(automaton) && automaton.acceptsCounterExample(counterExample) != -1) {
-              kPrime = Automaton.intersection(kPrime, automaton, null, null);
+              kPrime = Automaton.intersection(kPrime, automaton);
               System.out.println("\t\t\t\tPicking automaton from K\\K': " + automaton);
               automataInKPrime.add(automaton);
               continue loop;
@@ -423,7 +451,7 @@ public class Liu {
 
           for (Automaton automaton : plants) {
             if (!automataInLPrime.contains(automaton) && automaton.acceptsCounterExample(counterExample) != -1) {
-              lPrime = Automaton.intersection(lPrime, automaton, null, null);
+              lPrime = Automaton.intersection(lPrime, automaton);
               System.out.println("\t\t\t\tPicking automaton from L\\L': " + automaton);
               automataInLPrime.add(automaton);
               continue loop;
