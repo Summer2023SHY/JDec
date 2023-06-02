@@ -30,7 +30,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.reflect.TypeUtils;
 import org.apache.logging.log4j.*;
 
-import com.github.automaton.io.json.JsonUtils;
+import com.github.automaton.io.json.*;
 import com.github.automaton.io.legacy.MissingOrCorruptBodyFileException;
 import com.google.gson.*;
 import com.google.gson.reflect.*;
@@ -264,7 +264,12 @@ public class Automaton implements Cloneable {
   }
 
   public static Automaton buildAutomaton(JsonObject jsonObj) {
-    Automaton.Type type = Automaton.Type.getType(jsonObj.getAsJsonPrimitive("type").getAsByte());
+    Automaton.Type type;
+    try {
+      type = Automaton.Type.getType(jsonObj.getAsJsonPrimitive("type").getAsByte());
+    } catch (ClassCastException | NumberFormatException e) {
+      throw new IllegalAutomatonJsonException("Invalid value for 'type': " + Objects.toString(jsonObj.get("type")), e);
+    }
     switch (type) {
         case AUTOMATON:
             return new Automaton(jsonObj);
