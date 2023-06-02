@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.*;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.*;
 
 import com.github.automaton.gui.util.AutomatonGenerator;
@@ -1324,7 +1325,7 @@ class TestResult {
           /* Find lines that were added */
 
         StringBuilder addedLines = new StringBuilder();
-        List<String> listOfExpectedLines = Arrays.asList((String[]) expected.clone());
+        List<String> listOfExpectedLines = Arrays.asList(ArrayUtils.clone(expected));
 
         for (String str : actual) {
           int index = listOfExpectedLines.indexOf(str);
@@ -1340,7 +1341,7 @@ class TestResult {
           /* Find lines that were missing */
 
         StringBuilder missingLines = new StringBuilder();
-        List<String> listOfActualLines = Arrays.asList((String[]) actual.clone());
+        List<String> listOfActualLines = Arrays.asList(ArrayUtils.clone(actual));
 
         for (String str : expected) {
           int index = listOfActualLines.indexOf(str);
