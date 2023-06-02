@@ -25,6 +25,8 @@ package com.github.automaton.automata;
 
 import static org.apache.commons.lang3.exception.ExceptionUtils.*;
 
+import java.util.Objects;
+
 import org.apache.logging.log4j.*;
 
 /**
@@ -120,6 +122,12 @@ public class Transition {
       return targetStateID == other.targetStateID && event.equals(other.event);
     }
     else return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int hashCode() {
+      return Objects.hash(event, targetStateID);
   }
 
   /**
