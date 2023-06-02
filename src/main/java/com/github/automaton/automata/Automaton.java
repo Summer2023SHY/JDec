@@ -49,7 +49,7 @@ import guru.nidi.graphviz.model.*;
  * 
  * @since 1.0
  **/
-public class Automaton {
+public class Automaton implements Cloneable {
 
     /* PUBLIC CLASS CONSTANTS */
 
