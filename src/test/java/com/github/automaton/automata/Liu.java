@@ -4,7 +4,7 @@ import java.util.*;
 
 import org.apache.commons.lang3.ObjectUtils;
 
-import com.github.automaton.io.legacy.AutomatonBinaryAdapter;
+import com.github.automaton.io.legacy.AutomatonBinaryFileAdapter;
 
 public class Liu {
 
@@ -19,22 +19,22 @@ public class Liu {
 
     // Plants
     List<Automaton> plants = new ArrayList<Automaton>();
-    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/SecondExample/SenderB.hdr"), new File("Thesis/SecondExample/SenderB.bdy"))) {
+    try (AutomatonBinaryFileAdapter binary = new AutomatonBinaryFileAdapter(new File("Thesis/SecondExample/SenderB.hdr"), new File("Thesis/SecondExample/SenderB.bdy"))) {
       plants.add(binary.getAutomaton());
     }
-    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/SecondExample/ReceiverB.hdr"), new File("Thesis/SecondExample/ReceiverB.bdy"))) {
+    try (AutomatonBinaryFileAdapter binary = new AutomatonBinaryFileAdapter(new File("Thesis/SecondExample/ReceiverB.hdr"), new File("Thesis/SecondExample/ReceiverB.bdy"))) {
       plants.add(binary.getAutomaton());
     }
-    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/SecondExample/ChannelRS.hdr"), new File("Thesis/SecondExample/ChannelRS.bdy"))) {
+    try (AutomatonBinaryFileAdapter binary = new AutomatonBinaryFileAdapter(new File("Thesis/SecondExample/ChannelRS.hdr"), new File("Thesis/SecondExample/ChannelRS.bdy"))) {
       plants.add(binary.getAutomaton());
     }
-    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/SecondExample/ChannelSR.hdr"), new File("Thesis/SecondExample/ChannelSR.bdy"))) {
+    try (AutomatonBinaryFileAdapter binary = new AutomatonBinaryFileAdapter(new File("Thesis/SecondExample/ChannelSR.hdr"), new File("Thesis/SecondExample/ChannelSR.bdy"))) {
       plants.add(binary.getAutomaton());
     }
 
     // Specifications
     List<Automaton> specs = new ArrayList<Automaton>();
-    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/SecondExample/Specification.hdr"), new File("Thesis/SecondExample/Specification.bdy"))) {
+    try (AutomatonBinaryFileAdapter binary = new AutomatonBinaryFileAdapter(new File("Thesis/SecondExample/Specification.hdr"), new File("Thesis/SecondExample/Specification.bdy"))) {
       plants.add(binary.getAutomaton());
     }
 
@@ -53,7 +53,7 @@ public class Liu {
     // G{Sigma*}
     // Automaton gSigmaStar = new Automaton(new File("Thesis/G_SIGMA_STAR.hdr"), new File("Thesis/G_SIGMA_STAR.bdy"), false);
     Automaton gSigmaStar;
-    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/SecondExample/G_SIGMA_STAR.hdr"), new File("Thesis/SecondExample/G_SIGMA_STAR.bdy"))) {
+    try (AutomatonBinaryFileAdapter binary = new AutomatonBinaryFileAdapter(new File("Thesis/SecondExample/G_SIGMA_STAR.hdr"), new File("Thesis/SecondExample/G_SIGMA_STAR.bdy"))) {
       gSigmaStar = binary.getAutomaton();
     }
 
@@ -306,22 +306,22 @@ public class Liu {
 
       // Plants
     List<Automaton> plants = new ArrayList<Automaton>();
-    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/SecondExample/SenderB.hdr"), new File("Thesis/SecondExample/SenderB.bdy"))) {
+    try (AutomatonBinaryFileAdapter binary = new AutomatonBinaryFileAdapter(new File("Thesis/SecondExample/SenderB.hdr"), new File("Thesis/SecondExample/SenderB.bdy"))) {
       plants.add(binary.getAutomaton());
     }
-    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/SecondExample/ReceiverB.hdr"), new File("Thesis/SecondExample/ReceiverB.bdy"))) {
+    try (AutomatonBinaryFileAdapter binary = new AutomatonBinaryFileAdapter(new File("Thesis/SecondExample/ReceiverB.hdr"), new File("Thesis/SecondExample/ReceiverB.bdy"))) {
       plants.add(binary.getAutomaton());
     }
-    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/SecondExample/ChannelRS.hdr"), new File("Thesis/SecondExample/ChannelRS.bdy"))) {
+    try (AutomatonBinaryFileAdapter binary = new AutomatonBinaryFileAdapter(new File("Thesis/SecondExample/ChannelRS.hdr"), new File("Thesis/SecondExample/ChannelRS.bdy"))) {
       plants.add(binary.getAutomaton());
     }
-    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/SecondExample/ChannelSR.hdr"), new File("Thesis/SecondExample/ChannelSR.bdy"))) {
+    try (AutomatonBinaryFileAdapter binary = new AutomatonBinaryFileAdapter(new File("Thesis/SecondExample/ChannelSR.hdr"), new File("Thesis/SecondExample/ChannelSR.bdy"))) {
       plants.add(binary.getAutomaton());
     }
 
     // Specifications
     List<Automaton> specs = new ArrayList<Automaton>();
-    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/SecondExample/Specification.hdr"), new File("Thesis/SecondExample/Specification.bdy"))) {
+    try (AutomatonBinaryFileAdapter binary = new AutomatonBinaryFileAdapter(new File("Thesis/SecondExample/Specification.hdr"), new File("Thesis/SecondExample/Specification.bdy"))) {
       specs.add(binary.getAutomaton());
     }
 
@@ -340,7 +340,7 @@ public class Liu {
     // G{Sigma*}
     // Automaton gSigmaStar = new Automaton(new File("Thesis/G_SIGMA_STAR.hdr"), new File("Thesis/G_SIGMA_STAR.bdy"), false);
     Automaton gSigmaStar;
-    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/SecondExample/G_SIGMA_STAR.hdr"), new File("Thesis/SecondExample/G_SIGMA_STAR.bdy"))) {
+    try (AutomatonBinaryFileAdapter binary = new AutomatonBinaryFileAdapter(new File("Thesis/SecondExample/G_SIGMA_STAR.hdr"), new File("Thesis/SecondExample/G_SIGMA_STAR.bdy"))) {
       gSigmaStar = binary.getAutomaton();
     }
 

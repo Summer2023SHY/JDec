@@ -16,7 +16,7 @@ import org.apache.logging.log4j.*;
 
 import com.github.automaton.automata.*;
 import com.github.automaton.gui.JDec;
-import com.github.automaton.io.legacy.AutomatonBinaryAdapter;
+import com.github.automaton.io.legacy.AutomatonBinaryFileAdapter;
 
 /**
  * Utility class used to generate automata from GUI
@@ -178,7 +178,7 @@ public final class AutomatonGenerator {
         // Check if adding the state was unsuccessful
         if (id == 0) {
           if (gui != null)
-            gui.displayErrorMessage("Error", "'" + label + "' could not be added as a state. Please ensure that the label has not exceeded " + AutomatonBinaryAdapter.MAX_LABEL_LENGTH + " characters.");
+            gui.displayErrorMessage("Error", "'" + label + "' could not be added as a state. Please ensure that the label has not exceeded " + AutomatonBinaryFileAdapter.MAX_LABEL_LENGTH + " characters.");
           if (stateInputPane != null)
             stateInputPane.getStyledDocument().setCharacterAttributes(startIndex, line.length(), errorStyle, false);
           hasErrors = true;
@@ -272,7 +272,7 @@ public final class AutomatonGenerator {
         // Error checking
         if (id == 0) {
           if (gui != null)
-            gui.displayErrorMessage("Error", "'" + label + "' could not be added as an event. Please ensure that there are not more than " + AutomatonBinaryAdapter.MAX_EVENT_CAPACITY + " events.");
+            gui.displayErrorMessage("Error", "'" + label + "' could not be added as an event. Please ensure that there are not more than " + AutomatonBinaryFileAdapter.MAX_EVENT_CAPACITY + " events.");
           if (eventInputPane != null)
             eventInputPane.getStyledDocument().setCharacterAttributes(startIndex, line.length(), errorStyle, false);
           hasErrors = true;
@@ -341,7 +341,7 @@ public final class AutomatonGenerator {
           } else {
             logger.error("Transition could not be added.");
             if (gui != null)
-              gui.displayErrorMessage("Error", "'" + line + "' could not be added as a transition. Please ensure that there are not more than " + AutomatonBinaryAdapter.MAX_TRANSITION_CAPACITY + " transitions.");
+              gui.displayErrorMessage("Error", "'" + line + "' could not be added as a transition. Please ensure that there are not more than " + AutomatonBinaryFileAdapter.MAX_TRANSITION_CAPACITY + " transitions.");
             if (transitionInputPane != null)
               transitionInputPane.getStyledDocument().setCharacterAttributes(startIndex, line.length(), errorStyle, false);
             hasErrors = true;

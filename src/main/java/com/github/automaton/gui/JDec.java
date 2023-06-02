@@ -40,9 +40,9 @@ import org.xml.sax.*;
 import com.github.automaton.automata.*;
 import com.github.automaton.automata.graphviz.GraphvizEngineInitializer;
 import com.github.automaton.gui.util.*;
-import com.github.automaton.io.AutomatonAdapter;
-import com.github.automaton.io.json.AutomatonJsonAdapter;
-import com.github.automaton.io.legacy.AutomatonBinaryAdapter;
+import com.github.automaton.io.AutomatonIOAdapter;
+import com.github.automaton.io.json.AutomatonJsonFileAdapter;
+import com.github.automaton.io.legacy.AutomatonBinaryFileAdapter;
 import com.github.automaton.io.legacy.MissingOrCorruptBodyFileException;
 
 /**
@@ -816,7 +816,7 @@ public class JDec extends JFrame implements ActionListener {
         String fileName = getTemporaryFileName();
         File tempFile = new File(fileName + ".json");
         FileUtils.touch(tempFile);
-        tab.ioAdapter = new AutomatonJsonAdapter(tempFile, false);
+        tab.ioAdapter = new AutomatonJsonFileAdapter(tempFile, false);
         tab.updateTabTitle();
       }
     } catch (IOException ioe) {
@@ -844,9 +844,9 @@ public class JDec extends JFrame implements ActionListener {
   }
 
   public void createTab(Automaton automaton) {
-    AutomatonJsonAdapter jsonIOAdapter;
+    AutomatonJsonFileAdapter jsonIOAdapter;
     try {
-      jsonIOAdapter = AutomatonJsonAdapter.wrap(automaton, new File(getTemporaryFileName() + ".json"));
+      jsonIOAdapter = AutomatonJsonFileAdapter.wrap(automaton, new File(getTemporaryFileName() + ".json"));
     } catch (IOException ioe) {
       throw new UncheckedIOException(logger.throwing(ioe));
     }
@@ -868,7 +868,7 @@ public class JDec extends JFrame implements ActionListener {
    * Create a tab, and load in an automaton.
    * @param automaton   The automaton object
    **/
-  public void createLegacyTab(AutomatonBinaryAdapter binaryAutomatonAdapter) {
+  public void createLegacyTab(AutomatonBinaryFileAdapter binaryAutomatonAdapter) {
 
       /* Create new tab */
 
@@ -900,7 +900,7 @@ public class JDec extends JFrame implements ActionListener {
    * Create a tab, and load in an automaton.
    * @param automaton   The automaton object
    **/
-  public void createJsonTab(AutomatonJsonAdapter jsonAutomatonAdapter) {
+  public void createJsonTab(AutomatonJsonFileAdapter jsonAutomatonAdapter) {
 
     /* Create new tab */
 
@@ -1440,13 +1440,13 @@ public class JDec extends JFrame implements ActionListener {
      
       // Create new tab (if requested)
       if (index == -1) {
-        createLegacyTab(new AutomatonBinaryAdapter(headerFile, bodyFile));
+        createLegacyTab(new AutomatonBinaryFileAdapter(headerFile, bodyFile));
         index = tabbedPane.getSelectedIndex();
       }
       AutomatonTab tab = tabs.get(index);
       
       // Update files
-      tab.ioAdapter = new AutomatonBinaryAdapter(headerFile, bodyFile);
+      tab.ioAdapter = new AutomatonBinaryFileAdapter(headerFile, bodyFile);
 
       // Update current directory
       currentDirectory = selectedFile.getParentFile();
@@ -1470,10 +1470,10 @@ public class JDec extends JFrame implements ActionListener {
         }
 
       // Get files
-      AutomatonJsonAdapter jsonAdapter;
+      AutomatonJsonFileAdapter jsonAdapter;
 
       try {
-        jsonAdapter = new AutomatonJsonAdapter(selectedFile);
+        jsonAdapter = new AutomatonJsonFileAdapter(selectedFile);
       } catch (IOException ioe) {
         throw new UncheckedIOException(logger.throwing(ioe));
       }
@@ -1597,7 +1597,7 @@ public class JDec extends JFrame implements ActionListener {
   
         /* Update last file opened and update current directory */
   
-      currentTab.ioAdapter = new AutomatonBinaryAdapter(headerFile, bodyFile);
+      currentTab.ioAdapter = new AutomatonBinaryFileAdapter(headerFile, bodyFile);
   
       currentDirectory = headerFile.getParentFile();
       saveCurrentDirectory();
@@ -1643,7 +1643,7 @@ public class JDec extends JFrame implements ActionListener {
       /* Update last file opened and update current directory */
 
     try {
-      currentTab.ioAdapter = AutomatonJsonAdapter.wrap(currentTab.automaton, jsonFile);
+      currentTab.ioAdapter = AutomatonJsonFileAdapter.wrap(currentTab.automaton, jsonFile);
     } catch (IOException ioe) {
       throw new UncheckedIOException(logger.throwing(ioe));
     }
@@ -1938,7 +1938,7 @@ public class JDec extends JFrame implements ActionListener {
     public JSVGComponent canvas = null;
 
     // Automaton properties
-    public AutomatonAdapter ioAdapter;
+    public AutomatonIOAdapter ioAdapter;
     public Automaton automaton;
     public File svgFile;
     public Automaton.Type type;

@@ -8,11 +8,11 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.reflect.TypeUtils;
 
 import com.github.automaton.automata.*;
-import com.github.automaton.io.AutomatonAdapter;
+import com.github.automaton.io.AutomatonIOAdapter;
 import com.github.automaton.io.json.JsonUtils;
 import com.google.gson.*;
 
-public class AutomatonBinaryAdapter implements AutomatonAdapter, Closeable {
+public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable {
 
     /** The number of events that an automaton can hold by default. */
     public static final int DEFAULT_EVENT_CAPACITY = 255;
@@ -63,7 +63,7 @@ public class AutomatonBinaryAdapter implements AutomatonAdapter, Closeable {
 
     private Automaton automaton;
 
-    public AutomatonBinaryAdapter(File headerFile, File bodyFile) {
+    public AutomatonBinaryFileAdapter(File headerFile, File bodyFile) {
 
         try {
             haf = new HeaderAccessFile(headerFile);
@@ -548,8 +548,8 @@ public class AutomatonBinaryAdapter implements AutomatonAdapter, Closeable {
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        else if (obj instanceof AutomatonBinaryAdapter) {
-            AutomatonBinaryAdapter other = (AutomatonBinaryAdapter) obj;
+        else if (obj instanceof AutomatonBinaryFileAdapter) {
+            AutomatonBinaryFileAdapter other = (AutomatonBinaryFileAdapter) obj;
             return Objects.equals(this.haf, other.haf) && Objects.equals(this.baf, other.baf);
         }
         else return false;

@@ -11,7 +11,7 @@ import com.github.automaton.io.*;
 import com.google.gson.*;
 import com.google.gson.JsonParser;
 
-public class AutomatonJsonAdapter implements AutomatonAdapter {
+public class AutomatonJsonFileAdapter implements AutomatonIOAdapter {
 
     private transient Logger logger;
     private String fileName;
@@ -33,11 +33,11 @@ public class AutomatonJsonAdapter implements AutomatonAdapter {
      * @throws IOException if an I/O error occurs
      * @throws NullPointerException if argument is {@code null}
      */
-    public AutomatonJsonAdapter(File file) throws IOException {
+    public AutomatonJsonFileAdapter(File file) throws IOException {
         this(file, true);
     }
 
-    public AutomatonJsonAdapter(File file, boolean load) throws IOException {
+    public AutomatonJsonFileAdapter(File file, boolean load) throws IOException {
         this.file = Objects.requireNonNull(file);
         this.fileName = this.file.getAbsolutePath();
         this.logger = LogManager.getLogger(this.getClass().getName() + "(" + this.file.getName() +")");
@@ -58,8 +58,8 @@ public class AutomatonJsonAdapter implements AutomatonAdapter {
         }
     }
 
-    public static <T extends Automaton> AutomatonJsonAdapter wrap(T automaton, File file) throws IOException {
-        AutomatonJsonAdapter adapter = new AutomatonJsonAdapter(file, false);
+    public static <T extends Automaton> AutomatonJsonFileAdapter wrap(T automaton, File file) throws IOException {
+        AutomatonJsonFileAdapter adapter = new AutomatonJsonFileAdapter(file, false);
         adapter.automaton = Objects.requireNonNull(automaton);
         FileUtils.touch(file);
         adapter.save();

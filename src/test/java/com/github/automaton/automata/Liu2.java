@@ -4,7 +4,7 @@ import java.util.*;
 
 import org.apache.commons.lang3.ObjectUtils;
 
-import com.github.automaton.io.legacy.AutomatonBinaryAdapter;
+import com.github.automaton.io.legacy.AutomatonBinaryFileAdapter;
 
 public class Liu2 {
 
@@ -54,15 +54,15 @@ public class Liu2 {
 
     // Large Example
     List<Automaton> plants = new ArrayList<Automaton>();
-    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/Large/NAME.hdr"), new File("Thesis/Large/NAME.bdy"))) {
+    try (AutomatonBinaryFileAdapter binary = new AutomatonBinaryFileAdapter(new File("Thesis/Large/NAME.hdr"), new File("Thesis/Large/NAME.bdy"))) {
       plants.add(binary.getAutomaton());
     }
     List<Automaton> specs = new ArrayList<Automaton>();
-    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/Large/NAME.hdr"), new File("Thesis/Large/NAME.bdy"))) {
+    try (AutomatonBinaryFileAdapter binary = new AutomatonBinaryFileAdapter(new File("Thesis/Large/NAME.hdr"), new File("Thesis/Large/NAME.bdy"))) {
       specs.add(binary.getAutomaton());
     }
     Automaton gSigmaStar;
-    try (AutomatonBinaryAdapter binary = new AutomatonBinaryAdapter(new File("Thesis/Large/G_SIGMA_STAR.hdr"), new File("Thesis/Large/G_SIGMA_STAR.bdy"))) {
+    try (AutomatonBinaryFileAdapter binary = new AutomatonBinaryFileAdapter(new File("Thesis/Large/G_SIGMA_STAR.hdr"), new File("Thesis/Large/G_SIGMA_STAR.bdy"))) {
       gSigmaStar = binary.getAutomaton();
     }
 
