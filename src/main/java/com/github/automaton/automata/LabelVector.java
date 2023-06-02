@@ -34,13 +34,18 @@ public class LabelVector implements Iterable<String> {
    * Construct a LabelVector object, which takes a string and splits it into its vector components.
    * @param label The label to be vectorized (syntax: "&lt;first,second,third>" vectorizes into {"first",
    * "second", "third"})
+   * @throws NullPointerException if argument is {@code null}
    **/
   public LabelVector(String label) {
 
-    this.label = label;
+    this.label = Objects.requireNonNull(label);
+
+    if (label.isEmpty()) {
+      vector = null;
+    }
 
     // Ensure that the label has proper vector syntax before vectorizing it
-    if (label.charAt(0) == '<' && label.charAt(label.length() - 1) == '>')
+    else if (label.charAt(0) == '<' && label.charAt(label.length() - 1) == '>')
       vector = label.substring(1, label.length() - 1).split(",");
 
   }
