@@ -1,9 +1,10 @@
-package com.github.automaton.io;
+package com.github.automaton.io.legacy;
 
 import java.io.*;
 import java.nio.file.*;
 import java.util.Objects;
 
+import org.apache.commons.io.file.FilesUncheck;
 import org.apache.logging.log4j.*;
 
 /**
@@ -73,6 +74,25 @@ public abstract class AutomatonAccessFile implements Closeable {
      */
     protected final Logger getLogger() {
         return logger;
+    }
+
+    /**
+     * Checks whether some other object is "equal to" this {@code AutomatonAccessFile}.
+     * 
+     * @param obj the reference object with which to compare
+     * @return {@code true} if argument is "equal to" this {@code AutomatonAccessFile}
+     * 
+     * @throws UncheckedIOException if an I/O error occurs
+     * 
+     * @since 2.0
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        else if (obj instanceof AutomatonAccessFile) {
+            return FilesUncheck.isSameFile(this.file.toPath(), ((AutomatonAccessFile) obj).file.toPath());
+        }
+        else return false;
     }
 
     /**

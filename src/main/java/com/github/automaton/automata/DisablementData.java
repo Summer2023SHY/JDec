@@ -8,6 +8,8 @@ package com.github.automaton.automata;
 
 import java.util.*;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 /**
  * Holds all 3 pieces of information needed to identify a transition, as well
  * as information on which controllers are able to disable this transition.
@@ -24,6 +26,15 @@ public class DisablementData extends TransitionData {
   public boolean[] controllers;
 
     /* CONSTRUCTOR */
+
+  /**
+   * Private constructor for compatibility with gson
+   * 
+   * @since 2.0
+   */
+  private DisablementData() {
+    this(0, -1, 0, ArrayUtils.EMPTY_BOOLEAN_ARRAY);
+  }
 
   /**
    * Construct a DisablementData object, which can be used to keep track of which controllers were able to

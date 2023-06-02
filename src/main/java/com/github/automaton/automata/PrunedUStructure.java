@@ -7,13 +7,12 @@ package com.github.automaton.automata;
  *  -Mutator Methods
  */
 
-import java.io.*;
 import java.util.*;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.*;
 
-import com.github.automaton.io.StateIO;
+import com.google.gson.JsonObject;
 
 /**
  * Represents a pruned U-Structure.
@@ -29,28 +28,34 @@ public class PrunedUStructure extends UStructure {
     /* CONSTRUCTORS */
 
   /**
-   * Implicit constructor: used to load pruned U-Structure from file.
-   * @param headerFile  The file where the header should be stored
-   * @param bodyFile    The file where the body should be stored
+   * Constructs a new {@code PrunedUStructure} with the specified number of controllers.
+   * 
+   * @param nControllers the number of controllers that the new pruned U-Structure has (1 implies centralized control, >1 implies decentralized control)
+   * @throws IllegalArgumentException if argument is not positive
+   * 
+   * @since 2.0
    **/
-  public PrunedUStructure(File headerFile, File bodyFile) {
-    super(headerFile, bodyFile);
+  public PrunedUStructure(int nControllers) {
+    super(nControllers);
   }
 
   /**
-   * Implicit constructor: used when creating a new pruned U-Structure structure.
-   * @param headerFile    The file where the header should be stored
-   * @param bodyFile      The file where the body should be stored
-   * @param nControllers  The number of controllers
+   * Constructs a new {@code PrunedUStructure} that is represented by a JSON object
+   * 
+   * @param jsonObject a JSON object that represents an automaton
+   * 
+   * @see Automaton#buildAutomaton(JsonObject)
+   * @since 2.0
    **/
-  public PrunedUStructure(File headerFile, File bodyFile, int nControllers) {
-    super(headerFile, bodyFile, nControllers);
+  PrunedUStructure(JsonObject jsonObject) {
+    super(jsonObject);
   }
 
     /* AUTOMATA OPERATIONS */
 
-  @Override public PrunedUStructure accessible(File newHeaderFile, File newBodyFile) {
-    return accessibleHelper(new PrunedUStructure(newHeaderFile, newBodyFile, nControllers));
+  @Override
+  public PrunedUStructure accessible() {
+    return accessibleHelper(new PrunedUStructure(nControllers));
   }
 
   /**
@@ -146,6 +151,11 @@ public class PrunedUStructure extends UStructure {
 
   }
 
+  @Override
+  public Object clone() {
+    return new PrunedUStructure(toJsonObject());
+  }
+
     /* MUTATOR METHODS */
 
   /**
@@ -186,10 +196,6 @@ public class PrunedUStructure extends UStructure {
         t.setEvent(new Event(e.getLabel(), mapping.get(e.getID()), e.isObservable(), e.isControllable()));
       }
 
-      // Write updated state to file
-      if (!StateIO.writeToFile(state, baf, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID))
-        logger.error("Could not write state to file.");
-
     }
 
     // Update event IDs in header file
@@ -202,10 +208,6 @@ public class PrunedUStructure extends UStructure {
     renumberEventsInTransitionData(mapping, invalidCommunications);
     renumberEventsInTransitionData(mapping, nashCommunications);
     renumberEventsInTransitionData(mapping, disablementDecisions);
-
-      /* Indicate that the header file needs to be updated */
-    
-    headerFileNeedsToBeWritten = true;
 
   }
 
@@ -229,7 +231,6 @@ public class PrunedUStructure extends UStructure {
         eventsMap.remove(e.getLabel());
         
         iterator.remove();
-        headerFileNeedsToBeWritten = true;
 
         return true;
 
@@ -252,7 +253,6 @@ public class PrunedUStructure extends UStructure {
     for (TransitionData data : list)
       data.eventID = mapping.get(data.eventID);
 
-    headerFileNeedsToBeWritten = true;
 
   }
 

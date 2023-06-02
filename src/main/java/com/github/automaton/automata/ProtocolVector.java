@@ -9,6 +9,8 @@ package com.github.automaton.automata;
 
 import java.util.*;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 /**
  * Used to vectorize a communication protocol into multiple components, based on the
  * index of the sending controller.
@@ -27,6 +29,18 @@ public class ProtocolVector {
   private Set<NashCommunicationData> protocol;
 
     /* CONSTRUCTOR */
+
+  /**
+   * Private constructor for compatibility with gson
+   * 
+   * @since 2.0
+   */
+  private ProtocolVector() {
+    this.protocol = Collections.emptySet();
+    this.value = ArrayUtils.EMPTY_DOUBLE_ARRAY;
+    this.totalValue = Double.NaN;
+    this.communications = (NashCommunicationData[][]) ArrayUtils.EMPTY_OBJECT_ARRAY;
+  }
 	
   /** 
    * Construct a ProtocolVector object using the specified protocol and the number of controllers.

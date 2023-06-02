@@ -5,7 +5,7 @@ import java.util.*;
 /**
  * Represents a vector of {@link State}s. A {@code StateVector} is
  * treated as a {@link State} in
- * {@link Automaton#synchronizedComposition(java.io.File, java.io.File)
+ * {@link Automaton#synchronizedComposition()
  * synchronized decomposition}, and the {@code j}-th component in this vector
  * stores the state w.r.t. the controller {@code j}.
  * 
@@ -13,7 +13,7 @@ import java.util.*;
  * @since 1.3
  */
 public class StateVector extends State implements Iterable<State> {
-    private List<State> states;
+    private transient List<State> states;
 
     /**
      * Constructs a new {@code StateVector}.

@@ -10,6 +10,7 @@ package com.github.automaton.automata;
 
 import java.util.*;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.*;
 
 /**
@@ -33,6 +34,16 @@ public class CommunicationData extends TransitionData {
   private int indexOfSender = -1;
 
     /* CONSTRUCTOR */
+
+  /**
+   * Private constructor for compatibility with gson
+   * 
+   * @since 2.0
+   */
+  private CommunicationData() {
+    super(0, -1, 0);
+    this.roles = (CommunicationRole[]) ArrayUtils.EMPTY_OBJECT_ARRAY;
+  }
 
   /**
    * Construct a CommunicationData object, which can be used to represent a communication (including the sending and receiving roles).

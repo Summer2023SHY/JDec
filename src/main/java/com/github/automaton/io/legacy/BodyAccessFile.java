@@ -1,4 +1,4 @@
-package com.github.automaton.io;
+package com.github.automaton.io.legacy;
 
 import java.io.*;
 import java.nio.file.*;

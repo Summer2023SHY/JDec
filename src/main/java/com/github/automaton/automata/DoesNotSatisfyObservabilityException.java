@@ -7,9 +7,6 @@ package com.github.automaton.automata;
  * @author Micah Stairs
  * 
  * @since 1.0
- * 
- * @see UStructure#findNashEquilibria(Crush.CombiningCosts)
- * @see UStructure#findNashEquilibria(Crush.CombiningCosts, java.util.List)
  */
 public class DoesNotSatisfyObservabilityException extends OperationFailedException {
     /**

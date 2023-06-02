@@ -7,6 +7,8 @@ package com.github.automaton.automata;
  *  -Accessor Methods
  */
 
+import com.google.gson.annotations.SerializedName;
+
 /**
  * Enumeration used to help indicate whether a controller is the sender,
  * one of the receivers, or neither.
@@ -20,12 +22,15 @@ public enum CommunicationRole {
     /* ENUMERATION VALUES */
 
   /** This role is associated with a controller who is neither the sender nor the receiver. */
+  @SerializedName("*")
   NONE((byte) 0, '*'),
 
   /** This role is associated with a controller who is the sender. */
+  @SerializedName("S")
   SENDER((byte) 1, 'S'),
 
   /** This role is associated with a controller who is a receiver. */
+  @SerializedName("R")
   RECEIVER((byte) 2, 'R');
 
     /* INSTANCE VARIABLES */

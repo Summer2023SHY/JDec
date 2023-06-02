@@ -9,7 +9,7 @@ package com.github.automaton.gui;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
+// import java.io.*;
 import java.util.*;
 import javax.swing.*;
 
@@ -125,10 +125,10 @@ public class FeasibleProtocolOutput extends JDialog {
           });
 
           // Apply the protocol, and place the generated Automaton in a new tab
-          String fileName = gui.getTemporaryFileName();
-          File headerFile = new File(fileName + ".hdr");
-          File bodyFile = new File(fileName + ".bdy");
-          Automaton generatedAutomaton = uStructure.applyProtocol(protocol, headerFile, bodyFile, true);
+          // String fileName = gui.getTemporaryFileName();
+          // File headerFile = new File(fileName + ".hdr");
+          // File bodyFile = new File(fileName + ".bdy");
+          Automaton generatedAutomaton = uStructure.applyProtocol(protocol, true);
           gui.createTab(generatedAutomaton);
 
         }

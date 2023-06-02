@@ -1,4 +1,4 @@
-package com.github.automaton.automata.util;
+package com.github.automaton.io.legacy;
 
 import static org.junit.jupiter.api.Assertions.*;
 

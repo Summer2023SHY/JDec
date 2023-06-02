@@ -31,6 +31,17 @@ public class NashCommunicationData extends CommunicationData implements Cloneabl
     /* CONSTRUCTOR */
 
   /**
+   * Private constructor for compatibility with gson
+   * 
+   * @since 2.0
+   */
+  private NashCommunicationData() {
+    super(0, -1, 0, (CommunicationRole[]) ArrayUtils.EMPTY_OBJECT_ARRAY);
+    this.cost = Double.NaN;
+    this.probability = Double.NaN;
+  }
+
+  /**
    * Construct a NashCommunicationData object, which is used by the NashUStructure class.
    * @param initialStateID  The initial state's ID
    * @param eventID         The event's ID

@@ -1,8 +1,4 @@
-package com.github.automaton.automata.util;
-
-import org.apache.logging.log4j.*;
-
-import com.github.automaton.gui.JDec;
+package com.github.automaton.io.legacy;
 
 /**
  * A utility class used to perform conversions between a long and bytes.
@@ -12,8 +8,6 @@ import com.github.automaton.gui.JDec;
  **/
 
 public final class ByteManipulator {
-
-  private static Logger logger = LogManager.getLogger();
 
   private ByteManipulator() {}
   

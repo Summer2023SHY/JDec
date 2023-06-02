@@ -23,12 +23,17 @@ import java.io.*;
 import java.math.*;
 import java.util.*;
 
+import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.io.RandomAccessFileMode;
 import org.apache.commons.lang3.*;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.reflect.TypeUtils;
 import org.apache.logging.log4j.*;
 
-import com.github.automaton.automata.util.ByteManipulator;
-import com.github.automaton.io.*;
+import com.github.automaton.io.json.*;
+import com.github.automaton.io.legacy.MissingOrCorruptBodyFileException;
+import com.google.gson.*;
+import com.google.gson.reflect.*;
 
 import guru.nidi.graphviz.attribute.*;
 import guru.nidi.graphviz.engine.*;
@@ -44,37 +49,9 @@ import guru.nidi.graphviz.model.*;
  * 
  * @since 1.0
  **/
-public class Automaton implements Closeable {
+public class Automaton implements Cloneable {
 
     /* PUBLIC CLASS CONSTANTS */
-
-  /** The number of events that an automaton can hold by default. */
-  public static final int DEFAULT_EVENT_CAPACITY = 255;
-
-  /** The maximum number of events that an automaton can hold. */
-  public static final int MAX_EVENT_CAPACITY = Integer.MAX_VALUE;
-
-  /** The number of states that an automaton can hold by default. */
-  public static final long DEFAULT_STATE_CAPACITY = 255;
-
-  /** The maximum number of states that an automaton can hold. */
-  public static final long MAX_STATE_CAPACITY = Long.MAX_VALUE;
-
-  /** The number of transitions that each state in an automaton can hold by default. */
-  public static final int DEFAULT_TRANSITION_CAPACITY = 1;
-
-  /** The maximum number of transitions that each state in an automaton can hold. */
-  public static final int MAX_TRANSITION_CAPACITY = Integer.MAX_VALUE;
-
-  /** The number of characters that each state label in an automaton can hold by default. */
-  public static final int DEFAULT_LABEL_LENGTH = 1;
-
-  /**
-   * The maximum number of characters that each state label in an automaton can hold.
-   * @implNote This value was originally 100, but was increased drastically in order to accommodate long
-   *           state vectors that are formed in the crush.
-   **/
-  public static final int MAX_LABEL_LENGTH = 100000;
 
   /** The default number of controllers in an automaton. */
   public static final int DEFAULT_NUMBER_OF_CONTROLLERS = 1;
@@ -94,47 +71,46 @@ public class Automaton implements Closeable {
     /* INSTANCE VARIABLES */
 
   // Events
+  /**
+   * List of events
+   */
   protected List<Event> events = new ArrayList<Event>();
-  protected Map<String, Event> eventsMap = new HashMap<String, Event>();
+  /**
+   * Mapping of labels that trigger events to their respective {@link Event}s.
+   */
+  protected transient Map<String, Event> eventsMap = new HashMap<String, Event>();
+
+  // States
+  /**
+   * Mapping of IDs of states in this automaton to their respective {@link State}s.
+   * 
+   * @since 2.0
+   */
+  protected Map<Long, State> states = new LinkedHashMap<>();
 
   // Special transitions
   private List<TransitionData> badTransitions;
 
   // Basic properties of the automaton
   protected Type type;
+  /** Number of states in this automaton */
   protected long nStates      = 0;
+  /** Initial state of this automaton */
   protected long initialState = 0;
+  /** Number of controllers */
   protected int nControllers;
-  
-  // Variables which determine how large the .bdy file will become
-  protected int eventCapacity;
-  protected long stateCapacity;
-  protected int transitionCapacity;
-  protected int labelLength;
-
-  // Initialized based on the above capacities
-  protected int nBytesPerEventID;
-  protected int nBytesPerStateID;
-  protected long nBytesPerState;
-
-  // File variables
-  /**
-   * {@code .hdr} file I/O handler
-   * @since 1.1
-   */
-  protected final HeaderAccessFile haf;
-  /**
-   * {@code .bdy} file I/O handler
-   * @since 1.1
-   */
-  protected final BodyAccessFile baf;
-  /** Indicates whether the header file needs to be rewritten */
-  protected boolean headerFileNeedsToBeWritten;
 
   // GUI input
-  protected StringBuilder eventInputBuilder;
-  protected StringBuilder stateInputBuilder;
-  protected StringBuilder transitionInputBuilder;
+  protected transient StringBuilder eventInputBuilder;
+  protected transient StringBuilder stateInputBuilder;
+  protected transient StringBuilder transitionInputBuilder;
+
+  /**
+   * Internally used {@link Gson} object.
+   * 
+   * @since 2.0
+   */
+  protected transient Gson gson = new Gson();
 
     /* AUTOMATON TYPE ENUM */
 
@@ -155,7 +131,7 @@ public class Automaton implements Closeable {
 
     // Private variables
     private final byte numericValue;
-    private final Class<? extends Automaton> classType;
+    private transient final Class<? extends Automaton> classType;
 
     /**
      * Construct a Type enum object.
@@ -254,122 +230,92 @@ public class Automaton implements Closeable {
     /* CONSTRUCTORS */
 
   /**
-   * Default constructor: create empty automaton with default capacity using temporary files.
-   **/
+   * Constructs a new {@code Automaton} with the {@link #DEFAULT_NUMBER_OF_CONTROLLERS default number of controllers}.
+   * 
+   * @revised 2.0
+   */
   public Automaton() {
-    this(
-      null,
-      null,
-      DEFAULT_NUMBER_OF_CONTROLLERS
-    );
+    this(DEFAULT_NUMBER_OF_CONTROLLERS);
   }
 
   /**
-   * Implicit constructor: create a new automaton with a specified number of controllers in the given files.
-   * @param headerFile    The file where the header should be stored
-   * @param bodyFile      The file where the body should be stored
-   * @param nControllers  The number of controllers that this automaton has
+   * Constructs a new {@code Automaton} with the specified number of controllers.
+   * 
+   * @param nControllers the number of controllers that the new automaton has (1 implies centralized control, >1 implies decentralized control)
+   * @throws IllegalArgumentException if argument is not positive
+   * 
+   * @since 2.0
    **/
-  public Automaton(File headerFile, File bodyFile, int nControllers) {
-    this(
-      headerFile,
-      bodyFile,
-      DEFAULT_EVENT_CAPACITY,
-      DEFAULT_STATE_CAPACITY,
-      DEFAULT_TRANSITION_CAPACITY,
-      DEFAULT_LABEL_LENGTH,
-      nControllers,
-      true
-    );
-  }
-
-  /**
-   * Implicit constructor: load automaton from file or create a new automaton.
-   * @param headerFile  The file where the header should be stored
-   * @param bodyFile    The file where the body should be stored
-   * @param clearFiles  Whether or not the header and body files should be wiped before use
-   **/
-  public Automaton(File headerFile, File bodyFile, boolean clearFiles) {
-    this(
-      headerFile,
-      bodyFile,
-      DEFAULT_EVENT_CAPACITY,
-      DEFAULT_STATE_CAPACITY,
-      DEFAULT_TRANSITION_CAPACITY,
-      DEFAULT_LABEL_LENGTH,
-      DEFAULT_NUMBER_OF_CONTROLLERS,
-      clearFiles
-    );
-
-  }
-
-  /**
-   * Implicit constructor: create automaton with specified initial capacities using temporary files.
-   * @implNote Choosing larger values increases the amount of space needed to store the binary file.
-   * Choosing smaller values increases the frequency that you need to re-write the entire binary file in order to expand it
-   * @param eventCapacity        The initial event capacity (increases by a factor of 256 when it is exceeded)
-   *                             (NOTE: the initial event capacity may be higher than the value you give it, since it has to be in the form 256^x - 1)
-   * @param stateCapacity        The initial state capacity (increases by a factor of 256 when it is exceeded)
-   *                             (NOTE: the initial state capacity may be higher than the value you give it, since it has to be in the form 256^x - 1)
-   * @param transitionCapacity   The initial maximum number of transitions per state (increases by 1 whenever it is exceeded)
-   * @param labelLength          The initial maximum number characters per state label (increases by 1 whenever it is exceeded)
-   * @param nControllers         The number of controllers that the automaton has (1 implies centralized control, >1 implies decentralized control)
-   * @param clearFiles           Whether or not the header and body files should be cleared prior to use
-   **/
-  public Automaton(int eventCapacity, long stateCapacity, int transitionCapacity, int labelLength, int nControllers, boolean clearFiles) {
-    this(null, null, eventCapacity, stateCapacity, transitionCapacity, labelLength, nControllers, clearFiles);
-  }
-
-  /**
-   * Main constructor.
-   * @param headerFile         The binary file to load the header information of the automaton from (information about events, etc.)
-   * @param bodyFile           The binary file to load the body information of the automaton from (states and transitions)
-   * @param eventCapacity      The initial event capacity (increases by a factor of 256 when it is exceeded)
-   * @param stateCapacity      The initial state capacity (increases by a factor of 256 when it is exceeded)
-   * @param transitionCapacity The initial maximum number of transitions per state (increases by 1 whenever it is exceeded)
-   * @param labelLength        The initial maximum number characters per state label (increases by 1 whenever it is exceeded)
-   * @param nControllers       The number of controllers that the automaton has (1 implies centralized control, >1 implies decentralized control)
-   * @param clearFiles         Whether or not the header and body files should be cleared prior to use
-   **/
-  public Automaton(File headerFile, File bodyFile, int eventCapacity, long stateCapacity, int transitionCapacity, int labelLength, int nControllers, boolean clearFiles) {
-
-      /* Initialize lists, so that there are no NullPointerExceptions */
-
+  public Automaton(int nControllers) {
+    if (nControllers <= 0) {
+      throw new IllegalArgumentException("Invalid number of controllers: " + nControllers);
+    }
+    this.nControllers = nControllers;
     initializeLists();
+    initializeVariables();
+    type = Type.getType(this.getClass());
+  }
 
-      /* Store variables and open files */
-    try {
-      this.haf = new HeaderAccessFile(Objects.requireNonNullElse(headerFile, IOUtility.getTemporaryFile()));
-      this.baf = new BodyAccessFile(Objects.requireNonNullElse(bodyFile, IOUtility.getTemporaryFile()));
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
+  /**
+   * Constructs a new {@code Automaton} that is represented by a JSON object
+   * 
+   * @param jsonObject a JSON object that represents an automaton
+   * 
+   * @see #buildAutomaton(JsonObject)
+   * @since 2.0
+   **/
+  Automaton(JsonObject jsonObject) {
+
+    Objects.requireNonNull(jsonObject);
+
+    initializeLists();;
+
+    type = Type.getType(gson.fromJson(jsonObject.get("type"), Byte.TYPE));
+    nStates = gson.fromJson(jsonObject.get("nStates"), Long.TYPE);
+    initialState = gson.fromJson(jsonObject.get("initialState"), Long.TYPE);
+    nControllers = gson.fromJson(jsonObject.get("nControllers"), Integer.TYPE);
+
+    events = JsonUtils.readListPropertyFromJsonObject(jsonObject, "events", Event.class);
+    states = new LinkedHashMap<>();
+    for (State s : gson.fromJson(jsonObject.get("states"), new TypeToken<HashSet<State>>() {})) {
+      states.put(s.getID(), s);
     }
 
-      /* These variables will be overridden if we are loading information from file */
-
-    this.eventCapacity      = eventCapacity;
-    this.stateCapacity      = stateCapacity;
-    this.transitionCapacity = transitionCapacity;
-    this.labelLength        = labelLength;
-    this.nControllers       = nControllers;
-
-      /* Clear files */
-
-    if (clearFiles)
-      clearFiles();
-    
-      /* Load data from header */
-
-    readHeaderFile();
-
-      /* Finish setting up */
+    readSpecialTransitionsFromJsonObject(jsonObject);
 
     initializeVariables();
-    nBytesPerState = calculateNumberOfBytesPerState(nBytesPerEventID, nBytesPerStateID, this.transitionCapacity, this.labelLength);
-    type = Type.getType(this.getClass());
-    headerFileNeedsToBeWritten = true;
 
   }
+
+  /**
+   * Builds an automaton from a JSON object.
+   * 
+   * @param jsonObj a JSON object that represents an automaton
+   * @return a new automaton represented by the argument
+   * 
+   * @throws IllegalAutomatonJsonException if the value for {@code "type"} does not exist or cannot be represented as a {@code byte}
+   * @throws AutomatonException if the value for {@code "type"} is invalid
+   * 
+   * @since 2.0
+   */
+  public static Automaton buildAutomaton(JsonObject jsonObj) {
+    Automaton.Type type;
+    try {
+      type = Automaton.Type.getType(jsonObj.getAsJsonPrimitive("type").getAsByte());
+    } catch (ClassCastException | NumberFormatException e) {
+      throw new IllegalAutomatonJsonException("Invalid value for 'type': " + Objects.toString(jsonObj.get("type")), e);
+    }
+    switch (type) {
+        case AUTOMATON:
+            return new Automaton(jsonObj);
+        case U_STRUCTURE:
+            return new UStructure(jsonObj);
+        case PRUNED_U_STRUCTURE:
+            return new PrunedUStructure(jsonObj);
+        default:
+            throw new AutomatonException("Invalid automaton type: " + Objects.toString(type));
+    }
+}
 
   /**
    * Used to initialize all lists in order to prevent the possibility of NullPointerExceptions.
@@ -386,12 +332,12 @@ public class Automaton implements Closeable {
 
   /**
    * Create a new copy of this automaton that has all unreachable states and transitions removed.
-   * @param newHeaderFile   The header file where the accessible automaton should be stored
-   * @param newBodyFile     The body file where the accessible automaton should be stored
-   * @return                The accessible automaton
+   * @return The accessible automaton
+   * 
+   * @since 2.0
    **/
-  public Automaton accessible(File newHeaderFile, File newBodyFile) {
-    return accessibleHelper(new Automaton(newHeaderFile, newBodyFile, nControllers));
+  public Automaton accessible() {
+    return accessibleHelper(new Automaton(nControllers));
   }
 
   /**
@@ -462,10 +408,6 @@ public class Automaton implements Closeable {
 
     automaton.renumberStates();
 
-      /* Ensure that the header file has been written to disk */
-      
-    automaton.writeHeaderFile();
-
       /* Return accessible automaton */
 
     return automaton;
@@ -474,12 +416,12 @@ public class Automaton implements Closeable {
   /**
    * Create a new copy of this automaton that has all states removed which are unable to reach a marked state.
    * @implNote This method should be overridden by subclasses, using the {@link #coaccessibleHelper(Automaton,Automaton)} method.
-   * @param newHeaderFile  The header file where the new automaton should be stored
-   * @param newBodyFile    The body file where the new automaton should be stored
    * @return               The co-accessible automaton
+   * 
+   * @since 2.0
    **/
-  public Automaton coaccessible(File newHeaderFile, File newBodyFile) {
-    return coaccessibleHelper(new Automaton(newHeaderFile, newBodyFile, nControllers), invert());
+  public Automaton coaccessible() {
+    return coaccessibleHelper(new Automaton(nControllers), invert());
   }
 
   /**
@@ -501,7 +443,7 @@ public class Automaton implements Closeable {
     Stack<Long> stack = new Stack<Long>();
     for (long s = 1; s <= nStates; s++) {
 
-      State state = invertedAutomaton.getStateExcludingTransitions(s);
+      State state = invertedAutomaton.getState(s);
 
       if (state.isMarked())
         stack.push(s);
@@ -557,10 +499,6 @@ public class Automaton implements Closeable {
 
     automaton.renumberStates();
 
-      /* Ensure that the header file has been written to disk */
-      
-    automaton.writeHeaderFile();
-
       /* Return co-accessible automaton */
 
     return automaton;
@@ -570,24 +508,15 @@ public class Automaton implements Closeable {
    * Create a new copy of this automaton that has the marking status of all states toggled, and that has an added
    * 'dead' or 'dump' state where all undefined transitions lead.
    * @implNote This method should be overridden by subclasses, using the {@link #complementHelper(Automaton)} method.
-   * @param newHeaderFile             The header file where the new automaton should be stored
-   * @param newBodyFile               The body file where the new automaton should be stored
    * @return                          The complement automaton
    * @throws OperationFailedException When there already exists a dump state, indicating that this
    *                                  operation has already been performed on this automaton
+   * 
+   * @since 2.0
    **/
-  public Automaton complement(File newHeaderFile, File newBodyFile) throws OperationFailedException {
+  public Automaton complement() throws OperationFailedException {
 
-    Automaton automaton = new Automaton(
-      newHeaderFile,
-      newBodyFile,
-      eventCapacity,
-      stateCapacity,
-      events.size(), // This is the new number of transitions that will be required for each state
-      labelLength,
-      nControllers,
-      true
-    );
+    Automaton automaton = new Automaton(nControllers);
 
     return complementHelper(automaton);
   }
@@ -660,10 +589,6 @@ public class Automaton implements Closeable {
 
     copyOverSpecialTransitions(automaton);
 
-      /* Ensure that the header file has been written to disk */
-      
-    automaton.writeHeaderFile();
-
       /* Return complement automaton */
 
     return automaton;
@@ -672,13 +597,13 @@ public class Automaton implements Closeable {
   /**
    * Creates a new copy of this automaton that is trim (both accessible and co-accessible).
    * @implNote I am taking the accessible part of the automaton before the co-accessible part of the automaton
-   * because the {@link #accessible(File,File)} method has less overhead than the {@link #coaccessible(File,File)} method.
-   * @param newHeaderFile  The header file where the new automaton should be stored
-   * @param newBodyFile    The body file where the new automaton should be stored
+   * because the {@link #accessible()} method has less overhead than the {@link #coaccessible()} method.
    * @return               The trim automaton, or {@code null} if there was no initial state specified
+   * 
+   * @since 2.0
    **/
-  public Automaton trim(File newHeaderFile, File newBodyFile) {
-    return accessible(null, null).coaccessible(newHeaderFile, newBodyFile);
+  public Automaton trim() {
+    return accessible().coaccessible();
   }
 
   /**
@@ -689,9 +614,11 @@ public class Automaton implements Closeable {
    * @return  The inverted automaton
    * 
    * @see #invertHelper(Automaton)
+   * 
+   * @revised 2.0
    **/
   public Automaton invert() {
-    return invertHelper(new Automaton(eventCapacity, stateCapacity, transitionCapacity, labelLength, nControllers, true));
+    return invertHelper(new Automaton(nControllers));
   }
 
   /**
@@ -713,7 +640,7 @@ public class Automaton implements Closeable {
 
     // Add states
     for (long s = 1; s <= getNumberOfStates(); s++) {
-      State state = getStateExcludingTransitions(s);
+      State state = getState(s);
       automaton.addState(state.getLabel(), state.isMarked(), s == initialState);
     }
 
@@ -722,24 +649,20 @@ public class Automaton implements Closeable {
       for (Transition t : getState(s).getTransitions())
         automaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), s);
 
-      /* Ensure that the header file has been written to disk */
-      
-    automaton.writeHeaderFile();
-
     return automaton;
 
   }
 
   /**
    * Generate the intersection of the two specified automata.
-   * @param first                           The first automaton
-   * @param second                          The second automaton
-   * @param newHeaderFile                   The header file where the new automaton should be stored
-   * @param newBodyFile                     The body file where the new automaton should be stored
-   * @return                                The intersection
+   * @param first   The first automaton
+   * @param second  The second automaton
+   * @return        The intersection
    * @throws IncompatibleAutomataException  If the number of controllers do not match, or the automata have incompatible events
+   * 
+   * @since 2.0
    **/
-  public static Automaton intersection(Automaton first, Automaton second, File newHeaderFile, File newBodyFile) throws IncompatibleAutomataException {
+  public static Automaton intersection(Automaton first, Automaton second) throws IncompatibleAutomataException {
 
       /* Error checking */
 
@@ -748,7 +671,7 @@ public class Automaton implements Closeable {
 
       /* Setup */
 
-    Automaton automaton = new Automaton(newHeaderFile, newBodyFile, first.getNumberOfControllers());
+    Automaton automaton = new Automaton(first.getNumberOfControllers());
 
     // These two stacks should always have the same size
     Stack<Long> stack1 = new Stack<Long>(); 
@@ -767,13 +690,7 @@ public class Automaton implements Closeable {
 
           // Ensure that these automata are compatible (meaning that no events have the same name, but with different properties)
           if (!Arrays.equals(e1.isObservable(), e2.isObservable()) || !Arrays.equals(e1.isControllable(), e2.isControllable())) {
-            IncompatibleAutomataException iae = new IncompatibleAutomataException();
-            try {
-              automaton.close();
-            } catch (IOException e) {
-              iae.addSuppressed(e);
-            }
-            throw iae;
+            throw new IncompatibleAutomataException();
           }
           automaton.addEvent(e1.getLabel(), e1.isObservable(), e1.isControllable());
 
@@ -838,9 +755,6 @@ public class Automaton implements Closeable {
 
     automaton.renumberStates();
 
-      /* Ensure that the header file has been written to disk */
-      
-    automaton.writeHeaderFile();
 
       /* Return produced automaton */
 
@@ -851,12 +765,12 @@ public class Automaton implements Closeable {
    * Generate the union of the two specified automata.
    * @param first                           The first automaton
    * @param second                          The second automaton
-   * @param newHeaderFile                   The header file where the new automaton should be stored
-   * @param newBodyFile                     The body file where the new automaton should be stored
    * @return                                The union
    * @throws IncompatibleAutomataException  If the number of controllers do not match, or the automata have incompatible events
+   * 
+   * @since 2.0
    **/
-  public static Automaton union(Automaton first, Automaton second, File newHeaderFile, File newBodyFile) throws IncompatibleAutomataException {
+  public static Automaton union(Automaton first, Automaton second) throws IncompatibleAutomataException {
 
       /* Error checking */
 
@@ -865,7 +779,7 @@ public class Automaton implements Closeable {
 
       /* Setup */
 
-    Automaton automaton = new Automaton(newHeaderFile, newBodyFile, first.getNumberOfControllers());
+    Automaton automaton = new Automaton(first.getNumberOfControllers());
 
     // These two stacks should always have the same size
     Stack<Long> stack1 = new Stack<Long>(); 
@@ -987,10 +901,6 @@ public class Automaton implements Closeable {
 
     automaton.renumberStates();
 
-      /* Ensure that the header file has been written to disk */
-      
-    automaton.writeHeaderFile();
-
       /* Return generated automaton */
 
     return automaton;
@@ -999,13 +909,11 @@ public class Automaton implements Closeable {
 
   /**
    * Apply the synchronized composition algorithm to an automaton to produce the U-Structure.
-   * @param newHeaderFile  The header file where the new automaton should be stored
-   * @param newBodyFile    The body file where the new automaton should be stored
-   * @return               The U-Structure
+   * @return The U-Structure
    * @throws NoInitialStateException if there was no starting state
    * @throws OperationFailedException if something else went wrong
    **/
-  public UStructure synchronizedComposition(File newHeaderFile, File newBodyFile) {
+  public UStructure synchronizedComposition() {
 
     // Error checking
     if (getState(initialState) == null) {
@@ -1016,7 +924,7 @@ public class Automaton implements Closeable {
 
     Stack<StateVector> stack = new Stack<StateVector>();
     HashSet<StateVector> valuesInStack = new HashSet<StateVector>();
-    UStructure uStructure = new UStructure(newHeaderFile, newBodyFile, nControllers, true);
+    UStructure uStructure = new UStructure(nControllers);
 
       /* Add initial state to the stack */
 
@@ -1144,13 +1052,7 @@ public class Automaton implements Closeable {
 
           // Add state
           if (!uStructure.addStateAt(targetStateVector, false)) {
-            OperationFailedException ofe = new OperationFailedException("Failed to add state");
-            try {
-              uStructure.close();
-            } catch (IOException ioe) {
-              ofe.addSuppressed(ioe);
-            }
-            throw ofe;
+            throw new OperationFailedException("Failed to add state");
           }
           
           // Only add the ID if it's not already waiting to be processed
@@ -1202,17 +1104,6 @@ public class Automaton implements Closeable {
         }
         if (isDisablementDecision)
           uStructure.addDisablementDecision(stateVector.getID(), eventID, targetStateVector.getID(), disablementControllers);
-        try {
-          StateIO.rewriteStatus(uStructure, uStructure.baf, stateVector);
-        } catch (StateNotFoundException | IOException exc) {
-          OperationFailedException ofe = new OperationFailedException("Failed to update status of state", exc);
-          try {
-            uStructure.close();
-          } catch (IOException ioe2) {
-            ofe.addSuppressed(ioe2);
-          }
-          throw ofe;
-        }
 
       } // for
 
@@ -1252,13 +1143,7 @@ public class Automaton implements Closeable {
 
               // Add state
               if (!uStructure.addStateAt(targetStateVector, false)) {
-                OperationFailedException ofe = new OperationFailedException("Failed to add state");
-                try {
-                  uStructure.close();
-                } catch (IOException ioe) {
-                  ofe.addSuppressed(ioe);
-                }
-                throw ofe;
+                throw new OperationFailedException("Failed to add state");
               }
             
               // Only add the ID if it's not already waiting to be processed
@@ -1308,10 +1193,6 @@ public class Automaton implements Closeable {
 
     uStructure.renumberStates();
 
-      /* Ensure that the header file has been written to disk */
-
-    uStructure.writeHeaderFile();
-
       /* Return produced U-Structure */
 
     return uStructure;
@@ -1325,16 +1206,7 @@ public class Automaton implements Closeable {
    **/
   public boolean testObservability() {
 
-    Automaton centralizedAutomaton = new Automaton(
-      null,
-      null,
-      getEvents().size(),
-      getNumberOfStates(),
-      getTransitionCapacity(),
-      getLabelLength(),
-      1,
-      true
-    );
+    Automaton centralizedAutomaton = new Automaton(1);
 
     // Copy over modified events to the centralized automaton
     for (Event e : getEvents()) {
@@ -1374,7 +1246,7 @@ public class Automaton implements Closeable {
     copyOverSpecialTransitions(centralizedAutomaton);
 
     // Take the U-Structure
-    UStructure uStructure = centralizedAutomaton.synchronizedComposition(null, null);
+    UStructure uStructure = centralizedAutomaton.synchronizedComposition();
 
     // The presence of violations indicate that the system is not observable
     return !uStructure.hasViolations();
@@ -1410,22 +1282,13 @@ public class Automaton implements Closeable {
    * Generate the twin plant by combining this automaton w.r.t. G_{Sigma*}.
    * @implNote The technique used here is similar to how the complement works. This would not work
    *       in all cases, but G_{Sigma*} is a special case.
-   * @param newHeaderFile The header file where the new automaton should be stored
-   * @param newBodyFile   The body file where the new automaton should be stored
    * @return              The twin plant
+   * 
+   * @since 2.0
    **/
-  public final Automaton generateTwinPlant(File newHeaderFile, File newBodyFile) {
+  public final Automaton generateTwinPlant() {
 
-    Automaton automaton = new Automaton(
-      newHeaderFile,
-      newBodyFile,
-      getEventCapacity(),
-      getStateCapacity(),
-      getTransitionCapacity(),
-      getLabelLength(),
-      getNumberOfControllers(),
-      true
-    );
+    Automaton automaton = new Automaton(getNumberOfControllers());
 
       /* Add events */
     
@@ -1489,10 +1352,6 @@ public class Automaton implements Closeable {
 
     copyOverSpecialTransitions(automaton);
 
-      /* Ensure that the header file has been written to disk */
-      
-    automaton.writeHeaderFile();
-
       /* Return generated automaton */
 
     return automaton;
@@ -1504,22 +1363,13 @@ public class Automaton implements Closeable {
     * Generate the twin plant by combining this automaton w.r.t. G_{Sigma*}.
     * @implNote The technique used here is similar to how the complement works. This would not work
     *       in all cases, but G_{Sigma*} is a special case.
-    * @param newHeaderFile The header file where the new automaton should be stored
-    * @param newBodyFile   The body file where the new automaton should be stored
     * @return              The twin plant
+    *
+    * @since 2.0
     **/
-  public final Automaton generateTwinPlant2(File newHeaderFile, File newBodyFile) {
+  public final Automaton generateTwinPlant2() {
 
-    Automaton automaton = new Automaton(
-      newHeaderFile,
-      newBodyFile,
-      getEventCapacity(),
-      getStateCapacity(),
-      getTransitionCapacity(),
-      getLabelLength(),
-      getNumberOfControllers(),
-      true
-    );
+    Automaton automaton = new Automaton(getNumberOfControllers());
 
       /* Add events */
     
@@ -1585,10 +1435,6 @@ public class Automaton implements Closeable {
 
     copyOverSpecialTransitions(automaton);
 
-      /* Ensure that the header file has been written to disk */
-      
-    automaton.writeHeaderFile();
-
       /* Return generated automaton */
 
     return automaton;
@@ -1617,100 +1463,37 @@ public class Automaton implements Closeable {
    * and re-numbers all of the states accordingly. This must be done after operations such as intersection or union.
    */
   /* To make this method more efficient we could make the buffer larger. */
-  @SuppressWarnings("deprecation")
   protected final void renumberStates() {
 
-    try {
+    Map<Long, Long> mappingHashMap = new LinkedHashMap<>();
 
-      byte[] buffer = new byte[nBytesPerStateID];
+    long newID = 1;
 
-        /* Create a file containing the mappings (where the new IDs can be indexed using the old IDs) */
+    Map<Long, State> newStateMap = new HashMap<>();
 
-      File mappingFile = IOUtility.getTemporaryFile();
-      RandomAccessFile mappingRAFile = RandomAccessFileMode.READ_WRITE.create(mappingFile);
-
-      long newID = 1;
-      for (long s = 1; s <= getStateCapacity(); s++)
-        if (stateExists(s)) {
-          
-          Arrays.fill(buffer, (byte) 0);
-          mappingRAFile.seek(nBytesPerStateID * s);
-          ByteManipulator.writeLongAsBytes(buffer, 0, newID++, nBytesPerStateID);
-          mappingRAFile.write(buffer);
-
-        }
-
-        /* Create new .bdy file with renumbered states */
-
-      File newBodyFile = IOUtility.getTemporaryFile();
-      RandomAccessFile newBodyRAFile = RandomAccessFileMode.READ_WRITE.create(newBodyFile);
-
-      for (long s = 1; s <= getStateCapacity(); s++) {
-
-        State state = null;
-
-        if ((state = getState(s)) != null) {
-          
-          // Get new ID of state
-          Arrays.fill(buffer, (byte) 0);
-          mappingRAFile.seek(nBytesPerStateID * s);
-          mappingRAFile.read(buffer);
-          long newStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
-
-          // Update initial state ID (if applicable)
-          // NOTE: This works since 'newStateID' will be <= 's'
-          if (initialState == s)
-            initialState = newStateID;
-
-          // Update ID of state
-          state.setID(newStateID);
-
-          // Update IDs of the target state of each
-          for (Transition t : state.getTransitions()) {
-
-            // Get new ID of state
-            Arrays.fill(buffer, (byte) 0);
-            mappingRAFile.seek(nBytesPerStateID * t.getTargetStateID());
-            mappingRAFile.read(buffer);
-            long newTargetStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
-
-            if (newTargetStateID == 0) {
-              logger.error("Target state does not exist, deleting transitions in an attempt to recover.");
-              state.getTransitions().clear();
-              break;
-            } else 
-              t.setTargetStateID(newTargetStateID);
-          }
-
-          // Write the updated state to the new file
-          if (!StateIO.writeToFile(state, newBodyRAFile, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID))
-            logger.error("Could not write state to file.");
-
-        }
-
-      }
-
-        /* Update the special transitions in the header file */
-
-      renumberStatesInAllTransitionData(mappingRAFile);
-
-        /* Remove old body file and mappings file */
-
-      try {
-        newBodyRAFile.close();
-        mappingRAFile.close();
-        baf.copyFrom(newBodyFile);
-      } catch (IOException e) {
-        logger.catching(e);
-      }
-
-    } catch (IOException e) {
-      logger.catching(e);
+    for (State s : states.values()) {
+      long origID = s.getID();
+      s.setID(newID);
+      newStateMap.put(newID++, s);
+      mappingHashMap.put(origID, s.getID());
     }
 
-      /* Update header file (since we renumbered the information in the special transitions) */
+    states = newStateMap;
 
-    headerFileNeedsToBeWritten = true;
+    /* Update transitions */
+
+    for (State s : states.values()) {
+      for (Transition t : s.getTransitions()) {
+        t.setTargetStateID(mappingHashMap.get(t.getTargetStateID()));
+      }
+    }
+
+    /* Update initial state */
+    setInitialStateID(mappingHashMap.get(initialState));
+
+    /* Update the special transitions */
+
+    renumberStatesInAllTransitionData(mappingHashMap);
 
   }
 
@@ -1719,36 +1502,32 @@ public class Automaton implements Closeable {
    * Renumber the states in all applicable special transition data.
    * @apiNote This method is designed to be overridden when subclassing, in order to renumber the states in
    *          all applicable special transition data for this automaton type.
-   * @param mappingRAFile The file containing the mapping information (old state IDs to new state IDs)
-   * @throws IOException  If there are any problems read from or writing to file
+   * @param mappingHashMap  The hash map containing the mapping information (old state IDs to new state IDs)
+   * 
+   * @since 2.0
    **/
-  protected void renumberStatesInAllTransitionData(RandomAccessFile mappingRAFile) throws IOException {
+  protected void renumberStatesInAllTransitionData(Map<Long, Long> mappingHashMap) {
 
-    renumberStatesInTransitionData(mappingRAFile, badTransitions);
+    renumberStatesInTransitionData(mappingHashMap, badTransitions);
 
   }
 
   /**
    * Helper method to renumber states in the specified list of special transitions.
-   * @param mappingRAFile The binary file containing the state ID mappings
-   * @param list          The list of special transition data
-   * @throws IOException  If there was problems reading from file
+   * @param mappingHashMap  The hash map containing the mapping information
+   * @param list            The list of special transition data
+   * 
+   * @since 2.0
    **/
-  protected final void renumberStatesInTransitionData(RandomAccessFile mappingRAFile, List<? extends TransitionData> list) throws IOException {
-
-    byte[] buffer = new byte[nBytesPerStateID];
+  protected final void renumberStatesInTransitionData(Map<Long, Long> mappingHashMap, List<? extends TransitionData> list) {
 
     for (TransitionData data : list) {
 
       // Update initialStateID
-      mappingRAFile.seek(nBytesPerStateID * data.initialStateID);
-      mappingRAFile.read(buffer);
-      data.initialStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
+      data.initialStateID = mappingHashMap.get(data.initialStateID);
 
       // Update targetStateID
-      mappingRAFile.seek(nBytesPerStateID * data.targetStateID);
-      mappingRAFile.read(buffer);
-      data.targetStateID = ByteManipulator.readBytesAsLong(buffer, 0, nBytesPerStateID);
+      data.targetStateID = mappingHashMap.get(data.targetStateID);
 
     }
 
@@ -1966,7 +1745,7 @@ public class Automaton implements Closeable {
         ArrayList<Transition> transitionsToSkip = new ArrayList<Transition>();
         for (Transition t : state.getTransitions()) {
 
-          State targetState = getStateExcludingTransitions(t.getTargetStateID());
+          State targetState = getState(t.getTargetStateID());
 
           // Check to see if this transition has additional properties (meaning it's a special transition)
           String key = "" + stateLabel + " " + t.getEvent().getID() + " " + formatStateLabel(targetState);
@@ -2015,7 +1794,7 @@ public class Automaton implements Closeable {
           }
 
           // Add transition
-          MutableNode targetNode = mutNode(formatStateLabel(getStateExcludingTransitions(t1.getTargetStateID())));
+          MutableNode targetNode = mutNode(formatStateLabel(getState(t1.getTargetStateID())));
           targetNode.addTo(g);
           Link l = sourceNode.linkTo(targetNode);
           l.add(Label.of(label));
@@ -2024,7 +1803,7 @@ public class Automaton implements Closeable {
 
         if (initialState > 0) {
           MutableNode startNode = mutNode("").add(Shape.PLAIN_TEXT);
-          MutableNode initNode = mutNode(formatStateLabel(getStateExcludingTransitions(initialState)));
+          MutableNode initNode = mutNode(formatStateLabel(getState(initialState)));
           Link init = startNode.linkTo(initNode);
           init.add(Color.BLUE);
           startNode.links().add(init);
@@ -2076,7 +1855,7 @@ public class Automaton implements Closeable {
         ArrayList<Transition> transitionsToSkip = new ArrayList<Transition>();
         for (Transition t : state.getTransitions()) {
 
-          State targetState = getStateExcludingTransitions(t.getTargetStateID());
+          State targetState = getState(t.getTargetStateID());
 
           // Check to see if this transition has additional properties (meaning it's a special transition)
           String key = "" + stateLabel + " " + t.getEvent().getID() + " " + formatStateLabel(targetState);
@@ -2123,7 +1902,7 @@ public class Automaton implements Closeable {
           }
 
           // Add transition
-          String edge = "\"_" + stateLabel + "\" -> \"_" + formatStateLabel(getStateExcludingTransitions(t1.getTargetStateID())) + "\"";
+          String edge = "\"_" + stateLabel + "\" -> \"_" + formatStateLabel(getState(t1.getTargetStateID())) + "\"";
           str.append(edge);
           str.append(" [label=\"" + label + "\"]");
 
@@ -2135,7 +1914,7 @@ public class Automaton implements Closeable {
 
       if (initialState > 0) {
         str.append("node [shape=plaintext];");
-        str.append("\" \"-> \"_" + formatStateLabel(getStateExcludingTransitions(initialState)) + "\" [color=blue];");
+        str.append("\" \"-> \"_" + formatStateLabel(getState(initialState)) + "\" [color=blue];");
       }
 
       str.append("}");
@@ -2217,7 +1996,7 @@ public class Automaton implements Closeable {
   protected String createKey(TransitionData data) {
     return "" + formatStateLabel(getState(data.initialStateID)) + " "
               + data.eventID + " "
-              + formatStateLabel(getStateExcludingTransitions(data.targetStateID));
+              + formatStateLabel(getState(data.targetStateID));
   }
 
   /**
@@ -2344,7 +2123,7 @@ public class Automaton implements Closeable {
         transitionInputBuilder.append(
             state.getLabel()
             + "," + t.getEvent().getLabel()
-            + "," + getStateExcludingTransitions(t.getTargetStateID()).getLabel()
+            + "," + getState(t.getTargetStateID()).getLabel()
           );
 
           /* Append special transition information */
@@ -2415,564 +2194,106 @@ public class Automaton implements Closeable {
 
   }
 
-    /* WORKING WITH FILES */
-
   /**
-   * Duplicate this automaton, storing them in temporary files.
-   * @apiNote This method is intended to be overridden.
-   * @return A duplicate of this automaton
-   **/
-  public Automaton duplicate() {
-    return duplicate(IOUtility.getTemporaryFile(), IOUtility.getTemporaryFile());
-  }
-
-  /**
-   * Duplicate this automaton and store it in a different set of files.
-   * @apiNote This method is intended to be overridden.
-   * @param newHeaderFile The new header file where the automaton is being copied to (cannot be null)
-   * @param newBodyFile   The new body file where the automaton is being copied to (cannot be null)
-   * @return              The duplicated automaton
-   **/
-  public Automaton duplicate(File newHeaderFile, File newBodyFile) {
-
-    if (!duplicateHelper(newHeaderFile, newBodyFile))
-      return null;
-
-    return new Automaton(newHeaderFile, newBodyFile, false);
-
-  }
-
-  /**
-   * A helper method used to duplicate this automaton, simply by making a copy of the .bdy and .hdr files (which is clearly the most efficient approach).
-   * @param newHeaderFile The new header file where the automaton is being copied to
-   * @param newBodyFile   The new body file where the automaton is being copied to
-   * @return              Whether or not the duplication was successful
-   **/
-  protected final boolean duplicateHelper(File newHeaderFile, File newBodyFile) {
-
-    // Ensure that the header file is up-to-date
-    writeHeaderFile();
-
-    // Copy the header and body files
-    try {
-    
-      if (haf.exists())
-        haf.copyTo(newHeaderFile);
-      if (baf.exists())
-        baf.copyTo(newBodyFile);
-    
-    // Handle errors
-    } catch (IOException e) {
-
-      logger.catching(e);
-      return false;
-
-    }
-
-    return true;
-
-  }
-
-  /**
-   * Closes files associated with this instance of automaton.
+   * Creates and returns a (deep) copy of this automaton.
+   * @return a copy of this automaton
    * 
-   * @deprecated This method has a non-standard name and is subject
-   * to removal. Use {@link #close()} instead.
+   * @since 2.0
    **/
-  @Deprecated(forRemoval = true, since="1.1")
-  public void closeFiles() {
-
-      try {
-
-        close();
-
-      } catch (IOException e) {
-        logger.catching(e);
-      }
-
-  }
-
-  /**
-   * Closes resources associated with this automaton.
-   * 
-   * @throws IOException if I/O error occurs
-   * @since 1.1
-   */
   @Override
-  public void close() throws IOException {
-    writeHeaderFile();
-    haf.close();
-    baf.close();
-  } 
-
-  /**
-   * Delete the current header and body files.
-   **/
-  private void clearFiles() {
-
-    try {
-
-      if (!haf.clearFile())
-        logger.error("Could not delete header file.");
-      
-      if (!baf.clearFile())
-        logger.error("Could not delete body file.");
-
-    } catch (SecurityException e) {
-      logger.catching(e);
-    }
-
+  public Object clone() {
+    return new Automaton(this.toJsonObject());
   }
 
   /**
-   * Write all of the header information to file.
-   **/
-  public final void writeHeaderFile() {
+   * Returns a JSON representation of this automaton
+   * @return a JSON representation of this automaton
+   * 
+   * @since 2.0
+   */
+  public JsonObject toJsonObject() {
+    JsonObject jsonObj = new JsonObject();
+    jsonObj.addProperty("nStates", nStates);
+    jsonObj.addProperty("initialState", initialState);
+    jsonObj.addProperty("nControllers", nControllers);
 
-    // Do not write the header file unless we need to
-    if (!headerFileNeedsToBeWritten)
-      return;
+    jsonObj.addProperty("type", type.numericValue);
+    JsonUtils.addListPropertyToJsonObject(jsonObj, "events", events, Event.class);
+    jsonObj.add("states", gson.toJsonTree(states.values(), TypeUtils.parameterize(Collection.class, State.class)));
 
-      /* Write the header of the .hdr file */
-    
-    byte[] buffer = new byte[HeaderAccessFile.HEADER_SIZE];
+    addSpecialTransitionsToJsonObject(jsonObj);
 
-    ByteManipulator.writeLongAsBytes(buffer, 0,  type.getNumericValue(), 1);
-    ByteManipulator.writeLongAsBytes(buffer, 1,  nStates, 8);
-    ByteManipulator.writeLongAsBytes(buffer, 9,  eventCapacity, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 13, stateCapacity, 8);
-    ByteManipulator.writeLongAsBytes(buffer, 21, transitionCapacity, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 25, labelLength, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 29, initialState, 8);
-    ByteManipulator.writeLongAsBytes(buffer, 37, nControllers, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 41, events.size(), 4);
-
-    try {
-
-      haf.seek(0);
-      haf.write(buffer);
-
-        /* Write the events to the .hdr file */
-
-      for (Event e : events) {
-      
-        // Fill the buffer
-        buffer = new byte[ (2 * nControllers) + 4 + e.getLabel().length()];
-
-        // Read event properties (NOTE: If we ever need to condense the space required to hold an event
-        // in a file, we can place a property in each bit instead of each byte)
-        int index = 0;
-        for (int i = 0; i < nControllers; i++) {
-          buffer[index]     = (byte) (e.isObservable()[i]   ? 1 : 0);
-          buffer[index + 1] = (byte) (e.isControllable()[i] ? 1 : 0);
-          index += 2;
-        }
-
-        // Write the length of the label
-        ByteManipulator.writeLongAsBytes(buffer, index, e.getLabel().length(), 4);
-        index += 4;
-
-        // Write each character of the label
-        for (int i = 0; i < e.getLabel().length(); i++)
-          buffer[index++] = (byte) e.getLabel().charAt(i);
-
-        haf.write(buffer);
-
-      }
-
-        /* This is where the .hdr content corresponding to the relevant automaton type is written */
-
-      writeSpecialTransitionsToHeader();     
-
-        /* Indicate that the header file no longer need to be written */
-
-      headerFileNeedsToBeWritten = false;
-
-        /* Trim the file so that there is no garbage at the end (removing events, for example, shortens the .hdr file) */
-
-      haf.trim();
-
-    } catch (IOException e) {
-      logger.catching(e);
-    } 
-
+    return jsonObj;
   }
 
   /**
-   * Write all of the special transitions to the header, which is relevant to this particular automaton type.
-   * @apiNote This method is intended to be overridden when sub-classing.
-   * @throws IOException  If there were any problems writing to file
-   **/
-  protected void writeSpecialTransitionsToHeader() throws IOException {
-
-      /* Write a number which indicates how many special transitions are in the file */
-
-    byte[] buffer = new byte[4];
-    ByteManipulator.writeLongAsBytes(buffer, 0, badTransitions.size(), 4);
-    haf.write(buffer);
-
-      /* Write special transitions to the .hdr file */
-
-    writeTransitionDataToHeader(badTransitions);
-
+   * Exports special transitions to the given JSON object.
+   * @param jsonObj the JSON object to export to
+   * 
+   * @since 2.0
+   */
+  protected void addSpecialTransitionsToJsonObject(JsonObject jsonObj) {
+    addTransitionDataToJsonObject(jsonObj, "badTransitions", badTransitions);
   }
 
   /**
-   * A helper method to write a list of special transitions to the header file.
-   * @param list          The list of transition data
-   * @throws IOException  If there were any problems writing to file
-   **/
-  protected void writeTransitionDataToHeader(List<TransitionData> list) throws IOException {
-
-      /* Setup */
-
-    byte[] buffer = new byte[list.size() * 20];
-    int index = 0;
-
-      /* Write each piece of transition data into the buffer */
-
-    for (TransitionData data : list) {
-
-      ByteManipulator.writeLongAsBytes(buffer, index, data.initialStateID, 8);
-      index += 8;
-
-      ByteManipulator.writeLongAsBytes(buffer, index, data.eventID, 4);
-      index += 4;
-
-      ByteManipulator.writeLongAsBytes(buffer, index, data.targetStateID, 8);
-      index += 8;
-
-    }
-
-      /* Write the buffer to file */
-
-    haf.write(buffer);
-
+   * Exports a list of transition data to the given JSON object.
+   * 
+   * @param jsonObj the JSON object to export to
+   * @param name the name to use for the JSON object
+   * @param list the list of transition data to export
+   * 
+   * @since 2.0
+   */
+  protected void addTransitionDataToJsonObject(JsonObject jsonObj, String name, List<TransitionData> list) {
+    JsonUtils.addListPropertyToJsonObject(jsonObj, name, list, TransitionData.class);
   }
 
   /**
-   * Read all of the header information from file.
-   **/
-  protected final void readHeaderFile() {
-
-    try {
-
-        /* Do not try to load an empty file */
-
-      if (haf.isEmpty())
-        return;
-
-        /* Go to the proper position and read in the bytes */
-      haf.seek(0);
-      byte[] buffer = haf.readHeaderBytes(HeaderAccessFile.HEADER_SIZE);
-
-        /* Calculate the values stored in these bytes */
-
-      type = Type.getType((byte) ByteManipulator.readBytesAsLong(buffer, 0,  1));
-      nStates            =       ByteManipulator.readBytesAsLong(buffer, 1,  8);
-      eventCapacity      =       ByteManipulator.readBytesAsInt(buffer, 9,  4);
-      stateCapacity      =       ByteManipulator.readBytesAsLong(buffer, 13, 8);
-      transitionCapacity =       ByteManipulator.readBytesAsInt(buffer, 21, 4);
-      labelLength        =       ByteManipulator.readBytesAsInt(buffer, 25, 4);
-      initialState       =       ByteManipulator.readBytesAsLong(buffer, 29, 8);
-      nControllers       =       ByteManipulator.readBytesAsInt(buffer, 37, 4);
-      int nEvents        =       ByteManipulator.readBytesAsInt(buffer, 41, 4);
-
-      // None of the following things can exist if there are no events
-      if (nEvents == 0)
-        return;
-
-        /* Read in the events */
-
-      for (int e = 1; e <= nEvents; e++) {
-
-        // Read properties
-        buffer = haf.readHeaderBytes(nControllers * 2);
-        boolean[] observable = new boolean[nControllers];
-        boolean[] controllable = new boolean[nControllers];
-        for (int i = 0; i < nControllers; i++) {
-          observable[i] = (buffer[2 * i] == 1);
-          controllable[i] = (buffer[(2 * i) + 1] == 1);
-        }
-
-        // Read the number of characters in the label
-        buffer = haf.readHeaderBytes(4);
-        int eventLabelLength = ByteManipulator.readBytesAsInt(buffer, 0, 4);
-
-        // Read each character of the label, building an array of characters
-        buffer = haf.readHeaderBytes(eventLabelLength);
-        char[] arr = new char[eventLabelLength];
-        for (int i = 0; i < arr.length; i++)
-          arr[i] = (char) buffer[i];
-
-        // Create the event and add it to the list
-        addEvent(new String(arr), observable, controllable);
-
-      }
-
-        /* This is where the .hdr content corresponding to the relevant automaton type is read */
-
-      readSpecialTransitionsFromHeader();
-
-    } catch (IOException e) {
-      logger.catching(e);
-    } 
-
+   * Reads special transitions from the given JSON object
+   * 
+   * @param jsonObj the JSON object to import from
+   */
+  protected void readSpecialTransitionsFromJsonObject(JsonObject jsonObj) {
+    badTransitions = readTransitionDataFromJsonObject(jsonObj, "badTransitions");
   }
 
   /**
-   * Read all of the special transitions from the header, which is relevant to this particular automaton type.
-   * @apiNote This method is intended to be overridden when sub-classing.
-   * @throws IOException  If there were any problems reading from file
-   **/
-  protected void readSpecialTransitionsFromHeader() throws IOException {
-
-      /* Read the number which indicates how many special transitions are in the file */
-
-    byte[] buffer = haf.readHeaderBytes(4);
-    int nBadTransitions = ByteManipulator.readBytesAsInt(buffer, 0, 4);
-
-      /* Read in special transitions from the .hdr file */
-    
-    if (nBadTransitions > 0)
-      readTransitionDataFromHeader(nBadTransitions, badTransitions);
-
-  }
-
-  /**
-   * A helper method to read a list of special transitions from the header file.
-   * @param nTransitions  The number of transitions that need to be read
-   * @param list          The list of transition data
-   * @throws IOException  If there was problems reading from file
-   **/
-  protected void readTransitionDataFromHeader(int nTransitions, List<TransitionData> list) throws IOException {
-
-      /* Read from file */
-
-    byte[] buffer = haf.readHeaderBytes(nTransitions * 20);
-    int index = 0;
-
-      /* Add transitions to the list */
-
-    for (int i = 0; i < nTransitions; i++) {
-      
-      long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-      index += 8;
-      
-      int eventID = ByteManipulator.readBytesAsInt(buffer, index, 4);
-      index += 4;
-      
-      long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-      index += 8;
-
-      list.add(new TransitionData(initialStateID, eventID, targetStateID));
-    
-    }
-
-  }
-
-  /**
-   * Re-create the body file to accommodate some increase in capacity.
-   * @implNote This operation can clearly be expensive for large automata, so we need to try to reduce the number of times this method is called.
-   * @param newEventCapacity      The number of events that the automaton will be able to hold
-   * @param newStateCapacity      The number of states that the automaton will be able to hold
-   * @param newTransitionCapacity The number of transitions that each state will be able to hold
-   * @param newLabelLength        The maximum number of characters that each state label will be allowed
-   * @param newNBytesPerStateID   The number of bytes that are now required to represent each state's ID
-   * @param newNBytesPerEventID   The number of bytes that are now required to represent each event's ID
-   **/
-  @SuppressWarnings("deprecation")
-  private void recreateBodyFile(int newEventCapacity, long newStateCapacity, int newTransitionCapacity, int newLabelLength, int newNBytesPerEventID, int newNBytesPerStateID) {
-
-    long newNBytesPerState = calculateNumberOfBytesPerState(newNBytesPerEventID, newNBytesPerStateID, newTransitionCapacity, newLabelLength);
-
-      /* Setup files */
-
-    File newBodyFile = IOUtility.getTemporaryFile();
-
-    // Ensure that this temporary file does not already exist
-    if (newBodyFile.exists())
-      if (!newBodyFile.delete())
-        logger.error("Could not delete previously existing temporary file.");
-
-    RandomAccessFile newBodyRAFile = null;
-
-    try {
-    
-      newBodyRAFile = RandomAccessFileMode.READ_WRITE.create(newBodyFile);
-
-    } catch (FileNotFoundException e) {
-      logger.catching(e);
-      return;
-    }
-
-      /* Copy over body file */
-
-    long counter = 0; // Keeps track of blank states
-    byte[] buffer = new byte[(int) nBytesPerState];
-
-    for (long s = 1; s <= nStates + counter; s++) {
-
-      State state = getState(s);
-
-      // Check for non-existent state
-      if (state == null) {
-
-        // Pad with zeros, which will indicate a non-existent state
-        try {
-          newBodyRAFile.write(buffer);
-        } catch (IOException e) {
-          logger.catching(e);
-        }
-
-        counter++;
-        
-        continue; 
-      }
-
-      // Try writing to file
-      if (!StateIO.writeToFile(state, newBodyRAFile, newNBytesPerState, newLabelLength, newNBytesPerEventID, newNBytesPerStateID)) {
-        logger.error("Could not write copy over state to file. Aborting re-creation of .bdy file.");
-        return;
-      }
-
-    } // for
-
-      /* Remove old file */
-
-    try {
-
-      newBodyRAFile.close();
-      baf.copyFrom(newBodyFile);
-
-    } catch (SecurityException | IOException e) {
-
-      logger.catching(e);
-
-    }
-
-      /* Update variables */
-
-    eventCapacity      = newEventCapacity;
-    stateCapacity      = newStateCapacity;
-    transitionCapacity = newTransitionCapacity;
-    labelLength        = newLabelLength;
-    nBytesPerEventID   = newNBytesPerEventID;
-    nBytesPerStateID   = newNBytesPerStateID;
-    nBytesPerState     = newNBytesPerState;
-
+   * Exports a list of transition data to the given JSON object.
+   * 
+   * @param jsonObj the JSON object to import from
+   * @param name the name of the property in the JSON object that stores transition data
+   * 
+   * @return the list of transition data that is imported from the specified JSON object
+   * 
+   * @since 2.0
+   */
+  protected List<TransitionData> readTransitionDataFromJsonObject(JsonObject jsonObj, String name) {
+    return JsonUtils.readListPropertyFromJsonObject(jsonObj, name, TransitionData.class);
   }
 
     /* MISCELLANEOUS */
-
-  /**
-   * Calculate the amount of space required to store a state, given the specified conditions.
-   * @param newNBytesPerEventID   The number of bytes per event ID
-   * @param newNBytesPerStateID   The number of bytes per state ID
-   * @param newTransitionCapacity The transition capacity
-   * @param newLabelLength        The maximum label length
-   * @return                      The number of bytes needed to store a state
-   **/
-  private long calculateNumberOfBytesPerState(int newNBytesPerEventID, long newNBytesPerStateID, int newTransitionCapacity, int newLabelLength) {
-    return
-      1 // To hold up to 8 boolean values (such as 'Marked' and 'Exists' status)
-      + (long) newLabelLength // The state's labels
-      + (long) newTransitionCapacity * (long) (newNBytesPerEventID + newNBytesPerStateID); // All of the state's transitions
-  }
 
   /**
    * Initialize the variables, ensuring that they all lay within the proper ranges.
    **/
   private void initializeVariables() {
 
-      /* The automaton should have room for at least 1 transition per state (otherwise our automaton will be pretty boring) */
-
-    if (transitionCapacity < 1)
-      transitionCapacity = 1;
-
-      /* The requested length of the state labels should not exceed the limit, nor should it be non-positive */
-
-    if (labelLength < 1)
-      labelLength = 1;
-    if (labelLength > MAX_LABEL_LENGTH)
-      labelLength = MAX_LABEL_LENGTH;
-
-      /* The number of controllers should be greater than 0, but it should not exceed the maximum */
+    /* The number of controllers should be greater than 0, but it should not exceed the maximum */
 
     if (nControllers < 1)
       nControllers = 1;
     if (nControllers > MAX_NUMBER_OF_CONTROLLERS)
       nControllers = MAX_NUMBER_OF_CONTROLLERS;
-
-      /* Calculate the amount of space needed to store each state ID */
-
-    // Special case if the state capacity is not positive
-    nBytesPerStateID = stateCapacity < 1 ? 1 : 0;
-
-    long temp = stateCapacity;
-    
-    while (temp > 0) {
-      nBytesPerStateID++;
-      temp >>= 8;
-    }
-
-      /* Calculate the maximum number of states that we can have before we have to allocate more space for each state's ID */
-
-    stateCapacity = 1;
-
-    for (int i = 0; i < nBytesPerStateID; i++)
-      stateCapacity <<= 8;
-
-      /* Special case when the user gives a value between 2^56 - 1 and 2^64 (exclusive) */
-
-    if (stateCapacity == 0)
-      stateCapacity = MAX_STATE_CAPACITY;
-    else
-      stateCapacity--;
-
-      /* Cap the state capacity */
-
-    if (stateCapacity > MAX_STATE_CAPACITY)
-      stateCapacity = MAX_STATE_CAPACITY;
-
-      /* Calculate the amount of space needed to store each event ID */
-
-    // Special case if the event capacity is not positive
-    nBytesPerEventID = eventCapacity < 1 ? 1 : 0;
-
-    temp = eventCapacity;
-    
-    while (temp > 0) {
-      nBytesPerEventID++;
-      temp >>= 8;
-    }
-
-      /* Calculate the maximum number of events that we can have before we have to allocate more space for each event's ID */
-
-    eventCapacity = 1;
-
-    for (int i = 0; i < nBytesPerEventID; i++)
-      eventCapacity <<= 8;
-
-      /* Special case when the user gives a value between 2^24 - 1 and 2^32 (exclusive) */
-
-    if (eventCapacity == 0)
-      eventCapacity = MAX_EVENT_CAPACITY;
-    else
-      eventCapacity--;
-
-      /* Cap the event capacity */
-
-    if (eventCapacity > MAX_EVENT_CAPACITY)
-      eventCapacity = MAX_EVENT_CAPACITY;
-
   }
 
     /* OVERRIDDEN METHOD */
 
-  @Override public String toString() {
-    return getHeaderFile().getName() + "/" + getBodyFile().getName();
+  @Override
+  public String toString() {
+    return ToStringBuilder.reflectionToString(this);
   }
+
     /* MUTATOR METHODS */
 
   /**
@@ -3053,68 +2374,10 @@ public class Automaton implements Closeable {
       return false;
     }
 
-      /* Increase the maximum allowed transitions per state */
-
-    if (startingState.getNumberOfTransitions() == transitionCapacity) {
-
-      // If we cannot increase the capacity, return false (NOTE: This will likely never happen)
-      if (transitionCapacity == MAX_TRANSITION_CAPACITY) {
-        logger.error("Could not add transition to file (reached maximum transition capacity).");
-        return false;
-      }
-
-      // Update body file
-      recreateBodyFile(
-          eventCapacity,
-          stateCapacity,
-          transitionCapacity + 1,
-          labelLength,
-          nBytesPerEventID,
-          nBytesPerStateID
-        );
-
-      // Update header file
-      headerFileNeedsToBeWritten = true;
-
-    }
-
-      /* Increase the number of allowed states */
-
-    if (targetStateID > getStateCapacity()) {
-
-      if (targetStateID > MAX_STATE_CAPACITY) {
-        logger.error("Could not add transition (reached maximum state capacity).");
-        return false;
-      }
-
-      // Determine how much stateCapacity and nBytesPerStateID need to be increased by
-      long newStateCapacity = stateCapacity;
-      int newNBytesPerStateID = nBytesPerStateID;
-      while (newStateCapacity < targetStateID) {
-        newStateCapacity = ((newStateCapacity + 1) << 8) - 1;
-        newNBytesPerStateID++;
-      }
-
-      // Re-create binary file
-      recreateBodyFile(
-        eventCapacity,
-        newStateCapacity,
-        transitionCapacity,
-        labelLength,
-        nBytesPerEventID,
-        newNBytesPerStateID
-      );
-
-    }
-
       /* Add transition and update the file */
 
     Event event = getEvent(eventID);
     startingState.addTransition(new Transition(event, targetStateID));
-    if (!StateIO.writeToFile(startingState, baf, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID)) {
-      logger.error("Could not add transition to file.");
-      return false;
-    }
 
     return true;
 
@@ -3142,16 +2405,10 @@ public class Automaton implements Closeable {
 
     Event event = getEvent(eventID);
     startingState.removeTransition(new Transition(event, targetStateID));
-    if (!StateIO.writeToFile(startingState, baf, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID)) {
-      logger.error("Could not remove transition from file.");
-      return false;
-    }
 
       /* Remove transition from list of special transitions (if it appears anywhere in them) */
 
     removeTransitionData(new TransitionData(startingStateID, eventID, targetStateID));
-
-    headerFileNeedsToBeWritten = true;
 
     return true;
 
@@ -3194,89 +2451,18 @@ public class Automaton implements Closeable {
 
       /* Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs) */
 
-    if (nStates == MAX_STATE_CAPACITY) {
-      logger.error("Could not write state to file (reached maximum state capacity).");
-      return 0;
-    }
-
-      /* Increase the maximum allowed characters per state label */
-
-    if (label.length() > labelLength) {
-
-      // If we cannot increase the capacity, indicate a failure
-      if (label.length() > MAX_LABEL_LENGTH) {
-        logger.error("Could not write state to file (reached maximum label length).");
-        return 0;
-      }
-
-      // Re-create binary file
-      recreateBodyFile(
-        eventCapacity,
-        stateCapacity,
-        transitionCapacity,
-        label.length(),
-        nBytesPerEventID,
-        nBytesPerStateID
-      );
-
-    }
-
-      /* Increase the maximum allowed transitions per state */
-    
-    if (transitions.size() > transitionCapacity) {
-
-      // If we cannot increase the capacity, indicate a failure (NOTE: This will likely never happen)
-      if (transitions.size() > MAX_TRANSITION_CAPACITY) {
-        logger.error("Could not write state to file (reached maximum transition capacity).");
-        return 0;
-      }
-
-      // Re-create binary file
-      recreateBodyFile(
-        eventCapacity,
-        stateCapacity,
-        transitions.size(),
-        labelLength,
-        nBytesPerEventID,
-        nBytesPerStateID
-      );
-
-    }
-
-      /* Increase the number of allowed states */
-    
-    if (nStates == stateCapacity) {
-
-      // Re-create binary file
-      recreateBodyFile(
-        eventCapacity,
-        ((stateCapacity + 1) << 8) - 1,
-        transitionCapacity,
-        labelLength,
-        nBytesPerEventID,
-        nBytesPerStateID + 1
-      );
-
-    }
 
     long id = ++nStates;
 
       /* Write new state to file */
     
     State state = new State(label, id, marked, transitions);
-    if (!StateIO.writeToFile(state, baf, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID)) {
-      logger.error("Could not write state to file.");
-      return 0;
-    }
+    states.put(id, state);
 
       /* Change initial state */
     
     if (isInitialState)
       initialState = id;
-
-      /* Update header file */
-    
-    headerFileNeedsToBeWritten = true;
 
     return id;
   }
@@ -3309,96 +2495,22 @@ public class Automaton implements Closeable {
    * @since 1.3
    */
   public boolean addStateAt(State state, boolean isInitialState) {
-      /* Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs) */
-    
-      if (state.getID() > MAX_STATE_CAPACITY) {
-        logger.error("Could not write state to file (exceeded maximum state capacity).");
-        return false;
-      }
-  
-        /* Increase the maximum allowed characters per state label */
-      
-      if (state.getLabel().length() > labelLength) {
-  
-        // If we cannot increase the capacity, indicate a failure
-        if (state.getLabel().length() > MAX_LABEL_LENGTH) {
-          logger.error("Could not write state to file (exceeded maximum label length).");
-          return false;
-        }
-  
-        recreateBodyFile(
-          eventCapacity,
-          stateCapacity,
-          transitionCapacity,
-          state.getLabel().length(),
-          nBytesPerEventID,
-          nBytesPerStateID
-        );
-  
-      }
-  
-        /* Increase the maximum allowed transitions per state */
-  
-      if (state.getTransitions().size() > transitionCapacity) {
-  
-        // If we cannot increase the capacity, indicate a failure (NOTE: This will likely never happen)
-        if (state.getTransitions().size() > MAX_TRANSITION_CAPACITY) {
-          logger.error("Could not write state to file (exceeded maximum transition capacity).");
-          return false;
-        }
-  
-        recreateBodyFile(
-          eventCapacity,
-          stateCapacity,
-          state.getTransitions().size(),
-          labelLength,
-          nBytesPerEventID,
-          nBytesPerStateID
-        );
-  
-      }
-  
-        /* Increase the number of allowed states */
-  
-      if (state.getID() > stateCapacity) {
-  
-        // Determine how much stateCapacity and nBytesPerStateID need to be increased by
-        long newStateCapacity = stateCapacity;
-        int newNBytesPerStateID = nBytesPerStateID;
-        while (newStateCapacity < state.getID()) {
-          newStateCapacity = ((newStateCapacity + 1) << 8) - 1;
-          newNBytesPerStateID++;
-        }
-  
-        // Re-create binary file
-        recreateBodyFile(
-          eventCapacity,
-          newStateCapacity,
-          transitionCapacity,
-          labelLength,
-          nBytesPerEventID,
-          newNBytesPerStateID
-        );
-  
-      }
   
         /* Write new state to file */
       
-      if (!StateIO.writeToFile(state, baf, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID)) {
+      if (states.containsKey(state.getID())) {
         logger.error("Could not write state to file.");
         return false;
       }
   
       nStates++;
+
+      states.put(state.getID(), state);
   
         /* Update initial state */
       
       if (isInitialState)
         initialState = state.getID();
-  
-        /* Update header file */
-      
-      headerFileNeedsToBeWritten = true;
   
       return true;
   }
@@ -3412,7 +2524,6 @@ public class Automaton implements Closeable {
    * @return              The ID of the added event (0 indicates failure)
    **/
   public int addEvent(String label, boolean[] observable, boolean[] controllable) {
-    if (!ensureEventCapacity()) return 0;
     int id = events.size() + 1;
     return addEvent(new Event(label, id, observable, controllable));
   }
@@ -3428,41 +2539,8 @@ public class Automaton implements Closeable {
    * @since 1.3
    **/
   public int addEvent(LabelVector labelVector, boolean[] observable, boolean[] controllable) {
-    if (!ensureEventCapacity()) return 0;
     int id = events.size() + 1;
     return addEvent(new Event(labelVector, id, observable, controllable));
-  }
-
-  /**
-   * Helper method for ensuring there is enough space to add a new event
-   * @return {@code true} if there is enough space to add a new event
-   * 
-   * @see #addEvent(String, boolean[], boolean[])
-   * @see #addEvent(LabelVector, boolean[], boolean[])
-   * @since 1.3
-   */
-  private boolean ensureEventCapacity() {
-    if (events.size() == MAX_EVENT_CAPACITY) {
-      logger.error("Could not add event (reached maximum event capacity).");
-      return false;
-    }
-      /* Check to see if we need to re-write the entire binary file */
-    
-    if (events.size() == eventCapacity) {
-
-      // Re-create binary file
-      recreateBodyFile(
-        ((eventCapacity + 1) << 8) - 1,
-        stateCapacity,
-        transitionCapacity,
-        labelLength,
-        nBytesPerEventID + 1,
-        nBytesPerStateID
-      );
-
-    }
-
-    return true;
   }
 
   /**
@@ -3485,10 +2563,6 @@ public class Automaton implements Closeable {
     }
 
     eventsMap.put(event.getLabel(), event);
-
-      /* Update the header file */
-
-    headerFileNeedsToBeWritten = true;
 
     return event.getID();
   }
@@ -3573,9 +2647,6 @@ public class Automaton implements Closeable {
   public void markTransitionAsBad(long initialStateID, int eventID, long targetStateID) {
 
     badTransitions.add(new TransitionData(initialStateID, eventID, targetStateID));
-
-    // Update header file
-    headerFileNeedsToBeWritten = true;
 
   }
 
@@ -3667,7 +2738,7 @@ public class Automaton implements Closeable {
    * @return {@code true} if the state with the matching ID exists
    **/
   public boolean stateExists(long id) {
-    return StateIO.stateExists(this, baf, id);
+    return states.containsKey(id);
   }
 
   /**
@@ -3680,7 +2751,7 @@ public class Automaton implements Closeable {
    * @since 1.3
    **/
   public boolean stateExists(State state) {
-    return StateIO.stateExists(this, baf, state);
+    return states.containsValue(state);
   }
 
   /**
@@ -3689,7 +2760,7 @@ public class Automaton implements Closeable {
    * @return    The requested state
    **/
   public State getState(long id) {
-    return StateIO.readFromFile(this, baf, id);
+    return states.get(id);
   }
 
   /**
@@ -3700,23 +2771,13 @@ public class Automaton implements Closeable {
    **/
   public Long getStateID(String label) {
   
-    for (long s = 1; s <= getNumberOfStates(); s++) {
-      State state = StateIO.readFromFileExcludingTransitions(this, baf, s);
+    for (long s : states.keySet()) {
+      State state = getState(s);
       if (state.getLabel().equals(label))
         return s;
     }
 
     return null;
-  }
-
-  /**
-   * Given the ID number of a state, get the state information (excluding transitions).
-   * @implNote This is a light-weight method which is used when accessing or modifying the transitions is not needed.
-   * @param id  The unique identifier corresponding to the requested state
-   * @return    The requested state
-   **/
-  public State getStateExcludingTransitions(long id) {
-    return StateIO.readFromFileExcludingTransitions(this, baf, id);
   }
 
   /**
@@ -3726,11 +2787,7 @@ public class Automaton implements Closeable {
    **/
   public boolean hasUnmarkedState() {
 
-    for (long s = 1; s <= getNumberOfStates(); s++)
-      if (!getStateExcludingTransitions(s).isMarked())
-        return true;
-
-    return false;
+    return IterableUtils.matchesAny(states.values(), s -> !s.isMarked());
 
   }
 
@@ -3792,14 +2849,6 @@ public class Automaton implements Closeable {
   }
 
   /**
-   * Get the number of events that can be held in this automaton.
-   * @return  Current event capacity
-   **/
-  public int getEventCapacity() {
-    return eventCapacity;
-  }
-
-  /**
    * Get the number of events that are currently in this automaton.
    * @return  Number of events
    **/
@@ -3846,13 +2895,6 @@ public class Automaton implements Closeable {
     return nStates;
   }
 
-  /**
-   * Get the number of states that can be held in this automaton.
-   * @return  Current state capacity
-   **/
-  public long getStateCapacity() {
-    return stateCapacity;
-  }
 
   /**
    * Get the number of transitions that are currently in this automaton.
@@ -3871,46 +2913,6 @@ public class Automaton implements Closeable {
   }
 
   /**
-   * Get the number of transitions that can be attached to each state.
-   * @return  Current transition capacity
-   **/
-  public int getTransitionCapacity() {
-    return transitionCapacity;
-  }
-
-  /**`
-   * Get the number of characters that can be used for a state's label.
-   * @return  Current maximum label length
-   **/
-  public int getLabelLength() {
-    return labelLength;
-  }
-
-  /**
-   * Get the amount of space needed to store an event ID.
-   * @return  Number of bytes required to store each event ID
-   **/
-  public int getSizeOfEventID() {
-    return nBytesPerEventID;
-  }
-
-  /**
-   * Get the amount of space needed to store a state ID.
-   * @return  Number of bytes required to store each state ID
-   **/
-  public int getSizeOfStateID() {
-    return nBytesPerStateID;
-  }
-
-  /**
-   * Get the amount of space needed to store a state.
-   * @return  Number of bytes required to store each state
-   **/ 
-  public long getSizeOfState() {
-    return nBytesPerState;
-  }
-
-  /**
    * Get the ID of the state where the automaton begins (the entry point).
    * @return  The ID of the initial state (0 indicates that no initial state was specified)
    **/
@@ -3924,22 +2926,6 @@ public class Automaton implements Closeable {
    **/
   public int getNumberOfControllers() {
     return nControllers;
-  }
-
-  /**
-   * Get the header file where this automaton is being stored.
-   * @return  The header file
-   **/
-  public final File getHeaderFile() {
-    return haf.getHeaderFile();
-  }
-
-  /**
-   * Get the body file where this automaton is being stored.
-   * @return  The body file
-   **/
-  public final File getBodyFile() {
-    return baf.getBodyFile();
   }
 
   /**

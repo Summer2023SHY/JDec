@@ -31,6 +31,16 @@ public class LabelVector implements Iterable<String> {
     /* CONSTRUCTOR */
 
   /**
+   * Private constructor for compatibility with gson
+   * 
+   * @since 2.0
+   */
+  private LabelVector() {
+    this.label = StringUtils.EMPTY;
+    this.vector = null;
+  }
+
+  /**
    * Construct a LabelVector object, which takes a string and splits it into its vector components.
    * @param label The label to be vectorized (syntax: "&lt;first,second,third>" vectorizes into {"first",
    * "second", "third"})
