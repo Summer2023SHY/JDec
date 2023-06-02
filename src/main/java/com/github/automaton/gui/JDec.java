@@ -843,6 +843,12 @@ public class JDec extends JFrame implements ActionListener {
 
   }
 
+  /**
+   * Create a tab, and load in an automaton.
+   * @param automaton   The automaton object
+   * 
+   * @revised 2.0
+   **/
   public void createTab(Automaton automaton) {
     AutomatonJsonFileAdapter jsonIOAdapter;
     try {
@@ -865,8 +871,10 @@ public class JDec extends JFrame implements ActionListener {
   }
 
   /**
-   * Create a tab, and load in an automaton.
-   * @param automaton   The automaton object
+   * Create a tab, and load in an automaton from {@code .hdr}/{@code .bdy} file pair.
+   * @param binaryAutomatonAdapter a wrapper for {@code .hdr}/{@code .bdy} file pair
+   * 
+   * @since 2.0 
    **/
   public void createLegacyTab(AutomatonBinaryFileAdapter binaryAutomatonAdapter) {
 
@@ -897,8 +905,8 @@ public class JDec extends JFrame implements ActionListener {
   }
 
   /**
-   * Create a tab, and load in an automaton.
-   * @param automaton   The automaton object
+   * Create a tab, and load in an automaton from a JSON object
+   * @param jsonAutomatonAdapter a wrapper for JSON object
    **/
   public void createJsonTab(AutomatonJsonFileAdapter jsonAutomatonAdapter) {
 

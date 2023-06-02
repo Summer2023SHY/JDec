@@ -32,6 +32,7 @@ import guru.nidi.graphviz.model.MutableNode;
  * @author Sung Ho Yoon
  * 
  * @since 1.0
+ * @revised 2.0
  */
 public class UStructure extends Automaton {
 
@@ -61,26 +62,24 @@ public class UStructure extends Automaton {
     /* CONSTRUCTORS */
 
   /**
-   * Implicit constructor: used to load the U-Structure from file or when creating a new U-Structure.
-   * @param headerFile    The file where the header should be stored
-   * @param bodyFile      The file where the body should be stored
-   * @param nControllers  The number of controllers
-   * @param clearFiles    Whether or not the header and body files should be wiped before use
-   **/
+   * Constructs a new {@code Automaton} with the specified number of controllers.
+   * 
+   * @param nControllers the number of controllers that the new automaton has (1 implies centralized control, >1 implies decentralized control)
+   * @throws IllegalArgumentException if argument is not positive
+   * 
+   * @since 2.0
+   */
   public UStructure(int nControllers) {
     super(nControllers);
   }
 	
 	/**
-   * Main constructor.
-   * @param headerFile          The binary file to load the header information of the U-Structure from (information about events, etc.)
-   * @param bodyFile            The binary file to load the body information of the U-Structure from (states and transitions)
-   * @param eventCapacity       The initial event capacity (increases by a factor of 256 when it is exceeded)
-   * @param stateCapacity       The initial state capacity (increases by a factor of 256 when it is exceeded)
-   * @param transitionCapacity  The initial maximum number of transitions per state (increases by 1 whenever it is exceeded)
-   * @param labelLength         The initial maximum number characters per state label (increases by 1 whenever it is exceeded)
-   * @param nControllers        The number of controllers
-   * @param clearFiles          Whether or not the header and body files should be cleared prior to use
+   * Constructs a new {@code UStructure} that is represented by a JSON object
+   * 
+   * @param jsonObject a JSON object that represents a U-Structure
+   * 
+   * @see Automaton#buildAutomaton(JsonObject)
+   * @since 2.0
    **/
   UStructure(JsonObject jsonObject) {
     
@@ -135,9 +134,9 @@ public class UStructure extends Automaton {
 
   /**
    * Generate a new U-Structure, with all communications added (potential communications are marked).
-   * @param newHeaderFile The header file where the new U-Structure should be stored
-   * @param newBodyFile   The body file where the new U-Structure should be stored
    * @return              The U-Structure with the added transitions
+   * 
+   * @since 2.0
    **/
   public UStructure addCommunications() {
     
@@ -420,10 +419,10 @@ public class UStructure extends Automaton {
    * Refine this U-Structure by applying the specified communication protocol, and doing the necessary pruning.
    * @param <T>                         The type of communication data
    * @param protocol                    The chosen protocol
-   * @param newHeaderFile               The header file where the new U-Structure should be stored
-   * @param newBodyFile                 The body file where the new U-Structure should be stored
    * @param discardUnusedCommunications Whether or not the unused communications should be discarded
    * @return                            This pruned U-Structure that had the specified protocol applied
+   * 
+   * @since 2.0
    **/
   public <T extends CommunicationData> PrunedUStructure applyProtocol(Set<T> protocol,
                                                                       boolean discardUnusedCommunications) {
@@ -462,11 +461,9 @@ public class UStructure extends Automaton {
 
   /**
    * Duplicate this U-Structure as a pruned U-Structure.
-   * <p>NOTE: This only works because the pruned U-Structure currently
-   * has identical {@code .bdy} and {@code .hdr} formats.
-   * @param newHeaderFile The header file where the pruned U-Structure should be stored
-   * @param newBodyFile   The body file where the pruned U-Structure should be stored
-   * @return              The duplicated U-Structure (as a pruned U-Structure)
+   * @return The duplicated U-Structure (as a pruned U-Structure)
+   * 
+   * @since 2.0
    **/
   public PrunedUStructure duplicateAsPrunedUStructure() {
 

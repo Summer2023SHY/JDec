@@ -71,10 +71,21 @@ public class Automaton implements Cloneable {
     /* INSTANCE VARIABLES */
 
   // Events
+  /**
+   * List of events
+   */
   protected List<Event> events = new ArrayList<Event>();
+  /**
+   * Mapping of labels that trigger events to their respective {@link Event}s.
+   */
   protected transient Map<String, Event> eventsMap = new HashMap<String, Event>();
 
   // States
+  /**
+   * Mapping of IDs of states in this automaton to their respective {@link State}s.
+   * 
+   * @since 2.0
+   */
   protected Map<Long, State> states = new LinkedHashMap<>();
 
   // Special transitions
@@ -82,8 +93,11 @@ public class Automaton implements Cloneable {
 
   // Basic properties of the automaton
   protected Type type;
+  /** Number of states in this automaton */
   protected long nStates      = 0;
+  /** Initial state of this automaton */
   protected long initialState = 0;
+  /** Number of controllers */
   protected int nControllers;
 
   // GUI input
@@ -216,18 +230,26 @@ public class Automaton implements Cloneable {
     /* CONSTRUCTORS */
 
   /**
-   * Default constructor: create empty automaton with default capacity using temporary files.
-   **/
+   * Constructs a new {@code Automaton} with the {@link #DEFAULT_NUMBER_OF_CONTROLLERS default number of controllers}.
+   * 
+   * @revised 2.0
+   */
   public Automaton() {
     this(DEFAULT_NUMBER_OF_CONTROLLERS);
   }
 
   /**
-   * Main constructor.
-   * @param nControllers         The number of controllers that the automaton has (1 implies centralized control, >1 implies decentralized control)
-   * @param clearFiles           Whether or not the header and body files should be cleared prior to use
+   * Constructs a new {@code Automaton} with the specified number of controllers.
+   * 
+   * @param nControllers the number of controllers that the new automaton has (1 implies centralized control, >1 implies decentralized control)
+   * @throws IllegalArgumentException if argument is not positive
+   * 
+   * @since 2.0
    **/
   public Automaton(int nControllers) {
+    if (nControllers <= 0) {
+      throw new IllegalArgumentException("Invalid number of controllers: " + nControllers);
+    }
     this.nControllers = nControllers;
     initializeLists();
     initializeVariables();
@@ -235,10 +257,12 @@ public class Automaton implements Cloneable {
   }
 
   /**
-   * Main constructor.
-   * @param dataFile           The file to load the automaton information from
-   * @param nControllers       The number of controllers that the automaton has (1 implies centralized control, >1 implies decentralized control)
-   * @param clearFiles         Whether or not the header and body files should be cleared prior to use
+   * Constructs a new {@code Automaton} that is represented by a JSON object
+   * 
+   * @param jsonObject a JSON object that represents an automaton
+   * 
+   * @see #buildAutomaton(JsonObject)
+   * @since 2.0
    **/
   Automaton(JsonObject jsonObject) {
 
@@ -263,6 +287,17 @@ public class Automaton implements Cloneable {
 
   }
 
+  /**
+   * Builds an automaton from a JSON object.
+   * 
+   * @param jsonObj a JSON object that represents an automaton
+   * @return a new automaton represented by the argument
+   * 
+   * @throws IllegalAutomatonJsonException if the value for {@code "type"} does not exist or cannot be represented as a {@code byte}
+   * @throws AutomatonException if the value for {@code "type"} is invalid
+   * 
+   * @since 2.0
+   */
   public static Automaton buildAutomaton(JsonObject jsonObj) {
     Automaton.Type type;
     try {
@@ -297,9 +332,9 @@ public class Automaton implements Cloneable {
 
   /**
    * Create a new copy of this automaton that has all unreachable states and transitions removed.
-   * @param newHeaderFile   The header file where the accessible automaton should be stored
-   * @param newBodyFile     The body file where the accessible automaton should be stored
-   * @return                The accessible automaton
+   * @return The accessible automaton
+   * 
+   * @since 2.0
    **/
   public Automaton accessible() {
     return accessibleHelper(new Automaton(nControllers));
@@ -381,8 +416,9 @@ public class Automaton implements Cloneable {
   /**
    * Create a new copy of this automaton that has all states removed which are unable to reach a marked state.
    * @implNote This method should be overridden by subclasses, using the {@link #coaccessibleHelper(Automaton,Automaton)} method.
-   * @param newDataFile    The body file where the new automaton should be stored
    * @return               The co-accessible automaton
+   * 
+   * @since 2.0
    **/
   public Automaton coaccessible() {
     return coaccessibleHelper(new Automaton(nControllers), invert());
@@ -472,11 +508,11 @@ public class Automaton implements Cloneable {
    * Create a new copy of this automaton that has the marking status of all states toggled, and that has an added
    * 'dead' or 'dump' state where all undefined transitions lead.
    * @implNote This method should be overridden by subclasses, using the {@link #complementHelper(Automaton)} method.
-   * @param newHeaderFile             The header file where the new automaton should be stored
-   * @param newBodyFile               The body file where the new automaton should be stored
    * @return                          The complement automaton
    * @throws OperationFailedException When there already exists a dump state, indicating that this
    *                                  operation has already been performed on this automaton
+   * 
+   * @since 2.0
    **/
   public Automaton complement() throws OperationFailedException {
 
@@ -561,10 +597,10 @@ public class Automaton implements Cloneable {
   /**
    * Creates a new copy of this automaton that is trim (both accessible and co-accessible).
    * @implNote I am taking the accessible part of the automaton before the co-accessible part of the automaton
-   * because the {@link #accessible(File,File)} method has less overhead than the {@link #coaccessible(File,File)} method.
-   * @param newHeaderFile  The header file where the new automaton should be stored
-   * @param newBodyFile    The body file where the new automaton should be stored
+   * because the {@link #accessible()} method has less overhead than the {@link #coaccessible()} method.
    * @return               The trim automaton, or {@code null} if there was no initial state specified
+   * 
+   * @since 2.0
    **/
   public Automaton trim() {
     return accessible().coaccessible();
@@ -578,6 +614,8 @@ public class Automaton implements Cloneable {
    * @return  The inverted automaton
    * 
    * @see #invertHelper(Automaton)
+   * 
+   * @revised 2.0
    **/
   public Automaton invert() {
     return invertHelper(new Automaton(nControllers));
@@ -617,12 +655,12 @@ public class Automaton implements Cloneable {
 
   /**
    * Generate the intersection of the two specified automata.
-   * @param first                           The first automaton
-   * @param second                          The second automaton
-   * @param newHeaderFile                   The header file where the new automaton should be stored
-   * @param newBodyFile                     The body file where the new automaton should be stored
-   * @return                                The intersection
+   * @param first   The first automaton
+   * @param second  The second automaton
+   * @return        The intersection
    * @throws IncompatibleAutomataException  If the number of controllers do not match, or the automata have incompatible events
+   * 
+   * @since 2.0
    **/
   public static Automaton intersection(Automaton first, Automaton second) throws IncompatibleAutomataException {
 
@@ -727,10 +765,10 @@ public class Automaton implements Cloneable {
    * Generate the union of the two specified automata.
    * @param first                           The first automaton
    * @param second                          The second automaton
-   * @param newHeaderFile                   The header file where the new automaton should be stored
-   * @param newBodyFile                     The body file where the new automaton should be stored
    * @return                                The union
    * @throws IncompatibleAutomataException  If the number of controllers do not match, or the automata have incompatible events
+   * 
+   * @since 2.0
    **/
   public static Automaton union(Automaton first, Automaton second) throws IncompatibleAutomataException {
 
@@ -871,9 +909,7 @@ public class Automaton implements Cloneable {
 
   /**
    * Apply the synchronized composition algorithm to an automaton to produce the U-Structure.
-   * @param newHeaderFile  The header file where the new automaton should be stored
-   * @param newBodyFile    The body file where the new automaton should be stored
-   * @return               The U-Structure
+   * @return The U-Structure
    * @throws NoInitialStateException if there was no starting state
    * @throws OperationFailedException if something else went wrong
    **/
@@ -1246,9 +1282,9 @@ public class Automaton implements Cloneable {
    * Generate the twin plant by combining this automaton w.r.t. G_{Sigma*}.
    * @implNote The technique used here is similar to how the complement works. This would not work
    *       in all cases, but G_{Sigma*} is a special case.
-   * @param newHeaderFile The header file where the new automaton should be stored
-   * @param newBodyFile   The body file where the new automaton should be stored
    * @return              The twin plant
+   * 
+   * @since 2.0
    **/
   public final Automaton generateTwinPlant() {
 
@@ -1327,9 +1363,9 @@ public class Automaton implements Cloneable {
     * Generate the twin plant by combining this automaton w.r.t. G_{Sigma*}.
     * @implNote The technique used here is similar to how the complement works. This would not work
     *       in all cases, but G_{Sigma*} is a special case.
-    * @param newHeaderFile The header file where the new automaton should be stored
-    * @param newBodyFile   The body file where the new automaton should be stored
     * @return              The twin plant
+    *
+    * @since 2.0
     **/
   public final Automaton generateTwinPlant2() {
 
@@ -2158,18 +2194,23 @@ public class Automaton implements Cloneable {
 
   }
 
-    /* WORKING WITH FILES */
-
   /**
-   * Duplicate this automaton, storing them in temporary files.
-   * @apiNote This method is intended to be overridden.
-   * @return A duplicate of this automaton
+   * Creates and returns a (deep) copy of this automaton.
+   * @return a copy of this automaton
+   * 
+   * @since 2.0
    **/
   @Override
   public Object clone() {
     return new Automaton(this.toJsonObject());
   }
 
+  /**
+   * Returns a JSON representation of this automaton
+   * @return a JSON representation of this automaton
+   * 
+   * @since 2.0
+   */
   public JsonObject toJsonObject() {
     JsonObject jsonObj = new JsonObject();
     jsonObj.addProperty("nStates", nStates);
@@ -2185,18 +2226,48 @@ public class Automaton implements Cloneable {
     return jsonObj;
   }
 
+  /**
+   * Exports special transitions to the given JSON object.
+   * @param jsonObj the JSON object to export to
+   * 
+   * @since 2.0
+   */
   protected void addSpecialTransitionsToJsonObject(JsonObject jsonObj) {
     addTransitionDataToJsonObject(jsonObj, "badTransitions", badTransitions);
   }
 
+  /**
+   * Exports a list of transition data to the given JSON object.
+   * 
+   * @param jsonObj the JSON object to export to
+   * @param name the name to use for the JSON object
+   * @param list the list of transition data to export
+   * 
+   * @since 2.0
+   */
   protected void addTransitionDataToJsonObject(JsonObject jsonObj, String name, List<TransitionData> list) {
     JsonUtils.addListPropertyToJsonObject(jsonObj, name, list, TransitionData.class);
   }
 
+  /**
+   * Reads special transitions from the given JSON object
+   * 
+   * @param jsonObj the JSON object to import from
+   */
   protected void readSpecialTransitionsFromJsonObject(JsonObject jsonObj) {
     badTransitions = readTransitionDataFromJsonObject(jsonObj, "badTransitions");
   }
 
+  /**
+   * Exports a list of transition data to the given JSON object.
+   * 
+   * @param jsonObj the JSON object to import from
+   * @param name the name of the property in the JSON object that stores transition data
+   * 
+   * @return the list of transition data that is imported from the specified JSON object
+   * 
+   * @since 2.0
+   */
   protected List<TransitionData> readTransitionDataFromJsonObject(JsonObject jsonObj, String name) {
     return JsonUtils.readListPropertyFromJsonObject(jsonObj, name, TransitionData.class);
   }

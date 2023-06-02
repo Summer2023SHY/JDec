@@ -17,6 +17,7 @@ import com.github.automaton.automata.*;
  * 
  * @see com.github.automaton.automata.State
  * @since 1.1
+ * @revised 2.0
  */
 class StateIO {
 

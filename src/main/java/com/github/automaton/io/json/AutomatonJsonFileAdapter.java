@@ -11,6 +11,12 @@ import com.github.automaton.io.*;
 import com.google.gson.*;
 import com.google.gson.JsonParser;
 
+/**
+ * A wrapper for automata represented as a JSON file.
+ * 
+ * @author Sung Ho Yoon
+ * @since 2.0
+ */
 public class AutomatonJsonFileAdapter implements AutomatonIOAdapter {
 
     private transient Logger logger;
@@ -37,6 +43,13 @@ public class AutomatonJsonFileAdapter implements AutomatonIOAdapter {
         this(file, true);
     }
 
+    /**
+     * Constructs a new {@code AutomatonAccessFile} with the given file
+     * @param file an automaton data file
+     * @param load whether or not to load data from the specified file
+     * @throws IOException if an I/O error occurs
+     * @throws NullPointerException if argument is {@code null}
+     */
     public AutomatonJsonFileAdapter(File file, boolean load) throws IOException {
         this.file = Objects.requireNonNull(file);
         this.fileName = this.file.getAbsolutePath();
@@ -58,6 +71,15 @@ public class AutomatonJsonFileAdapter implements AutomatonIOAdapter {
         }
     }
 
+    /**
+     * Wraps an automaton so that it can be saved as a JSON file
+     * 
+     * @param <T> type of automaton
+     * @param automaton automaton to wrap
+     * @param file file to save data to
+     * @return an {@code AutomatonJsonFileAdapter} that wraps the specified automaton
+     * @throws IOException if an I/O error occurs
+     */
     public static <T extends Automaton> AutomatonJsonFileAdapter wrap(T automaton, File file) throws IOException {
         AutomatonJsonFileAdapter adapter = new AutomatonJsonFileAdapter(file, false);
         adapter.automaton = Objects.requireNonNull(automaton);
@@ -66,11 +88,13 @@ public class AutomatonJsonFileAdapter implements AutomatonIOAdapter {
         return adapter;
     }
 
+    /** {@inheritDoc} */
     @Override
     public File getFile() {
         return file;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void save() throws IOException {
         try {
@@ -83,11 +107,16 @@ public class AutomatonJsonFileAdapter implements AutomatonIOAdapter {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Automaton getAutomaton() {
         return automaton;
     }
 
+    /**
+     * Returns a string representation of this wrapper.
+     * @return a string representation of this wrapper
+     */
     @Override
     public String toString() {
         return fileName;

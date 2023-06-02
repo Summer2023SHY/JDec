@@ -13,7 +13,10 @@ import com.github.automaton.gui.RandomAutomatonPrompt;
  * Utility class used to generate random automata (with a number of specified properties).
  *
  * @author Micah Stairs
+ * @author Sung Ho Yoon
+ * 
  * @since 1.1
+ * @revised 2.0
  */
 public class RandomAutomatonGenerator {
   /** Private constructor */
@@ -26,8 +29,6 @@ public class RandomAutomatonGenerator {
    * be both observable, controllable, and accessible, co-accessible.
    * NOTE: This process is terminated
    * @param prompt                  A reference to the prompt that started this process
-   * @param headerFile              The name of the header file where the automaton will be stored
-   * @param bodyFile                The name of the body file where the automaton will be stored
    * @param nEvents                 The number of events to be generated in the automaton
    * @param nStates                 The number of states to be generated in the automaton
    * @param minTransitionsPerState  The minimum number of outgoing transitions per state
@@ -35,7 +36,9 @@ public class RandomAutomatonGenerator {
    * @param nControllers            The number of controllers in the automaton
    * @param nBadTransitions         The number of bad transition in the automaton
    * @param progressIndicator       The progress indicator to be updated during the generation process
-   * @return                        The randomly generated automaton (or null if the process was aborted)
+   * @return                        The randomly generated automaton (or {@code null} if the process was aborted)
+   * 
+   * @since 2.0
    **/
   public static Automaton generateRandom(RandomAutomatonPrompt prompt,
                                          int nEvents,

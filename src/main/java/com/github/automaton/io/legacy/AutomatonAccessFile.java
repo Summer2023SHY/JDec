@@ -76,6 +76,16 @@ public abstract class AutomatonAccessFile implements Closeable {
         return logger;
     }
 
+    /**
+     * Checks whether some other object is "equal to" this {@code AutomatonAccessFile}.
+     * 
+     * @param obj the reference object with which to compare
+     * @return {@code true} if argument is "equal to" this {@code AutomatonAccessFile}
+     * 
+     * @throws UncheckedIOException if an I/O error occurs
+     * 
+     * @since 2.0
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;

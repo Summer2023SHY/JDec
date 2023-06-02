@@ -210,12 +210,20 @@
                 <placement>a</placement>
                 <head>Implementation note:</head>
               </tag>
+              <tag>
+                <name>revised</name>
+                <!-- revision for all places -->
+                <placement>a</placement>
+                <head>Revised version:</head>
+              </tag>
             </tags>
             <links>
+              <link>https://commons.apache.org/proper/commons-lang/javadocs/api-release/</link>
               <link>https://logging.apache.org/log4j/2.x/log4j-api/apidocs/</link>
               <link>https://xmlgraphics.apache.org/batik/javadoc/</link>
-              <link>https://www.javadoc.io/doc/xml-apis/xml-apis/1.4.01/</link>
-              <link>https://www.javadoc.io/doc/guru.nidi/graphviz-java/0.18.1/</link>
+              <link>https://www.javadoc.io/doc/xml-apis/xml-apis/latest/</link>
+              <link>https://www.javadoc.io/doc/guru.nidi/graphviz-java/latest/</link>
+              <link>https://www.javadoc.io/doc/com.google.code.gson/gson/latest/</link>
             </links>
           </configuration>
         </plugin>

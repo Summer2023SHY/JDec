@@ -12,6 +12,13 @@ import com.github.automaton.io.AutomatonIOAdapter;
 import com.github.automaton.io.json.JsonUtils;
 import com.google.gson.*;
 
+/**
+ * Provides implementation of {@link AutomatonIOAdapter} that is compatible
+ * with {@code .hdr} and {@code .bdy} files.
+ * 
+ * @author Sung Ho Yoon
+ * @since 2.0
+ */
 public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable {
 
     /** The number of events that an automaton can hold by default. */
@@ -63,6 +70,14 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
 
     private Automaton automaton;
 
+    /**
+     * Constructs a new {@code AutomatonBinaryFileAdapter}.
+     * 
+     * @param headerFile the {@code .hdr} file
+     * @param bodyFile the {@code .bdy} file
+     * 
+     * @throws UncheckedIOException if an I/O error occurs
+     */
     public AutomatonBinaryFileAdapter(File headerFile, File bodyFile) {
 
         try {
@@ -76,6 +91,11 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
         }
     }
 
+    /**
+     * Parses the {@code .hdr} file and adds parsed data to a JSON object.
+     * @param jsonObj the JSON object to add parsed data to
+     * @throws IOException if an I/O error occurs
+     */
     private void parseHeaderFile(JsonObject jsonObj) throws IOException {
         haf.seek(0);
         byte[] buffer = haf.readHeaderBytes(HeaderAccessFile.HEADER_SIZE);
@@ -241,6 +261,11 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
         parseBodyFile(jsonObj, events, properties);
     }
 
+    /**
+     * Reads special transitions from a {@code .hdr} file and adds read data to a JSON object.
+     * @param jsonObj the JSON object to add read data to
+     * @throws IOException if an I/O error occurs
+     */
     private void readSpecialTransitionsFromHeader(JsonObject jsonObj) throws IOException {
         Automaton.Type type = Automaton.Type.getType(jsonObj.getAsJsonPrimitive("type").getAsByte());
         switch (type) {
@@ -257,6 +282,13 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
         }
     }
 
+    /**
+     * Reads special transitions from a {@code .hdr} file for a normal automaton.
+     * @param jsonObj the JSON object to add read data to
+     * @throws IOException if an I/O error occurs
+     * 
+     * @see Automaton
+     */
     private void readAutomatonSpecialTransitions(JsonObject jsonObj) throws IOException {
         byte[] buffer = haf.readHeaderBytes(4);
         int nBadTransitions = ByteManipulator.readBytesAsInt(buffer, 0, 4);
@@ -266,6 +298,13 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
         JsonUtils.addListPropertyToJsonObject(jsonObj, "badTransitions", badTransitions, TransitionData.class);
     }
 
+    /**
+     * Reads special transitions from a {@code .hdr} file for a U-Structure.
+     * @param jsonObj the JSON object to add read data to
+     * @throws IOException if an I/O error occurs
+     * 
+     * @see UStructure
+     */
     private void readUStructureSpecialTransitions(JsonObject jsonObj) throws IOException {
         byte[] buffer = haf.readHeaderBytes(28);
         int nUnconditionalViolations = ByteManipulator.readBytesAsInt(buffer, 0, 4);
@@ -486,6 +525,11 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
                                                                                                      // transitions
     }
 
+    /**
+     * Parses the {@code .bdy} file and adds parsed data to a JSON object.
+     * @param jsonObj the JSON object to add parsed data to
+     * @throws IOException if an I/O error occurs
+     */
     private void parseBodyFile(JsonObject jsonObj, List<Event> events, Map<String, Number> properties) {
 
         long nStates = jsonObj.getAsJsonPrimitive("nStates").getAsLong();
@@ -520,31 +564,59 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
         return automaton;
     }
 
+    /**
+     * {@inheritDoc}
+     * @return the underlying header file
+     */
     @Override
     public File getFile() {
         return getHeaderFile();
     }
 
+    /**
+     * Returns the header file this wrapper wraps.
+     * @return a {@code .hdr} file
+     */
     public File getHeaderFile() {
         return haf.getFile();
     }
 
+    /**
+     * Returns the body file this wrapper wraps.
+     * @return a {@code .bdy} file
+     */
     public File getBodyFile() {
         return baf.getFile();
     }
 
+    /**
+     * {@inheritDoc}
+     * @throws NotImplementedException always
+     */
     @Override
     public void save() throws IOException {
         // TODO Auto-generated method stub
         throw new NotImplementedException();
     }
 
+    /**
+     * Closes header and body files and releases any system resource
+     * associated with these files.
+     * 
+     * @throws IOException if I/O error occurs
+     */
     @Override
     public void close() throws IOException {
         haf.close();
         baf.close();
     }
 
+    /**
+     * Checks whether some other object is "equal to" this {@code AutomatonBinaryFileAdapter}.
+     * 
+     * @param obj the reference object with which to compare
+     * @return {@code true} if argument is "equal to" this {@code AutomatonBinaryFileAdapter}
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;

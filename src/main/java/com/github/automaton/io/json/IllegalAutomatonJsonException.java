@@ -2,6 +2,13 @@ package com.github.automaton.io.json;
 
 import com.google.gson.JsonParseException;
 
+/**
+ * Thrown to indicate that an error occurred when loading an automaton from
+ * a JSON object.
+ * 
+ * @author Sung Ho Yoon
+ * @since 2.0
+ */
 public class IllegalAutomatonJsonException extends JsonParseException {
 
     /**
