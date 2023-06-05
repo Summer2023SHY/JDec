@@ -87,6 +87,7 @@ public class StateSet extends State {
         private int controller;
 
         StateSetTransitionIterator(int controller) {
+            if (controller < 0) throw new IndexOutOfBoundsException(controller);
             this.controller = controller;
             stateIterator = StateSet.this.set.iterator();
             uniqueTransitions = new LinkedHashSet<>();
