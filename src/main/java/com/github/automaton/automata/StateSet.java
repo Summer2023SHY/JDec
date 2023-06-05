@@ -151,8 +151,4 @@ public class StateSet extends State {
         return CollectionUtils.isEqualCollection(this.set, ((StateSet) other).set);
     }
 
-    @Override
-    public String toString() {
-        return super.toString();
-    }
 }
