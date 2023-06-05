@@ -51,8 +51,7 @@ import com.github.automaton.automata.graphviz.GraphvizEngineInitializer;
 import com.github.automaton.gui.util.*;
 import com.github.automaton.io.AutomatonIOAdapter;
 import com.github.automaton.io.json.AutomatonJsonFileAdapter;
-import com.github.automaton.io.legacy.AutomatonBinaryFileAdapter;
-import com.github.automaton.io.legacy.MissingOrCorruptBodyFileException;
+import com.github.automaton.io.legacy.*;
 
 /**
  * A Java application for Decentralized Control. This application has been design to build
@@ -823,7 +822,7 @@ public class JDec extends JFrame implements ActionListener {
     try {
       if (assignTemporaryFiles) {
         String fileName = getTemporaryFileName();
-        File tempFile = new File(fileName + ".json");
+        File tempFile = new File(fileName + FilenameUtils.EXTENSION_SEPARATOR + "json");
         FileUtils.touch(tempFile);
         tab.ioAdapter = new AutomatonJsonFileAdapter(tempFile, false);
         tab.updateTabTitle();
@@ -861,7 +860,7 @@ public class JDec extends JFrame implements ActionListener {
   public void createTab(Automaton automaton) {
     AutomatonJsonFileAdapter jsonIOAdapter;
     try {
-      jsonIOAdapter = AutomatonJsonFileAdapter.wrap(automaton, new File(getTemporaryFileName() + ".json"));
+      jsonIOAdapter = AutomatonJsonFileAdapter.wrap(automaton, new File(getTemporaryFileName() + FilenameUtils.EXTENSION_SEPARATOR + "json"));
     } catch (IOException ioe) {
       throw new UncheckedIOException(logger.throwing(ioe));
     }
@@ -1007,7 +1006,7 @@ public class JDec extends JFrame implements ActionListener {
 
     int index = tabbedPane.getSelectedIndex();
     AutomatonTab tab = tabs.get(index);
-    String fileName = currentDirectory + File.separator + FilenameUtils.removeExtension(tab.ioAdapter.getFile().getName()) + ".svg";
+    String fileName = FilenameUtils.removeExtension(tab.ioAdapter.getFile().getAbsolutePath()) + ".svg";
 
     boolean successful = false;
 
@@ -1140,7 +1139,7 @@ public class JDec extends JFrame implements ActionListener {
     AutomatonTab tab = tabs.get(tabbedPane.getSelectedIndex());
 
     // Create destination file name (excluding extension)
-    String destinationFileName = currentDirectory + File.separator + FilenameUtils.removeExtension(tab.ioAdapter.getFile().getName());
+    String destinationFileName = FilenameUtils.removeExtension(tab.ioAdapter.getFile().getAbsolutePath());
 
     try {
 
@@ -1413,7 +1412,7 @@ public class JDec extends JFrame implements ActionListener {
       /* Filter .hdr files */
 
     fileChooser.setAcceptAllFileFilterUsed(false);
-    FileNameExtensionFilter binaryFilter = new FileNameExtensionFilter("Automaton files", "hdr");
+    FileNameExtensionFilter binaryFilter = new FileNameExtensionFilter("Automaton files", HeaderAccessFile.EXTENSION);
     FileNameExtensionFilter jsonFilter = new FileNameExtensionFilter("JSON files", "json");
     fileChooser.addChoosableFileFilter(binaryFilter);
     fileChooser.addChoosableFileFilter(jsonFilter);
@@ -1429,7 +1428,7 @@ public class JDec extends JFrame implements ActionListener {
       return null;
 
     switch (FilenameUtils.getExtension(fileChooser.getSelectedFile().getName())) {
-      case "hdr":
+      case HeaderAccessFile.EXTENSION:
         return loadBinaryAutomatonFile(fileChooser.getSelectedFile(), index);
       case "json":
         return loadJsonAutomatonFile(fileChooser.getSelectedFile(), index);
@@ -1453,7 +1452,7 @@ public class JDec extends JFrame implements ActionListener {
 
       // Get files
       File headerFile = selectedFile;
-      File bodyFile = new File(headerFile.getParentFile() + File.separator + FilenameUtils.removeExtension(headerFile.getName()) + ".bdy");
+      File bodyFile = new File(FilenameUtils.removeExtension(headerFile.getAbsolutePath()) + FilenameUtils.EXTENSION_SEPARATOR + BodyAccessFile.EXTENSION);
      
       // Create new tab (if requested)
       if (index == -1) {
@@ -1518,7 +1517,7 @@ public class JDec extends JFrame implements ActionListener {
   /**
    * Prompts the user to name and specify the filename that they wish to save the data to.
    * @param title The title to give the window
-   * @return      The .hdr file to save the data to
+   * @return      The data file to save the data to
    **/
   private File saveFile(String title) {
 
@@ -1534,10 +1533,10 @@ public class JDec extends JFrame implements ActionListener {
 
     fileChooser.setDialogTitle(title);
 
-      /* Filter .hdr files */
+      /* Filter files */
 
     fileChooser.setAcceptAllFileFilterUsed(false);
-    FileNameExtensionFilter binaryFilter = new FileNameExtensionFilter("Automaton files", "hdr");
+    FileNameExtensionFilter binaryFilter = new FileNameExtensionFilter("Automaton files", HeaderAccessFile.EXTENSION);
     FileNameExtensionFilter jsonFilter = new FileNameExtensionFilter("JSON files", "json");
     fileChooser.addChoosableFileFilter(binaryFilter);
     fileChooser.addChoosableFileFilter(jsonFilter);
@@ -1567,7 +1566,7 @@ public class JDec extends JFrame implements ActionListener {
     }
 
     switch (FilenameUtils.getExtension(fileChooser.getSelectedFile().getName())) {
-      case "hdr":
+      case HeaderAccessFile.EXTENSION:
         return saveBinaryFile(fileChooser.getSelectedFile());
       case "json":
         return saveJsonFile(fileChooser.getSelectedFile());
@@ -1577,11 +1576,16 @@ public class JDec extends JFrame implements ActionListener {
     
   }
 
+  /**
+   * Prompts the user to name and specify the filename that they wish to save the data to.
+   * @param title The title to give the window
+   * @return      The {@code .hdr} file to save the data to
+   **/
   private File saveBinaryFile(File selectedFile) {
 
     String prefix   = FilenameUtils.removeExtension(selectedFile.getAbsolutePath());
-    File headerFile = new File(prefix + ".hdr");
-    File bodyFile   = new File(prefix + ".bdy");
+    File headerFile = new File(prefix + FilenameUtils.EXTENSION_SEPARATOR + HeaderAccessFile.EXTENSION);
+    File bodyFile   = new File(prefix + FilenameUtils.EXTENSION_SEPARATOR + BodyAccessFile.EXTENSION);
     File svgFile    = new File(prefix + ".svg");
   
     AutomatonTab currentTab = tabs.get(tabbedPane.getSelectedIndex());
@@ -1892,8 +1896,9 @@ public class JDec extends JFrame implements ActionListener {
 
   /**
    * Get a temporary filename (prefixed by 'untitled') which is stored in the temporary directory.
-   * @return  The temporary filename, which does not contain an extension (since it will be used for
-   *          both the .bdy and .hdr files)
+   * @return  The temporary filename, which does not contain an extension
+   * 
+   * @revised 2.0
    **/
   public String getTemporaryFileName() {
     return TEMPORARY_DIRECTORY.getAbsolutePath() + File.separator + "untitled" + temporaryFileIndex++;
@@ -2289,7 +2294,6 @@ public class JDec extends JFrame implements ActionListener {
 
     /**
      * Check to see if this tab is using temporary files.
-     * NOTE: This method assumes that both the .hdr and .bdy file are found in the same directory.
      * @return  Whether or not the tab is using temporary files to store the automaton
      **/
     public boolean usingTemporaryFiles() {

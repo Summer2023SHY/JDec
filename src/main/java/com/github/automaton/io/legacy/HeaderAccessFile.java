@@ -38,6 +38,13 @@ public final class HeaderAccessFile extends AutomatonAccessFile {
     /** The fixed amount of space needed to hold the main variables in the {@code .hdr} file, which apply to all automaton types. */
     public static final int HEADER_SIZE = 45; 
 
+    /**
+     * Default file extension used by header files.
+     * 
+     * @since 2.0
+     */
+    public static final String EXTENSION = "hdr";
+
     /** Contains basic information about automaton, needed in order to read the bodyFile, as well as the events */
     private RandomAccessFile headerRAFile;
 

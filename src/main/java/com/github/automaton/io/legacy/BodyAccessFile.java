@@ -37,6 +37,13 @@ import org.apache.commons.io.RandomAccessFileMode;
  */
 public final class BodyAccessFile extends AutomatonAccessFile {
 
+    /**
+     * Default file extension used by body files.
+     * 
+     * @since 2.0
+     */
+    public static final String EXTENSION = "bdy";
+
     /** List each state in the automaton, with the transitions */
     private RandomAccessFile bodyRAFile;
 

@@ -47,6 +47,7 @@ import java.math.*;
 import java.util.*;
 
 import org.apache.commons.collections4.IterableUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.RandomAccessFileMode;
 import org.apache.commons.lang3.*;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -63,14 +64,14 @@ import guru.nidi.graphviz.engine.*;
 import guru.nidi.graphviz.model.*;
 
 /**
- * Class that is able to fully represent an automaton. The usage of {@code .hdr} and {@code .bdy} files
- * gives the potential to work with very large automata, since the entire automaton does not need
- * to be stored in memory.
+ * Class that is able to fully represent an automaton.
  *
  * @author Micah Stairs
  * @author Sung Ho Yoon
  * 
  * @since 1.0
+ * 
+ * @revised 2.0
  **/
 public class Automaton implements Cloneable {
 
@@ -158,7 +159,7 @@ public class Automaton implements Cloneable {
 
     /**
      * Construct a Type enum object.
-     * @param numericValue  The numeric value associated with this enum value (used in {@code .hdr} file)
+     * @param numericValue  The numeric value associated with this enum value (used in data files)
      * @param classType     The associated class
      **/
     Type(byte numericValue, Class<? extends Automaton> classType) {
@@ -1482,8 +1483,10 @@ public class Automaton implements Cloneable {
   }
 
   /**
-   * Looks for blank spots in the {@code .bdy} file (which indicates that no state exists there),
-   * and re-numbers all of the states accordingly. This must be done after operations such as intersection or union.
+   * Renumber all states so that all state IDs are continuous.
+   * This must be done after operations such as
+   * {@link #intersection(Automaton, Automaton) intersection} or
+   * {@link #union(Automaton, Automaton) union}.
    */
   /* To make this method more efficient we could make the buffer larger. */
   protected final void renumberStates() {
@@ -1694,8 +1697,8 @@ public class Automaton implements Cloneable {
     try {
       MutableGraph g = generateGraph();
       Graphviz graphviz = Graphviz.fromGraph(g);
-      graphviz.render(Format.SVG_STANDALONE).toFile(new File(outputFileName + "." + Format.SVG_STANDALONE.fileExtension));
-      graphviz.render(Format.PNG).toFile(new File(outputFileName + "." + Format.PNG.fileExtension));
+      graphviz.render(Format.SVG_STANDALONE).toFile(new File(outputFileName + FilenameUtils.EXTENSION_SEPARATOR + Format.SVG_STANDALONE.fileExtension));
+      graphviz.render(Format.PNG).toFile(new File(outputFileName + FilenameUtils.EXTENSION_SEPARATOR + Format.PNG.fileExtension));
       return true;
     } catch (IOException e) {
       logger.catching(e);
@@ -1719,7 +1722,7 @@ public class Automaton implements Cloneable {
       /* Generate image */
 
     MutableGraph g = generateGraph();
-    File destFile = new File(outputFileName + "." + format.fileExtension);
+    File destFile = new File(outputFileName + FilenameUtils.EXTENSION_SEPARATOR + format.fileExtension);
     Graphviz.fromGraph(g).render(format).toFile(destFile);
 
     return destFile;
@@ -2493,8 +2496,8 @@ public class Automaton implements Cloneable {
   /**
    * Add the specified state to the automaton.
    * @implNote This method assumes that no state already exists with the specified ID.
-   * @implNote The method {@link #renumberStates()} must be called some time after using this method has been called since it can create empty
-   * spots in the {@code .bdy} file where states don't actually exist (this happens during automata operations such as intersection).
+   * @implNote It is recommended to call {@link #renumberStates()} some time after using this method has been called since
+   * the IDs of the states may not be consecutive.
    * @param label           The "name" of the new state
    * @param marked          Whether or not the states is marked
    * @param transitions     The list of transitions (if {@code null}, then a new list is made)
@@ -2790,7 +2793,7 @@ public class Automaton implements Cloneable {
    * Given the label of a state, get the ID of the state.
    * @implNote This method is extremely expensive. It should only be used when absolutely necessary.
    * @param label The unique label corresponding to the requested state
-   * @return      The corresponding state ID (or null, if it was not found)
+   * @return      The corresponding state ID (or {@code null}, if it was not found)
    **/
   public Long getStateID(String label) {
   
