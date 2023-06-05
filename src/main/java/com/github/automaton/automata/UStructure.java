@@ -26,7 +26,7 @@ package com.github.automaton.automata;
 import java.math.*;
 import java.util.*;
 
-import org.apache.commons.collections4.IteratorUtils;
+import org.apache.commons.collections4.*;
 import org.apache.commons.lang3.*;
 import org.apache.logging.log4j.*;
 
@@ -530,24 +530,34 @@ public class UStructure extends Automaton {
     automaton.addAllEvents(events);
 
     Queue<StateSet> stateQueue = new ArrayDeque<>();
+    Set<StateSet> addedStates = new HashSet<>();
 
     {
       StateSet initialState = nullClosure(getState(this.initialState), controller);
       automaton.addStateAt(initialState, true);
       stateQueue.add(initialState);
+      addedStates.add(initialState);
     }
 
     while (!stateQueue.isEmpty()) {
       StateSet u = stateQueue.remove();
-      if (!automaton.stateExists(u)) {
-        automaton.addStateAt(u, false);
-      }
-      for (Transition t : u.getObservableTransitions(controller)) {
-        StateSet ss = nullClosure(getState(t.getTargetStateID()), controller);
+      MultiValuedMap<Event, Long> observableTransitions = u.groupAndGetObservableTransitions(controller);
+      Map<Event, Collection<Long>> observableTransitionMap = observableTransitions.asMap();
+      inner: for (Event e : observableTransitions.keys()) {
+        List<State> targetStates = new ArrayList<>();
+        for (long targetStateID : observableTransitionMap.get(e)) {
+          targetStates.add(getState(targetStateID));
+        }
+        StateSet ss = nullClosure(targetStates, controller);
+        for (StateSet added : addedStates) {
+          if (added.containsAll(ss)) {
+            continue inner;
+          }
+        }
         automaton.addStateAt(ss, false);
-        
-        if (!automaton.containsTransition(u, t.getEvent(), ss.getID())) {
-          automaton.addTransition(u, t.getEvent().getLabel(), ss);
+        addedStates.add(ss);
+        if (!automaton.containsTransition(u, e, ss.getID())) {
+          automaton.addTransition(u, e.getLabel(), ss);
           stateQueue.add(ss);
         }
       }
@@ -570,6 +580,24 @@ public class UStructure extends Automaton {
   private StateSet nullClosure(State state, int controller) {
     Set<State> indistinguishableStates = new HashSet<>();
     nullClosure(indistinguishableStates, state, controller);
+    return new StateSet(indistinguishableStates, nStates);
+  }
+
+  /**
+   * Performs null closure w.r.t. the specified controller.
+   * 
+   * @param states a list of states that share the same triggering event
+   * @param controller the controller to perform subset construction with
+   * 
+   * @since 2.0
+   */
+  private StateSet nullClosure(List<State> states, int controller) {
+    Set<State> indistinguishableStates = new HashSet<>();
+    for (State s : states) {
+      Set<State> tempSet = new HashSet<>();
+      nullClosure(tempSet, s, controller);
+      indistinguishableStates = SetUtils.union(indistinguishableStates, tempSet);
+    }
     return new StateSet(indistinguishableStates, nStates);
   }
 

@@ -1,8 +1,31 @@
 package com.github.automaton.automata;
 
+/* 
+ * Copyright (C) 2023 Sung Ho Yoon
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 import java.util.*;
 
 import org.apache.commons.collections4.*;
+import org.apache.commons.collections4.multimap.*;
 
 
 public class StateSet extends State {
@@ -45,6 +68,14 @@ public class StateSet extends State {
         return IteratorUtils.toList(new StateSetTransitionIterator(controller));
     }
 
+    public MultiValuedMap<Event, Long> groupAndGetObservableTransitions(int controller) {
+        MultiValuedMap<Event, Long> groupedTransitions = new HashSetValuedHashMap<>();
+        for (Transition s : getObservableTransitions(controller)) {
+            groupedTransitions.put(s.getEvent(), s.getTargetStateID());
+        }
+        return groupedTransitions;
+    }
+
     public StateVector toStateVector() {
         return new StateVector(Arrays.asList(set.toArray(new State[0])), maxID);
     }
@@ -52,45 +83,61 @@ public class StateSet extends State {
     private class StateSetTransitionIterator implements Iterator<Transition> {
         private Iterator<State> stateIterator;
         private Iterator<Transition> transitionIterator;
-        private Set<Transition> returnedTransitions;
+        private Set<Transition> uniqueTransitions;
         private int controller;
 
         StateSetTransitionIterator(int controller) {
             this.controller = controller;
             stateIterator = StateSet.this.set.iterator();
-            returnedTransitions = new HashSet<>();
+            uniqueTransitions = new LinkedHashSet<>();
             this.transitionIterator = IteratorUtils.<Transition>emptyIterator();
+            while (stateIterator.hasNext()) {
+                transitionIterator = IteratorUtils.filteredIterator(
+                    stateIterator.next().getTransitions().iterator(),
+                    t -> {
+                        if (t.getEvent().getVector().getLabelAtIndex(this.controller).equals("*")) {
+                            return false;
+                        }
+                        return !uniqueTransitions.contains(t);
+                    }
+                );
+                while (transitionIterator.hasNext()) {
+                    uniqueTransitions.add(transitionIterator.next());
+                }
+            }
+            this.transitionIterator = uniqueTransitions.iterator();
         }
 
         @Override
         public boolean hasNext() {
-            return stateIterator.hasNext() || transitionIterator.hasNext();
+            return transitionIterator.hasNext();
         }
 
         @Override
         public Transition next() {
-            do {
-                while (!transitionIterator.hasNext()) {
-                    transitionIterator = IteratorUtils.filteredIterator(
-                        stateIterator.next().getTransitions().iterator(),
-                        t -> {
-                            if (t.getEvent().getVector().getLabelAtIndex(controller).equals("*")) {
-                                return false;
-                            }
-                            return !returnedTransitions.contains(t);
-                        }
-                    );
-                }
-                Transition t =  transitionIterator.next();
-                returnedTransitions.add(t);
-                return t;
-            } while (hasNext());
+            return transitionIterator.next();
         }
     }
 
     @Override
     public int hashCode() {
         return toStateVector().hashCode();
+    }
+
+    /**
+     * Checks whether a {@code StateSet} contains all states that this
+     * {@code StateSet} contains.
+     * 
+     * @param other a {@code StateSet} to check with
+     * @return {@code true} if the specified {@code StateSet} contains
+     * all states that this {@code StateSet} contains
+     * 
+     * @throws NullPointerException if argument is {@code null}
+     * 
+     * @see Set#containsAll(Collection)
+     */
+    public boolean containsAll(StateSet other) {
+        return set.containsAll(other.set);
     }
 
     @Override
