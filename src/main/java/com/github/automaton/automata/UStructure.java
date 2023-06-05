@@ -521,9 +521,10 @@ public class UStructure extends Automaton {
   /**
    * Runs subset construction w.r.t. the specified controller
    * 
-   * @param automaton
+   * @param automaton automaton to store subset construction data
    * @param controller the controller to perform subset construction with
    * 
+   * @since 2.0
    */
   private void subsetConstruction(Automaton automaton, int controller) {
 
@@ -572,7 +573,7 @@ public class UStructure extends Automaton {
   /**
    * Performs null closure w.r.t. the specified controller.
    * 
-   * @param state 
+   * @param state state to perform null closure with
    * @param controller the controller to perform subset construction with
    * 
    * @since 2.0
@@ -601,6 +602,15 @@ public class UStructure extends Automaton {
     return new StateSet(indistinguishableStates, nStates);
   }
 
+  /**
+   * Recursively generate set of indistinguishable state.
+   * 
+   * @param stateSet set of states containing indistinguishable states
+   * @param curr state to process
+   * @param controller the controller to perform subset construction with
+   * 
+   * @since 2.0
+   */
   private void nullClosure(Set<State> stateSet, State curr, int controller) {
     stateSet.add(curr);
     Iterator<Transition> nullTransitions = IteratorUtils.filteredIterator(

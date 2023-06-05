@@ -27,11 +27,24 @@ import java.util.*;
 import org.apache.commons.collections4.*;
 import org.apache.commons.collections4.multimap.*;
 
-
+/**
+ * A set of states.
+ * 
+ * @author Sung Ho Yoon
+ * @since 2.0
+ */
 public class StateSet extends State {
+    /** Set of states */
     private SortedSet<State> set;
+    /** Maximum value of the IDs */
     private long maxID;
 
+    /**
+     * Constructs a new {@code StateSet}.
+     * 
+     * @param set set of states that forms this {@code StateSet}
+     * @param maxID the maximum value of the IDs in the specified set
+     */
     public StateSet(Set<State> set, long maxID) {
         this.maxID = maxID;
         this.set = new TreeSet<State>(new Comparator<State>() {
@@ -51,11 +64,20 @@ public class StateSet extends State {
         buildLabel();
     }
 
+    /**
+     * Label of {@code StateSet} is automatically generated and
+     * cannot be modified.
+     * 
+     * @throws UnsupportedOperationException always
+     */
     @Override
     final void setLabel(String label) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Builds label for this {@code StateSet}.
+     */
     private void buildLabel() {
         List<String> labels = new ArrayList<>();
         for (State s : set) {
@@ -64,10 +86,29 @@ public class StateSet extends State {
         super.setLabel(new LabelVector(labels).toString());
     }
 
+    /**
+     * Gets observable outgoing transitions from this {@code StateSet} 
+     * w.r.t. specified controller.
+     * 
+     * @param controller the controller
+     * @return list of outgoing transitions observable by the specified
+     * controller
+     * 
+     * @throws IndexOutOfBoundsException if argument is out of bounds
+     */
     public List<Transition> getObservableTransitions(int controller) {
         return IteratorUtils.toList(new StateSetTransitionIterator(controller));
     }
 
+    /**
+     * Gets observable outgoing transitions from this {@code StateSet}
+     * after grouping by same events.
+     * 
+     * @param controller the controller
+     * @return map of events triggering transitions to collection of target states
+     * 
+     * @throws IndexOutOfBoundsException if argument is out of bounds
+     */
     public MultiValuedMap<Event, Long> groupAndGetObservableTransitions(int controller) {
         MultiValuedMap<Event, Long> groupedTransitions = new HashSetValuedHashMap<>();
         for (Transition s : getObservableTransitions(controller)) {
@@ -76,10 +117,19 @@ public class StateSet extends State {
         return groupedTransitions;
     }
 
+    /**
+     * Converts this {@code StateSet} to a {@link StateVector} and returns it.
+     * @return a {@link StateVector} representation of this {@code StateSet}
+     */
     public StateVector toStateVector() {
         return new StateVector(Arrays.asList(set.toArray(new State[0])), maxID);
     }
 
+    /**
+     * Iterator for observable transitions w.r.t. the specified controller.
+     * 
+     * @since 2.0
+     */
     private class StateSetTransitionIterator implements Iterator<Transition> {
         private Iterator<State> stateIterator;
         private Iterator<Transition> transitionIterator;
@@ -120,6 +170,7 @@ public class StateSet extends State {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public int hashCode() {
         return toStateVector().hashCode();
@@ -141,6 +192,12 @@ public class StateSet extends State {
         return set.containsAll(other.set);
     }
 
+    /**
+     * Indicates whether an object is "equal to" this state set
+     * 
+     * @param other the reference object with which to compare
+     * @return {@code true} if this state set is the same as the argument
+     */
     @Override
     public boolean equals(Object other) {
         if (this == other) {
