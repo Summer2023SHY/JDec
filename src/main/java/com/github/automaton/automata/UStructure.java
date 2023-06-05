@@ -613,9 +613,17 @@ public class UStructure extends Automaton {
    */
   private void nullClosure(Set<State> stateSet, State curr, int controller) {
     stateSet.add(curr);
-    Iterator<Transition> nullTransitions = IteratorUtils.filteredIterator(
+    Iterator<Transition> nullTransitions = IteratorUtils.<Transition>filteredIterator(
       curr.getTransitions().iterator(),
-      t -> t.getEvent().getVector().getLabelAtIndex(controller).equals("*")
+      t -> {
+        if (t.getEvent().getVector().getLabelAtIndex(controller).equals("*")) {
+          return true;
+        }
+        else if (controller == 0) {
+          return false;
+        }
+        return !t.getEvent().isObservable()[controller - 1];
+      }
     );
     while (nullTransitions.hasNext()) {
       Transition t = nullTransitions.next();
