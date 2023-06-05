@@ -1,0 +1,242 @@
+{
+    "nStates": 5,
+    "initialState": 1,
+    "nControllers": 2,
+    "type": 0,
+    "events": [
+        {
+            "label": "a1",
+            "id": 1,
+            "observable": [
+                true,
+                false
+            ],
+            "controllable": [
+                false,
+                false
+            ]
+        },
+        {
+            "label": "a2",
+            "id": 2,
+            "observable": [
+                true,
+                false
+            ],
+            "controllable": [
+                false,
+                false
+            ]
+        },
+        {
+            "label": "b1",
+            "id": 3,
+            "observable": [
+                false,
+                true
+            ],
+            "controllable": [
+                false,
+                false
+            ]
+        },
+        {
+            "label": "b2",
+            "id": 4,
+            "observable": [
+                false,
+                true
+            ],
+            "controllable": [
+                false,
+                false
+            ]
+        },
+        {
+            "label": "sigma",
+            "id": 5,
+            "observable": [
+                false,
+                false
+            ],
+            "controllable": [
+                true,
+                true
+            ]
+        }
+    ],
+    "states": [
+        {
+            "label": "0",
+            "id": 1,
+            "marked": false,
+            "enablement": false,
+            "disablement": false,
+            "transitions": [
+                {
+                    "targetStateID": 2,
+                    "event": {
+                        "label": "a1",
+                        "id": 1,
+                        "observable": [
+                            true,
+                            false
+                        ],
+                        "controllable": [
+                            false,
+                            false
+                        ]
+                    }
+                },
+                {
+                    "targetStateID": 3,
+                    "event": {
+                        "label": "a2",
+                        "id": 2,
+                        "observable": [
+                            true,
+                            false
+                        ],
+                        "controllable": [
+                            false,
+                            false
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "label": "1",
+            "id": 2,
+            "marked": false,
+            "enablement": false,
+            "disablement": false,
+            "transitions": [
+                {
+                    "targetStateID": 4,
+                    "event": {
+                        "label": "b1",
+                        "id": 3,
+                        "observable": [
+                            false,
+                            true
+                        ],
+                        "controllable": [
+                            false,
+                            false
+                        ]
+                    }
+                },
+                {
+                    "targetStateID": 5,
+                    "event": {
+                        "label": "b2",
+                        "id": 4,
+                        "observable": [
+                            false,
+                            true
+                        ],
+                        "controllable": [
+                            false,
+                            false
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "label": "2",
+            "id": 3,
+            "marked": false,
+            "enablement": false,
+            "disablement": false,
+            "transitions": [
+                {
+                    "targetStateID": 4,
+                    "event": {
+                        "label": "b2",
+                        "id": 4,
+                        "observable": [
+                            false,
+                            true
+                        ],
+                        "controllable": [
+                            false,
+                            false
+                        ]
+                    }
+                },
+                {
+                    "targetStateID": 5,
+                    "event": {
+                        "label": "b1",
+                        "id": 3,
+                        "observable": [
+                            false,
+                            true
+                        ],
+                        "controllable": [
+                            false,
+                            false
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "label": "3",
+            "id": 4,
+            "marked": false,
+            "enablement": false,
+            "disablement": false,
+            "transitions": [
+                {
+                    "targetStateID": 4,
+                    "event": {
+                        "label": "sigma",
+                        "id": 5,
+                        "observable": [
+                            false,
+                            false
+                        ],
+                        "controllable": [
+                            true,
+                            true
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "label": "4",
+            "id": 5,
+            "marked": false,
+            "enablement": false,
+            "disablement": false,
+            "transitions": [
+                {
+                    "targetStateID": 5,
+                    "event": {
+                        "label": "sigma",
+                        "id": 5,
+                        "observable": [
+                            false,
+                            false
+                        ],
+                        "controllable": [
+                            true,
+                            true
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    "badTransitions": [
+        {
+            "initialStateID": 5,
+            "eventID": 5,
+            "targetStateID": 5
+        }
+    ]
+}
