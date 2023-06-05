@@ -60,7 +60,7 @@ public class StateVector extends State implements Iterable<State> {
         }
         combinedLabelBuilder.deleteCharAt(0);
         setLabel(combinedLabelBuilder.toString());
-        setID(Automaton.combineIDs(stateIDs, maxID));
+        setID(Automaton.combineBigIDs(stateIDs, maxID).longValue());
     }
 
     /**

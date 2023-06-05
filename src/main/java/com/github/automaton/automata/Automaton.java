@@ -408,7 +408,9 @@ public class Automaton implements Cloneable {
         state.isMarked(),
         new ArrayList<Transition>(),
         id == getInitialStateID(),
-        id
+        id,
+        state.isEnablementState(),
+        state.isDisablementState()
       );
 
       // Traverse each transition
@@ -2410,6 +2412,40 @@ public class Automaton implements Cloneable {
   }
 
   /**
+   * Checks whether a transition already exists.
+   * 
+   * @param startingStateID The ID of the state where the transition originates from
+   * @param eventID         The ID of the event that triggers the transition
+   * @param targetStateID   The ID of the state where the transition leads to
+   * @return                Whether or not the matching transition exists
+   * 
+   * @since 2.0
+   */
+  public boolean containsTransition(long startingStateID, int eventID, long targetStateID) {
+    State startingState = getState(startingStateID);
+    Event event = getEvent(eventID);
+    if (startingState == null) return false;
+    else if (event == null) return false;
+    return startingState.getTransitions().contains(new Transition(event, targetStateID));
+  }
+
+  /**
+   * Checks whether a transition already exists.
+   * 
+   * @param startingState   The state where the transition originates from
+   * @param event           The event that triggers the transition
+   * @param targetStateID   The ID of the state where the transition leads to
+   * @return                Whether or not the matching transition exists
+   * 
+   * @since 2.0
+   */
+  public boolean containsTransition(State startingState, Event event, long targetStateID) {
+    if (startingState == null) return false;
+    else if (event == null) return false;
+    return startingState.getTransitions().contains(new Transition(event, targetStateID));
+  }
+
+  /**
    * Removes the specified transition.
    * @param startingStateID The ID of the state where the transition originates from
    * @param eventID         The ID of the event that triggers the transition
@@ -2508,6 +2544,27 @@ public class Automaton implements Cloneable {
   public boolean addStateAt(String label, boolean marked, List<Transition> transitions, boolean isInitialState, long id) {
 
     return addStateAt(new State(label, id, marked, Objects.requireNonNullElse(transitions, new ArrayList<Transition>())), isInitialState);
+  }
+
+  /**
+   * Add the specified state to the automaton.
+   * @implNote This method assumes that no state already exists with the specified ID.
+   * @implNote The method {@link #renumberStates()} must be called some time after using this method has been called since it can create empty
+   * spots in the {@code .bdy} file where states don't actually exist (this happens during automata operations such as intersection).
+   * @param label           The "name" of the new state
+   * @param marked          Whether or not the states is marked
+   * @param transitions     The list of transitions (if {@code null}, then a new list is made)
+   * @param isInitialState  Whether or not this is the initial state
+   * @param id              The index where the state should be added at
+   * @param enablement      Whether or not this is an enablement state
+   * @param disablement     Whether or not this is a disablement state
+   * @return                Whether or not the addition was successful (returns {@code false} if a state already existed there)
+   * 
+   * @since 2.0
+   **/
+  public boolean addStateAt(String label, boolean marked, List<Transition> transitions, boolean isInitialState, long id, boolean enablement, boolean disablement) {
+
+    return addStateAt(new State(label, id, marked, Objects.requireNonNullElse(transitions, new ArrayList<Transition>()), enablement, disablement), isInitialState);
   }
 
   /**

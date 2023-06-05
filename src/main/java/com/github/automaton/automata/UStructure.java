@@ -26,6 +26,7 @@ package com.github.automaton.automata;
 import java.math.*;
 import java.util.*;
 
+import org.apache.commons.collections4.*;
 import org.apache.commons.lang3.*;
 import org.apache.logging.log4j.*;
 
@@ -483,7 +484,155 @@ public class UStructure extends Automaton {
     return new PrunedUStructure(jsonObj);
   }
 
+  /**
+   * Runs subset construction on this U-Structure.
+   * 
+   * @return subset construction of this U-structure w.r.t. controller 0
+   * @since 2.0
+   */
+  public Automaton subsetConstruction() {
+    return subsetConstruction(0);
+  }
 
+  /**
+   * Runs subset construction on this U-Structure.
+   * 
+   * @param controller      The controller to perform subset construction with
+   * 
+   * @return subset construction of this U-structure w.r.t. the specified controller
+   * @throws IndexOutOfBoundsException  if {@code controller} is negative or {@code controller}
+   *                                    is greater than or equal to {@link #nControllers}
+   * 
+   * @since 2.0
+   */
+  public Automaton subsetConstruction(int controller) {
+
+    if (controller < 0 || controller >= nControllers) {
+      throw new IndexOutOfBoundsException(controller);
+    }
+
+    Automaton subsetConstruction = new Automaton(nControllers);
+
+    subsetConstruction(subsetConstruction, controller);
+
+    return subsetConstruction;
+  }
+
+  /**
+   * Runs subset construction w.r.t. the specified controller
+   * 
+   * @param automaton automaton to store subset construction data
+   * @param controller the controller to perform subset construction with
+   * 
+   * @since 2.0
+   */
+  private void subsetConstruction(Automaton automaton, int controller) {
+
+    automaton.addAllEvents(events);
+
+    Queue<StateSet> stateQueue = new ArrayDeque<>();
+    Set<StateSet> addedStates = new HashSet<>();
+
+    {
+      StateSet initialState = nullClosure(getState(this.initialState), controller);
+      automaton.addStateAt(initialState, true);
+      stateQueue.add(initialState);
+      addedStates.add(initialState);
+    }
+
+    while (!stateQueue.isEmpty()) {
+      StateSet u = stateQueue.remove();
+      MultiValuedMap<Event, Long> observableTransitions = u.groupAndGetObservableTransitions(controller);
+      Map<Event, Collection<Long>> observableTransitionMap = observableTransitions.asMap();
+      inner: for (Event e : observableTransitions.keys()) {
+        List<State> targetStates = new ArrayList<>();
+        for (long targetStateID : observableTransitionMap.get(e)) {
+          targetStates.add(getState(targetStateID));
+        }
+        StateSet ss = nullClosure(targetStates, controller);
+        for (StateSet added : addedStates) {
+          if (added.containsAll(ss)) {
+            continue inner;
+          }
+        }
+        automaton.addStateAt(ss, false);
+        addedStates.add(ss);
+        if (!automaton.containsTransition(u, e, ss.getID())) {
+          automaton.addTransition(u, e.getLabel(), ss);
+          stateQueue.add(ss);
+        }
+      }
+    }
+
+    /* Re-number states (by removing empty ones) */
+
+    automaton.renumberStates();
+
+  }
+
+  /**
+   * Performs null closure w.r.t. the specified controller.
+   * 
+   * @param state state to perform null closure with
+   * @param controller the controller to perform subset construction with
+   * 
+   * @since 2.0
+   */
+  private StateSet nullClosure(State state, int controller) {
+    Set<State> indistinguishableStates = new HashSet<>();
+    nullClosure(indistinguishableStates, state, controller);
+    return new StateSet(indistinguishableStates, nStates);
+  }
+
+  /**
+   * Performs null closure w.r.t. the specified controller.
+   * 
+   * @param states a list of states that share the same triggering event
+   * @param controller the controller to perform subset construction with
+   * 
+   * @since 2.0
+   */
+  private StateSet nullClosure(List<State> states, int controller) {
+    Set<State> indistinguishableStates = new HashSet<>();
+    for (State s : states) {
+      Set<State> tempSet = new HashSet<>();
+      nullClosure(tempSet, s, controller);
+      indistinguishableStates = SetUtils.union(indistinguishableStates, tempSet);
+    }
+    return new StateSet(indistinguishableStates, nStates);
+  }
+
+  /**
+   * Recursively generate set of indistinguishable state.
+   * 
+   * @param stateSet set of states containing indistinguishable states
+   * @param curr state to process
+   * @param controller the controller to perform subset construction with
+   * 
+   * @since 2.0
+   */
+  private void nullClosure(Set<State> stateSet, State curr, int controller) {
+    stateSet.add(curr);
+    Iterator<Transition> nullTransitions = IteratorUtils.<Transition>filteredIterator(
+      curr.getTransitions().iterator(),
+      t -> {
+        if (t.getEvent().getVector().getLabelAtIndex(controller).equals("*")) {
+          return true;
+        }
+        else if (controller == 0) {
+          return false;
+        }
+        return !t.getEvent().isObservable()[controller - 1];
+      }
+    );
+    while (nullTransitions.hasNext()) {
+      Transition t = nullTransitions.next();
+      State targetState = getState(t.getTargetStateID());
+      if (!stateSet.contains(targetState)) {
+        nullClosure(stateSet, targetState, controller);
+      }
+    }
+  }
 
   /**
    * Given the Shapley values for each coalition, and the index of a controller, calculate its Shapley value.

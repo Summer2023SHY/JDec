@@ -239,6 +239,7 @@
             </tags>
             <links>
               <link>https://commons.apache.org/proper/commons-lang/javadocs/api-release/</link>
+              <link>https://commons.apache.org/proper/commons-collections/javadocs/api-4.4/</link>
               <link>https://logging.apache.org/log4j/2.x/log4j-api/apidocs/</link>
               <link>https://xmlgraphics.apache.org/batik/javadoc/</link>
               <link>https://www.javadoc.io/doc/xml-apis/xml-apis/latest/</link>
