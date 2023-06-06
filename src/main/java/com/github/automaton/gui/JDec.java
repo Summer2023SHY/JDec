@@ -1668,6 +1668,8 @@ public class JDec extends JFrame implements ActionListener {
         /* Update last file opened and update current directory */
   
       try {
+        if (currentTab.ioAdapter instanceof AutomatonBinaryFileAdapter)
+          ((AutomatonBinaryFileAdapter) currentTab.ioAdapter).close();
         currentTab.ioAdapter = AutomatonBinaryFileAdapter.wrap(currentTab.automaton, headerFile, bodyFile);
       } catch (IOException ioe) {
         throw new UncheckedIOException(logger.throwing(ioe));
@@ -1717,6 +1719,8 @@ public class JDec extends JFrame implements ActionListener {
       /* Update last file opened and update current directory */
 
     try {
+      if (currentTab.ioAdapter instanceof AutomatonBinaryFileAdapter)
+        ((AutomatonBinaryFileAdapter) currentTab.ioAdapter).close();
       currentTab.ioAdapter = AutomatonJsonFileAdapter.wrap(currentTab.automaton, jsonFile);
     } catch (IOException ioe) {
       throw new UncheckedIOException(logger.throwing(ioe));
