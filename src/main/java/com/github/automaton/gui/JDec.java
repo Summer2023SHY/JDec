@@ -259,6 +259,11 @@ public class JDec extends JFrame implements ActionListener {
       "Random Automaton"
     ));
 
+    // Information menu
+    menuBar.add(createMenu("About",
+      "Third-party License"
+    ));
+
     this.setJMenuBar(menuBar);
 
   }
@@ -830,6 +835,17 @@ public class JDec extends JFrame implements ActionListener {
         new RandomAutomatonPrompt(this);
         break;
       
+      case "Third-party License":
+        try {
+          InputStream thirdPartyInfo = getResourceURL("THIRD-PARTY.txt").openStream();
+          TextPopup popup = new TextPopup(this, "Third-party License Notice");
+          thirdPartyInfo.transferTo(popup.getOutputStream());
+        } catch (IllegalArgumentException iae) {
+          displayMessage("Third-party License Notice", "Third-party license information not found!", JOptionPane.WARNING_MESSAGE);
+        } catch (IOException ioe) {
+          displayException(ioe);
+        }
+        break;
     }
 
     updateComponentsWhichRequireAutomaton();
