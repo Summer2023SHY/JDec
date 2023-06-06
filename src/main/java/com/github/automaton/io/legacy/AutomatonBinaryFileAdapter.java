@@ -76,10 +76,6 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
     /**
      * The maximum number of characters that each state label in an automaton can
      * hold.
-     * 
-     * @implNote This value was originally 100, but was increased drastically in
-     *           order to accommodate long
-     *           state vectors that are formed in the crush.
      **/
     public static final int MAX_LABEL_LENGTH = 100000;
 
