@@ -237,14 +237,26 @@
                 <head>Revised version:</head>
               </tag>
             </tags>
+            <detectLinks>true</detectLinks>
+            <dependencyLinks>
+              <dependencyLink>
+                <groupId>guru.nidi</groupId>
+                <artifactId>graphviz-java-min-deps</artifactId>
+                <url>https://www.javadoc.io/doc/guru.nidi/graphviz-java/latest/</url>
+              </dependencyLink>
+              <dependencyLink>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <url>https://www.javadoc.io/doc/com.google.code.gson/gson/latest/</url>
+              </dependencyLink>
+              <dependencyLink>
+                <groupId>org.apache.xmlgraphics</groupId>
+                <artifactId>batik-swing</artifactId>
+                <url>https://xmlgraphics.apache.org/batik/javadoc/</url>
+              </dependencyLink>
+            </dependencyLinks>
             <links>
-              <link>https://commons.apache.org/proper/commons-lang/javadocs/api-release/</link>
-              <link>https://commons.apache.org/proper/commons-collections/javadocs/api-4.4/</link>
-              <link>https://logging.apache.org/log4j/2.x/log4j-api/apidocs/</link>
-              <link>https://xmlgraphics.apache.org/batik/javadoc/</link>
               <link>https://www.javadoc.io/doc/xml-apis/xml-apis/latest/</link>
-              <link>https://www.javadoc.io/doc/guru.nidi/graphviz-java/latest/</link>
-              <link>https://www.javadoc.io/doc/com.google.code.gson/gson/latest/</link>
             </links>
             <bottom>
               <![CDATA[Copyright &#169; 2016 Micah Stairs, 2023 Sung Ho Yoon. Licensed under the <a href="https://opensource.org/license/mit/" target="_blank">MIT License</a>.]]>

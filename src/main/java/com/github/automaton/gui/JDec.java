@@ -55,7 +55,7 @@ import com.github.automaton.io.legacy.*;
 
 /**
  * A Java application for Decentralized Control. This application has been design to build
- * and manipulate various structures such as Automata, U-Structures, and Crushes.
+ * and manipulate various structures such as Automata and U-Structures.
  *
  * @author Micah Stairs
  * @author Sung Ho Yoon
@@ -1346,7 +1346,7 @@ public class JDec extends JFrame implements ActionListener {
   }
 
   /**
-   * Enable/disable components that require any type of automaton (including U-Structure, Crush, etc.).
+   * Enable/disable components that require any type of automaton (e.g., U-Structure).
    **/
   private void updateComponentsWhichRequireAnyAutomaton() {
 
