@@ -1494,24 +1494,21 @@ public class JDec extends JFrame implements ActionListener {
       // Get files
       File headerFile = selectedFile;
       File bodyFile = new File(FilenameUtils.removeExtension(headerFile.getAbsolutePath()) + FilenameUtils.EXTENSION_SEPARATOR + BodyAccessFile.EXTENSION);
-      AutomatonBinaryFileAdapter binaryAdapter;
-
-      try {
-        binaryAdapter = new AutomatonBinaryFileAdapter(headerFile, bodyFile);
-      } catch (IOException ioe) {
-        throw new UncheckedIOException(logger.throwing(ioe));
-      }
      
       // Create new tab (if requested)
       if (index == -1) {
-        createTab(false, binaryAdapter.getAutomaton().getType());
+        createTab(false, Automaton.Type.getType(selectedFile));
         index = tabbedPane.getSelectedIndex();
       }
       AutomatonTab tab = tabs.get(index);
 
       // Update files
-      tab.ioAdapter = binaryAdapter;
-      tab.automaton = binaryAdapter.getAutomaton();
+      try {
+        tab.ioAdapter = new AutomatonBinaryFileAdapter(headerFile, bodyFile);
+      } catch (IOException ioe) {
+        throw new UncheckedIOException(logger.throwing(ioe));
+      }
+      tab.automaton = tab.ioAdapter.getAutomaton();
 
       // Update current directory
       currentDirectory = selectedFile.getParentFile();
