@@ -100,19 +100,48 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
      * @param headerFile the {@code .hdr} file
      * @param bodyFile   the {@code .bdy} file
      * 
-     * @throws UncheckedIOException if an I/O error occurs
+     * @throws IOException if an I/O error occurs
      */
-    public AutomatonBinaryFileAdapter(File headerFile, File bodyFile) {
+    public AutomatonBinaryFileAdapter(File headerFile, File bodyFile) throws IOException {
+        this(headerFile, bodyFile, true);
+    }
 
-        try {
-            haf = new HeaderAccessFile(headerFile);
-            baf = new BodyAccessFile(bodyFile);
+    /**
+     * Constructs a new {@code AutomatonBinaryFileAdapter}.
+     * 
+     * @param headerFile the {@code .hdr} file
+     * @param bodyFile   the {@code .bdy} file
+     * @param load whether or not to load data from the specified file 
+     * 
+     * @throws IOException if an I/O error occurs
+     */
+    public AutomatonBinaryFileAdapter(File headerFile, File bodyFile, boolean load) throws IOException {
+
+        haf = new HeaderAccessFile(headerFile);
+        baf = new BodyAccessFile(bodyFile);
+
+        if (load) {
             JsonObject automatonData = new JsonObject();
             parseHeaderFile(automatonData);
             this.automaton = Automaton.buildAutomaton(automatonData);
-        } catch (IOException ioe) {
-            throw new UncheckedIOException(ioe);
         }
+
+    }
+
+    /**
+     * Wraps an automaton so that it can be saved as a JSON file
+     * 
+     * @param <T> type of automaton
+     * @param automaton automaton to wrap
+     * @param file file to save data to
+     * @return an {@code AutomatonJsonFileAdapter} that wraps the specified automaton
+     * @throws IOException if an I/O error occurs
+     */
+    public static <T extends Automaton> AutomatonBinaryFileAdapter wrap(T automaton, File headerFile, File bodyFile) throws IOException {
+        AutomatonBinaryFileAdapter adapter = new AutomatonBinaryFileAdapter(headerFile, bodyFile, false);
+        adapter.automaton = Objects.requireNonNull(automaton);
+        adapter.save();
+        return adapter;
     }
 
     /**

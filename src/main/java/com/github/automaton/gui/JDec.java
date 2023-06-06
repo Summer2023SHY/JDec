@@ -1004,6 +1004,14 @@ public class JDec extends JFrame implements ActionListener {
 
     }
 
+    if (tab.ioAdapter instanceof AutomatonBinaryFileAdapter) {
+      try {
+        ((AutomatonBinaryFileAdapter) tab.ioAdapter).close();
+      } catch (IOException ioe) {
+        throw new UncheckedIOException(logger.throwing(ioe));
+      }
+    }
+
       /* Remove tab */
 
     tabbedPane.remove(index);
@@ -1486,16 +1494,24 @@ public class JDec extends JFrame implements ActionListener {
       // Get files
       File headerFile = selectedFile;
       File bodyFile = new File(FilenameUtils.removeExtension(headerFile.getAbsolutePath()) + FilenameUtils.EXTENSION_SEPARATOR + BodyAccessFile.EXTENSION);
+      AutomatonBinaryFileAdapter binaryAdapter;
+
+      try {
+        binaryAdapter = new AutomatonBinaryFileAdapter(headerFile, bodyFile);
+      } catch (IOException ioe) {
+        throw new UncheckedIOException(logger.throwing(ioe));
+      }
      
       // Create new tab (if requested)
       if (index == -1) {
-        createLegacyTab(new AutomatonBinaryFileAdapter(headerFile, bodyFile));
+        createTab(false, binaryAdapter.getAutomaton().getType());
         index = tabbedPane.getSelectedIndex();
       }
       AutomatonTab tab = tabs.get(index);
-      
+
       // Update files
-      tab.ioAdapter = new AutomatonBinaryFileAdapter(headerFile, bodyFile);
+      tab.ioAdapter = binaryAdapter;
+      tab.automaton = binaryAdapter.getAutomaton();
 
       // Update current directory
       currentDirectory = selectedFile.getParentFile();
@@ -1651,7 +1667,11 @@ public class JDec extends JFrame implements ActionListener {
   
         /* Update last file opened and update current directory */
   
-      currentTab.ioAdapter = new AutomatonBinaryFileAdapter(headerFile, bodyFile);
+      try {
+        currentTab.ioAdapter = AutomatonBinaryFileAdapter.wrap(currentTab.automaton, headerFile, bodyFile);
+      } catch (IOException ioe) {
+        throw new UncheckedIOException(logger.throwing(ioe));
+      }
   
       currentDirectory = headerFile.getParentFile();
       saveCurrentDirectory();
