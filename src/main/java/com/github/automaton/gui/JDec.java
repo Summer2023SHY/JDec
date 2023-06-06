@@ -1020,6 +1020,14 @@ public class JDec extends JFrame implements ActionListener {
 
     }
 
+    if (tab.ioAdapter instanceof AutomatonBinaryFileAdapter) {
+      try {
+        ((AutomatonBinaryFileAdapter) tab.ioAdapter).close();
+      } catch (IOException ioe) {
+        throw new UncheckedIOException(logger.throwing(ioe));
+      }
+    }
+
       /* Remove tab */
 
     tabbedPane.remove(index);
@@ -1505,13 +1513,18 @@ public class JDec extends JFrame implements ActionListener {
      
       // Create new tab (if requested)
       if (index == -1) {
-        createLegacyTab(new AutomatonBinaryFileAdapter(headerFile, bodyFile));
+        createTab(false, Automaton.Type.getType(selectedFile));
         index = tabbedPane.getSelectedIndex();
       }
       AutomatonTab tab = tabs.get(index);
-      
+
       // Update files
-      tab.ioAdapter = new AutomatonBinaryFileAdapter(headerFile, bodyFile);
+      try {
+        tab.ioAdapter = new AutomatonBinaryFileAdapter(headerFile, bodyFile);
+      } catch (IOException ioe) {
+        throw new UncheckedIOException(logger.throwing(ioe));
+      }
+      tab.automaton = tab.ioAdapter.getAutomaton();
 
       // Update current directory
       currentDirectory = selectedFile.getParentFile();
@@ -1667,7 +1680,13 @@ public class JDec extends JFrame implements ActionListener {
   
         /* Update last file opened and update current directory */
   
-      currentTab.ioAdapter = new AutomatonBinaryFileAdapter(headerFile, bodyFile);
+      try {
+        if (currentTab.ioAdapter instanceof AutomatonBinaryFileAdapter)
+          ((AutomatonBinaryFileAdapter) currentTab.ioAdapter).close();
+        currentTab.ioAdapter = AutomatonBinaryFileAdapter.wrap(currentTab.automaton, headerFile, bodyFile);
+      } catch (IOException ioe) {
+        throw new UncheckedIOException(logger.throwing(ioe));
+      }
   
       currentDirectory = headerFile.getParentFile();
       saveCurrentDirectory();
@@ -1713,6 +1732,8 @@ public class JDec extends JFrame implements ActionListener {
       /* Update last file opened and update current directory */
 
     try {
+      if (currentTab.ioAdapter instanceof AutomatonBinaryFileAdapter)
+        ((AutomatonBinaryFileAdapter) currentTab.ioAdapter).close();
       currentTab.ioAdapter = AutomatonJsonFileAdapter.wrap(currentTab.automaton, jsonFile);
     } catch (IOException ioe) {
       throw new UncheckedIOException(logger.throwing(ioe));

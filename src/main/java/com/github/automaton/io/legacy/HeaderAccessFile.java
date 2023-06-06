@@ -23,7 +23,6 @@ package com.github.automaton.io.legacy;
  */
 
 import java.io.*;
-import java.util.*;
 
 import org.apache.commons.io.RandomAccessFileMode;
 
@@ -147,17 +146,6 @@ public final class HeaderAccessFile extends AutomatonAccessFile {
     }
 
     /**
-     * Writes the specified bytes to the header file
-     * @param data bytes to write to the header
-     * @throws IOException if I/O error occurs
-     * 
-     * @see java.io.RandomAccessFile#write(byte[])
-     */
-    public void write(byte[] data) throws IOException {
-        headerRAFile.write(Objects.requireNonNull(data));
-    }
-
-    /**
      * Trim the underlying {@code .hdr} file so that there is no garbage at the end 
      * @throws IOException if I/O error occurs
      */
@@ -171,6 +159,16 @@ public final class HeaderAccessFile extends AutomatonAccessFile {
      */
     public File getHeaderFile() {
         return getFile();
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @since 2.0
+     */
+    @Override
+    RandomAccessFile getRAFile() {
+        return headerRAFile;
     }
 
     /**
