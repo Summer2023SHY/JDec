@@ -27,7 +27,8 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.util.*;
 
-import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.TypeUtils;
 
 import com.github.automaton.automata.*;
@@ -97,7 +98,7 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
      * Constructs a new {@code AutomatonBinaryFileAdapter}.
      * 
      * @param headerFile the {@code .hdr} file
-     * @param bodyFile the {@code .bdy} file
+     * @param bodyFile   the {@code .bdy} file
      * 
      * @throws UncheckedIOException if an I/O error occurs
      */
@@ -116,6 +117,7 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
 
     /**
      * Parses the {@code .hdr} file and adds parsed data to a JSON object.
+     * 
      * @param jsonObj the JSON object to add parsed data to
      * @throws IOException if an I/O error occurs
      */
@@ -123,15 +125,15 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
         haf.seek(0);
         byte[] buffer = haf.readHeaderBytes(HeaderAccessFile.HEADER_SIZE);
 
-        byte type = (byte) ByteManipulator.readBytesAsLong(buffer, 0, 1);
-        long nStates = ByteManipulator.readBytesAsLong(buffer, 1, 8);
-        int eventCapacity = ByteManipulator.readBytesAsInt(buffer, 9, 4);
-        long stateCapacity = ByteManipulator.readBytesAsLong(buffer, 13, 8);
-        int transitionCapacity = ByteManipulator.readBytesAsInt(buffer, 21, 4);
-        int labelLength = ByteManipulator.readBytesAsInt(buffer, 25, 4);
-        long initialState = ByteManipulator.readBytesAsLong(buffer, 29, 8);
-        int nControllers = ByteManipulator.readBytesAsInt(buffer, 37, 4);
-        int nEvents = ByteManipulator.readBytesAsInt(buffer, 41, 4);
+        byte type = (byte) ByteManipulator.readBytesAsLong(buffer, 0, Byte.BYTES);
+        long nStates = ByteManipulator.readBytesAsLong(buffer, 1, Long.BYTES);
+        int eventCapacity = ByteManipulator.readBytesAsInt(buffer, 9, Integer.BYTES);
+        long stateCapacity = ByteManipulator.readBytesAsLong(buffer, 13, Long.BYTES);
+        int transitionCapacity = ByteManipulator.readBytesAsInt(buffer, 21, Integer.BYTES);
+        int labelLength = ByteManipulator.readBytesAsInt(buffer, 25, Integer.BYTES);
+        long initialState = ByteManipulator.readBytesAsLong(buffer, 29, Long.BYTES);
+        int nControllers = ByteManipulator.readBytesAsInt(buffer, 37, Integer.BYTES);
+        int nEvents = ByteManipulator.readBytesAsInt(buffer, 41, Integer.BYTES);
 
         jsonObj.addProperty("type", type);
         jsonObj.addProperty("nStates", nStates);
@@ -152,8 +154,8 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
             }
 
             // Read the number of characters in the label
-            buffer = haf.readHeaderBytes(4);
-            int eventLabelLength = ByteManipulator.readBytesAsInt(buffer, 0, 4);
+            buffer = haf.readHeaderBytes(Integer.BYTES);
+            int eventLabelLength = ByteManipulator.readBytesAsInt(buffer, 0, Integer.BYTES);
 
             // Read each character of the label, building an array of characters
             buffer = haf.readHeaderBytes(eventLabelLength);
@@ -285,7 +287,9 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
     }
 
     /**
-     * Reads special transitions from a {@code .hdr} file and adds read data to a JSON object.
+     * Reads special transitions from a {@code .hdr} file and adds read data to a
+     * JSON object.
+     * 
      * @param jsonObj the JSON object to add read data to
      * @throws IOException if an I/O error occurs
      */
@@ -307,14 +311,15 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
 
     /**
      * Reads special transitions from a {@code .hdr} file for a normal automaton.
+     * 
      * @param jsonObj the JSON object to add read data to
      * @throws IOException if an I/O error occurs
      * 
      * @see Automaton
      */
     private void readAutomatonSpecialTransitions(JsonObject jsonObj) throws IOException {
-        byte[] buffer = haf.readHeaderBytes(4);
-        int nBadTransitions = ByteManipulator.readBytesAsInt(buffer, 0, 4);
+        byte[] buffer = haf.readHeaderBytes(Integer.BYTES);
+        int nBadTransitions = ByteManipulator.readBytesAsInt(buffer, 0, Integer.BYTES);
 
         List<TransitionData> badTransitions = readTransitionDataFromHeader(nBadTransitions);
 
@@ -323,6 +328,7 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
 
     /**
      * Reads special transitions from a {@code .hdr} file for a U-Structure.
+     * 
      * @param jsonObj the JSON object to add read data to
      * @throws IOException if an I/O error occurs
      * 
@@ -330,13 +336,13 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
      */
     private void readUStructureSpecialTransitions(JsonObject jsonObj) throws IOException {
         byte[] buffer = haf.readHeaderBytes(28);
-        int nUnconditionalViolations = ByteManipulator.readBytesAsInt(buffer, 0, 4);
-        int nConditionalViolations = ByteManipulator.readBytesAsInt(buffer, 4, 4);
-        int nPotentialCommunications = ByteManipulator.readBytesAsInt(buffer, 8, 4);
-        int nInvalidCommunications = ByteManipulator.readBytesAsInt(buffer, 12, 4);
-        int nNashCommunications = ByteManipulator.readBytesAsInt(buffer, 16, 4);
-        int nDisablementDecisions = ByteManipulator.readBytesAsInt(buffer, 20, 4);
-        int nSuppressedTransitions = ByteManipulator.readBytesAsInt(buffer, 24, 4);
+        int nUnconditionalViolations = ByteManipulator.readBytesAsInt(buffer, 0, Integer.BYTES);
+        int nConditionalViolations = ByteManipulator.readBytesAsInt(buffer, 4, Integer.BYTES);
+        int nPotentialCommunications = ByteManipulator.readBytesAsInt(buffer, 8, Integer.BYTES);
+        int nInvalidCommunications = ByteManipulator.readBytesAsInt(buffer, 12, Integer.BYTES);
+        int nNashCommunications = ByteManipulator.readBytesAsInt(buffer, 16, Integer.BYTES);
+        int nDisablementDecisions = ByteManipulator.readBytesAsInt(buffer, 20, Integer.BYTES);
+        int nSuppressedTransitions = ByteManipulator.readBytesAsInt(buffer, 24, Integer.BYTES);
 
         List<TransitionData> unconditionalViolations = readTransitionDataFromHeader(nUnconditionalViolations);
         List<TransitionData> conditionalViolations = readTransitionDataFromHeader(nConditionalViolations);
@@ -384,14 +390,14 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
 
         for (int i = 0; i < nTransitions; i++) {
 
-            long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-            index += 8;
+            long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, Long.BYTES);
+            index += Long.BYTES;
 
-            int eventID = ByteManipulator.readBytesAsInt(buffer, index, 4);
-            index += 4;
+            int eventID = ByteManipulator.readBytesAsInt(buffer, index, Integer.BYTES);
+            index += Integer.BYTES;
 
-            long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-            index += 8;
+            long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, Long.BYTES);
+            index += Long.BYTES;
 
             list.add(new TransitionData(initialStateID, eventID, targetStateID));
 
@@ -421,14 +427,14 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
 
         for (int i = 0; i < nCommunications; i++) {
 
-            long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-            index += 8;
+            long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, Long.BYTES);
+            index += Long.BYTES;
 
-            int eventID = ByteManipulator.readBytesAsInt(buffer, index, 4);
-            index += 4;
+            int eventID = ByteManipulator.readBytesAsInt(buffer, index, Integer.BYTES);
+            index += Integer.BYTES;
 
-            long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-            index += 8;
+            long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, Long.BYTES);
+            index += Long.BYTES;
 
             CommunicationRole[] roles = new CommunicationRole[nControllers];
             for (int j = 0; j < roles.length; j++)
@@ -462,20 +468,20 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
 
         for (int i = 0; i < nCommunications; i++) {
 
-            long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-            index += 8;
+            long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, Long.BYTES);
+            index += Long.BYTES;
 
-            int eventID = ByteManipulator.readBytesAsInt(buffer, index, 4);
-            index += 4;
+            int eventID = ByteManipulator.readBytesAsInt(buffer, index, Integer.BYTES);
+            index += Integer.BYTES;
 
-            long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-            index += 8;
+            long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, Long.BYTES);
+            index += Long.BYTES;
 
-            double cost = Double.longBitsToDouble(ByteManipulator.readBytesAsLong(buffer, index, 8));
-            index += 8;
+            double cost = Double.longBitsToDouble(ByteManipulator.readBytesAsLong(buffer, index, Long.BYTES));
+            index += Long.BYTES;
 
-            double probability = Double.longBitsToDouble(ByteManipulator.readBytesAsLong(buffer, index, 8));
-            index += 8;
+            double probability = Double.longBitsToDouble(ByteManipulator.readBytesAsLong(buffer, index, Long.BYTES));
+            index += Long.BYTES;
 
             CommunicationRole[] roles = new CommunicationRole[nControllers];
             for (int j = 0; j < roles.length; j++)
@@ -508,14 +514,14 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
 
         for (int i = 0; i < nDisablements; i++) {
 
-            long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-            index += 8;
+            long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, Long.BYTES);
+            index += Long.BYTES;
 
-            int eventID = ByteManipulator.readBytesAsInt(buffer, index, 4);
-            index += 4;
+            int eventID = ByteManipulator.readBytesAsInt(buffer, index, Integer.BYTES);
+            index += Integer.BYTES;
 
-            long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-            index += 8;
+            long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, Long.BYTES);
+            index += Long.BYTES;
 
             boolean[] controllers = new boolean[nControllers];
             for (int j = 0; j < controllers.length; j++)
@@ -550,6 +556,7 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
 
     /**
      * Parses the {@code .bdy} file and adds parsed data to a JSON object.
+     * 
      * @param jsonObj the JSON object to add parsed data to
      * @throws IOException if an I/O error occurs
      */
@@ -589,6 +596,7 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
 
     /**
      * {@inheritDoc}
+     * 
      * @return the underlying header file
      */
     @Override
@@ -598,6 +606,7 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
 
     /**
      * Returns the header file this wrapper wraps.
+     * 
      * @return a {@code .hdr} file
      */
     public File getHeaderFile() {
@@ -606,6 +615,7 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
 
     /**
      * Returns the body file this wrapper wraps.
+     * 
      * @return a {@code .bdy} file
      */
     public File getBodyFile() {
@@ -614,12 +624,381 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
 
     /**
      * {@inheritDoc}
-     * @throws NotImplementedException always
      */
     @Override
     public void save() throws IOException {
-        // TODO Auto-generated method stub
-        throw new NotImplementedException();
+        writeHeaderFile();
+        writeBodyFile();
+    }
+
+    private void writeHeaderFile() throws IOException {
+
+        haf.clearFile();
+
+        byte[] buffer = new byte[HeaderAccessFile.HEADER_SIZE];
+
+        // Type of automaton
+        ByteManipulator.writeLongAsBytes(buffer, 0, getAutomaton().getType().getNumericValue(), Byte.BYTES);
+        // Number of states
+        ByteManipulator.writeLongAsBytes(buffer, 1, getAutomaton().getNumberOfStates(), Long.BYTES);
+        // Event capacity
+        ByteManipulator.writeLongAsBytes(buffer, 9, getAutomaton().getNumberOfEvents(), Integer.BYTES);
+        // State capacity
+        ByteManipulator.writeLongAsBytes(buffer, 13, getAutomaton().getNumberOfStates(), Long.BYTES);
+        // Transition capacity per state
+        ByteManipulator.writeLongAsBytes(buffer, 21, calculateTransitionCapacity(), Integer.BYTES);
+        // State label length
+        ByteManipulator.writeLongAsBytes(buffer, 25, calculateLabelLength(), Integer.BYTES);
+        // Initial state
+        ByteManipulator.writeLongAsBytes(buffer, 29, getAutomaton().getInitialStateID(), Long.BYTES);
+        // Number of controllers
+        ByteManipulator.writeLongAsBytes(buffer, 37, getAutomaton().getNumberOfControllers(), Integer.BYTES);
+        // Number of events
+        ByteManipulator.writeLongAsBytes(buffer, 41, getAutomaton().getNumberOfEvents(), Integer.BYTES);
+
+        haf.seek(0);
+        haf.write(buffer);
+
+        for (Event e : getAutomaton().getEvents()) {
+
+            // Fill the buffer
+            buffer = new byte[(2 * getAutomaton().getNumberOfControllers()) + Integer.BYTES + e.getLabel().length()];
+
+            // Read event properties (NOTE: If we ever need to condense the space required
+            // to hold an event
+            // in a file, we can place a property in each bit instead of each byte)
+            int index = 0;
+            for (int i = 0; i < getAutomaton().getNumberOfControllers(); i++) {
+                buffer[index] = (byte) (e.isObservable()[i] ? 1 : 0);
+                buffer[index + 1] = (byte) (e.isControllable()[i] ? 1 : 0);
+                index += 2;
+            }
+
+            // Write the length of the label
+            ByteManipulator.writeLongAsBytes(buffer, index, e.getLabel().length(), Integer.BYTES);
+            index += Integer.BYTES;
+
+            // Write characters of the label
+            byte[] labelData = e.getLabel().getBytes(UTF8_CHARSET);
+            System.arraycopy(labelData, 0, buffer, index, labelData.length);
+
+            haf.write(buffer);
+
+            writeSpecialTransitionsToHeader();
+
+            /*
+             * Trim the file so that there is no garbage at the end (removing events, for
+             * example, shortens the .hdr file)
+             */
+            haf.trim();
+
+        }
+    }
+
+    /**
+     * Calculates transition capacity for the wrapped automaton.
+     * 
+     * @return the transition capacity
+     */
+    private int calculateTransitionCapacity() {
+        int maxTransitions = 0;
+        for (long i = 0L; i < getAutomaton().getNumberOfStates(); i++) {
+            State s = getAutomaton().getState(i);
+            maxTransitions = Math.max(maxTransitions, s.getNumberOfTransitions());
+        }
+        return maxTransitions;
+    }
+
+    /**
+     * Calculates transition capacity for the wrapped automaton.
+     * 
+     * @return the transition capacity
+     */
+    private int calculateLabelLength() {
+        int maxLabelLength = 0;
+        for (long i = 0L; i < getAutomaton().getNumberOfStates(); i++) {
+            State s = getAutomaton().getState(i);
+            maxLabelLength = Math.max(maxLabelLength, s.getLabel().length());
+        }
+        return maxLabelLength;
+    }
+
+    private void writeSpecialTransitionsToHeader() throws IOException {
+        switch (automaton.getType()) {
+            case AUTOMATON:
+                writeAutomatonSpecialTransitions();
+                break;
+            case U_STRUCTURE:
+            case PRUNED_U_STRUCTURE:
+                writeUStructureSpecialTransitions();
+                break;
+            default:
+                throw new AutomatonException("Unknown type of automaton");
+        }
+    }
+
+    /**
+     * Write all of the special transitions to the header, which is relevant to this
+     * particular automaton type.
+     * 
+     * @throws IOException If there were any problems writing to file
+     **/
+    private void writeAutomatonSpecialTransitions() throws IOException {
+
+        /*
+         * Write a number which indicates how many special transitions are in the file
+         */
+
+        byte[] buffer = new byte[Integer.BYTES];
+        ByteManipulator.writeLongAsBytes(buffer, 0, getAutomaton().getBadTransitions().size(), Integer.BYTES);
+        haf.write(buffer);
+
+        /* Write special transitions to the .hdr file */
+
+        writeTransitionDataToHeader(getAutomaton().getBadTransitions());
+
+    }
+
+    private void writeUStructureSpecialTransitions() throws IOException {
+        UStructure uStructure = (UStructure) automaton;
+        byte[] buffer = new byte[28];
+        // Unconditional violations
+        ByteManipulator.writeLongAsBytes(buffer, 0,
+                readUStructureData(uStructure, "unconditionalViolations", TransitionData.class).size(), Integer.BYTES);
+        // Conditional violations
+        ByteManipulator.writeLongAsBytes(buffer, 4,
+                readUStructureData(uStructure, "conditionalViolations", TransitionData.class).size(), Integer.BYTES);
+        // Potential communications
+        ByteManipulator.writeLongAsBytes(buffer, 8, uStructure.getPotentialCommunications().size(), Integer.BYTES);
+        // Invalid communications
+        ByteManipulator.writeLongAsBytes(buffer, 12,
+                readUStructureData(uStructure, "invalidCommunications", TransitionData.class).size(), Integer.BYTES);
+        // Nash communications
+        ByteManipulator.writeLongAsBytes(buffer, 16, uStructure.getNashCommunications().size(), Integer.BYTES);
+        // Disablement decisions
+        ByteManipulator.writeLongAsBytes(buffer, 20, uStructure.getDisablementDecisions().size(), Integer.BYTES);
+        // Suppressed transitions
+        ByteManipulator.writeLongAsBytes(buffer, 24,
+                readUStructureData(uStructure, "suppressedTransitions", TransitionData.class).size(), Integer.BYTES);
+        haf.write(buffer);
+
+        /* Write special transitions to the .hdr file */
+
+        writeTransitionDataToHeader(readUStructureData(uStructure, "unconditionalViolations", TransitionData.class));
+        writeTransitionDataToHeader(readUStructureData(uStructure, "conditionalViolations", TransitionData.class));
+        writeCommunicationDataToHeader(uStructure.getPotentialCommunications());
+        writeTransitionDataToHeader(readUStructureData(uStructure, "invalidCommunications", TransitionData.class));
+        writeNashCommunicationDataToHeader(uStructure.getNashCommunications());
+        writeDisablementDataToHeader(uStructure.getDisablementDecisions());
+        writeTransitionDataToHeader(readUStructureData(uStructure, "suppressedTransitions", TransitionData.class));
+    }
+
+    /**
+     * Retrieves field data of type {@link List} in a U-Structure by its name.
+     * 
+     * @param <T>        type of data stored in the list
+     * @param uStructure a U-Structure
+     * @param name       name of the field
+     * @param dataType   type of data stored in the list
+     * @return the data stored in the specified field, or {@code null} if something
+     *         went wrong
+     */
+    @SuppressWarnings("unchecked")
+    private <T> List<T> readUStructureData(UStructure uStructure, String name, Class<T> dataType) {
+        try {
+            return (List<T>) FieldUtils.readDeclaredField(uStructure, name, true);
+        } catch (IllegalAccessException e) {
+            haf.getLogger().catching(e);
+            return null;
+        }
+    }
+
+    /**
+     * A helper method to write a list of special transitions to the header file.
+     * 
+     * @param list The list of transition data
+     * @throws IOException If there were any problems writing to file
+     **/
+    protected void writeTransitionDataToHeader(List<TransitionData> list) throws IOException {
+
+        /* Setup */
+
+        byte[] buffer = new byte[list.size() * 20];
+        int index = 0;
+
+        /* Write each piece of transition data into the buffer */
+
+        for (TransitionData data : list) {
+
+            ByteManipulator.writeLongAsBytes(buffer, index, data.initialStateID, Long.BYTES);
+            index += Long.BYTES;
+
+            ByteManipulator.writeLongAsBytes(buffer, index, data.eventID, Integer.BYTES);
+            index += Integer.BYTES;
+
+            ByteManipulator.writeLongAsBytes(buffer, index, data.targetStateID, Long.BYTES);
+            index += Long.BYTES;
+
+        }
+
+        /* Write the buffer to file */
+
+        haf.write(buffer);
+
+    }
+
+    /**
+     * A helper method to write a list of communications to the header file.
+     * NOTE: This could be made more efficient by using one buffer for all
+     * communication data. This
+     * is possible because each piece of data in the list is supposed to have the
+     * same number of roles.
+     * 
+     * @param list The list of communication data
+     * @throws IOException If there was problems writing to file
+     **/
+    private void writeCommunicationDataToHeader(List<CommunicationData> list) throws IOException {
+
+        for (CommunicationData data : list) {
+
+            byte[] buffer = new byte[20 + data.roles.length];
+            int index = 0;
+
+            ByteManipulator.writeLongAsBytes(buffer, index, data.initialStateID, Long.BYTES);
+            index += Long.BYTES;
+
+            ByteManipulator.writeLongAsBytes(buffer, index, data.eventID, Integer.BYTES);
+            index += Integer.BYTES;
+
+            ByteManipulator.writeLongAsBytes(buffer, index, data.targetStateID, Long.BYTES);
+            index += Long.BYTES;
+
+            for (CommunicationRole role : data.roles)
+                buffer[index++] = role.getNumericValue();
+
+            haf.write(buffer);
+
+        }
+
+    }
+
+    /**
+     * A helper method to write a list of communications to the header file.
+     * NOTE: This could be made more efficient by using one buffer for all
+     * communication data. This
+     * is possible because each piece of data in the list is supposed to have the
+     * same number of roles.
+     * 
+     * @param list The list of nash communication data
+     * @throws IOException If there was problems writing to file
+     **/
+    private void writeNashCommunicationDataToHeader(List<NashCommunicationData> list) throws IOException {
+
+        for (NashCommunicationData data : list) {
+
+            byte[] buffer = new byte[36 + data.roles.length];
+            int index = 0;
+
+            ByteManipulator.writeLongAsBytes(buffer, index, data.initialStateID, Long.BYTES);
+            index += Long.BYTES;
+
+            ByteManipulator.writeLongAsBytes(buffer, index, data.eventID, Integer.BYTES);
+            index += Integer.BYTES;
+
+            ByteManipulator.writeLongAsBytes(buffer, index, data.targetStateID, Long.BYTES);
+            index += Long.BYTES;
+
+            ByteManipulator.writeLongAsBytes(buffer, index, Double.doubleToLongBits(data.cost), Long.BYTES);
+            index += Long.BYTES;
+
+            ByteManipulator.writeLongAsBytes(buffer, index, Double.doubleToLongBits(data.probability), Long.BYTES);
+            index += Long.BYTES;
+
+            for (CommunicationRole role : data.roles)
+                buffer[index++] = role.getNumericValue();
+
+            haf.write(buffer);
+
+        }
+
+    }
+
+    /**
+     * A helper method to write a list of disablement decisions to the header file.
+     * NOTE: This could be made more efficient by using one buffer for all
+     * disablement decisions.
+     * 
+     * @param list The list of disablement decisions
+     * @throws IOException If there were any problems writing to file
+     **/
+    private void writeDisablementDataToHeader(List<DisablementData> list) throws IOException {
+
+        for (DisablementData data : list) {
+
+            byte[] buffer = new byte[20 + data.controllers.length];
+            int index = 0;
+
+            ByteManipulator.writeLongAsBytes(buffer, index, data.initialStateID, Long.BYTES);
+            index += Long.BYTES;
+
+            ByteManipulator.writeLongAsBytes(buffer, index, data.eventID, Integer.BYTES);
+            index += Integer.BYTES;
+
+            ByteManipulator.writeLongAsBytes(buffer, index, data.targetStateID, Long.BYTES);
+            index += Long.BYTES;
+
+            for (boolean b : data.controllers)
+                buffer[index++] = (byte) BooleanUtils.toInteger(b);
+
+            haf.write(buffer);
+
+        }
+
+    }
+
+    private void writeBodyFile() throws IOException {
+
+        int labelLength = calculateLabelLength();
+
+        long nBytesPerState = calculateNumberOfBytesPerState(Integer.BYTES, Long.BYTES,
+                calculateTransitionCapacity(), labelLength);
+
+        /* Setup files */
+
+        baf.clearFile();
+
+        /* Copy over body file */
+
+        long counter = 0; // Keeps track of blank states
+        byte[] buffer = new byte[(int) nBytesPerState];
+
+        for (long s = 1; s <= automaton.getNumberOfStates() + counter; s++) {
+
+            State state = automaton.getState(s);
+
+            // Check for non-existent state
+            if (state == null) {
+
+                // Pad with zeros, which will indicate a non-existent state
+                try {
+                    baf.write(buffer);
+                } catch (IOException e) {
+                    baf.getLogger().catching(e);
+                }
+
+                counter++;
+
+                continue;
+            }
+
+            // Try writing to file
+            if (!StateIO.writeToFile(state, baf, nBytesPerState, labelLength, Integer.BYTES, Long.BYTES)) {
+                baf.getLogger().error("Could not write copy over state to file. Aborting creation of .bdy file.");
+                return;
+            }
+
+        } // for
+
     }
 
     /**
@@ -635,19 +1014,22 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
     }
 
     /**
-     * Checks whether some other object is "equal to" this {@code AutomatonBinaryFileAdapter}.
+     * Checks whether some other object is "equal to" this
+     * {@code AutomatonBinaryFileAdapter}.
      * 
      * @param obj the reference object with which to compare
-     * @return {@code true} if argument is "equal to" this {@code AutomatonBinaryFileAdapter}
+     * @return {@code true} if argument is "equal to" this
+     *         {@code AutomatonBinaryFileAdapter}
      */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
+        if (this == obj)
+            return true;
         else if (obj instanceof AutomatonBinaryFileAdapter) {
             AutomatonBinaryFileAdapter other = (AutomatonBinaryFileAdapter) obj;
             return Objects.equals(this.haf, other.haf) && Objects.equals(this.baf, other.baf);
-        }
-        else return false;
+        } else
+            return false;
     }
 
 }

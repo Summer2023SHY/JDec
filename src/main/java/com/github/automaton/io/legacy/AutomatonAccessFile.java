@@ -59,6 +59,20 @@ public abstract class AutomatonAccessFile implements Closeable {
     public abstract boolean clearFile();
 
     /**
+     * Writes the specified bytes to the data file
+     * @param data bytes to write to the header
+     * @throws IOException if I/O error occurs
+     * @throws NullPointerException if argument is {@code null}
+     * 
+     * @see java.io.RandomAccessFile#write(byte[])
+     * 
+     * @since 2.0
+     */
+    public final void write(byte[] data) throws IOException {
+        getRAFile().write(Objects.requireNonNull(data));
+    }
+
+    /**
      * Copies the content of the underlying data file to a new file
      * 
      * @param newFile the target destination
@@ -97,6 +111,18 @@ public abstract class AutomatonAccessFile implements Closeable {
     protected final Logger getLogger() {
         return logger;
     }
+
+    /**
+     * Returns the underlying {@link RandomAccessFile}
+     * @return the underlying {@link RandomAccessFile}
+     * 
+     * @since 2.0
+     */
+    /*
+     * FOR INTERNAL USE ONLY! THIS METHOD IS
+     * PACKAGE-PRIVATE FOR A REASON.
+     */
+    abstract RandomAccessFile getRAFile();
 
     /**
      * Checks whether some other object is "equal to" this {@code AutomatonAccessFile}.
