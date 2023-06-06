@@ -989,7 +989,31 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
 
         int labelLength = calculateLabelLength();
 
-        long nBytesPerState = calculateNumberOfBytesPerState(Integer.BYTES, Long.BYTES,
+        long stateCapacity = getAutomaton().getNumberOfStates();
+
+        // Special case if the state capacity is not positive
+        int nBytesPerStateID = stateCapacity < 1 ? 1 : 0;
+
+        long temp = stateCapacity;
+
+        while (temp > 0) {
+            nBytesPerStateID++;
+            temp >>= 8;
+        }
+
+        int eventCapacity = getAutomaton().getNumberOfEvents();
+
+        // Special case if the event capacity is not positive
+        int nBytesPerEventID = eventCapacity < 1 ? 1 : 0;
+
+        temp = eventCapacity;
+
+        while (temp > 0) {
+            nBytesPerEventID++;
+            temp >>= 8;
+        }
+
+        long nBytesPerState = calculateNumberOfBytesPerState(nBytesPerEventID, nBytesPerStateID,
                 calculateTransitionCapacity(), labelLength);
 
         /* Setup files */
@@ -1021,7 +1045,7 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
             }
 
             // Try writing to file
-            if (!StateIO.writeToFile(state, baf, nBytesPerState, labelLength, Integer.BYTES, Long.BYTES)) {
+            if (!StateIO.writeToFile(state, baf, nBytesPerState, labelLength, nBytesPerEventID, nBytesPerStateID)) {
                 baf.getLogger().error("Could not write copy over state to file. Aborting creation of .bdy file.");
                 return;
             }
