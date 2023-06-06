@@ -713,15 +713,15 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
 
             haf.write(buffer);
 
-            writeSpecialTransitionsToHeader();
-
-            /*
-             * Trim the file so that there is no garbage at the end (removing events, for
-             * example, shortens the .hdr file)
-             */
-            haf.trim();
-
         }
+
+        writeSpecialTransitionsToHeader();
+
+        /*
+         * Trim the file so that there is no garbage at the end (removing events, for
+         * example, shortens the .hdr file)
+         */
+        haf.trim();
     }
 
     /**
@@ -731,7 +731,7 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
      */
     private int calculateTransitionCapacity() {
         int maxTransitions = 0;
-        for (long i = 0L; i < getAutomaton().getNumberOfStates(); i++) {
+        for (long i = 1L; i <= getAutomaton().getNumberOfStates(); i++) {
             State s = getAutomaton().getState(i);
             maxTransitions = Math.max(maxTransitions, s.getNumberOfTransitions());
         }
@@ -745,7 +745,7 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
      */
     private int calculateLabelLength() {
         int maxLabelLength = 0;
-        for (long i = 0L; i < getAutomaton().getNumberOfStates(); i++) {
+        for (long i = 1L; i <= getAutomaton().getNumberOfStates(); i++) {
             State s = getAutomaton().getState(i);
             maxLabelLength = Math.max(maxLabelLength, s.getLabel().length());
         }
