@@ -37,7 +37,7 @@ jobs:
         cache: 'maven'
     - name: Build JAR
       run: |
-        mvn clean compile assembly:single
+        mvn clean license:add-third-party compile assembly:single
     - name: Submit Dependency Snapshot
       uses: advanced-security/maven-dependency-submission-action@v3
     - name: Upload JAR file
