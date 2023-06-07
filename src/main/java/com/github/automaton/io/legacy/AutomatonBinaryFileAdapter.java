@@ -129,7 +129,8 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
      * 
      * @param <T> type of automaton
      * @param automaton automaton to wrap
-     * @param file file to save data to
+     * @param headerFile header file to save data to
+     * @param bodyFile body file to save data to
      * @return an {@code AutomatonJsonFileAdapter} that wraps the specified automaton
      * @throws IOException if an I/O error occurs
      */
@@ -656,6 +657,11 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
         writeBodyFile();
     }
 
+    /**
+     * Writes the header data to the underlying header file.
+     * 
+     * @throws IOException if an I/O error occurs
+     */
     private void writeHeaderFile() throws IOException {
 
         haf.clearFile();
@@ -981,6 +987,11 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
 
     }
 
+    /**
+     * Writes the body data to the underlying body file.
+     * 
+     * @throws IOException if an I/O error occurs
+     */
     private void writeBodyFile() throws IOException {
 
         int labelLength = calculateLabelLength();
