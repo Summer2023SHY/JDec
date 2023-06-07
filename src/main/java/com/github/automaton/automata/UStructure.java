@@ -501,13 +501,13 @@ public class UStructure extends Automaton {
    * 
    * @return subset construction of this U-structure w.r.t. the specified controller
    * @throws IndexOutOfBoundsException  if {@code controller} is negative or {@code controller}
-   *                                    is greater than or equal to {@link #nControllers}
+   *                                    is greater than {@link #nControllers}
    * 
    * @since 2.0
    */
   public Automaton subsetConstruction(int controller) {
 
-    if (controller < 0 || controller >= nControllers) {
+    if (controller < 0 || controller > nControllers) {
       throw new IndexOutOfBoundsException(controller);
     }
 
