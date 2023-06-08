@@ -58,7 +58,6 @@ public class StateSet extends State {
             }
         });
         this.set.addAll(set);
-        this.set = Collections.unmodifiableSortedSet(this.set);
         StateVector sv = toStateVector();
         setID(sv.getID());
         buildLabel();
@@ -73,6 +72,24 @@ public class StateSet extends State {
     @Override
     final void setLabel(String label) {
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Adds a state to this state set.
+     * 
+     * @param s the state to add to this set
+     */
+    void add(State s) {
+        this.set.add(s);
+    }
+
+    /**
+     * Removes a state from this state set.
+     * 
+     * @param s the state to remove from this set
+     */
+    void remove(State s) {
+        this.set.remove(s);
     }
 
     /**

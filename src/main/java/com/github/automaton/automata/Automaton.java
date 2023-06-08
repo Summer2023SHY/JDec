@@ -2847,6 +2847,17 @@ public class Automaton implements Cloneable {
   }
 
   /**
+   * Given the label of a state, get the state information.
+   * @param label   The label associated with the state
+   * @return        The requested state
+   * 
+   * @since 2.0
+   */
+  public State getState(String label) {
+    return getState(getStateID(label));
+  }
+
+  /**
    * Given the label of a state, get the ID of the state.
    * @implNote This method is extremely expensive. It should only be used when absolutely necessary.
    * @param label The unique label corresponding to the requested state

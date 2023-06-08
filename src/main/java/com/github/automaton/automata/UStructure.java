@@ -27,6 +27,7 @@ import java.math.*;
 import java.util.*;
 
 import org.apache.commons.collections4.*;
+import org.apache.commons.collections4.multiset.HashMultiSet;
 import org.apache.commons.lang3.*;
 import org.apache.logging.log4j.*;
 
@@ -632,6 +633,93 @@ public class UStructure extends Automaton {
         nullClosure(stateSet, targetState, controller);
       }
     }
+  }
+
+  /**
+   * Creates a copy of this U-Structure that has copies of same state(s)
+   * if the state appears in more than one projections.
+   * 
+   * @return a copy of this U-Structure with relabeled states
+   * 
+   * @since 2.0
+   */
+  public UStructure relabelConfigurationStates() {
+
+    UStructure relabeled = ObjectUtils.clone(this);
+    Automaton subsetConstruction = relabeled.subsetConstruction();
+    Automaton invSubsetConstruction = subsetConstruction.invert();
+
+    MultiSet<State> stateMultiSet = new HashMultiSet<>();
+
+    for (State indistinguishableState : subsetConstruction.states.values()) {
+      List<State> states = relabeled.getStatesFromLabel(new LabelVector(indistinguishableState.getLabel()));
+      for (int i = 0; i < states.size(); i++) {
+        State s = states.get(i);
+        stateMultiSet.add(s);
+        if (stateMultiSet.getCount(s) != 1) {
+          State duplicate = ObjectUtils.clone(s);
+          duplicate.setID(duplicate.getID() + stateMultiSet.getCount(s) * nStates);
+          duplicate.setLabel(duplicate.getLabel() + "-" + (stateMultiSet.getCount(s) - 1));
+          for (int j = 0; j < states.size(); j++) {
+            if (i == j) {
+              for (Transition t : IterableUtils.filteredIterable(
+                duplicate.getTransitions(), transition -> transition.getTargetStateID() == s.getID()
+              )) {
+                t.setTargetStateID(duplicate.getID());
+                states.set(i, duplicate);
+                ((StateSet) indistinguishableState).remove(s);
+                ((StateSet) indistinguishableState).add(duplicate);
+              }
+              relabeled.addStateAt(duplicate, false);
+            } else {
+              for (Transition t : IterableUtils.filteredIterable(
+                states.get(j).getTransitions(), transition -> transition.getTargetStateID() == s.getID()
+              )) {
+                t.setTargetStateID(duplicate.getID());
+              }
+            }
+          }
+          
+          for (Transition t : invSubsetConstruction.getState(indistinguishableState.getID()).getTransitions()) {
+            List<State> parentStates = relabeled.getStatesFromLabel(
+              new LabelVector(subsetConstruction.getState(t.getTargetStateID()).getLabel())
+            );
+            for (State parentState : parentStates) {
+              for (Transition incomingTransition : IterableUtils.filteredIterable(
+                parentState.getTransitions(), transition -> {
+                  return transition.getTargetStateID() == s.getID();
+                }
+              )) {
+                incomingTransition.setTargetStateID(duplicate.getID());
+              }
+            }
+          }
+        }
+      }
+    }
+
+    relabeled.renumberStates();
+
+    return relabeled;
+  }
+
+  /**
+   * Given a vector of state labels, returns a list of states that
+   * correspond to the vector elements.
+   * 
+   * @param lv a label vector
+   * @return a list of states
+   * 
+   * @throws NullPointerException if argument is {@code null}
+   * 
+   * @since 2.0
+   */
+  private List<State> getStatesFromLabel(LabelVector lv) {
+    List<State> states = new ArrayList<>();
+    for (String label : Objects.requireNonNull(lv)) {
+      states.add(getState(label));
+    }
+    return states;
   }
 
   /**

@@ -40,7 +40,7 @@ import org.apache.logging.log4j.*;
  * 
  * @since 1.0
  */
-public class Transition {
+public class Transition implements Cloneable {
 
   private static Logger logger = LogManager.getLogger();
 
@@ -107,6 +107,19 @@ public class Transition {
   }
 
     /* OVERRIDDEN METHODS */
+
+  /**
+   * Creates a shallow copy of this {@code Transition} instance.
+   * (The triggering event itself is not cloned.)
+   * 
+   * @return a shallow copy of this {@code Transition}
+   * 
+   * @since 2.0
+   */
+  @Override
+  public Object clone() {
+      return new Transition(event, targetStateID);
+  }
 
   /**
    * Indicates whether an object is "equal to" this transition
