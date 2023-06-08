@@ -544,10 +544,9 @@ public class UStructure extends Automaton {
     while (!stateQueue.isEmpty()) {
       StateSet u = stateQueue.remove();
       MultiValuedMap<Event, Long> observableTransitions = u.groupAndGetObservableTransitions(controller);
-      Map<Event, Collection<Long>> observableTransitionMap = observableTransitions.asMap();
       inner: for (Event e : observableTransitions.keys()) {
         List<State> targetStates = new ArrayList<>();
-        for (long targetStateID : observableTransitionMap.get(e)) {
+        for (long targetStateID : observableTransitions.get(e)) {
           targetStates.add(getState(targetStateID));
         }
         StateSet ss = nullClosure(targetStates, controller);
