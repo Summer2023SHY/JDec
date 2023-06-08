@@ -842,10 +842,12 @@ public class JDec extends JFrame implements ActionListener {
 
       case "Test Observability":
 
+        setBusyCursor(true);
         if (tab.automaton.testObservability())
           displayMessage("Passed Test", "The system is observable.", JOptionPane.INFORMATION_MESSAGE);
         else
           displayMessage("Failed Test", "The system is not observable.", JOptionPane.INFORMATION_MESSAGE);
+        setBusyCursor(false);
         break;
 
       case "Test Controllability":

@@ -713,7 +713,7 @@ public class UStructure extends Automaton {
    * 
    * @since 2.0
    */
-  private List<State> getStatesFromLabel(LabelVector lv) {
+  List<State> getStatesFromLabel(LabelVector lv) {
     List<State> states = new ArrayList<>();
     for (String label : Objects.requireNonNull(lv)) {
       states.add(getState(label));
@@ -1953,6 +1953,38 @@ public class UStructure extends Automaton {
    **/
   public List<DisablementData> getDisablementDecisions() {
     return disablementDecisions;
+  }
+
+  /**
+   * Returns the set of enablement states.
+   * 
+   * @return the set of enablement states
+   * 
+   * @since 2.0
+   */
+  public Set<State> getEnablementStates() {
+    Set<State> enablementStates = new HashSet<>();
+    for (State s : states.values()) {
+      if (s.isEnablementState())
+        enablementStates.add(s);
+    }
+    return enablementStates;
+  }
+
+  /**
+   * Returns the set of disablement states.
+   * 
+   * @return the set of disablement states
+   * 
+   * @since 2.0
+   */
+  public Set<State> getDisablementStates() {
+    Set<State> enablementStates = new HashSet<>();
+    for (State s : states.values()) {
+      if (s.isDisablementState())
+        enablementStates.add(s);
+    }
+    return enablementStates;
   }
 
 }

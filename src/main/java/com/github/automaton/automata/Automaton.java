@@ -53,6 +53,9 @@ import org.apache.commons.lang3.*;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.reflect.TypeUtils;
 import org.apache.logging.log4j.*;
+import org.jgrapht.*;
+import org.jgrapht.alg.cycle.StackBFSFundamentalCycleBasis;
+import org.jgrapht.graph.*;
 
 import com.github.automaton.io.json.*;
 import com.github.automaton.io.legacy.MissingOrCorruptBodyFileException;
@@ -1232,50 +1235,46 @@ public class Automaton implements Cloneable {
    **/
   public boolean testObservability() {
 
-    Automaton centralizedAutomaton = new Automaton(1);
+    // Take the U-Structure, then relabel states as needed
+    UStructure uStructure = synchronizedComposition().relabelConfigurationStates();
 
-    // Copy over modified events to the centralized automaton
-    for (Event e : getEvents()) {
+    for (Event e : IterableUtils.filteredIterable(
+      uStructure.events, event -> BooleanUtils.or(event.isControllable()))
+    ) {
 
-      // Find the union of the observability and controllability properties for each event
-      boolean[] observableUnion = new boolean[1];
-      boolean[] controllableUnion = new boolean[1];
-      for (boolean b : e.isObservable())
-        if (b)
-          observableUnion[0] = true;
-      for (boolean b : e.isControllable())
-        if (b)
-          controllableUnion[0] = true;
+      // Build bipartite graph
+      org.jgrapht.Graph<State, DefaultEdge> graph = new SimpleGraph<>(DefaultEdge.class);
 
-      // Add the event to the centralized automaton
-      centralizedAutomaton.addEvent(e.getLabel(), observableUnion, controllableUnion);
+      for (State s : IterableUtils.chainedIterable(
+        uStructure.getEnablementStates(), uStructure.getDisablementStates())
+      ) {
+        graph.addVertex(s);
+      }
+      for (int i = 1; i <= nControllers; i++) {
+        Automaton determinization = uStructure.subsetConstruction(i);
+        for (State indistinguishableStates : determinization.states.values()) {
+          List<State> indistinguishableStateList = uStructure.getStatesFromLabel(new LabelVector(indistinguishableStates.getLabel()));
+          for (State enablement : uStructure.getEnablementStates()) {
+            for (State disablement : uStructure.getDisablementStates()) {
+              if (indistinguishableStateList.contains(enablement) && indistinguishableStateList.contains(disablement)) {
+                graph.addEdge(enablement, disablement);
+              }
+            }
+          }
+        }
+      }
+
+      if (!GraphTests.isBipartite(graph)) {
+        // This should not happen, but oh well.
+        throw new OperationFailedException("Constructed graph is not bipartite");
+      }
+      if (new StackBFSFundamentalCycleBasis<>(graph).getCycleBasis().getCycles().size() != 0) {
+        return false;
+      }
 
     }
 
-    // Copy over the states and transitions to the centralized automaton
-    // NOTE: I attempted to do this by simply copying the .bdy file, because it would be more efficient,
-    //       however there are many other things that need to be considered (capacities, initial state,
-    //       re-opening the RandomAccessFile object for the body file, etc.)
-    for (long s = 1; s <= getNumberOfStates(); s++) {
-      State state = getState(s);
-
-      // Add state
-      centralizedAutomaton.addState(state.getLabel(), state.isMarked(), s == getInitialStateID());
-
-      // Add transitions
-      for (Transition t : state.getTransitions())
-        centralizedAutomaton.addTransition(s, t.getEvent().getID(), t.getTargetStateID());
-
-    }
-
-    // Copy over all special transitions to the centralized automaton
-    copyOverSpecialTransitions(centralizedAutomaton);
-
-    // Take the U-Structure
-    UStructure uStructure = centralizedAutomaton.synchronizedComposition();
-
-    // The presence of violations indicate that the system is not observable
-    return !uStructure.hasViolations();
+    return true;
 
   }
 
