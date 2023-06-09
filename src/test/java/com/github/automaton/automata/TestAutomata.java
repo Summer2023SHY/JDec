@@ -26,6 +26,7 @@ package com.github.automaton.automata;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.*;
@@ -982,6 +983,7 @@ public class TestAutomata {
 
     @Test
     @DisplayName("Observability Tests")
+    @Timeout(value = 3, unit = TimeUnit.MINUTES, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
     public void observabilityTest() {
       /* Observability Tests */
 
@@ -999,9 +1001,30 @@ public class TestAutomata {
       printTestOutput("Instantiating automaton...", 3);
       a = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
         new Automaton(2),
-        "a,FF,TF\nb,FT,FT\no,TT,TT", // Events
-        "@1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T", // States 
-        "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD" // Transitions
+        "a1,TF,FF\n" +
+        "a2,TF,FF\n" +
+        "b1,FT,FF\n" +
+        "b2,FT,FF\n" +
+        "sigma,FF,TT", // Events
+
+        "@1,F\n" +
+        "2,F\n" +
+        "3,F\n" +
+        "4,F\n" +
+        "5,F\n" +
+        "6,F\n" +
+        "7,F", // States
+
+        "1,a1,2\n" +
+        "1,a2,3\n" +
+        "2,b1,4\n" +
+        "2,b2,5\n" +
+        "3,b1,6\n" +
+        "3,b2,7\n" +
+        "4,sigma,4\n" +
+        "5,sigma,5:BAD\n" +
+        "6,sigma,6:BAD\n" +
+        "7,sigma,7" // Transitions
       ));
       printTestCase("Ensuring that the automaton is not observable", new TestResult(a.testObservability(), false), counter);
     }
