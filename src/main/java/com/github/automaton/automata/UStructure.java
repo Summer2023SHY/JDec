@@ -597,7 +597,7 @@ public class UStructure extends Automaton {
     for (State s : states) {
       Set<State> tempSet = new HashSet<>();
       nullClosure(tempSet, s, controller);
-      indistinguishableStates = SetUtils.union(indistinguishableStates, tempSet);
+      indistinguishableStates.addAll(tempSet);
     }
     return new StateSet(indistinguishableStates, nStates);
   }
