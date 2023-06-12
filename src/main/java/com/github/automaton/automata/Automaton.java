@@ -53,10 +53,9 @@ import org.apache.commons.lang3.*;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.reflect.TypeUtils;
 import org.apache.logging.log4j.*;
-import org.jgrapht.*;
-import org.jgrapht.alg.cycle.StackBFSFundamentalCycleBasis;
 import org.jgrapht.graph.*;
 
+import com.github.automaton.automata.util.LabeledEdge;
 import com.github.automaton.io.json.*;
 import com.github.automaton.io.legacy.MissingOrCorruptBodyFileException;
 import com.google.gson.*;
@@ -1238,37 +1237,98 @@ public class Automaton implements Cloneable {
     // Take the U-Structure, then relabel states as needed
     UStructure uStructure = synchronizedComposition().relabelConfigurationStates();
 
+    int[] dummy = new int[nControllers + 1];
+
+    Arrays.fill(dummy, -1);
+
     for (Event e : IterableUtils.filteredIterable(
       uStructure.events, event -> BooleanUtils.or(event.isControllable()))
     ) {
 
       // Build bipartite graph
-      org.jgrapht.Graph<State, DefaultEdge> graph = new SimpleGraph<>(DefaultEdge.class);
+      org.jgrapht.Graph<State, LabeledEdge<Integer>> graph = new Multigraph<>(LabeledEdge.class);
+
+      Map<State, int[]> ambLevelPerState = new HashMap<>();
+
+      
 
       for (State s : IterableUtils.chainedIterable(
         uStructure.getEnablementStates(), uStructure.getDisablementStates())
       ) {
+        ambLevelPerState.put(s, ArrayUtils.clone(dummy));
         graph.addVertex(s);
       }
-      for (int i = 1; i <= nControllers; i++) {
+      for (int i = 0; i <= nControllers; i++) {
+        if (i > 0 && !e.isControllable()[i - 1]) continue;
         Automaton determinization = uStructure.subsetConstruction(i);
         for (State indistinguishableStates : determinization.states.values()) {
           List<State> indistinguishableStateList = uStructure.getStatesFromLabel(new LabelVector(indistinguishableStates.getLabel()));
           for (State enablement : uStructure.getEnablementStates()) {
             for (State disablement : uStructure.getDisablementStates()) {
               if (indistinguishableStateList.contains(enablement) && indistinguishableStateList.contains(disablement)) {
-                graph.addEdge(enablement, disablement);
+                ambLevelPerState.get(enablement)[i - 1] = Integer.MAX_VALUE;
+                ambLevelPerState.get(disablement)[i - 1] = Integer.MAX_VALUE;
+                graph.addEdge(enablement, disablement, new LabeledEdge<Integer>(i));
               }
             }
           }
         }
       }
 
-      if (!GraphTests.isBipartite(graph)) {
-        // This should not happen, but oh well.
-        throw new OperationFailedException("Constructed graph is not bipartite");
+      
+      Set<State> r = new HashSet<>();
+      int ambLevel = 0;
+
+      for (State s : graph.vertexSet()) {
+        for (int i = 0; i <= nControllers; i++) {
+          if (i > 0 && !e.isControllable()[i - 1]) continue;
+          final int currController = i;
+          Iterable<LabeledEdge<Integer>> filteredNeighbors = IterableUtils.filteredIterable(
+            graph.outgoingEdgesOf(s), edge -> Objects.equals(edge.getLabel(), currController)
+          );
+          if (IterableUtils.isEmpty(filteredNeighbors)) {
+            r.add(s);
+            ambLevelPerState.get(s)[i] = 0;
+          }
+        }
       }
-      if (new StackBFSFundamentalCycleBasis<>(graph).getCycleBasis().getCycles().size() != 0) {
+
+      Set<State> resolved = new HashSet<>();
+
+      resolved.addAll(r);
+
+      while (!r.isEmpty()) {
+        Set<State> rPrime = new HashSet<>();
+        ambLevel++;
+        for (State s : r) {
+          for (int i = 0; i <= nControllers; i++) {
+            final int currController = i;
+            Iterable<LabeledEdge<Integer>> filteredNeighbors = IterableUtils.filteredIterable(
+              graph.outgoingEdgesOf(s), edge -> Objects.equals(edge.getLabel(), currController)
+            );
+            graph.removeAllEdges(IterableUtils.toList(filteredNeighbors));
+            for (LabeledEdge<Integer> neighbor : filteredNeighbors) {
+              State targetState = State.class.cast(neighbor.getSource() == s ? neighbor.getTarget() : neighbor.getSource());
+              Iterable<LabeledEdge<Integer>> filteredTargetNeighbors = IterableUtils.filteredIterable(
+                graph.outgoingEdgesOf(targetState), edge -> Objects.equals(edge.getLabel(), currController)
+              );
+              if (IterableUtils.isEmpty(filteredTargetNeighbors)) {
+                if (!resolved.contains(targetState)) {
+                  rPrime.add(targetState);
+                  ambLevelPerState.get(targetState)[i] = ambLevel;
+                }
+              }
+            }
+          }
+        }
+
+        r = rPrime;
+
+        resolved.addAll(r);
+        
+      }
+
+      if (resolved.size() < uStructure.getEnablementStates().size() + uStructure.getDisablementStates().size()) {
         return false;
       }
 
