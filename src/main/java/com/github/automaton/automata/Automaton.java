@@ -1246,7 +1246,7 @@ public class Automaton implements Cloneable {
     ) {
 
       // Build bipartite graph
-      org.jgrapht.Graph<State, LabeledEdge<Integer>> graph = new Multigraph<>(LabeledEdge.class);
+      Multigraph<State, LabeledEdge<Integer>> graph = new Multigraph<>(null, null, false);
 
       Map<State, int[]> ambLevelPerState = new HashMap<>();
 
