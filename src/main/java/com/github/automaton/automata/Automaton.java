@@ -1242,7 +1242,7 @@ public class Automaton implements Cloneable {
     Arrays.fill(dummy, -1);
 
     for (Event e : IterableUtils.filteredIterable(
-      uStructure.events, event -> BooleanUtils.or(event.isControllable()))
+      events, event -> BooleanUtils.or(event.isControllable()))
     ) {
 
       // Build bipartite graph
@@ -1258,17 +1258,25 @@ public class Automaton implements Cloneable {
         ambLevelPerState.put(s, ArrayUtils.clone(dummy));
         graph.addVertex(s);
       }
-      for (int i = 0; i <= nControllers; i++) {
-        if (i > 0 && !e.isControllable()[i - 1]) continue;
-        Automaton determinization = uStructure.subsetConstruction(i);
+      for (int i = 0; i < nControllers; i++) {
+        if (!e.isControllable()[i]) continue;
+        Automaton determinization = uStructure.subsetConstruction(i + 1);
         for (State indistinguishableStates : determinization.states.values()) {
           List<State> indistinguishableStateList = uStructure.getStatesFromLabel(new LabelVector(indistinguishableStates.getLabel()));
           for (State enablement : uStructure.getEnablementStates()) {
             for (State disablement : uStructure.getDisablementStates()) {
               if (indistinguishableStateList.contains(enablement) && indistinguishableStateList.contains(disablement)) {
-                ambLevelPerState.get(enablement)[i - 1] = Integer.MAX_VALUE;
-                ambLevelPerState.get(disablement)[i - 1] = Integer.MAX_VALUE;
-                graph.addEdge(enablement, disablement, new LabeledEdge<Integer>(i));
+                boolean addEdge = false;
+                if (ambLevelPerState.get(enablement)[i + 1] == -1) {
+                  ambLevelPerState.get(enablement)[i + 1] = Integer.MAX_VALUE;
+                  addEdge = true;
+                }
+                if (ambLevelPerState.get(disablement)[i + 1] == -1) {
+                  ambLevelPerState.get(disablement)[i + 1] = Integer.MAX_VALUE;
+                  addEdge = true;
+                }
+                if (addEdge)
+                  graph.addEdge(enablement, disablement, new LabeledEdge<Integer>(i));
               }
             }
           }
@@ -1280,8 +1288,8 @@ public class Automaton implements Cloneable {
       int ambLevel = 0;
 
       for (State s : graph.vertexSet()) {
-        for (int i = 0; i <= nControllers; i++) {
-          if (i > 0 && !e.isControllable()[i - 1]) continue;
+        for (int i = 0; i < nControllers; i++) {
+          if (!e.isControllable()[i]) continue;
           final int currController = i;
           Iterable<LabeledEdge<Integer>> filteredNeighbors = IterableUtils.filteredIterable(
             graph.outgoingEdgesOf(s), edge -> Objects.equals(edge.getLabel(), currController)
@@ -1301,13 +1309,11 @@ public class Automaton implements Cloneable {
         Set<State> rPrime = new HashSet<>();
         ambLevel++;
         for (State s : r) {
-          for (int i = 0; i <= nControllers; i++) {
+          for (int i = 0; i < nControllers; i++) {
             final int currController = i;
-            Iterable<LabeledEdge<Integer>> filteredNeighbors = IterableUtils.filteredIterable(
-              graph.outgoingEdgesOf(s), edge -> Objects.equals(edge.getLabel(), currController)
-            );
-            graph.removeAllEdges(IterableUtils.toList(filteredNeighbors));
-            for (LabeledEdge<Integer> neighbor : filteredNeighbors) {
+            Set<LabeledEdge<Integer>> neighbors = new HashSet<>(graph.outgoingEdgesOf(s));
+            graph.removeAllEdges(neighbors);
+            for (LabeledEdge<Integer> neighbor : neighbors) {
               State targetState = State.class.cast(neighbor.getSource() == s ? neighbor.getTarget() : neighbor.getSource());
               Iterable<LabeledEdge<Integer>> filteredTargetNeighbors = IterableUtils.filteredIterable(
                 graph.outgoingEdgesOf(targetState), edge -> Objects.equals(edge.getLabel(), currController)
@@ -1315,7 +1321,7 @@ public class Automaton implements Cloneable {
               if (IterableUtils.isEmpty(filteredTargetNeighbors)) {
                 if (!resolved.contains(targetState)) {
                   rPrime.add(targetState);
-                  ambLevelPerState.get(targetState)[i] = ambLevel;
+                  ambLevelPerState.get(targetState)[i + 1] = ambLevel;
                 }
               }
             }
