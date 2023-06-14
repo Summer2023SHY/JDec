@@ -1253,7 +1253,7 @@ public class Automaton implements Cloneable {
       
 
       for (State s : IterableUtils.chainedIterable(
-        uStructure.getEnablementStates(), uStructure.getDisablementStates())
+        uStructure.getEnablementStates(e.getLabel()), uStructure.getDisablementStates(e.getLabel()))
       ) {
         ambLevelPerState.put(s, ArrayUtils.clone(dummy));
         graph.addVertex(s);
@@ -1263,8 +1263,8 @@ public class Automaton implements Cloneable {
         Automaton determinization = uStructure.subsetConstruction(i + 1);
         for (State indistinguishableStates : determinization.states.values()) {
           List<State> indistinguishableStateList = uStructure.getStatesFromLabel(new LabelVector(indistinguishableStates.getLabel()));
-          for (State enablement : uStructure.getEnablementStates()) {
-            for (State disablement : uStructure.getDisablementStates()) {
+          for (State enablement : uStructure.getEnablementStates(e.getLabel())) {
+            for (State disablement : uStructure.getDisablementStates(e.getLabel())) {
               if (indistinguishableStateList.contains(enablement) && indistinguishableStateList.contains(disablement)) {
                 boolean addEdge = false;
                 if (ambLevelPerState.get(enablement)[i + 1] == -1) {
@@ -1334,7 +1334,7 @@ public class Automaton implements Cloneable {
         
       }
 
-      if (resolved.size() < uStructure.getEnablementStates().size() + uStructure.getDisablementStates().size()) {
+      if (resolved.size() < uStructure.getEnablementStates(e.getLabel()).size() + uStructure.getDisablementStates(e.getLabel()).size()) {
         return false;
       }
 

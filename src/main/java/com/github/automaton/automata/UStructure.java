@@ -654,11 +654,11 @@ public class UStructure extends Automaton {
       List<State> states = relabeled.getStatesFromLabel(new LabelVector(indistinguishableState.getLabel()));
       for (int i = 0; i < states.size(); i++) {
         State s = states.get(i);
-        stateMultiSet.add(s);
-        if (stateMultiSet.getCount(s) != 1) {
+        
+        if (stateMultiSet.getCount(s) > 0) {
           State duplicate = ObjectUtils.clone(s);
-          duplicate.setID(duplicate.getID() + stateMultiSet.getCount(s) * nStates);
-          duplicate.setLabel(duplicate.getLabel() + "-" + (stateMultiSet.getCount(s) - 1));
+          duplicate.setID(duplicate.getID() + (stateMultiSet.getCount(s) * nStates));
+          duplicate.setLabel(duplicate.getLabel() + "-" + (stateMultiSet.getCount(s)));
           for (int j = 0; j < states.size(); j++) {
             if (i == j) {
               for (Transition t : IterableUtils.filteredIterable(
@@ -694,6 +694,7 @@ public class UStructure extends Automaton {
             }
           }
         }
+        stateMultiSet.add(s);
       }
     }
 
@@ -1962,11 +1963,18 @@ public class UStructure extends Automaton {
    * 
    * @since 2.0
    */
-  public Set<State> getEnablementStates() {
+  public Set<State> getEnablementStates(String eventLabel) {
     Set<State> enablementStates = new HashSet<>();
     for (State s : states.values()) {
-      if (s.isEnablementState())
-        enablementStates.add(s);
+      inner: for (Transition t : s.getTransitions()) {
+        if (
+          t.getEvent().getVector().getLabelAtIndex(0).equals(eventLabel)
+          && conditionalViolations.contains(new TransitionData(s.getID(), t.getEvent().getID(), t.getTargetStateID()))
+        ) {
+          enablementStates.add(s);
+          break inner;
+        }
+      }
     }
     return enablementStates;
   }
@@ -1978,13 +1986,20 @@ public class UStructure extends Automaton {
    * 
    * @since 2.0
    */
-  public Set<State> getDisablementStates() {
-    Set<State> enablementStates = new HashSet<>();
+  public Set<State> getDisablementStates(String eventLabel) {
+    Set<State> disablementStates = new HashSet<>();
     for (State s : states.values()) {
-      if (s.isDisablementState())
-        enablementStates.add(s);
+      inner: for (Transition t : s.getTransitions()) {
+        if (
+          t.getEvent().getVector().getLabelAtIndex(0).equals(eventLabel)
+          && unconditionalViolations.contains(new TransitionData(s.getID(), t.getEvent().getID(), t.getTargetStateID()))
+        ) {
+          disablementStates.add(s);
+          break inner;
+        }
+      }
     }
-    return enablementStates;
+    return disablementStates;
   }
 
 }
