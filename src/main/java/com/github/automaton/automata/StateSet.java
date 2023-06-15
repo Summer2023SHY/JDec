@@ -26,6 +26,7 @@ import java.util.*;
 
 import org.apache.commons.collections4.*;
 import org.apache.commons.collections4.multimap.*;
+import org.apache.commons.lang3.ObjectUtils;
 
 /**
  * A set of states.
@@ -38,6 +39,9 @@ public class StateSet extends State {
     private transient SortedSet<State> set;
     /** Maximum value of the IDs */
     private transient long maxID;
+
+    /** Private constructor */
+    private StateSet() {}
 
     /**
      * Constructs a new {@code StateSet}.
@@ -165,6 +169,8 @@ public class StateSet extends State {
                     t -> {
                         if (t.getEvent().getVector().getLabelAtIndex(this.controller).equals("*")) {
                             return false;
+                        } else if (controller > 0 && !t.getEvent().isObservable()[controller - 1]) {
+                            return false;
                         }
                         return !uniqueTransitions.contains(t);
                     }
@@ -209,6 +215,18 @@ public class StateSet extends State {
         return set.containsAll(other.set);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public Object clone() {
+        StateSet ss = new StateSet();
+        ss.set = ObjectUtils.clone(this.set);
+        ss.maxID = this.maxID;
+        StateVector sv = ss.toStateVector();
+        ss.setID(sv.getID());
+        ss.buildLabel();
+        return ss;
+    }
+
     /**
      * Indicates whether an object is "equal to" this state set
      * 
@@ -221,8 +239,10 @@ public class StateSet extends State {
             return true;
         } else if (!(other instanceof StateSet)) {
             return false;
+        } else {
+            StateSet ss = (StateSet) other;
+            return this.set.containsAll(ss.set) && ss.set.containsAll(this.set);
         }
-        return CollectionUtils.isEqualCollection(this.set, ((StateSet) other).set);
     }
 
 }
