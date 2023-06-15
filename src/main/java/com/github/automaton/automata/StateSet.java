@@ -35,9 +35,9 @@ import org.apache.commons.collections4.multimap.*;
  */
 public class StateSet extends State {
     /** Set of states */
-    private SortedSet<State> set;
+    private transient SortedSet<State> set;
     /** Maximum value of the IDs */
-    private long maxID;
+    private transient long maxID;
 
     /**
      * Constructs a new {@code StateSet}.
