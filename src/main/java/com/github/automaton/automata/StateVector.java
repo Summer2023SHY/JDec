@@ -38,6 +38,17 @@ public class StateVector extends State implements Iterable<State> {
     private transient List<State> states;
 
     /**
+     * Private constructor. This is used for {@link #clone() cloning}.
+     * 
+     * @param states list of internally stored states.
+     * 
+     * @since 2.0
+     */
+    private StateVector(List<State> states) {
+        this.states = states;
+    }
+
+    /**
      * Constructs a new {@code StateVector}.
      * 
      * @param states list of states that forms this vector
@@ -86,6 +97,15 @@ public class StateVector extends State implements Iterable<State> {
      */
     public List<State> getStates() {
         return states;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Object clone() {
+        StateVector sv = new StateVector(states);
+        sv.setLabel(this.getLabel());
+        sv.setID(this.getID());
+        return sv;
     }
 
     /**
