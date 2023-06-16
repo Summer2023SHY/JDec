@@ -24,6 +24,8 @@ package com.github.automaton.automata;
 
 import java.util.*;
 
+import org.apache.commons.lang3.ObjectUtils;
+
 /**
  * Represents a vector of {@link State}s. A {@code StateVector} is
  * treated as a {@link State} in
@@ -105,6 +107,9 @@ public class StateVector extends State implements Iterable<State> {
         StateVector sv = new StateVector(states);
         sv.setLabel(this.getLabel());
         sv.setID(this.getID());
+        for (Transition orig : this.getTransitions()) {
+            sv.getTransitions().add(ObjectUtils.clone(orig));
+        }
         return sv;
     }
 

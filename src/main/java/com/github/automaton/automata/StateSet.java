@@ -224,6 +224,9 @@ public class StateSet extends State {
         StateVector sv = ss.toStateVector();
         ss.setID(sv.getID());
         ss.buildLabel();
+        for (Transition orig : this.getTransitions()) {
+            ss.getTransitions().add(ObjectUtils.clone(orig));
+        }
         return ss;
     }
 
