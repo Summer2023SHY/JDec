@@ -57,6 +57,14 @@ public interface AutomatonIOAdapter {
     public File getFile();
 
     /**
+     * Sets the automaton that this adapter wraps to the specified automaton.
+     * @param automaton an automaton
+     * 
+     * @throws NullPointerException if argument is {@code null}
+     */
+    public void setAutomaton(Automaton automaton);
+
+    /**
      * Returns the automaton represented by the file this adapter wraps.
      * @return an automaton
      */

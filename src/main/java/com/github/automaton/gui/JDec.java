@@ -208,6 +208,7 @@ public class JDec extends JFrame implements ActionListener {
     menuBar.add(createMenu("File",
       "New Tab->New Automaton,New U-Structure,New Pruned U-Structure",
       "Open",
+      "Save[TAB]",
       "Save As...[TAB]",
       "Refresh Tab[TAB]",
       null,
@@ -364,8 +365,12 @@ public class JDec extends JFrame implements ActionListener {
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, shortcutKey));
         break;
 
-      case "Save As...":
+      case "Save":
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, shortcutKey));
+        break;
+
+      case "Save As...":
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0));
         break;
 
       case "Previous Tab":
@@ -537,6 +542,17 @@ public class JDec extends JFrame implements ActionListener {
         createTab(true, Automaton.Type.PRUNED_U_STRUCTURE);
         break;
 
+      case "Save":
+        if (!tab.usingTemporaryFiles()) {
+          try {
+            generateAutomatonButtonPressed();
+            tab.ioAdapter.setAutomaton(tab.automaton);
+            tab.ioAdapter.save();
+          } catch (IOException ioe) {
+            displayException(ioe);
+          }
+          break;
+        }
       case "Save As...":
 
         // Prompt user to save Automaton to the specified file
@@ -556,6 +572,7 @@ public class JDec extends JFrame implements ActionListener {
 
         index = tabbedPane.getSelectedIndex(); // Index has changed since a new tab was created
         tab = tabs.get(index);
+        tab.setSaved(true);
         tab.updateTabTitle();
     
       case "Refresh Tab":
@@ -924,7 +941,7 @@ public class JDec extends JFrame implements ActionListener {
     tab.ioAdapter    = jsonIOAdapter;
     tab.automaton    = tab.ioAdapter.getAutomaton();
     tab.refreshGUI();
-    tab.setSaved(true);
+    //tab.setSaved(true);
   }
 
   /**
@@ -1170,7 +1187,7 @@ public class JDec extends JFrame implements ActionListener {
     if (tab.automaton == null)
       return;
 
-    tab.setSaved(true);
+    //tab.setSaved(true);
 
     // Generate an image (unless it's quite large)
     if (tab.automaton.getNumberOfStates() <= N_STATES_TO_AUTOMATICALLY_DRAW) {
@@ -1313,7 +1330,7 @@ public class JDec extends JFrame implements ActionListener {
         } else
           tab.generateImageButton.setEnabled(true);
 
-        tab.setSaved(true);
+        //tab.setSaved(true);
 
         EventQueue.invokeLater(new Runnable() {
             @Override public void run() {
@@ -1590,6 +1607,25 @@ public class JDec extends JFrame implements ActionListener {
         JDialog dialog = super.createDialog(JDec.this);
         dialog.setModal(true);
         return dialog;
+      }
+
+      @Override
+      public void approveSelection() {
+        // Overwrite protection
+        // Adapted from https://stackoverflow.com/a/3729157
+        if (getSelectedFile().exists() && getDialogType() == SAVE_DIALOG) {
+          int result = JOptionPane.showConfirmDialog(this,"Selected file exists, overwrite?","Existing file",JOptionPane.YES_NO_OPTION);
+          switch (result) {
+            case JOptionPane.YES_OPTION:
+              break;
+            case JOptionPane.CANCEL_OPTION:
+              cancelSelection();
+            case JOptionPane.NO_OPTION:
+            case JOptionPane.CLOSED_OPTION:
+              return;
+          }
+        }
+        super.approveSelection();
       }
     };
 
@@ -2328,10 +2364,15 @@ public class JDec extends JFrame implements ActionListener {
 
       automaton.generateInputForGUI();
 
+      boolean prevSavedStatus = saved;
+
       controllerInput.setValue(automaton.getNumberOfControllers());
       eventInput.setText(automaton.getEventInput());
       stateInput.setText(automaton.getStateInput());
       transitionInput.setText(automaton.getTransitionInput());
+
+      if (prevSavedStatus)
+        setSaved(prevSavedStatus);
       
       logger.debug("Finished in " + stopWatch.getTime() + "ms.");
 

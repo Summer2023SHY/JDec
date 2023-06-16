@@ -615,6 +615,16 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
         jsonObj.add("states", gson.toJsonTree(states, TypeUtils.parameterize(states.getClass(), State.class)));
     }
 
+    /**
+     * {@inheritDoc}
+     * 
+     * @throws NullPointerException if argument is {@code null}
+     */
+    @Override
+    public void setAutomaton(Automaton automaton) {
+        this.automaton = Objects.requireNonNull(automaton);
+    }
+
     @Override
     public Automaton getAutomaton() {
         return automaton;
