@@ -545,6 +545,7 @@ public class JDec extends JFrame implements ActionListener {
       case "Save":
         if (!tab.usingTemporaryFiles()) {
           try {
+            generateAutomatonButtonPressed();
             tab.ioAdapter.setAutomaton(tab.automaton);
             tab.ioAdapter.save();
           } catch (IOException ioe) {
