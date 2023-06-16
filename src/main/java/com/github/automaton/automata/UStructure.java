@@ -696,6 +696,35 @@ public class UStructure extends Automaton {
               }
             }
           }
+
+          for (TransitionData td : conditionalViolations) {
+            TransitionData copy = null;
+            if (td.initialStateID == s.getID()) {
+              copy = ObjectUtils.clone(td);
+              copy.initialStateID = duplicate.getID();
+            }
+            if (td.targetStateID == s.getID()) {
+              copy = Objects.requireNonNullElse(copy, ObjectUtils.clone(td));
+              copy.targetStateID = duplicate.getID();
+            }
+            if (Objects.nonNull(copy)) {
+              relabeled.conditionalViolations.add(copy);
+            }
+          }
+          for (TransitionData td : unconditionalViolations) {
+            TransitionData copy = null;
+            if (td.initialStateID == s.getID()) {
+              copy = ObjectUtils.clone(td);
+              copy.initialStateID = duplicate.getID();
+            }
+            if (td.targetStateID == s.getID()) {
+              copy = Objects.requireNonNullElse(copy, ObjectUtils.clone(td));
+              copy.targetStateID = duplicate.getID();
+            }
+            if (Objects.nonNull(copy)) {
+              relabeled.unconditionalViolations.add(copy);
+            }
+          }
         }
         stateMultiSet.add(s);
       }
