@@ -643,7 +643,49 @@ public class UStructure extends Automaton {
 
     UStructure relabeled = ObjectUtils.clone(this);
     Automaton subsetConstruction = relabeled.subsetConstruction();
+    long nIndistinguishableStates = subsetConstruction.getNumberOfStates();
     Automaton invSubsetConstruction = subsetConstruction.invert();
+
+    Iterator<State> invSubsetStateIterator = invSubsetConstruction.states.values().iterator();
+
+    while (invSubsetStateIterator.hasNext()) {
+      State s = invSubsetStateIterator.next();
+      List<Transition> outgoingTransitions = new ArrayList<>(s.getTransitions());
+      Iterator<Transition> outgoingTransitionsIterator = outgoingTransitions.iterator();
+      while (outgoingTransitionsIterator.hasNext()) {
+        Transition t = outgoingTransitionsIterator.next();
+        if (s.getID() == t.getTargetStateID()) {
+          outgoingTransitionsIterator.remove();
+        }
+      }
+      for (int i = 1; i < outgoingTransitions.size(); i++) {
+        State indistinguishable = subsetConstruction.getState(s.getID());
+        State indistinguishableCopy = ObjectUtils.clone(indistinguishable);
+        State invIndistinguishableCopy = ObjectUtils.clone(s);
+        indistinguishableCopy.setID(indistinguishable.getID() + i * nIndistinguishableStates);
+        invIndistinguishableCopy.setID(indistinguishable.getID() + i * nIndistinguishableStates);
+        for (Transition tCopy : indistinguishableCopy.getTransitions()) {
+          if (tCopy.getTargetStateID() == s.getID()) {
+            tCopy.setTargetStateID(indistinguishableCopy.getID());
+          }
+        }
+        for (Transition tCopy : invIndistinguishableCopy.getTransitions()) {
+          if (tCopy.getTargetStateID() == s.getID()) {
+            tCopy.setTargetStateID(indistinguishableCopy.getID());
+          }
+        }
+        subsetConstruction.addStateAt(indistinguishableCopy, false);
+        invSubsetConstruction.addStateAt(indistinguishableCopy, false);
+        State parentState = subsetConstruction.getState(outgoingTransitions.get(i).getTargetStateID());
+        parentState.addTransition(new Transition(outgoingTransitions.get(i).getEvent(), indistinguishableCopy.getID()));
+        s.removeTransition(outgoingTransitions.get(i));
+        invIndistinguishableCopy.getTransitions().clear();
+        invIndistinguishableCopy.addTransition(outgoingTransitions.get(i));
+      }
+      if (outgoingTransitions.size() > 1) {
+        invSubsetStateIterator = invSubsetConstruction.states.values().iterator();
+      }
+    }
 
     MultiSet<State> stateMultiSet = new HashMultiSet<>();
 
