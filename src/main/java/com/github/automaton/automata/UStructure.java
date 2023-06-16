@@ -674,7 +674,8 @@ public class UStructure extends Automaton {
               for (Transition t : IterableUtils.filteredIterable(
                 states.get(j).getTransitions(), transition -> transition.getTargetStateID() == s.getID()
               )) {
-                t.setTargetStateID(duplicate.getID());
+                if (states.get(j).getID() != s.getID())
+                  t.setTargetStateID(duplicate.getID());
               }
             }
           }
@@ -683,6 +684,8 @@ public class UStructure extends Automaton {
             List<State> parentStates = relabeled.getStatesFromLabel(
               new LabelVector(subsetConstruction.getState(t.getTargetStateID()).getLabel())
             );
+            if (subsetConstruction.getState(t.getTargetStateID()).getLabel().equals(invSubsetConstruction.getState(indistinguishableState.getID()).getLabel()))
+              continue;
             for (State parentState : parentStates) {
               for (Transition incomingTransition : IterableUtils.filteredIterable(
                 parentState.getTransitions(), transition -> {
