@@ -129,6 +129,16 @@ public class AutomatonJsonFileAdapter implements AutomatonIOAdapter {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * 
+     * @throws NullPointerException if argument is {@code null}
+     */
+    @Override
+    public void setAutomaton(Automaton automaton) {
+        this.automaton = Objects.requireNonNull(automaton);
+    }
+
     /** {@inheritDoc} */
     @Override
     public Automaton getAutomaton() {

@@ -208,6 +208,7 @@ public class JDec extends JFrame implements ActionListener {
     menuBar.add(createMenu("File",
       "New Tab->New Automaton,New U-Structure,New Pruned U-Structure",
       "Open",
+      "Save[TAB]",
       "Save As...[TAB]",
       "Refresh Tab[TAB]",
       null,
@@ -364,8 +365,12 @@ public class JDec extends JFrame implements ActionListener {
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, shortcutKey));
         break;
 
-      case "Save As...":
+      case "Save":
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, shortcutKey));
+        break;
+
+      case "Save As...":
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0));
         break;
 
       case "Previous Tab":
@@ -537,6 +542,16 @@ public class JDec extends JFrame implements ActionListener {
         createTab(true, Automaton.Type.PRUNED_U_STRUCTURE);
         break;
 
+      case "Save":
+        if (!tab.usingTemporaryFiles()) {
+          try {
+            tab.ioAdapter.setAutomaton(tab.automaton);
+            tab.ioAdapter.save();
+          } catch (IOException ioe) {
+            displayException(ioe);
+          }
+          break;
+        }
       case "Save As...":
 
         // Prompt user to save Automaton to the specified file
