@@ -2507,7 +2507,10 @@ public class Automaton implements Cloneable {
   public boolean containsTransition(State startingState, Event event, long targetStateID) {
     if (startingState == null) return false;
     else if (event == null) return false;
-    return startingState.getTransitions().contains(new Transition(event, targetStateID));
+    else if (!startingState.equals(getState(startingState.getID()))) {
+      throw new IllegalArgumentException("State information inconsistent");
+    }
+    return getState(startingState.getID()).getTransitions().contains(new Transition(event, targetStateID));
   }
 
   /**

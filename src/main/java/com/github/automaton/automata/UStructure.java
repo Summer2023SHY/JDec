@@ -544,19 +544,16 @@ public class UStructure extends Automaton {
     while (!stateQueue.isEmpty()) {
       StateSet u = stateQueue.remove();
       MultiValuedMap<Event, Long> observableTransitions = u.groupAndGetObservableTransitions(controller);
-      inner: for (Event e : observableTransitions.keys()) {
+      for (Event e : observableTransitions.keys()) {
         List<State> targetStates = new ArrayList<>();
         for (long targetStateID : observableTransitions.get(e)) {
           targetStates.add(getState(targetStateID));
         }
         StateSet ss = nullClosure(targetStates, controller);
-        for (StateSet added : addedStates) {
-          if (added.containsAll(ss)) {
-            continue inner;
-          }
+        if (!automaton.stateExists(ss)) {
+          automaton.addStateAt(ss, false);
+          addedStates.add(ss);
         }
-        automaton.addStateAt(ss, false);
-        addedStates.add(ss);
         if (!automaton.containsTransition(u, e, ss.getID())) {
           automaton.addTransition(u, e.getLabel(), ss);
           stateQueue.add(ss);
