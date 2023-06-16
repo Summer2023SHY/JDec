@@ -238,7 +238,7 @@ public class StateSet extends State {
         if (this == other) {
             return true;
         } else if (!(other instanceof StateSet)) {
-            return false;
+            return super.equals(other);
         } else {
             StateSet ss = (StateSet) other;
             return this.set.containsAll(ss.set) && ss.set.containsAll(this.set);
