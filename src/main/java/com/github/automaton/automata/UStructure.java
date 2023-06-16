@@ -550,7 +550,7 @@ public class UStructure extends Automaton {
           targetStates.add(getState(targetStateID));
         }
         StateSet ss = nullClosure(targetStates, controller);
-        if (!automaton.stateExists(ss)) {
+        if (!addedStates.contains(ss)) {
           automaton.addStateAt(ss, false);
           addedStates.add(ss);
         }
