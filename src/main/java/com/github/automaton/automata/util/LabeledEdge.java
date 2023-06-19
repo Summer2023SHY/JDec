@@ -1,5 +1,7 @@
 package com.github.automaton.automata.util;
 
+import java.util.Objects;
+
 /* 
  * Copyright (C) 2023 Sung Ho Yoon
  * 
@@ -75,6 +77,32 @@ public class LabeledEdge<T> extends DefaultEdge {
     @Override
     public final Object getTarget() {
         return super.getTarget();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.getSource(), super.getTarget(), label);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        else if (obj instanceof LabeledEdge) {
+            LabeledEdge<?> other = (LabeledEdge<?>) obj;
+            return Objects.equals(super.getSource(), other.getSource())
+                && Objects.equals(super.getTarget(), other.getTarget())
+                && Objects.equals(this.getLabel(), other.getLabel());
+        } else
+            return false;
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+            "(%s - %s) : %s",
+            super.getSource().toString(), super.getTarget().toString(), label.toString()
+        );
     }
 
 }
