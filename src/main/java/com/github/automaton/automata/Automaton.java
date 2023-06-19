@@ -1250,16 +1250,17 @@ public class Automaton implements Cloneable {
 
       Map<State, int[]> ambLevelPerState = new HashMap<>();
 
-      
+      Set<State> vertexSet = new LinkedHashSet<>();
+      vertexSet.addAll(uStructure.getEnablementStates(e.getLabel()));
+      vertexSet.addAll(uStructure.getDisablementStates(e.getLabel()));
 
-      for (State s : IterableUtils.chainedIterable(
-        uStructure.getEnablementStates(e.getLabel()), uStructure.getDisablementStates(e.getLabel()))
-      ) {
+      for (State s :  vertexSet) {
         ambLevelPerState.put(s, ArrayUtils.clone(dummy));
         graph.addVertex(s);
       }
       for (int i = 0; i < nControllers; i++) {
-        if (!e.isControllable()[i]) continue;
+        if (!e.isControllable()[i])
+          continue;
         Automaton determinization = uStructure.subsetConstruction(i + 1);
         for (State indistinguishableStates : determinization.states.values()) {
           List<State> indistinguishableStateList = uStructure.getStatesFromLabel(new LabelVector(indistinguishableStates.getLabel()));
@@ -1312,9 +1313,12 @@ public class Automaton implements Cloneable {
           for (int i = 0; i < nControllers; i++) {
             final int currController = i;
             Set<LabeledEdge<Integer>> neighbors = new HashSet<>(graph.outgoingEdgesOf(s));
-            graph.removeAllEdges(neighbors);
-            for (LabeledEdge<Integer> neighbor : neighbors) {
-              State targetState = State.class.cast(neighbor.getSource() == s ? neighbor.getTarget() : neighbor.getSource());
+            Iterable<LabeledEdge<Integer>> filteredNeighbors = IterableUtils.filteredIterable(
+              neighbors, edge -> edge.getLabel() == currController
+            );
+            for (LabeledEdge<Integer> neighbor : filteredNeighbors) {
+              graph.removeEdge(neighbor);
+              State targetState = State.class.cast(neighbor.getSource().equals(s) ? neighbor.getTarget() : neighbor.getSource());
               Iterable<LabeledEdge<Integer>> filteredTargetNeighbors = IterableUtils.filteredIterable(
                 graph.outgoingEdgesOf(targetState), edge -> Objects.equals(edge.getLabel(), currController)
               );
