@@ -1250,14 +1250,16 @@ public class Automaton implements Cloneable {
 
       Map<State, int[]> ambLevelPerState = new HashMap<>();
 
-      Set<State> vertexSet = new LinkedHashSet<>();
-      vertexSet.addAll(uStructure.getEnablementStates(e.getLabel()));
-      vertexSet.addAll(uStructure.getDisablementStates(e.getLabel()));
-
-      for (State s :  vertexSet) {
+      // Set up ambiguity level & Add nodes to graph
+      for (State s :  uStructure.getEnablementStates(e.getLabel())) {
         ambLevelPerState.put(s, ArrayUtils.clone(dummy));
         graph.addVertex(s);
       }
+      for (State s :  uStructure.getDisablementStates(e.getLabel())) {
+        ambLevelPerState.put(s, ArrayUtils.clone(dummy));
+        graph.addVertex(s);
+      }
+      // Build edges
       for (int i = 0; i < nControllers; i++) {
         if (!e.isControllable()[i])
           continue;
@@ -1267,17 +1269,13 @@ public class Automaton implements Cloneable {
           for (State enablement : uStructure.getEnablementStates(e.getLabel())) {
             for (State disablement : uStructure.getDisablementStates(e.getLabel())) {
               if (indistinguishableStateList.contains(enablement) && indistinguishableStateList.contains(disablement)) {
-                boolean addEdge = false;
                 if (ambLevelPerState.get(enablement)[i + 1] == -1) {
                   ambLevelPerState.get(enablement)[i + 1] = Integer.MAX_VALUE;
-                  addEdge = true;
                 }
                 if (ambLevelPerState.get(disablement)[i + 1] == -1) {
                   ambLevelPerState.get(disablement)[i + 1] = Integer.MAX_VALUE;
-                  addEdge = true;
                 }
-                if (addEdge)
-                  graph.addEdge(enablement, disablement, new LabeledEdge<Integer>(i));
+                graph.addEdge(enablement, disablement, new LabeledEdge<Integer>(i));
               }
             }
           }
@@ -1293,7 +1291,7 @@ public class Automaton implements Cloneable {
           if (!e.isControllable()[i]) continue;
           final int currController = i;
           Iterable<LabeledEdge<Integer>> filteredNeighbors = IterableUtils.filteredIterable(
-            graph.outgoingEdgesOf(s), edge -> Objects.equals(edge.getLabel(), currController)
+            graph.edgesOf(s), edge -> Objects.equals(edge.getLabel(), currController)
           );
           if (IterableUtils.isEmpty(filteredNeighbors)) {
             r.add(s);
@@ -1307,12 +1305,12 @@ public class Automaton implements Cloneable {
       resolved.addAll(r);
 
       while (!r.isEmpty()) {
-        Set<State> rPrime = new HashSet<>();
+        Set<State> rPrime = new LinkedHashSet<>();
         ambLevel++;
         for (State s : r) {
           for (int i = 0; i < nControllers; i++) {
             final int currController = i;
-            Set<LabeledEdge<Integer>> neighbors = new HashSet<>(graph.outgoingEdgesOf(s));
+            Set<LabeledEdge<Integer>> neighbors = new HashSet<>(graph.edgesOf(s));
             Iterable<LabeledEdge<Integer>> filteredNeighbors = IterableUtils.filteredIterable(
               neighbors, edge -> edge.getLabel() == currController
             );
@@ -1320,11 +1318,14 @@ public class Automaton implements Cloneable {
               graph.removeEdge(neighbor);
               State targetState = State.class.cast(neighbor.getSource().equals(s) ? neighbor.getTarget() : neighbor.getSource());
               Iterable<LabeledEdge<Integer>> filteredTargetNeighbors = IterableUtils.filteredIterable(
-                graph.outgoingEdgesOf(targetState), edge -> Objects.equals(edge.getLabel(), currController)
+                graph.edgesOf(targetState), edge -> edge.getLabel() == currController
               );
               if (IterableUtils.isEmpty(filteredTargetNeighbors)) {
                 if (!resolved.contains(targetState)) {
                   rPrime.add(targetState);
+                }
+                if (ambLevelPerState.get(targetState)[i + 1] == Integer.MAX_VALUE) {
+                  //rPrime.add(targetState);
                   ambLevelPerState.get(targetState)[i + 1] = ambLevel;
                 }
               }
@@ -1338,7 +1339,7 @@ public class Automaton implements Cloneable {
         
       }
 
-      if (resolved.size() < uStructure.getEnablementStates(e.getLabel()).size() + uStructure.getDisablementStates(e.getLabel()).size()) {
+      if (resolved.size() < ambLevelPerState.keySet().size()) {
         return false;
       }
 
