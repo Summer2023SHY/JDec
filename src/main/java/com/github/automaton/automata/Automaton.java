@@ -46,16 +46,16 @@ import java.io.*;
 import java.math.*;
 import java.util.*;
 
-import org.apache.commons.collections4.IterableUtils;
+import org.apache.commons.collections4.*;
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.RandomAccessFileMode;
 import org.apache.commons.lang3.*;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.reflect.TypeUtils;
 import org.apache.logging.log4j.*;
-import org.jgrapht.graph.*;
 
-import com.github.automaton.automata.util.LabeledEdge;
 import com.github.automaton.io.json.*;
 import com.github.automaton.io.legacy.MissingOrCorruptBodyFileException;
 import com.google.gson.*;
@@ -1245,101 +1245,91 @@ public class Automaton implements Cloneable {
       events, event -> BooleanUtils.or(event.isControllable()))
     ) {
 
-      // Build bipartite graph
-      Multigraph<State, LabeledEdge<Integer>> graph = new Multigraph<>(null, null, false);
+      ListValuedMap<State, Set<State>> neighborMap = new ArrayListValuedHashMap<>();
+      Map<State, MutableInt[]> ambLevelMap = new LinkedHashMap<>();
 
-      Map<State, int[]> ambLevelPerState = new HashMap<>();
+      Set<State> disablementStates = Collections.unmodifiableSet(uStructure.getDisablementStates(e.getLabel()));
+      Set<State> enablementStates = Collections.unmodifiableSet(uStructure.getEnablementStates(e.getLabel()));
 
-      // Set up ambiguity level & Add nodes to graph
-      for (State s :  uStructure.getEnablementStates(e.getLabel())) {
-        ambLevelPerState.put(s, ArrayUtils.clone(dummy));
-        graph.addVertex(s);
+      for (State ds : disablementStates) {
+        ambLevelMap.put(ds, new MutableInt[nControllers]);
       }
-      for (State s :  uStructure.getDisablementStates(e.getLabel())) {
-        ambLevelPerState.put(s, ArrayUtils.clone(dummy));
-        graph.addVertex(s);
+      for (State es : enablementStates) {
+        ambLevelMap.put(es, new MutableInt[nControllers]);
       }
-      // Build edges
+
       for (int i = 0; i < nControllers; i++) {
-        if (!e.isControllable()[i])
-          continue;
+        if (e.isControllable()[i]) {
+          for (State disablementState : disablementStates) {
+            neighborMap.put(disablementState, new LinkedHashSet<>());
+            ambLevelMap.get(disablementState)[i] = new MutableInt(Integer.MAX_VALUE);
+          }
+          for (State enablementState : enablementStates) {
+            neighborMap.put(enablementState, new LinkedHashSet<>());
+            ambLevelMap.get(enablementState)[i] = new MutableInt(Integer.MAX_VALUE);
+          }
+        } else {
+          for (State disablementState : disablementStates) {
+            neighborMap.put(disablementState, null);
+          }
+          for (State enablementState : enablementStates) {
+            neighborMap.put(enablementState, null);
+          }
+        }
+      }
+
+      for (int i = 0; i < nControllers; i++) {
         Automaton determinization = uStructure.subsetConstruction(i + 1);
         for (State indistinguishableStates : determinization.states.values()) {
           List<State> indistinguishableStateList = uStructure.getStatesFromLabel(new LabelVector(indistinguishableStates.getLabel()));
-          for (State enablement : uStructure.getEnablementStates(e.getLabel())) {
-            for (State disablement : uStructure.getDisablementStates(e.getLabel())) {
-              if (indistinguishableStateList.contains(enablement) && indistinguishableStateList.contains(disablement)) {
-                if (ambLevelPerState.get(enablement)[i + 1] == -1) {
-                  ambLevelPerState.get(enablement)[i + 1] = Integer.MAX_VALUE;
-                }
-                if (ambLevelPerState.get(disablement)[i + 1] == -1) {
-                  ambLevelPerState.get(disablement)[i + 1] = Integer.MAX_VALUE;
-                }
-                graph.addEdge(enablement, disablement, new LabeledEdge<Integer>(i));
+          for (State disablementState : disablementStates) {
+            for (State enablementState : enablementStates) {
+              if (indistinguishableStateList.contains(disablementState) && indistinguishableStateList.contains(enablementState)) {
+                neighborMap.get(disablementState).get(i).add(enablementState);
+                neighborMap.get(enablementState).get(i).add(disablementState);
               }
             }
           }
         }
       }
 
-      
-      Set<State> r = new HashSet<>();
+      Set<State> R = new LinkedHashSet<>();
+
       int ambLevel = 0;
 
-      for (State s : graph.vertexSet()) {
+      for (State v : neighborMap.keySet()) {
         for (int i = 0; i < nControllers; i++) {
-          if (!e.isControllable()[i]) continue;
-          final int currController = i;
-          Iterable<LabeledEdge<Integer>> filteredNeighbors = IterableUtils.filteredIterable(
-            graph.edgesOf(s), edge -> Objects.equals(edge.getLabel(), currController)
-          );
-          if (IterableUtils.isEmpty(filteredNeighbors)) {
-            r.add(s);
-            ambLevelPerState.get(s)[i] = 0;
+          if (e.isControllable()[i] && neighborMap.get(v).get(i).isEmpty()) {
+            R.add(v);
+            ambLevelMap.get(v)[i].setValue(0);
           }
         }
       }
 
-      Set<State> resolved = new HashSet<>();
+      Set<State> resolved = new LinkedHashSet<>(R);
 
-      resolved.addAll(r);
-
-      while (!r.isEmpty()) {
+      while (!R.isEmpty()) {
         Set<State> rPrime = new LinkedHashSet<>();
-        ambLevel++;
-        for (State s : r) {
+        ambLevel += 1;
+        for (State r : R) {
           for (int i = 0; i < nControllers; i++) {
-            final int currController = i;
-            Set<LabeledEdge<Integer>> neighbors = new HashSet<>(graph.edgesOf(s));
-            Iterable<LabeledEdge<Integer>> filteredNeighbors = IterableUtils.filteredIterable(
-              neighbors, edge -> edge.getLabel() == currController
-            );
-            for (LabeledEdge<Integer> neighbor : filteredNeighbors) {
-              graph.removeEdge(neighbor);
-              State targetState = State.class.cast(neighbor.getSource().equals(s) ? neighbor.getTarget() : neighbor.getSource());
-              Iterable<LabeledEdge<Integer>> filteredTargetNeighbors = IterableUtils.filteredIterable(
-                graph.edgesOf(targetState), edge -> edge.getLabel() == currController
-              );
-              if (IterableUtils.isEmpty(filteredTargetNeighbors)) {
-                if (!resolved.contains(targetState)) {
-                  rPrime.add(targetState);
-                }
-                if (ambLevelPerState.get(targetState)[i + 1] == Integer.MAX_VALUE) {
-                  //rPrime.add(targetState);
-                  ambLevelPerState.get(targetState)[i + 1] = ambLevel;
+            if (e.isControllable()[i]) {
+              for (State vPrime : neighborMap.get(r).get(i)) {
+                neighborMap.get(vPrime).get(i).remove(r);
+                if (neighborMap.get(vPrime).get(i).isEmpty()) {
+                  if (!resolved.contains(vPrime)) {
+                    rPrime.add(vPrime);
+                  }
+                  ambLevelMap.get(vPrime)[i].setValue(ambLevel);
                 }
               }
             }
           }
         }
-
-        r = rPrime;
-
-        resolved.addAll(r);
-        
+        R = rPrime;
+        resolved.addAll(R);
       }
-
-      if (resolved.size() < ambLevelPerState.keySet().size()) {
+      if (resolved.size() < neighborMap.keySet().size()) {
         return false;
       }
 
