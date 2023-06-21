@@ -888,7 +888,7 @@ public class JDec extends JFrame implements ActionListener {
     try {
       if (assignTemporaryFiles) {
         String fileName = getTemporaryFileName();
-        File tempFile = new File(fileName + FilenameUtils.EXTENSION_SEPARATOR + "json");
+        File tempFile = new File(fileName + FilenameUtils.EXTENSION_SEPARATOR + AutomatonJsonFileAdapter.EXTENSION);
         FileUtils.touch(tempFile);
         tab.ioAdapter = new AutomatonJsonFileAdapter(tempFile, false);
         tab.updateTabTitle();
@@ -926,7 +926,7 @@ public class JDec extends JFrame implements ActionListener {
   public void createTab(Automaton automaton) {
     AutomatonJsonFileAdapter jsonIOAdapter;
     try {
-      jsonIOAdapter = AutomatonJsonFileAdapter.wrap(automaton, new File(getTemporaryFileName() + FilenameUtils.EXTENSION_SEPARATOR + "json"));
+      jsonIOAdapter = AutomatonJsonFileAdapter.wrap(automaton, new File(getTemporaryFileName() + FilenameUtils.EXTENSION_SEPARATOR + AutomatonJsonFileAdapter.EXTENSION));
     } catch (IOException ioe) {
       throw new UncheckedIOException(logger.throwing(ioe));
     }
@@ -1485,7 +1485,7 @@ public class JDec extends JFrame implements ActionListener {
 
     fileChooser.setAcceptAllFileFilterUsed(false);
     FileNameExtensionFilter binaryFilter = new FileNameExtensionFilter("Automaton files", HeaderAccessFile.EXTENSION);
-    FileNameExtensionFilter jsonFilter = new FileNameExtensionFilter("JSON files", "json");
+    FileNameExtensionFilter jsonFilter = new FileNameExtensionFilter("JSON files", AutomatonJsonFileAdapter.EXTENSION);
     fileChooser.addChoosableFileFilter(binaryFilter);
     fileChooser.addChoosableFileFilter(jsonFilter);
 
@@ -1502,7 +1502,7 @@ public class JDec extends JFrame implements ActionListener {
     switch (FilenameUtils.getExtension(fileChooser.getSelectedFile().getName())) {
       case HeaderAccessFile.EXTENSION:
         return loadBinaryAutomatonFile(fileChooser.getSelectedFile(), index);
-      case "json":
+      case AutomatonJsonFileAdapter.EXTENSION:
         return loadJsonAutomatonFile(fileChooser.getSelectedFile(), index);
       default:
         throw logger.throwing(new UnsupportedOperationException("Unsupported file extension"));
@@ -1633,7 +1633,7 @@ public class JDec extends JFrame implements ActionListener {
 
     fileChooser.setAcceptAllFileFilterUsed(false);
     FileNameExtensionFilter binaryFilter = new FileNameExtensionFilter("Automaton files", HeaderAccessFile.EXTENSION);
-    FileNameExtensionFilter jsonFilter = new FileNameExtensionFilter("JSON files", "json");
+    FileNameExtensionFilter jsonFilter = new FileNameExtensionFilter("JSON files", AutomatonJsonFileAdapter.EXTENSION);
     fileChooser.addChoosableFileFilter(binaryFilter);
     fileChooser.addChoosableFileFilter(jsonFilter);
 
@@ -1664,7 +1664,7 @@ public class JDec extends JFrame implements ActionListener {
     switch (FilenameUtils.getExtension(fileChooser.getSelectedFile().getName())) {
       case HeaderAccessFile.EXTENSION:
         return saveBinaryFile(fileChooser.getSelectedFile());
-      case "json":
+      case AutomatonJsonFileAdapter.EXTENSION:
         return saveJsonFile(fileChooser.getSelectedFile());
       default:
         throw logger.throwing(new UnsupportedOperationException("Unsupported file extension"));
@@ -1682,7 +1682,7 @@ public class JDec extends JFrame implements ActionListener {
     String prefix   = FilenameUtils.removeExtension(selectedFile.getAbsolutePath());
     File headerFile = new File(prefix + FilenameUtils.EXTENSION_SEPARATOR + HeaderAccessFile.EXTENSION);
     File bodyFile   = new File(prefix + FilenameUtils.EXTENSION_SEPARATOR + BodyAccessFile.EXTENSION);
-    File svgFile    = new File(prefix + ".svg");
+    File svgFile    = new File(prefix + FilenameUtils.EXTENSION_SEPARATOR + "svg");
   
     AutomatonTab currentTab = tabs.get(tabbedPane.getSelectedIndex());
   
