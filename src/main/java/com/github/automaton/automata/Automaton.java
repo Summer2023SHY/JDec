@@ -57,7 +57,6 @@ import org.jgrapht.graph.*;
 
 import com.github.automaton.automata.util.LabeledEdge;
 import com.github.automaton.io.json.*;
-import com.github.automaton.io.legacy.MissingOrCorruptBodyFileException;
 import com.google.gson.*;
 import com.google.gson.reflect.*;
 
@@ -1569,7 +1568,7 @@ public class Automaton implements Cloneable {
 
     Map<Long, State> newStateMap = new HashMap<>();
 
-    for (State s : states.values()) {
+    for (State s : getStates()) {
       long origID = s.getID();
       s.setID(newID);
       newStateMap.put(newID++, s);
@@ -1580,7 +1579,7 @@ public class Automaton implements Cloneable {
 
     /* Update transitions */
 
-    for (State s : states.values()) {
+    for (State s : getStates()) {
       for (Transition t : s.getTransitions()) {
         t.setTargetStateID(mappingHashMap.get(t.getTargetStateID()));
       }
@@ -1805,11 +1804,10 @@ public class Automaton implements Cloneable {
    * Generate a graph that represents this automaton
    * 
    * @return a Graphviz graph that represents this automaton
-   * @throws MissingOrCorruptBodyFileException If any of the states are unable to be read from the body file
    * @since 1.3
    */
   @SuppressWarnings("unchecked")
-  private MutableGraph generateGraph() throws MissingOrCorruptBodyFileException {
+  private MutableGraph generateGraph() {
     MutableGraph g = mutGraph().setDirected(true);
     g.graphAttrs().add(
       Color.TRANSPARENT.background(),
@@ -1819,208 +1817,96 @@ public class Automaton implements Cloneable {
       Attributes.attr("overlap", "scale")
     );
     g = g.nodeAttrs().add(Shape.CIRCLE, Style.BOLD, Attributes.attr("constraint", false));
-    try {
 
-        /* Mark special transitions */
+      /* Mark special transitions */
 
-      HashMap<String, Attributes<? extends ForLink>> additionalEdgeProperties = new HashMap<String, Attributes<? extends ForLink>>();
-      addAdditionalLinkProperties(additionalEdgeProperties);
+    HashMap<String, Attributes<? extends ForLink>> additionalEdgeProperties = new HashMap<String, Attributes<? extends ForLink>>();
+    addAdditionalLinkProperties(additionalEdgeProperties);
 
-        /* Draw all states and their transitions */
+      /* Draw all states and their transitions */
 
-      for (long s = 1; s <= nStates; s++) {
+    for (long s = 1; s <= nStates; s++) {
 
-        // Get state from file
-        State state = getState(s);
-        String stateLabel = formatStateLabel(state);
-        MutableNode sourceNode = mutNode(stateLabel);
-        addAdditionalNodeProperties(state, sourceNode);
+      // Get state from file
+      State state = getState(s);
+      String stateLabel = formatStateLabel(state);
+      MutableNode sourceNode = mutNode(stateLabel);
+      addAdditionalNodeProperties(state, sourceNode);
 
-        // Draw state
-        g = g.add(sourceNode.add(Attributes.attr("peripheries", state.isMarked() ? 2 : 1), Label.nodeName()));
+      // Draw state
+      g = g.add(sourceNode.add(Attributes.attr("peripheries", state.isMarked() ? 2 : 1), Label.nodeName()));
         
-        // Find and draw all of the special transitions 
-        ArrayList<Transition> transitionsToSkip = new ArrayList<Transition>();
-        for (Transition t : state.getTransitions()) {
+      // Find and draw all of the special transitions 
+      ArrayList<Transition> transitionsToSkip = new ArrayList<Transition>();
+      for (Transition t : state.getTransitions()) {
 
-          State targetState = getState(t.getTargetStateID());
+        State targetState = getState(t.getTargetStateID());
 
-          // Check to see if this transition has additional properties (meaning it's a special transition)
-          String key = "" + stateLabel + " " + t.getEvent().getID() + " " + formatStateLabel(targetState);
-          Attributes<? extends ForLink> properties = additionalEdgeProperties.get(key);
+        // Check to see if this transition has additional properties (meaning it's a special transition)
+        String key = "" + stateLabel + " " + t.getEvent().getID() + " " + formatStateLabel(targetState);
+        Attributes<? extends ForLink> properties = additionalEdgeProperties.get(key);
 
-          if (properties != null) {
+        if (properties != null) {
 
-            transitionsToSkip.add(t);
+          transitionsToSkip.add(t);
 
-            MutableNode targetNode = mutNode(formatStateLabel(targetState));
-            targetNode.addTo(g);
-            if (!Objects.equals(properties.get("color"), "transparent")) {
-              Link l = sourceNode.linkTo(targetNode);
-              l.add(Label.of(t.getEvent().getLabel()));
-              l.add(properties);
-              sourceNode.links().add(l);
-            }
-          }
-        }
-
-        // Draw all of the remaining (normal) transitions
-        for (Transition t1 : state.getTransitions()) {
-
-          // Skip it if this was already taken care of (grouped into another transition going to the same target state)
-          if (transitionsToSkip.contains(t1))
-            continue;
-
-          // Start building the label
-          String label = t1.getEvent().getLabel();
-          transitionsToSkip.add(t1);
-
-          // Look for all transitions that can be grouped with this one
-          for (Transition t2 : state.getTransitions()) {
-
-            // Skip it if this was already taken care of (grouped into another transition going to
-            // the same target state)
-            if (transitionsToSkip.contains(t2))
-              continue;
-
-            // Check to see if both transitions lead to the same event
-            if (t1.getTargetStateID() == t2.getTargetStateID()) {
-              label += "," + t2.getEvent().getLabel();
-              transitionsToSkip.add(t2);
-            }
-
-          }
-
-          // Add transition
-          MutableNode targetNode = mutNode(formatStateLabel(getState(t1.getTargetStateID())));
+          MutableNode targetNode = mutNode(formatStateLabel(targetState));
           targetNode.addTo(g);
-          Link l = sourceNode.linkTo(targetNode);
-          l.add(Label.of(label));
-          sourceNode.links().add(l);
-        }
-
-        if (initialState > 0) {
-          MutableNode startNode = mutNode("").add(Shape.PLAIN_TEXT);
-          MutableNode initNode = mutNode(formatStateLabel(getState(initialState)));
-          Link init = startNode.linkTo(initNode);
-          init.add(Color.BLUE);
-          startNode.links().add(init);
-          startNode.addTo(g);
-        }
-      }
-    } catch (NullPointerException e) {
-      throw new MissingOrCorruptBodyFileException(e);
-    }
-    return g;
-  }
-
-  /**
-   * Converts this automaton to Graphviz-recognizable {@code .dot} format
-   * @return {@code .dot} representation of this automaton
-   * @throws MissingOrCorruptBodyFileException If any of the states are unable to be read from the body file
-   */
-  @Deprecated(since = "1.3", forRemoval = true)
-  private String generateDotString() throws MissingOrCorruptBodyFileException {
-    /* Setup */
-
-    StringBuilder str = new StringBuilder();
-    str.append("digraph Image {");
-    str.append("bgcolor=\"transparent\";overlap=scale;");
-    str.append("node [shape=circle, style=bold, constraint=false];");
-
-    try {
-
-        /* Mark special transitions */
-
-      HashMap<String, String> additionalEdgeProperties = new HashMap<String, String>();
-      addAdditionalEdgeProperties(additionalEdgeProperties);
-      
-        /* Draw all states and their transitions */
-
-      for (long s = 1; s <= nStates; s++) {
-
-        // Get state from file
-        State state = getState(s);
-        String stateLabel = formatStateLabel(state);
-
-        // Draw state
-        if (state.isMarked())
-          str.append(String.format("\"_%s\" [peripheries=2,label=\"%s\"];", stateLabel, stateLabel));
-        else
-          str.append(String.format("\"_%s\" [peripheries=1,label=\"%s\"];", stateLabel, stateLabel));
-        
-        // Find and draw all of the special transitions 
-        ArrayList<Transition> transitionsToSkip = new ArrayList<Transition>();
-        for (Transition t : state.getTransitions()) {
-
-          State targetState = getState(t.getTargetStateID());
-
-          // Check to see if this transition has additional properties (meaning it's a special transition)
-          String key = "" + stateLabel + " " + t.getEvent().getID() + " " + formatStateLabel(targetState);
-          String properties = additionalEdgeProperties.get(key);
-
-          if (properties != null) {
-
-            transitionsToSkip.add(t);
-
-            String edge = "\"_" + stateLabel + "\" -> \"_" + formatStateLabel(targetState) + "\"";
-            str.append(edge);
-            str.append(" [label=\"" + t.getEvent().getLabel() + "\"");
-            str.append(properties);
-            str.append("];");
-          
+          if (!Objects.equals(properties.get("color"), "transparent")) {
+            Link l = sourceNode.linkTo(targetNode);
+            l.add(Label.of(t.getEvent().getLabel()));
+            l.add(properties);
+            sourceNode.links().add(l);
           }
         }
+      }
 
-        // Draw all of the remaining (normal) transitions
-        for (Transition t1 : state.getTransitions()) {
+      // Draw all of the remaining (normal) transitions
+      for (Transition t1 : state.getTransitions()) {
 
-          // Skip it if this was already taken care of (grouped into another transition going to the same target state)
-          if (transitionsToSkip.contains(t1))
+        // Skip it if this was already taken care of (grouped into another transition going to the same target state)
+        if (transitionsToSkip.contains(t1))
+          continue;
+
+        // Start building the label
+        String label = t1.getEvent().getLabel();
+        transitionsToSkip.add(t1);
+
+        // Look for all transitions that can be grouped with this one
+        for (Transition t2 : state.getTransitions()) {
+
+          // Skip it if this was already taken care of (grouped into another transition going to
+          // the same target state)
+          if (transitionsToSkip.contains(t2))
             continue;
 
-          // Start building the label
-          String label = t1.getEvent().getLabel();
-          transitionsToSkip.add(t1);
-
-          // Look for all transitions that can be grouped with this one
-          for (Transition t2 : state.getTransitions()) {
-
-            // Skip it if this was already taken care of (grouped into another transition going to
-            // the same target state)
-            if (transitionsToSkip.contains(t2))
-              continue;
-
-            // Check to see if both transitions lead to the same event
-            if (t1.getTargetStateID() == t2.getTargetStateID()) {
-              label += "," + t2.getEvent().getLabel();
-              transitionsToSkip.add(t2);
-            }
-
+          // Check to see if both transitions lead to the same event
+          if (t1.getTargetStateID() == t2.getTargetStateID()) {
+            label += "," + t2.getEvent().getLabel();
+            transitionsToSkip.add(t2);
           }
-
-          // Add transition
-          String edge = "\"_" + stateLabel + "\" -> \"_" + formatStateLabel(getState(t1.getTargetStateID())) + "\"";
-          str.append(edge);
-          str.append(" [label=\"" + label + "\"]");
 
         }
 
+        // Add transition
+        MutableNode targetNode = mutNode(formatStateLabel(getState(t1.getTargetStateID())));
+        targetNode.addTo(g);
+        Link l = sourceNode.linkTo(targetNode);
+        l.add(Label.of(label));
+        sourceNode.links().add(l);
       }
-
-        /* Add arrow towards initial state */
 
       if (initialState > 0) {
-        str.append("node [shape=plaintext];");
-        str.append("\" \"-> \"_" + formatStateLabel(getState(initialState)) + "\" [color=blue];");
+        MutableNode startNode = mutNode("").add(Shape.PLAIN_TEXT);
+        MutableNode initNode = mutNode(formatStateLabel(getState(initialState)));
+        Link init = startNode.linkTo(initNode);
+        init.add(Color.BLUE);
+        startNode.links().add(init);
+        startNode.addTo(g);
       }
-
-      str.append("}");
-
-    } catch (NullPointerException e) {
-      throw new MissingOrCorruptBodyFileException(e);
     }
-    return str.toString();
+    
+    return g;
   }
 
   /**
@@ -2072,21 +1958,6 @@ public class Automaton implements Cloneable {
   }
 
   /**
-   * Add any additional edge properties applicable to this automaton type, which is used in the DOT output.
-   * EXAMPLE: This is used to color potential communications blue.
-   * @param map The mapping from edges to additional properties
-   * 
-   * @deprecated This method is no longer used. Use {@link #addAdditionalLinkProperties(Map)} instead.
-   **/
-  @Deprecated(since = "1.3", forRemoval = true)
-  protected void addAdditionalEdgeProperties(Map<String, String> map) {
-
-    for (TransitionData data : badTransitions)
-      appendValueToMap(map, createKey(data), ",style=dotted");
-    
-  }
-
-  /**
    * Helper method used to create a key for the additional edge properties map.
    * @param data  The relevant transition data
    * @return      A string used to identify this particular transition
@@ -2109,23 +1980,6 @@ public class Automaton implements Cloneable {
   protected static void combineAttributesInMap(Map<String, Attributes<? extends ForLink>> map, String key, Attributes<? extends ForLink> value) {
     if (map.containsKey(key))
       map.put(key, Attributes.attrs(map.get(key), value));
-    else
-      map.put(key, value); 
-  }
-
-  /**
-   * Helper method used to append a value to the pre-existing value of a particular key in a map.
-   * If the key was not previously in the map, then the value is simply added.
-   * @param map   The relevant map
-   * @param key   The key which is mapped to a value that is being appending to
-   * @param value The value to be appended
-   * 
-   * @deprecated This method is no longer used. Use {@link #combineAttributesInMap(Map, String, Attributes)} instead.
-   **/
-  @Deprecated(since = "1.3", forRemoval = true)
-  protected void appendValueToMap(Map<String, String> map, String key, String value) {
-    if (map.containsKey(key))
-      map.put(key, map.get(key) + value);
     else
       map.put(key, value); 
   }
@@ -2317,7 +2171,7 @@ public class Automaton implements Cloneable {
 
     jsonObj.addProperty("type", type.numericValue);
     JsonUtils.addListPropertyToJsonObject(jsonObj, "events", events, Event.class);
-    jsonObj.add("states", gson.toJsonTree(states.values(), TypeUtils.parameterize(Collection.class, State.class)));
+    jsonObj.add("states", gson.toJsonTree(getStates(), TypeUtils.parameterize(Collection.class, State.class)));
 
     addSpecialTransitionsToJsonObject(jsonObj);
 
@@ -2948,13 +2802,26 @@ public class Automaton implements Cloneable {
   }
 
   /**
+   * Returns the collection of states stored in this automaton.
+   * The collection returned by this method is
+   * {@link Collections#unmodifiableCollection(Collection) unmodifiable}.
+   * 
+   * @return collection of states stored in this automaton
+   * 
+   * @since 2.0
+   */
+  public final Collection<State> getStates() {
+    return Collections.unmodifiableCollection(states.values());
+  }
+
+  /**
    * Check to see whether or not this automaton has any unmarked states.
    * @implNote This can be an expensive method.
    * @return  Whether or not this automaton has at least one unmarked state
    **/
   public boolean hasUnmarkedState() {
 
-    return IterableUtils.matchesAny(states.values(), s -> !s.isMarked());
+    return IterableUtils.matchesAny(getStates(), s -> !s.isMarked());
 
   }
 
@@ -3072,8 +2939,8 @@ public class Automaton implements Cloneable {
 
     long nTransitions = 0;
 
-    for (long s = 1; s <= getNumberOfStates(); s++)
-      nTransitions += getState(s).getNumberOfTransitions();
+    for (State s : getStates())
+      nTransitions += s.getNumberOfTransitions();
   
     return nTransitions;
 
@@ -3133,9 +3000,9 @@ public class Automaton implements Cloneable {
    **/
   public boolean isDeterministic() {
 
-    for (long s = 1; s <= getNumberOfStates(); s++) {
+    for (State s : getStates()) {
       
-      List<Transition> transitions = getState(s).getTransitions();
+      List<Transition> transitions = s.getTransitions();
       Set<Integer> eventIDs = new HashSet<Integer>();
 
       for (Transition t : transitions)
@@ -3186,9 +3053,9 @@ public class Automaton implements Cloneable {
 
     List<Event> inactiveEvents = getInactiveEvents();
 
-    for (long s = 1; s <= getNumberOfStates(); s++)
+    for (State s : getStates())
       for (Event e : inactiveEvents)
-        addTransition(s, e.getID(), s);
+        addTransition(s.getID(), e.getID(), s.getID());
 
   }
 

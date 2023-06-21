@@ -107,7 +107,7 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
      * 
      * @param headerFile the {@code .hdr} file
      * @param bodyFile   the {@code .bdy} file
-     * @param load whether or not to load data from the specified file 
+     * @param load       whether or not to load data from the specified file
      * 
      * @throws IOException if an I/O error occurs
      */
@@ -127,14 +127,16 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
     /**
      * Wraps an automaton so that it can be saved as a JSON file
      * 
-     * @param <T> type of automaton
-     * @param automaton automaton to wrap
+     * @param <T>        type of automaton
+     * @param automaton  automaton to wrap
      * @param headerFile header file to save data to
-     * @param bodyFile body file to save data to
-     * @return an {@code AutomatonJsonFileAdapter} that wraps the specified automaton
+     * @param bodyFile   body file to save data to
+     * @return an {@code AutomatonJsonFileAdapter} that wraps the specified
+     *         automaton
      * @throws IOException if an I/O error occurs
      */
-    public static <T extends Automaton> AutomatonBinaryFileAdapter wrap(T automaton, File headerFile, File bodyFile) throws IOException {
+    public static <T extends Automaton> AutomatonBinaryFileAdapter wrap(T automaton, File headerFile, File bodyFile)
+            throws IOException {
         AutomatonBinaryFileAdapter adapter = new AutomatonBinaryFileAdapter(headerFile, bodyFile, false);
         adapter.automaton = Objects.requireNonNull(automaton);
         adapter.save();
@@ -586,33 +588,39 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
      * @param jsonObj the JSON object to add parsed data to
      * @throws IOException if an I/O error occurs
      */
-    private void parseBodyFile(JsonObject jsonObj, List<Event> events, Map<String, Number> properties) {
+    private void parseBodyFile(JsonObject jsonObj, List<Event> events, Map<String, Number> properties) throws IOException {
 
-        long nStates = jsonObj.getAsJsonPrimitive("nStates").getAsLong();
+        try {
 
-        long counter = 0; // Keeps track of blank states
+            long nStates = jsonObj.getAsJsonPrimitive("nStates").getAsLong();
 
-        Gson gson = new Gson();
+            long counter = 0; // Keeps track of blank states
 
-        Set<State> states = new LinkedHashSet<>();
+            Gson gson = new Gson();
 
-        for (long s = 1; s <= nStates + counter; s++) {
+            Set<State> states = new LinkedHashSet<>();
 
-            State state = StateIO.readFromFile(events, properties, baf, s);
+            for (long s = 1; s <= nStates + counter; s++) {
 
-            // Check for non-existent state
-            if (state == null) {
+                State state = StateIO.readFromFile(events, properties, baf, s);
 
-                counter++;
-                continue;
+                // Check for non-existent state
+                if (state == null) {
 
-            } else {
-                states.add(state);
-            }
+                    counter++;
+                    continue;
 
-        } // for
+                } else {
+                    states.add(state);
+                }
 
-        jsonObj.add("states", gson.toJsonTree(states, TypeUtils.parameterize(states.getClass(), State.class)));
+            } // for
+
+            jsonObj.add("states", gson.toJsonTree(states, TypeUtils.parameterize(states.getClass(), State.class)));
+
+        } catch (IOException e) {
+            throw new MissingOrCorruptBodyFileException(e);
+        }
     }
 
     /**
