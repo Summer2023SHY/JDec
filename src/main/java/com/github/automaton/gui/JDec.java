@@ -456,13 +456,16 @@ public class JDec extends JFrame implements ActionListener {
       @Override public void windowClosing(WindowEvent event) { 
 
           /* Check for unsaved information */
-
+        boolean tabInUse = false;
         boolean unSavedInformation = false;
-        for (int i = 0; i < tabbedPane.getTabCount(); i++)
+        for (int i = 0; i < tabbedPane.getTabCount(); i++) {
           if (tabs.get(i).hasUnsavedInformation())
             unSavedInformation = true;
+          if (tabs.get(i).inUse)
+            tabInUse = true;
+        }
         
-        if (!unSavedInformation)
+        if (!unSavedInformation && !tabInUse)
           System.exit(0);
 
           /* Prompt user to save */
@@ -865,6 +868,7 @@ public class JDec extends JFrame implements ActionListener {
               JLabel label = new JLabel("Running observability test", SwingConstants.CENTER);
               currTab.add(label, BorderLayout.SOUTH);
               setBusyCursor(true);
+              currTab.inUse = true;
               boolean observability = currTab.automaton.testObservability();
               tabbedPane.setSelectedComponent(currTab);
               setBusyCursor(false);
@@ -873,6 +877,7 @@ public class JDec extends JFrame implements ActionListener {
                 displayMessage("Passed Test", "The system is observable.", JOptionPane.INFORMATION_MESSAGE);
               else
                 displayMessage("Failed Test", "The system is not observable.", JOptionPane.INFORMATION_MESSAGE);
+              currTab.inUse = false;
             }
           }
         );
@@ -1063,6 +1068,7 @@ public class JDec extends JFrame implements ActionListener {
       /* Check for unsaved information */
 
     AutomatonTab tab = tabs.get(index);
+    if (tab.inUse) return;
     if (tab.hasUnsavedInformation()) {
 
       // Create message to display in pop-up
@@ -2113,6 +2119,12 @@ public class JDec extends JFrame implements ActionListener {
     // Tab properties
     public int index;
     private boolean saved = true;
+    /**
+     * Marks whether the tab is in use.
+     * 
+     * @since 2.0
+     */
+    private boolean inUse = false;
 
       /* Constructor */
 
