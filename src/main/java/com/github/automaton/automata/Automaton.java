@@ -2864,6 +2864,19 @@ public class Automaton implements Cloneable {
   }
 
   /**
+   * Returns the collection of states stored in this automaton.
+   * The collection returned by this method is
+   * {@link Collections#unmodifiableCollection(Collection) unmodifiable}.
+   * 
+   * @return collection of states stored in this automaton
+   * 
+   * @since 2.0
+   */
+  public final Collection<State> getStates() {
+    return Collections.unmodifiableCollection(states.values());
+  }
+
+  /**
    * Check to see whether or not this automaton has any unmarked states.
    * @implNote This can be an expensive method.
    * @return  Whether or not this automaton has at least one unmarked state
@@ -2988,8 +3001,8 @@ public class Automaton implements Cloneable {
 
     long nTransitions = 0;
 
-    for (long s = 1; s <= getNumberOfStates(); s++)
-      nTransitions += getState(s).getNumberOfTransitions();
+    for (State s : getStates())
+      nTransitions += s.getNumberOfTransitions();
   
     return nTransitions;
 
@@ -3049,9 +3062,9 @@ public class Automaton implements Cloneable {
    **/
   public boolean isDeterministic() {
 
-    for (long s = 1; s <= getNumberOfStates(); s++) {
+    for (State s : getStates()) {
       
-      List<Transition> transitions = getState(s).getTransitions();
+      List<Transition> transitions = s.getTransitions();
       Set<Integer> eventIDs = new HashSet<Integer>();
 
       for (Transition t : transitions)
@@ -3102,9 +3115,9 @@ public class Automaton implements Cloneable {
 
     List<Event> inactiveEvents = getInactiveEvents();
 
-    for (long s = 1; s <= getNumberOfStates(); s++)
+    for (State s : getStates())
       for (Event e : inactiveEvents)
-        addTransition(s, e.getID(), s);
+        addTransition(s.getID(), e.getID(), s.getID());
 
   }
 
