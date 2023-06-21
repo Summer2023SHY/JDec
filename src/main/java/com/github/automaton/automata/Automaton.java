@@ -1499,7 +1499,7 @@ public class Automaton implements Cloneable {
 
     Map<Long, State> newStateMap = new HashMap<>();
 
-    for (State s : states.values()) {
+    for (State s : getStates()) {
       long origID = s.getID();
       s.setID(newID);
       newStateMap.put(newID++, s);
@@ -1510,7 +1510,7 @@ public class Automaton implements Cloneable {
 
     /* Update transitions */
 
-    for (State s : states.values()) {
+    for (State s : getStates()) {
       for (Transition t : s.getTransitions()) {
         t.setTargetStateID(mappingHashMap.get(t.getTargetStateID()));
       }
@@ -2247,7 +2247,7 @@ public class Automaton implements Cloneable {
 
     jsonObj.addProperty("type", type.numericValue);
     JsonUtils.addListPropertyToJsonObject(jsonObj, "events", events, Event.class);
-    jsonObj.add("states", gson.toJsonTree(states.values(), TypeUtils.parameterize(Collection.class, State.class)));
+    jsonObj.add("states", gson.toJsonTree(getStates(), TypeUtils.parameterize(Collection.class, State.class)));
 
     addSpecialTransitionsToJsonObject(jsonObj);
 
@@ -2883,7 +2883,7 @@ public class Automaton implements Cloneable {
    **/
   public boolean hasUnmarkedState() {
 
-    return IterableUtils.matchesAny(states.values(), s -> !s.isMarked());
+    return IterableUtils.matchesAny(getStates(), s -> !s.isMarked());
 
   }
 
