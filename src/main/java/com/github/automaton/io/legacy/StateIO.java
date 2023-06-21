@@ -92,10 +92,26 @@ class StateIO {
      * @param properties properties of the automaton storing the returned state
      * @param bodyAccessFile The {@link BodyAccessFile} containing the state
      * @param id        The ID of the requested state
-     * @return the state
+     * @return the state with the specified ID, or {@code null} if the state
+     * with matching ID does not exist
+     * 
+     * @throws IllegalArgumentException if either one of {@code events} or
+     * {@code properties} is empty, or {@code id} is negative
+     * @throws IOException if an I/O error occurs
+     * @throws NullPointerException if any one of the arguments is {@code null}
      **/
-    static State readFromFile(List<Event> events, Map<String, Number> properties, BodyAccessFile bodyAccessFile, long id) {
-        RandomAccessFile file = bodyAccessFile.getRAFile();
+    static State readFromFile(List<Event> events, Map<String, Number> properties, BodyAccessFile bodyAccessFile, long id) throws IOException {
+
+        if (id < 0) 
+            throw new IllegalArgumentException("Invalid state ID: " + id);
+
+        if (Objects.requireNonNull(events).isEmpty())
+            throw new IllegalArgumentException("Invalid list of events: list is empty");
+
+        if (Objects.requireNonNull(properties).isEmpty())
+            throw new IllegalArgumentException("Invalid argument for 'properties'");
+
+        RandomAccessFile file = Objects.requireNonNull(bodyAccessFile).getRAFile();
 
         /* Setup */
 
@@ -105,17 +121,8 @@ class StateIO {
 
         /* Read bytes */
 
-        try {
-
-            file.seek(Math.multiplyExact(id, nBytesPerState));
-            file.read(bytesRead);
-
-        } catch (IOException e) {
-
-            logger.catching(e);
-            return null;
-
-        }
+        file.seek(Math.multiplyExact(id, nBytesPerState));
+        file.read(bytesRead);
 
         /* Exists and marked status */
 
