@@ -469,13 +469,16 @@ public class JDec extends JFrame implements ActionListener {
       @Override public void windowClosing(WindowEvent event) { 
 
           /* Check for unsaved information */
-
+        boolean tabInUse = false;
         boolean unSavedInformation = false;
-        for (int i = 0; i < tabbedPane.getTabCount(); i++)
+        for (int i = 0; i < tabbedPane.getTabCount(); i++) {
           if (tabs.get(i).hasUnsavedInformation())
             unSavedInformation = true;
+          if (tabs.get(i).nUsingThreads.get() > 0)
+            tabInUse = true;
+        }
         
-        if (!unSavedInformation)
+        if (!unSavedInformation && !tabInUse)
           System.exit(0);
 
           /* Prompt user to save */
@@ -1040,6 +1043,7 @@ public class JDec extends JFrame implements ActionListener {
       /* Check for unsaved information */
 
     AutomatonTab tab = tabs.get(index);
+    if (tab.nUsingThreads.get() > 0) return;
     if (tab.hasUnsavedInformation()) {
 
       // Create message to display in pop-up
@@ -1233,6 +1237,7 @@ public class JDec extends JFrame implements ActionListener {
 
     Thread imgGenerationThread = new Thread(() -> {
 
+      tab.nUsingThreads.incrementAndGet();
       tab.generateImageButton.setText("Waiting to generate image");
 
       imgGenerationLock.lock();
@@ -1268,6 +1273,7 @@ public class JDec extends JFrame implements ActionListener {
         tab.generateImageButton.setEnabled(true);
       }
 
+      tab.nUsingThreads.decrementAndGet();
       imgGenerationLock.unlock();
       tabbedPane.setSelectedComponent(tab);
       tab.generateImageButton.setText("Generate image");
@@ -2121,6 +2127,12 @@ public class JDec extends JFrame implements ActionListener {
     // Tab properties
     public int index;
     private boolean saved = true;
+    /**
+     * Number of threads using this tab.
+     * 
+     * @since 2.0
+     */
+    private AtomicInteger nUsingThreads = new AtomicInteger();
 
       /* Constructor */
 
