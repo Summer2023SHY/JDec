@@ -1099,38 +1099,22 @@ public class Automaton implements Cloneable {
 
         boolean suppressed = false;
 
+        inner : for (int i = 0; i < nControllers; i++) {
+          if ((isConditionalViolation || isUnconditionalViolation) && !transitionExistsWithEvent(stateVector.getStateFor(i + 1).getID(), getEvent(combinedEvent.get(0)).getID())) {
+            isUnconditionalViolation = false;
+            isConditionalViolation = false;
+            break inner;
+          }
+        }
+
         if (isUnconditionalViolation) {
-          inner: for (int i = 0; i < nControllers; i++) {
-            State s = stateVector.getStateFor(i + 1);
-            for (Transition tran : s.getTransitions()) {
-              if (!tran.getEvent().isControllable()[i]) {
-                uStructure.addSuppressedTransition(stateVector.getID(), eventID, targetStateVector.getID());
-                suppressed = true;
-                break inner;
-              }
-            }
-          }
-          if (!suppressed) {
-            uStructure.addUnconditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
-            stateVector.setDisablement(true);
-          }
+          uStructure.addUnconditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
+          stateVector.setDisablement(true);
         }
         if (isConditionalViolation) {
 
-          inner: for (int i = 0; i < nControllers; i++) {
-            State s = stateVector.getStateFor(i + 1);
-            for (Transition tran : s.getTransitions()) {
-              if (!tran.getEvent().isControllable()[i]) {
-                uStructure.addSuppressedTransition(stateVector.getID(), eventID, targetStateVector.getID());
-                suppressed = true;
-                break inner;
-              }
-            }
-          }
-          if (!suppressed) {
-            uStructure.addConditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
-            stateVector.setEnablement(true);
-          }
+          uStructure.addConditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
+          stateVector.setEnablement(true);
         }
         if (isDisablementDecision)
           uStructure.addDisablementDecision(stateVector.getID(), eventID, targetStateVector.getID(), disablementControllers);
