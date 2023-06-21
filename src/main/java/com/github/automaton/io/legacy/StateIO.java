@@ -88,6 +88,8 @@ class StateIO {
     /**
      * Read a state (and all of its transitions) from file.
      * 
+     * @param events the list of events that trigger transitions
+     * @param properties properties of the automaton storing the returned state
      * @param bodyAccessFile The {@link BodyAccessFile} containing the state
      * @param id        The ID of the requested state
      * @return the state
