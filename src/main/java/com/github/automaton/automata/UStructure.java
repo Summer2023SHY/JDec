@@ -1555,31 +1555,6 @@ public class UStructure extends Automaton {
     }
   }
 
-  /**
-   * {@inheritDoc}
-   * @deprecated This method is no longer used. Use {@link #addAdditionalLinkProperties(Map)} instead.
-   */
-  @Override
-  @Deprecated(since = "1.3", forRemoval = true)
-  protected void addAdditionalEdgeProperties(Map<String, String> map) {
-
-    for (TransitionData data : unconditionalViolations)
-      appendValueToMap(map, createKey(data), ",color=red,fontcolor=red");
-
-    for (TransitionData data : conditionalViolations)
-      appendValueToMap(map, createKey(data), ",color=green3,fontcolor=green3");
-
-    for (TransitionData data : getPotentialCommunications())
-      appendValueToMap(map, createKey(data), ",color=blue,fontcolor=blue");
-
-    for (TransitionData data : getNashCommunications())
-      appendValueToMap(map, createKey(data), ",color=blue,fontcolor=blue");
-
-    for (TransitionData data : disablementDecisions)
-      appendValueToMap(map, createKey(data), ",style=dotted");
-
-  }
-
     /* GUI INPUT CODE GENERATION */
 
   @Override protected String getInputCodeForSpecialTransitions(TransitionData transitionData) {
