@@ -301,6 +301,9 @@ public class Automaton implements Cloneable {
     nControllers = gson.fromJson(jsonObject.get("nControllers"), Integer.TYPE);
 
     events = JsonUtils.readListPropertyFromJsonObject(jsonObject, "events", Event.class);
+    for (Event e : events) {
+      eventsMap.put(e.getLabel(), e);
+    }
     states = new LinkedHashMap<>();
     for (State s : gson.fromJson(jsonObject.get("states"), new TypeToken<HashSet<State>>() {})) {
       states.put(s.getID(), s);
