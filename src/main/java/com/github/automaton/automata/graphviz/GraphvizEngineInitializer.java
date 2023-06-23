@@ -24,6 +24,7 @@ package com.github.automaton.automata.graphviz;
 
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.reflect.*;
@@ -55,13 +56,14 @@ public class GraphvizEngineInitializer {
      * 
      * @return {@code true} if there is at least one engine available for use
      */
+    @SuppressWarnings("resource")
     public static boolean setupGraphvizEngines() {
         List<GraphvizEngine> engines = new ArrayList<>();
         try {
             boolean cmdLineEngineAvailable = (boolean) FieldUtils.readStaticField(
                     GraphvizCmdLineEngine.class, "AVAILABLE", true);
             if (cmdLineEngineAvailable) {
-                engines.add(new GraphvizCmdLineEngine());
+                engines.add(new GraphvizCmdLineEngine().timeout(10, TimeUnit.MINUTES));
             }
         } catch (ReflectiveOperationException ref) {
             logger.info("CMD line engine is not available", ref);
