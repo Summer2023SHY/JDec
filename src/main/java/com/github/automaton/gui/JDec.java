@@ -29,6 +29,9 @@ import java.io.*;
 import java.net.*;
 import java.nio.file.*;
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.filechooser.*;
@@ -103,6 +106,14 @@ public class JDec extends JFrame implements ActionListener {
   private File currentDirectory = new File(SystemUtils.USER_DIR);
   private int temporaryFileIndex = 1;
   private JLabel noTabsMessage;
+
+  // Synchronization
+  /**
+   * Lock for image generation.
+   * 
+   * @since 2.0
+   */
+  private Lock imgGenerationLock = new ReentrantLock(true);
 
   // Tool-tip Text
   private static Document tooltipDocument;
@@ -1211,29 +1222,56 @@ public class JDec extends JFrame implements ActionListener {
 
     // Get the current tab
     AutomatonTab tab = tabs.get(tabbedPane.getSelectedIndex());
+    tab.generateImageButton.setEnabled(false);
 
-    // Create destination file name (excluding extension)
-    String destinationFileName = FilenameUtils.removeExtension(tab.ioAdapter.getFile().getAbsolutePath());
+    Thread imgGenerationThread = new Thread(() -> {
 
-    try {
+      tab.generateImageButton.setText("Waiting to generate image");
 
-      // Set the image blank if there were no states entered
-      if (tab.automaton == null)
-        tab.canvas.loadSVGDocument(null);
+      imgGenerationLock.lock();
 
-      // Try to create graph image, displaying it on the screen
-      else if (tab.automaton.generateImage(destinationFileName)) {
-        tab.svgFile = new File(destinationFileName + ".svg");
-        tab.canvas.setSVGDocument(ImageLoader.loadSVGFromFile((tab.svgFile)));
+      tab.generateImageButton.setText("Generating image");
+
+
+      // Create destination file name (excluding extension)
+      String destinationFileName = FilenameUtils.removeExtension(tab.ioAdapter.getFile().getAbsolutePath());
+
+      try {
+
+        // Set the image blank if there were no states entered
+        if (tab.automaton == null)
+          tab.canvas.loadSVGDocument(null);
+
+        // Try to create graph image, displaying it on the screen
+        else if (tab.automaton.generateImage(destinationFileName)) {
+          tab.svgFile = new File(destinationFileName + ".svg");
+          tab.canvas.setSVGDocument(ImageLoader.loadSVGFromFile((tab.svgFile)));
+        }
+
+        // Display error message
+        else
+          displayErrorMessage("Error", "Something went wrong while trying to generate and display the image. NOTE: It may be the case that you do not have X11 installed.");
+
+      } catch (IOException e) {
+        logger.catching(e);
+        displayErrorMessage("I/O Error", "An I/O error occurred.");
+        tab.generateImageButton.setEnabled(true);
+      } catch (RuntimeException re) {
+        displayException(re);
+        tab.generateImageButton.setEnabled(true);
       }
 
-      // Display error message
-      else
-        displayErrorMessage("Error", "Something went wrong while trying to generate and display the image. NOTE: It may be the case that you do not have X11 installed.");
-    
-    } catch (IOException e) {
-      displayErrorMessage("I/O Error", "An I/O error occurred.");
-    }
+      imgGenerationLock.unlock();
+      tabbedPane.setSelectedComponent(tab);
+      tab.generateImageButton.setText("Generate image");
+
+
+    });
+
+    imgGenerationThread.setName(FilenameUtils.removeExtension(tab.ioAdapter.getFile().getName()) + " - Image generation");
+
+    imgGenerationThread.start();
+
 
   }
 
@@ -2219,7 +2257,7 @@ public class JDec extends JFrame implements ActionListener {
       generateImageButton.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           generateImage();
-          generateImageButton.setEnabled(false);
+          
         }
       });
       c.ipady = 0; c.weightx = 0.5; c.weighty = 1.0; c.gridx = 0; c.gridy = 6;
