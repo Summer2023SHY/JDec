@@ -915,13 +915,28 @@ public class JDec extends JFrame implements ActionListener {
         break;
 
       case "Test Observability":
-
-        setBusyCursor(true);
-        if (tab.automaton.testObservability())
-          displayMessage("Passed Test", "The system is observable.", JOptionPane.INFORMATION_MESSAGE);
-        else
-          displayMessage("Failed Test", "The system is not observable.", JOptionPane.INFORMATION_MESSAGE);
-        setBusyCursor(false);
+        AutomatonTab currTab = tab;
+        Thread observabiltyThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+              JLabel label = new JLabel("Running observability test", SwingConstants.CENTER);
+              currTab.add(label, BorderLayout.SOUTH);
+              setBusyCursor(true);
+              currTab.nUsingThreads.incrementAndGet();
+              boolean observability = currTab.automaton.testObservability();
+              currTab.nUsingThreads.decrementAndGet();
+              tabbedPane.setSelectedComponent(currTab);
+              setBusyCursor(false);
+              currTab.remove(label);
+              if (observability)
+                displayMessage("Passed Test", "The system is observable.", JOptionPane.INFORMATION_MESSAGE);
+              else
+                displayMessage("Failed Test", "The system is not observable.", JOptionPane.INFORMATION_MESSAGE);
+            }
+          }
+        );
+        observabiltyThread.setName(FilenameUtils.removeExtension(currTab.ioAdapter.getFile().getName()) + " - Observability Test");
+        observabiltyThread.start();
         break;
 
       case "Test Controllability":
