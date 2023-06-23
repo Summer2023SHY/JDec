@@ -29,6 +29,7 @@ import java.io.*;
 import java.net.*;
 import java.nio.file.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -108,6 +109,12 @@ public class JDec extends JFrame implements ActionListener {
   private JLabel noTabsMessage;
 
   // Synchronization
+  /**
+   * Tracks number of busy activities.
+   * 
+   * @since 2.0
+   */
+  private AtomicInteger nBusyActivities = new AtomicInteger();
   /**
    * Lock for image generation.
    * 
@@ -1946,6 +1953,10 @@ public class JDec extends JFrame implements ActionListener {
   public void setBusyCursor(boolean busy) {
   
     if (busy)
+      nBusyActivities.incrementAndGet();
+    else
+      nBusyActivities.decrementAndGet();
+    if (nBusyActivities.get() > 0)
       setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
     else
       setCursor(Cursor.getDefaultCursor());
