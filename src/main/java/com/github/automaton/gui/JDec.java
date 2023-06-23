@@ -472,7 +472,7 @@ public class JDec extends JFrame implements ActionListener {
     this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
     
     addWindowListener(new WindowAdapter() {
-      @Override public void windowClosing(WindowEvent event) { 
+      @Override public synchronized void windowClosing(WindowEvent event) { 
 
           /* Check for unsaved information */
         boolean tabInUse = false;
@@ -962,7 +962,7 @@ public class JDec extends JFrame implements ActionListener {
    * 
    * @revised 2.0
    **/
-  public void createTab(Automaton automaton) {
+  public synchronized void createTab(Automaton automaton) {
     AutomatonJsonFileAdapter jsonIOAdapter;
     try {
       jsonIOAdapter = AutomatonJsonFileAdapter.wrap(automaton, new File(getTemporaryFileName() + FilenameUtils.EXTENSION_SEPARATOR + AutomatonJsonFileAdapter.EXTENSION));
@@ -989,7 +989,7 @@ public class JDec extends JFrame implements ActionListener {
    * 
    * @since 2.0 
    **/
-  public void createLegacyTab(AutomatonBinaryFileAdapter binaryAutomatonAdapter) {
+  public synchronized void createLegacyTab(AutomatonBinaryFileAdapter binaryAutomatonAdapter) {
 
       /* Create new tab */
 
@@ -1021,7 +1021,7 @@ public class JDec extends JFrame implements ActionListener {
    * Create a tab, and load in an automaton from a JSON object
    * @param jsonAutomatonAdapter a wrapper for JSON object
    **/
-  public void createJsonTab(AutomatonJsonFileAdapter jsonAutomatonAdapter) {
+  public synchronized void createJsonTab(AutomatonJsonFileAdapter jsonAutomatonAdapter) {
 
     /* Create new tab */
 
@@ -1052,7 +1052,7 @@ public class JDec extends JFrame implements ActionListener {
   /**
    * Close the current tab, displaying a warning message if the current tab is unsaved.
    **/
-  private void closeCurrentTab() {
+  private synchronized void closeCurrentTab() {
 
       /* Get index of the currently selected tab */
 
@@ -2461,7 +2461,7 @@ public class JDec extends JFrame implements ActionListener {
      * was input code, then it was all cleared.
      * @return  Whether or not this tab has any unsaved information
      **/
-    public boolean hasUnsavedInformation() {
+    public synchronized boolean hasUnsavedInformation() {
 
       // If there is nothing in the input boxes, then obviously there is no unsaved information
       if (eventInput.getText().equals("") && stateInput.getText().equals("") && transitionInput.getText().equals(""))
