@@ -33,7 +33,7 @@ jobs:
       uses: actions/setup-java@v3.11.0
       with:
         distribution: 'temurin'
-        java-version: '11'
+        java-version: '17'
         cache: 'maven'
     - name: Build JAR
       run: |
@@ -66,7 +66,7 @@ jobs:
       uses: actions/setup-java@v3
       with:
         distribution: temurin # Eclipse Temurin
-        java-version: '11'    # Java 11 (LTS)
+        java-version: '17'    # Java 17 (LTS)
         cache: 'maven'
     - name: Run Tests
       run: |

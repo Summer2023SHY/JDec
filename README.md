@@ -36,5 +36,9 @@ Then open `target/site/apidocs/index.html`
 
 ## Requirements
 
-- Java 11 or later
-- Apache Maven
+- Java 17 or later
+- Apache Maven (if you are building from source)
+
+## License
+
+[The MIT License](./LICENSE)
