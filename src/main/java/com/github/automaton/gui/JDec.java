@@ -916,7 +916,7 @@ public class JDec extends JFrame implements ActionListener {
 
       case "Test Observability":
         AutomatonTab currTab = tab;
-        Thread observabiltyThread = new Thread(new Runnable() {
+        Thread observabilityThread = new Thread(new Runnable() {
             @Override
             public void run() {
               JLabel label = new JLabel("Running observability test", SwingConstants.CENTER);
@@ -935,8 +935,8 @@ public class JDec extends JFrame implements ActionListener {
             }
           }
         );
-        observabiltyThread.setName(FilenameUtils.removeExtension(currTab.ioAdapter.getFile().getName()) + " - Observability Test");
-        observabiltyThread.start();
+        observabilityThread.setName(FilenameUtils.removeExtension(currTab.ioAdapter.getFile().getName()) + " - Observability Test");
+        observabilityThread.start();
         break;
 
       case "Test Controllability":
