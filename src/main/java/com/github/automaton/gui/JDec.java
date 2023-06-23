@@ -105,7 +105,7 @@ public class JDec extends JFrame implements ActionListener {
 
   // Miscellaneous
   private File currentDirectory = new File(SystemUtils.USER_DIR);
-  private int temporaryFileIndex = 1;
+  private AtomicInteger temporaryFileIndex = new AtomicInteger(1);
   private JLabel noTabsMessage;
 
   // Synchronization
@@ -648,7 +648,7 @@ public class JDec extends JFrame implements ActionListener {
 
         // Create new tab for the accessible automaton
         if (automaton == null) {
-          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
+          temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it
           displayErrorMessage("Operation Failed", "Please specify a starting state.");
         } else
           createTab(automaton);
@@ -666,7 +666,7 @@ public class JDec extends JFrame implements ActionListener {
 
         // Create new tab for the trim automaton
         if (automaton == null) {
-          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
+          temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it
           displayErrorMessage("Operation Failed", "Please specify a starting state.");
         } else
           createTab(automaton);
@@ -679,7 +679,7 @@ public class JDec extends JFrame implements ActionListener {
           createTab(tab.automaton.complement());
         } catch(OperationFailedException e) {
           logger.catching(e);
-          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
+          temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it
           displayErrorMessage("Operation Failed", "There already exists a dump state, so the complement could not be taken again.");
         }
         break;
@@ -703,7 +703,7 @@ public class JDec extends JFrame implements ActionListener {
           createTab(Automaton.intersection(tab.automaton, otherAutomaton));
         } catch(IncompatibleAutomataException e) {
           logger.catching(e);
-          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
+          temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it
           displayErrorMessage("Operation Failed", "Please ensure that both automata have the same number of controllers and that there are no incompatible events (meaning that events share the same name but have different properties).");
         }
         
@@ -722,7 +722,7 @@ public class JDec extends JFrame implements ActionListener {
           createTab(Automaton.union(tab.automaton, otherAutomaton));
         } catch(IncompatibleAutomataException e) {
           logger.catching(e);
-          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
+          temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it
           displayErrorMessage("Operation Failed", "Please ensure that both automata have the same number of controllers and that there are no incompatible events (meaning that events share the same name but have different properties).");
         }
 
@@ -748,12 +748,12 @@ public class JDec extends JFrame implements ActionListener {
               setBusyCursor(false);
             } catch (NoInitialStateException e) {
               logger.catching(e);
-              temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
+              temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it
               setBusyCursor(false);   
               displayErrorMessage("Operation Failed", "Please ensure that you have specified a starting state (using an '@' symbol).");
             } catch (OperationFailedException e) {
               logger.catching(e);
-              temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
+              temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it
               setBusyCursor(false);   
               displayErrorMessage("Operation Failed", "Failed to add state.");
             }
@@ -775,7 +775,7 @@ public class JDec extends JFrame implements ActionListener {
         try {
           int controller = pickController("Select the controller to execute subset construction with.", true);
           if (controller == -1) {
-            temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
+            temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it
             setBusyCursor(false);
             return;
           }
@@ -783,11 +783,11 @@ public class JDec extends JFrame implements ActionListener {
           createTab(automaton);
           setBusyCursor(false);
         } catch (RuntimeException e) {
-          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
+          temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it
           setBusyCursor(false);   
           displayException(e);
         } /* catch (OperationFailedException e) {
-          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
+          temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it
           setBusyCursor(false);   
           displayErrorMessage("Operation Failed", "Failed to add state.");
         } */
@@ -2078,7 +2078,7 @@ public class JDec extends JFrame implements ActionListener {
    * @revised 2.0
    **/
   public String getTemporaryFileName() {
-    return TEMPORARY_DIRECTORY.getAbsolutePath() + File.separator + "untitled" + temporaryFileIndex++;
+    return TEMPORARY_DIRECTORY.getAbsolutePath() + File.separator + "untitled" + temporaryFileIndex.getAndIncrement();
   }
 
   /**
