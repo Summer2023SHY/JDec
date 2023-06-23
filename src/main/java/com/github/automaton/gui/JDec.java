@@ -168,6 +168,21 @@ public class JDec extends JFrame implements ActionListener {
    **/  
   public static void main(String[] args) {
     
+    if (SystemUtils.IS_OS_MAC) {
+      // macOS-specific UI tinkering
+      try {
+        // Use system menu bar
+        System.setProperty("apple.laf.useScreenMenuBar", "true");
+        // Set application name
+        System.setProperty("com.apple.mrj.application.apple.menu.about.name", "JDec");
+        // Associate cmd+Q with the our window handler
+        System.setProperty("apple.eawt.quitStrategy", "CLOSE_ALL_WINDOWS");
+        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+      } catch (ReflectiveOperationException | UnsupportedLookAndFeelException e) {
+        logger.catching(e);
+      }
+    }
+
     // Start the application  
     new JDec();
   
@@ -182,7 +197,10 @@ public class JDec extends JFrame implements ActionListener {
 
     URL iconUrl = getResourceURL("icon.png");
     ImageIcon icon = new ImageIcon(iconUrl);
-    setIconImage(icon.getImage());
+    if (SystemUtils.IS_OS_MAC) {
+      Taskbar.getTaskbar().setIconImage(icon.getImage());
+    } else
+      setIconImage(icon.getImage());
 
     setMinimumSize(new Dimension(1280, 720));
 
