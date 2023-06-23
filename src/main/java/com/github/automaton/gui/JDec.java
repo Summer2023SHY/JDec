@@ -915,28 +915,30 @@ public class JDec extends JFrame implements ActionListener {
         break;
 
       case "Test Observability":
-        AutomatonTab currTab = tab;
-        Thread observabilityThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-              JLabel label = new JLabel("Running observability test", SwingConstants.CENTER);
-              currTab.add(label, BorderLayout.SOUTH);
-              setBusyCursor(true);
-              currTab.nUsingThreads.incrementAndGet();
-              boolean observability = currTab.automaton.testObservability();
-              currTab.nUsingThreads.decrementAndGet();
-              tabbedPane.setSelectedComponent(currTab);
-              setBusyCursor(false);
-              currTab.remove(label);
-              if (observability)
-                displayMessage("Passed Test", "The system is observable.", JOptionPane.INFORMATION_MESSAGE);
-              else
-                displayMessage("Failed Test", "The system is not observable.", JOptionPane.INFORMATION_MESSAGE);
+        {
+          AutomatonTab currTab = tab;
+          Thread observabilityThread = new Thread(new Runnable() {
+              @Override
+              public void run() {
+                JLabel label = new JLabel("Running observability test", SwingConstants.CENTER);
+                currTab.add(label, BorderLayout.SOUTH);
+                setBusyCursor(true);
+                currTab.nUsingThreads.incrementAndGet();
+                boolean observability = currTab.automaton.testObservability();
+                currTab.nUsingThreads.decrementAndGet();
+                tabbedPane.setSelectedComponent(currTab);
+                setBusyCursor(false);
+                currTab.remove(label);
+                if (observability)
+                  displayMessage("Passed Test", "The system is observable.", JOptionPane.INFORMATION_MESSAGE);
+                else
+                  displayMessage("Failed Test", "The system is not observable.", JOptionPane.INFORMATION_MESSAGE);
+              }
             }
-          }
-        );
-        observabilityThread.setName(FilenameUtils.removeExtension(currTab.ioAdapter.getFile().getName()) + " - Observability Test");
-        observabilityThread.start();
+          );
+          observabilityThread.setName(FilenameUtils.removeExtension(currTab.ioAdapter.getFile().getName()) + " - Observability Test");
+          observabilityThread.start();
+        }
         break;
 
       case "Test Controllability":
