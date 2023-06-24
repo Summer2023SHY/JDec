@@ -593,6 +593,7 @@ public class JDec extends JFrame implements ActionListener {
             generateAutomatonButtonPressed();
             tab.ioAdapter.setAutomaton(tab.automaton);
             tab.ioAdapter.save();
+            tab.setSaved(true);
           } catch (IOException ioe) {
             displayException(ioe);
           }
