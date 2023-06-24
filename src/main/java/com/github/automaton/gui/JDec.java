@@ -29,6 +29,10 @@ import java.io.*;
 import java.net.*;
 import java.nio.file.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.filechooser.*;
@@ -101,8 +105,28 @@ public class JDec extends JFrame implements ActionListener {
 
   // Miscellaneous
   private File currentDirectory = new File(SystemUtils.USER_DIR);
-  private int temporaryFileIndex = 1;
+  private AtomicInteger temporaryFileIndex = new AtomicInteger(1);
   private JLabel noTabsMessage;
+
+  // Synchronization
+  /**
+   * Tracks number of busy activities.
+   * 
+   * @since 2.0
+   */
+  private AtomicInteger nBusyActivities = new AtomicInteger();
+  /**
+   * Lock for image generation.
+   * 
+   * @since 2.0
+   */
+  private Lock imgGenerationLock = new ReentrantLock(true);
+  /**
+   * Lock for synchronized composition.
+   * 
+   * @since 2.0
+   */
+  private Lock syncCompositionLock = new ReentrantLock(true);
 
   // Tool-tip Text
   private static Document tooltipDocument;
@@ -144,6 +168,21 @@ public class JDec extends JFrame implements ActionListener {
    **/  
   public static void main(String[] args) {
     
+    if (SystemUtils.IS_OS_MAC) {
+      // macOS-specific UI tinkering
+      try {
+        // Use system menu bar
+        System.setProperty("apple.laf.useScreenMenuBar", "true");
+        // Set application name
+        System.setProperty("com.apple.mrj.application.apple.menu.about.name", "JDec");
+        // Associate cmd+Q with the our window handler
+        System.setProperty("apple.eawt.quitStrategy", "CLOSE_ALL_WINDOWS");
+        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+      } catch (ReflectiveOperationException | UnsupportedLookAndFeelException e) {
+        logger.catching(e);
+      }
+    }
+
     // Start the application  
     new JDec();
   
@@ -158,7 +197,10 @@ public class JDec extends JFrame implements ActionListener {
 
     URL iconUrl = getResourceURL("icon.png");
     ImageIcon icon = new ImageIcon(iconUrl);
-    setIconImage(icon.getImage());
+    if (SystemUtils.IS_OS_MAC) {
+      Taskbar.getTaskbar().setIconImage(icon.getImage());
+    } else
+      setIconImage(icon.getImage());
 
     setMinimumSize(new Dimension(1280, 720));
 
@@ -453,16 +495,19 @@ public class JDec extends JFrame implements ActionListener {
     this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
     
     addWindowListener(new WindowAdapter() {
-      @Override public void windowClosing(WindowEvent event) { 
+      @Override public synchronized void windowClosing(WindowEvent event) { 
 
           /* Check for unsaved information */
-
+        boolean tabInUse = false;
         boolean unSavedInformation = false;
-        for (int i = 0; i < tabbedPane.getTabCount(); i++)
+        for (int i = 0; i < tabbedPane.getTabCount(); i++) {
           if (tabs.get(i).hasUnsavedInformation())
             unSavedInformation = true;
+          if (tabs.get(i).nUsingThreads.get() > 0)
+            tabInUse = true;
+        }
         
-        if (!unSavedInformation)
+        if (!unSavedInformation && !tabInUse)
           System.exit(0);
 
           /* Prompt user to save */
@@ -553,6 +598,7 @@ public class JDec extends JFrame implements ActionListener {
             generateAutomatonButtonPressed();
             tab.ioAdapter.setAutomaton(tab.automaton);
             tab.ioAdapter.save();
+            tab.setSaved(true);
           } catch (IOException ioe) {
             displayException(ioe);
           }
@@ -626,7 +672,7 @@ public class JDec extends JFrame implements ActionListener {
 
         // Create new tab for the accessible automaton
         if (automaton == null) {
-          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
+          temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it
           displayErrorMessage("Operation Failed", "Please specify a starting state.");
         } else
           createTab(automaton);
@@ -644,7 +690,7 @@ public class JDec extends JFrame implements ActionListener {
 
         // Create new tab for the trim automaton
         if (automaton == null) {
-          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
+          temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it
           displayErrorMessage("Operation Failed", "Please specify a starting state.");
         } else
           createTab(automaton);
@@ -657,7 +703,7 @@ public class JDec extends JFrame implements ActionListener {
           createTab(tab.automaton.complement());
         } catch(OperationFailedException e) {
           logger.catching(e);
-          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
+          temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it
           displayErrorMessage("Operation Failed", "There already exists a dump state, so the complement could not be taken again.");
         }
         break;
@@ -681,7 +727,7 @@ public class JDec extends JFrame implements ActionListener {
           createTab(Automaton.intersection(tab.automaton, otherAutomaton));
         } catch(IncompatibleAutomataException e) {
           logger.catching(e);
-          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
+          temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it
           displayErrorMessage("Operation Failed", "Please ensure that both automata have the same number of controllers and that there are no incompatible events (meaning that events share the same name but have different properties).");
         }
         
@@ -700,7 +746,7 @@ public class JDec extends JFrame implements ActionListener {
           createTab(Automaton.union(tab.automaton, otherAutomaton));
         } catch(IncompatibleAutomataException e) {
           logger.catching(e);
-          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
+          temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it
           displayErrorMessage("Operation Failed", "Please ensure that both automata have the same number of controllers and that there are no incompatible events (meaning that events share the same name but have different properties).");
         }
 
@@ -712,22 +758,34 @@ public class JDec extends JFrame implements ActionListener {
         if (tab.automaton.hasUnmarkedState())
           displayMessage("Unmarked States", "There are 1 or more states that are unmarked. Since it is assumed that\nthe system is prefix-closed, those states will be considered marked.", JOptionPane.WARNING_MESSAGE);
 
-        // Create new tab with the U-structure generated by synchronized composition
-        setBusyCursor(true);
-        try {
-          automaton = tab.automaton.synchronizedComposition();
-          createTab(automaton);
-          setBusyCursor(false);
-        } catch (NoInitialStateException e) {
-          logger.catching(e);
-          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
-          setBusyCursor(false);   
-          displayErrorMessage("Operation Failed", "Please ensure that you have specified a starting state (using an '@' symbol).");
-        } catch (OperationFailedException e) {
-          logger.catching(e);
-          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
-          setBusyCursor(false);   
-          displayErrorMessage("Operation Failed", "Failed to add state.");
+        {
+          final AutomatonTab currTab = tab;
+          // Create new tab with the U-structure generated by synchronized composition
+          setBusyCursor(true);
+          
+          Thread synchronizedCompositionThread = new Thread(() -> {
+            currTab.nUsingThreads.incrementAndGet();
+            syncCompositionLock.lock();
+            try {
+              UStructure uStructure = currTab.automaton.synchronizedComposition();
+              createTab(uStructure);
+              setBusyCursor(false);
+            } catch (NoInitialStateException e) {
+              logger.catching(e);
+              temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it
+              setBusyCursor(false);   
+              displayErrorMessage("Operation Failed", "Please ensure that you have specified a starting state (using an '@' symbol).");
+            } catch (OperationFailedException e) {
+              logger.catching(e);
+              temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it
+              setBusyCursor(false);   
+              displayErrorMessage("Operation Failed", "Failed to add state.");
+            }
+            currTab.nUsingThreads.decrementAndGet();
+            syncCompositionLock.unlock();
+          });
+          synchronizedCompositionThread.setName(FilenameUtils.removeExtension(tab.ioAdapter.getFile().getName()) + " - Synchronized composition");
+          synchronizedCompositionThread.start();
         }
 
         break;
@@ -741,7 +799,7 @@ public class JDec extends JFrame implements ActionListener {
         try {
           int controller = pickController("Select the controller to execute subset construction with.", true);
           if (controller == -1) {
-            temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
+            temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it
             setBusyCursor(false);
             return;
           }
@@ -749,11 +807,11 @@ public class JDec extends JFrame implements ActionListener {
           createTab(automaton);
           setBusyCursor(false);
         } catch (RuntimeException e) {
-          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
+          temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it
           setBusyCursor(false);   
           displayException(e);
         } /* catch (OperationFailedException e) {
-          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
+          temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it
           setBusyCursor(false);   
           displayErrorMessage("Operation Failed", "Failed to add state.");
         } */
@@ -770,11 +828,11 @@ public class JDec extends JFrame implements ActionListener {
           createTab(uStructure.relabelConfigurationStates());
           setBusyCursor(false);
         } catch (RuntimeException e) {
-          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
+          temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it
           setBusyCursor(false);   
           displayException(e);
         } /* catch (OperationFailedException e) {
-          temporaryFileIndex--; // We did not need this temporary file after all, so we can re-use it
+          temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it
           setBusyCursor(false);   
           displayErrorMessage("Operation Failed", "Failed to add state.");
         } */
@@ -858,13 +916,30 @@ public class JDec extends JFrame implements ActionListener {
         break;
 
       case "Test Observability":
-
-        setBusyCursor(true);
-        if (tab.automaton.testObservability())
-          displayMessage("Passed Test", "The system is observable.", JOptionPane.INFORMATION_MESSAGE);
-        else
-          displayMessage("Failed Test", "The system is not observable.", JOptionPane.INFORMATION_MESSAGE);
-        setBusyCursor(false);
+        {
+          AutomatonTab currTab = tab;
+          Thread observabilityThread = new Thread(new Runnable() {
+              @Override
+              public void run() {
+                JLabel label = new JLabel("Running observability test", SwingConstants.CENTER);
+                currTab.add(label, BorderLayout.SOUTH);
+                setBusyCursor(true);
+                currTab.nUsingThreads.incrementAndGet();
+                boolean observability = currTab.automaton.testObservability();
+                currTab.nUsingThreads.decrementAndGet();
+                tabbedPane.setSelectedComponent(currTab);
+                setBusyCursor(false);
+                currTab.remove(label);
+                if (observability)
+                  displayMessage("Passed Test", "The system is observable.", JOptionPane.INFORMATION_MESSAGE);
+                else
+                  displayMessage("Failed Test", "The system is not observable.", JOptionPane.INFORMATION_MESSAGE);
+              }
+            }
+          );
+          observabilityThread.setName(FilenameUtils.removeExtension(currTab.ioAdapter.getFile().getName()) + " - Observability Test");
+          observabilityThread.start();
+        }
         break;
 
       case "Test Controllability":
@@ -916,7 +991,7 @@ public class JDec extends JFrame implements ActionListener {
     try {
       if (assignTemporaryFiles) {
         String fileName = getTemporaryFileName();
-        File tempFile = new File(fileName + FilenameUtils.EXTENSION_SEPARATOR + "json");
+        File tempFile = new File(fileName + FilenameUtils.EXTENSION_SEPARATOR + AutomatonJsonFileAdapter.EXTENSION);
         FileUtils.touch(tempFile);
         tab.ioAdapter = new AutomatonJsonFileAdapter(tempFile, false);
         tab.updateTabTitle();
@@ -951,10 +1026,10 @@ public class JDec extends JFrame implements ActionListener {
    * 
    * @revised 2.0
    **/
-  public void createTab(Automaton automaton) {
+  public synchronized void createTab(Automaton automaton) {
     AutomatonJsonFileAdapter jsonIOAdapter;
     try {
-      jsonIOAdapter = AutomatonJsonFileAdapter.wrap(automaton, new File(getTemporaryFileName() + FilenameUtils.EXTENSION_SEPARATOR + "json"));
+      jsonIOAdapter = AutomatonJsonFileAdapter.wrap(automaton, new File(getTemporaryFileName() + FilenameUtils.EXTENSION_SEPARATOR + AutomatonJsonFileAdapter.EXTENSION));
     } catch (IOException ioe) {
       throw new UncheckedIOException(logger.throwing(ioe));
     }
@@ -978,7 +1053,7 @@ public class JDec extends JFrame implements ActionListener {
    * 
    * @since 2.0 
    **/
-  public void createLegacyTab(AutomatonBinaryFileAdapter binaryAutomatonAdapter) {
+  public synchronized void createLegacyTab(AutomatonBinaryFileAdapter binaryAutomatonAdapter) {
 
       /* Create new tab */
 
@@ -1010,7 +1085,7 @@ public class JDec extends JFrame implements ActionListener {
    * Create a tab, and load in an automaton from a JSON object
    * @param jsonAutomatonAdapter a wrapper for JSON object
    **/
-  public void createJsonTab(AutomatonJsonFileAdapter jsonAutomatonAdapter) {
+  public synchronized void createJsonTab(AutomatonJsonFileAdapter jsonAutomatonAdapter) {
 
     /* Create new tab */
 
@@ -1041,7 +1116,7 @@ public class JDec extends JFrame implements ActionListener {
   /**
    * Close the current tab, displaying a warning message if the current tab is unsaved.
    **/
-  private void closeCurrentTab() {
+  private synchronized void closeCurrentTab() {
 
       /* Get index of the currently selected tab */
 
@@ -1050,6 +1125,7 @@ public class JDec extends JFrame implements ActionListener {
       /* Check for unsaved information */
 
     AutomatonTab tab = tabs.get(index);
+    if (tab.nUsingThreads.get() > 0) return;
     if (tab.hasUnsavedInformation()) {
 
       // Create message to display in pop-up
@@ -1239,31 +1315,58 @@ public class JDec extends JFrame implements ActionListener {
 
     // Get the current tab
     AutomatonTab tab = tabs.get(tabbedPane.getSelectedIndex());
+    tab.generateImageButton.setEnabled(false);
 
-    // Create destination file name (excluding extension)
-    String destinationFileName = FilenameUtils.removeExtension(tab.ioAdapter.getFile().getAbsolutePath());
+    Thread imgGenerationThread = new Thread(() -> {
 
-    try {
+      tab.nUsingThreads.incrementAndGet();
+      tab.generateImageButton.setText("Waiting to generate image");
 
-      // Set the image blank if there were no states entered
-      if (tab.automaton == null)
-        tab.canvas.loadSVGDocument(null);
+      imgGenerationLock.lock();
 
-      // Try to create graph image, displaying it on the screen
-      else if (tab.automaton.generateImage(destinationFileName)) {
-        tab.svgFile = new File(destinationFileName + ".svg");
-        tab.canvas.setSVGDocument(ImageLoader.loadSVGFromFile((tab.svgFile)));
+      tab.generateImageButton.setText("Generating image");
+
+
+      // Create destination file name (excluding extension)
+      String destinationFileName = FilenameUtils.removeExtension(tab.ioAdapter.getFile().getAbsolutePath());
+
+      try {
+
+        // Set the image blank if there were no states entered
+        if (tab.automaton == null)
+          tab.canvas.loadSVGDocument(null);
+
+        // Try to create graph image, displaying it on the screen
+        else if (tab.automaton.generateImage(destinationFileName)) {
+          tab.svgFile = new File(destinationFileName + ".svg");
+          tab.canvas.setSVGDocument(ImageLoader.loadSVGFromFile((tab.svgFile)));
+        }
+
+        // Display error message
+        else
+          displayErrorMessage("Error", "Something went wrong while trying to generate and display the image. NOTE: It may be the case that you do not have X11 installed.");
+
+      } catch (IOException e) {
+        logger.catching(e);
+        displayErrorMessage("I/O Error", "An I/O error occurred.");
+        tab.generateImageButton.setEnabled(true);
+      } catch (RuntimeException re) {
+        displayException(re);
+        tab.generateImageButton.setEnabled(true);
       }
 
-      // Display error message
-      else
-        displayErrorMessage("Error", "Something went wrong while trying to generate and display the image. NOTE: It may be the case that you do not have X11 installed.");
-    
-    } catch (MissingOrCorruptBodyFileException e) {
-      displayErrorMessage("Corrupt or Missing File", "Please ensure that the .bdy file associated with this automaton is not corrupt or missing.");
-    } catch (IOException e) {
-      displayErrorMessage("I/O Error", "An I/O error occurred.");
-    }
+      tab.nUsingThreads.decrementAndGet();
+      imgGenerationLock.unlock();
+      tabbedPane.setSelectedComponent(tab);
+      tab.generateImageButton.setText("Generate image");
+
+
+    });
+
+    imgGenerationThread.setName(FilenameUtils.removeExtension(tab.ioAdapter.getFile().getName()) + " - Image generation");
+
+    imgGenerationThread.start();
+
 
   }
 
@@ -1515,7 +1618,7 @@ public class JDec extends JFrame implements ActionListener {
 
     fileChooser.setAcceptAllFileFilterUsed(false);
     FileNameExtensionFilter binaryFilter = new FileNameExtensionFilter("Automaton files", HeaderAccessFile.EXTENSION);
-    FileNameExtensionFilter jsonFilter = new FileNameExtensionFilter("JSON files", "json");
+    FileNameExtensionFilter jsonFilter = new FileNameExtensionFilter("JSON files", AutomatonJsonFileAdapter.EXTENSION);
     fileChooser.addChoosableFileFilter(binaryFilter);
     fileChooser.addChoosableFileFilter(jsonFilter);
 
@@ -1532,7 +1635,7 @@ public class JDec extends JFrame implements ActionListener {
     switch (FilenameUtils.getExtension(fileChooser.getSelectedFile().getName())) {
       case HeaderAccessFile.EXTENSION:
         return loadBinaryAutomatonFile(fileChooser.getSelectedFile(), index);
-      case "json":
+      case AutomatonJsonFileAdapter.EXTENSION:
         return loadJsonAutomatonFile(fileChooser.getSelectedFile(), index);
       default:
         throw logger.throwing(new UnsupportedOperationException("Unsupported file extension"));
@@ -1663,7 +1766,7 @@ public class JDec extends JFrame implements ActionListener {
 
     fileChooser.setAcceptAllFileFilterUsed(false);
     FileNameExtensionFilter binaryFilter = new FileNameExtensionFilter("Automaton files", HeaderAccessFile.EXTENSION);
-    FileNameExtensionFilter jsonFilter = new FileNameExtensionFilter("JSON files", "json");
+    FileNameExtensionFilter jsonFilter = new FileNameExtensionFilter("JSON files", AutomatonJsonFileAdapter.EXTENSION);
     fileChooser.addChoosableFileFilter(binaryFilter);
     fileChooser.addChoosableFileFilter(jsonFilter);
 
@@ -1694,7 +1797,7 @@ public class JDec extends JFrame implements ActionListener {
     switch (FilenameUtils.getExtension(fileChooser.getSelectedFile().getName())) {
       case HeaderAccessFile.EXTENSION:
         return saveBinaryFile(fileChooser.getSelectedFile());
-      case "json":
+      case AutomatonJsonFileAdapter.EXTENSION:
         return saveJsonFile(fileChooser.getSelectedFile());
       default:
         throw logger.throwing(new UnsupportedOperationException("Unsupported file extension"));
@@ -1712,7 +1815,7 @@ public class JDec extends JFrame implements ActionListener {
     String prefix   = FilenameUtils.removeExtension(selectedFile.getAbsolutePath());
     File headerFile = new File(prefix + FilenameUtils.EXTENSION_SEPARATOR + HeaderAccessFile.EXTENSION);
     File bodyFile   = new File(prefix + FilenameUtils.EXTENSION_SEPARATOR + BodyAccessFile.EXTENSION);
-    File svgFile    = new File(prefix + ".svg");
+    File svgFile    = new File(prefix + FilenameUtils.EXTENSION_SEPARATOR + "svg");
   
     AutomatonTab currentTab = tabs.get(tabbedPane.getSelectedIndex());
   
@@ -1938,6 +2041,10 @@ public class JDec extends JFrame implements ActionListener {
   public void setBusyCursor(boolean busy) {
   
     if (busy)
+      nBusyActivities.incrementAndGet();
+    else
+      nBusyActivities.decrementAndGet();
+    if (nBusyActivities.get() > 0)
       setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
     else
       setCursor(Cursor.getDefaultCursor());
@@ -2035,7 +2142,7 @@ public class JDec extends JFrame implements ActionListener {
    * @revised 2.0
    **/
   public String getTemporaryFileName() {
-    return TEMPORARY_DIRECTORY.getAbsolutePath() + File.separator + "untitled" + temporaryFileIndex++;
+    return TEMPORARY_DIRECTORY.getAbsolutePath() + File.separator + "untitled" + temporaryFileIndex.getAndIncrement();
   }
 
   /**
@@ -2102,6 +2209,12 @@ public class JDec extends JFrame implements ActionListener {
     // Tab properties
     public int index;
     private boolean saved = true;
+    /**
+     * Number of threads using this tab.
+     * 
+     * @since 2.0
+     */
+    private AtomicInteger nUsingThreads = new AtomicInteger();
 
       /* Constructor */
 
@@ -2249,7 +2362,7 @@ public class JDec extends JFrame implements ActionListener {
       generateImageButton.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           generateImage();
-          generateImageButton.setEnabled(false);
+          
         }
       });
       c.ipady = 0; c.weightx = 0.5; c.weighty = 1.0; c.gridx = 0; c.gridy = 6;
@@ -2412,7 +2525,7 @@ public class JDec extends JFrame implements ActionListener {
      * was input code, then it was all cleared.
      * @return  Whether or not this tab has any unsaved information
      **/
-    public boolean hasUnsavedInformation() {
+    public synchronized boolean hasUnsavedInformation() {
 
       // If there is nothing in the input boxes, then obviously there is no unsaved information
       if (eventInput.getText().equals("") && stateInput.getText().equals("") && transitionInput.getText().equals(""))

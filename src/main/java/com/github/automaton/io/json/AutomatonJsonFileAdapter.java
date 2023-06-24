@@ -31,7 +31,6 @@ import org.apache.logging.log4j.*;
 import com.github.automaton.automata.*;
 import com.github.automaton.io.*;
 import com.google.gson.*;
-import com.google.gson.JsonParser;
 
 /**
  * A wrapper for automata represented as a JSON file.
@@ -40,6 +39,9 @@ import com.google.gson.JsonParser;
  * @since 2.0
  */
 public class AutomatonJsonFileAdapter implements AutomatonIOAdapter {
+
+    /** Default file extension used by JSON files. */
+    public static final String EXTENSION = "json";
 
     private transient Logger logger;
     private String fileName;
