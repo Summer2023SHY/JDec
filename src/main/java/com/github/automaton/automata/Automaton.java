@@ -1218,6 +1218,7 @@ public class Automaton implements Cloneable {
    * @implNote This is an expensive test.
    * @return  Whether or not this system is observable
    **/
+  @SuppressWarnings("unchecked")
   public boolean testObservability() {
 
     // Take the U-Structure, then relabel states as needed
@@ -1226,6 +1227,17 @@ public class Automaton implements Cloneable {
     int[] dummy = new int[nControllers + 1];
 
     Arrays.fill(dummy, -1);
+
+    Automaton[] determinizations = new Automaton[nControllers];
+    List<List<State>>[] indistinguishableStatesArr = new List[nControllers];
+
+    for (int i = 0; i < nControllers; i++) {
+      determinizations[i] = uStructure.subsetConstruction(i + 1);
+      indistinguishableStatesArr[i] = new ArrayList<>();
+      for (State indistinguishableStates : determinizations[i].states.values()) {
+        indistinguishableStatesArr[i].add(uStructure.getStatesFromLabel(new LabelVector(indistinguishableStates.getLabel())));
+      }
+    }
 
     for (Event e : IterableUtils.filteredIterable(
       events, event -> BooleanUtils.or(event.isControllable()))
@@ -1265,9 +1277,8 @@ public class Automaton implements Cloneable {
       }
 
       for (int i = 0; i < nControllers; i++) {
-        Automaton determinization = uStructure.subsetConstruction(i + 1);
-        for (State indistinguishableStates : determinization.states.values()) {
-          List<State> indistinguishableStateList = uStructure.getStatesFromLabel(new LabelVector(indistinguishableStates.getLabel()));
+        List<List<State>> indistinguishableStateLists = indistinguishableStatesArr[i];
+        for (List<State> indistinguishableStateList : indistinguishableStateLists) {
           for (State disablementState : disablementStates) {
             for (State enablementState : enablementStates) {
               if (indistinguishableStateList.contains(disablementState) && indistinguishableStateList.contains(enablementState)) {
