@@ -669,15 +669,14 @@ public class Automaton implements Cloneable {
     automaton.addAllEvents(events);
 
     // Add states
-    for (long s = 1; s <= getNumberOfStates(); s++) {
-      State state = getState(s);
-      automaton.addState(state.getLabel(), state.isMarked(), s == initialState);
+    for (State state : getStates()) {
+      automaton.addStateAt(state.getLabel(), state.isMarked(), new ArrayList<>(), state.getID() == initialState, state.getID());
     }
 
     // Add transitions
-    for (long s = 1; s <= getNumberOfStates(); s++)
-      for (Transition t : getState(s).getTransitions())
-        automaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), s);
+    for (State state : getStates())
+      for (Transition t : state.getTransitions())
+        automaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), state.getID());
 
     return automaton;
 

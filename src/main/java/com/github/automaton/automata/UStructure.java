@@ -700,14 +700,23 @@ public class UStructure extends Automaton {
           duplicate.setLabel(duplicate.getLabel() + "-" + (stateMultiSet.getCount(s)));
           for (int j = 0; j < states.size(); j++) {
             if (i == j) {
+              states.set(i, duplicate);
               for (Transition t : IterableUtils.filteredIterable(
                 duplicate.getTransitions(), transition -> transition.getTargetStateID() == s.getID()
               )) {
                 t.setTargetStateID(duplicate.getID());
-                states.set(i, duplicate);
-                ((StateSet) indistinguishableState).remove(s);
-                ((StateSet) indistinguishableState).add(duplicate);
               }
+              if (!((StateSet) indistinguishableState).remove(s)) {
+                logger.error("Failed to remove state " + s + " from " + indistinguishableState);
+              } else {
+                logger.debug("Removed " + s + " from " + indistinguishableState);
+              }
+              if (!((StateSet) indistinguishableState).add(duplicate)) {
+                logger.error("Failed to add state " + duplicate + " to " + indistinguishableState);
+              } else {
+                logger.debug("Added " + duplicate + " to " + indistinguishableState);
+              }
+              invSubsetConstruction = subsetConstruction.invert();
               relabeled.addStateAt(duplicate, false);
             } else {
               for (Transition t : IterableUtils.filteredIterable(
