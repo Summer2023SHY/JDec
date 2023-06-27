@@ -82,18 +82,52 @@ public class StateSet extends State {
      * Adds a state to this state set.
      * 
      * @param s the state to add to this set
+     * 
+     * @return {@code true} if the specified state was successfully added
+     * to this {@code StateSet}; {@code false} otherwise
      */
-    void add(State s) {
-        this.set.add(s);
+    boolean add(State s) {
+        if (this.set.add(s)) {
+            buildLabel();
+            return true;
+        } else return false;
     }
 
     /**
      * Removes a state from this state set.
      * 
      * @param s the state to remove from this set
+     * @return {@code true} if the specified state was successfully removed
+     * from this {@code StateSet}; {@code false} otherwise
      */
-    void remove(State s) {
-        this.set.remove(s);
+    boolean remove(State s) {
+        if (this.set.remove(s)) {
+            buildLabel();
+            return true;
+        } else return false;
+    }
+
+    /**
+     * Removes a state with the matching label from this state set.
+     * 
+     * @param label the label of the state to remove from this set
+     * @return {@code true} if there was a state with the matching label
+     * to remove from this {@code StateSet}; {@code false} otherwise
+     */
+    boolean removeByLabel(String label) {
+        if (Objects.requireNonNull(label).isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+        Iterator<State> stateIterator = set.iterator();
+        while (stateIterator.hasNext()) {
+            State s = stateIterator.next();
+            String origLabel = s.getLabel().split("-")[0];
+            if (Objects.equals(label, origLabel)) {
+                stateIterator.remove();
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
