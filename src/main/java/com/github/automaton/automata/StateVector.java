@@ -101,7 +101,11 @@ public class StateVector extends State implements Iterable<State> {
         return states;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     * 
+     * @since 2.0
+     */
     @Override
     public Object clone() {
         StateVector sv = new StateVector(states);
