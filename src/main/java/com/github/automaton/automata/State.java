@@ -25,6 +25,8 @@ package com.github.automaton.automata;
 
 import java.util.*;
 
+import org.apache.commons.lang3.ObjectUtils;
+
 /**
  * Represents a state in an automaton, complete with a label and transitions.
  *
@@ -33,7 +35,7 @@ import java.util.*;
  * 
  * @since 1.0
  */
-public class State {
+public class State implements Cloneable {
 
     /* CLASS CONSTANTS */
 
@@ -267,6 +269,25 @@ public class State {
   }
 
     /* OVERRIDDEN METHODS */
+
+  /**
+   * Returns a copy of this {@code State}.
+   * The transitions stored in this {@code State} are cloned, but
+   * the events triggering the transitions are not.
+   * 
+   * @return a copy of this {@code State}
+   * 
+   * @see Transition#clone()
+   * @since 2.0
+   */
+  @Override
+  public Object clone() {
+    List<Transition> clonedTransitions = new ArrayList<>();
+    for (Transition orig : transitions) {
+      clonedTransitions.add(ObjectUtils.clone(orig));
+    }
+    return new State(label, id, marked, clonedTransitions, enablement, disablement);
+  }
 
   /**
    * Returns string representation of this state

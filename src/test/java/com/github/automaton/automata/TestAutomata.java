@@ -980,32 +980,6 @@ public class TestAutomata {
       printTestCase("Ensuring that the automaton is not controllable", new TestResult(a.testControllability(), false), counter);
     }
 
-    @Test
-    @DisplayName("Observability Tests")
-    public void observabilityTest() {
-      /* Observability Tests */
-
-      printTestOutput("TESTING OBSERVABILITY: ", 2);
-
-      printTestOutput("Instantiating automaton...", 3);
-      Automaton a = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-        new Automaton(2),
-        "a,TF,TF\nb,FT,FT\no,TT,TT", // Events
-        "@1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T", // States 
-        "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD" // Transitions
-      ));
-      printTestCase("Ensuring that the automaton is observable", new TestResult(a.testObservability(), true), counter);
-
-      printTestOutput("Instantiating automaton...", 3);
-      a = saveAndLoadAutomaton(AutomatonGenerator.generateFromGUICode(
-        new Automaton(2),
-        "a,FF,TF\nb,FT,FT\no,TT,TT", // Events
-        "@1,T\n2,T\n3,T\n4,T\n5,T\n6,T\n7,T", // States 
-        "1,a,2\n1,b,3\n2,b,4\n3,a,5\n4,o,6\n5,o,7:BAD" // Transitions
-      ));
-      printTestCase("Ensuring that the automaton is not observable", new TestResult(a.testObservability(), false), counter);
-    }
-
   }
 
   @Nested

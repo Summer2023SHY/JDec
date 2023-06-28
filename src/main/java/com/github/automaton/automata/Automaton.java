@@ -46,11 +46,13 @@ import java.io.*;
 import java.math.*;
 import java.util.*;
 
-import org.apache.commons.collections4.IterableUtils;
+import org.apache.commons.collections4.*;
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.RandomAccessFileMode;
 import org.apache.commons.lang3.*;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.reflect.TypeUtils;
 import org.apache.logging.log4j.*;
 
@@ -299,6 +301,9 @@ public class Automaton implements Cloneable {
     nControllers = gson.fromJson(jsonObject.get("nControllers"), Integer.TYPE);
 
     events = JsonUtils.readListPropertyFromJsonObject(jsonObject, "events", Event.class);
+    for (Event e : events) {
+      eventsMap.put(e.getLabel(), e);
+    }
     states = new LinkedHashMap<>();
     for (State s : gson.fromJson(jsonObject.get("states"), new TypeToken<HashSet<State>>() {})) {
       states.put(s.getID(), s);
@@ -664,15 +669,14 @@ public class Automaton implements Cloneable {
     automaton.addAllEvents(events);
 
     // Add states
-    for (long s = 1; s <= getNumberOfStates(); s++) {
-      State state = getState(s);
-      automaton.addState(state.getLabel(), state.isMarked(), s == initialState);
+    for (State state : getStates()) {
+      automaton.addStateAt(state.getLabel(), state.isMarked(), new ArrayList<>(), state.getID() == initialState, state.getID());
     }
 
     // Add transitions
-    for (long s = 1; s <= getNumberOfStates(); s++)
-      for (Transition t : getState(s).getTransitions())
-        automaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), s);
+    for (State state : getStates())
+      for (Transition t : state.getTransitions())
+        automaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), state.getID());
 
     return automaton;
 
@@ -1094,38 +1098,22 @@ public class Automaton implements Cloneable {
 
         boolean suppressed = false;
 
+        inner : for (int i = 0; i < nControllers; i++) {
+          if ((isConditionalViolation || isUnconditionalViolation) && !transitionExistsWithEvent(stateVector.getStateFor(i + 1).getID(), getEvent(combinedEvent.get(0)).getID())) {
+            isUnconditionalViolation = false;
+            isConditionalViolation = false;
+            break inner;
+          }
+        }
+
         if (isUnconditionalViolation) {
-          inner: for (int i = 0; i < nControllers; i++) {
-            State s = stateVector.getStateFor(i + 1);
-            for (Transition tran : s.getTransitions()) {
-              if (!tran.getEvent().isControllable()[i]) {
-                uStructure.addSuppressedTransition(stateVector.getID(), eventID, targetStateVector.getID());
-                suppressed = true;
-                break inner;
-              }
-            }
-          }
-          if (!suppressed) {
-            uStructure.addUnconditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
-            stateVector.setDisablement(true);
-          }
+          uStructure.addUnconditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
+          stateVector.setDisablement(true);
         }
         if (isConditionalViolation) {
 
-          inner: for (int i = 0; i < nControllers; i++) {
-            State s = stateVector.getStateFor(i + 1);
-            for (Transition tran : s.getTransitions()) {
-              if (!tran.getEvent().isControllable()[i]) {
-                uStructure.addSuppressedTransition(stateVector.getID(), eventID, targetStateVector.getID());
-                suppressed = true;
-                break inner;
-              }
-            }
-          }
-          if (!suppressed) {
-            uStructure.addConditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
-            stateVector.setEnablement(true);
-          }
+          uStructure.addConditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
+          stateVector.setEnablement(true);
         }
         if (isDisablementDecision)
           uStructure.addDisablementDecision(stateVector.getID(), eventID, targetStateVector.getID(), disablementControllers);
@@ -1229,52 +1217,121 @@ public class Automaton implements Cloneable {
    * @implNote This is an expensive test.
    * @return  Whether or not this system is observable
    **/
+  @SuppressWarnings("unchecked")
   public boolean testObservability() {
 
-    Automaton centralizedAutomaton = new Automaton(1);
+    // Take the U-Structure, then relabel states as needed
+    UStructure uStructure = synchronizedComposition().relabelConfigurationStates();
 
-    // Copy over modified events to the centralized automaton
-    for (Event e : getEvents()) {
+    int[] dummy = new int[nControllers + 1];
 
-      // Find the union of the observability and controllability properties for each event
-      boolean[] observableUnion = new boolean[1];
-      boolean[] controllableUnion = new boolean[1];
-      for (boolean b : e.isObservable())
-        if (b)
-          observableUnion[0] = true;
-      for (boolean b : e.isControllable())
-        if (b)
-          controllableUnion[0] = true;
+    Arrays.fill(dummy, -1);
 
-      // Add the event to the centralized automaton
-      centralizedAutomaton.addEvent(e.getLabel(), observableUnion, controllableUnion);
+    Automaton[] determinizations = new Automaton[nControllers];
+    List<List<State>>[] indistinguishableStatesArr = new List[nControllers];
+
+    for (int i = 0; i < nControllers; i++) {
+      determinizations[i] = uStructure.subsetConstruction(i + 1);
+      indistinguishableStatesArr[i] = new ArrayList<>();
+      for (State indistinguishableStates : determinizations[i].states.values()) {
+        indistinguishableStatesArr[i].add(uStructure.getStatesFromLabel(new LabelVector(indistinguishableStates.getLabel())));
+      }
+    }
+
+    for (Event e : IterableUtils.filteredIterable(
+      events, event -> BooleanUtils.or(event.isControllable()))
+    ) {
+
+      ListValuedMap<State, Set<State>> neighborMap = new ArrayListValuedHashMap<>();
+      Map<State, MutableInt[]> ambLevelMap = new LinkedHashMap<>();
+
+      Set<State> disablementStates = Collections.unmodifiableSet(uStructure.getDisablementStates(e.getLabel()));
+      Set<State> enablementStates = Collections.unmodifiableSet(uStructure.getEnablementStates(e.getLabel()));
+
+      for (State ds : disablementStates) {
+        ambLevelMap.put(ds, new MutableInt[nControllers]);
+      }
+      for (State es : enablementStates) {
+        ambLevelMap.put(es, new MutableInt[nControllers]);
+      }
+
+      for (int i = 0; i < nControllers; i++) {
+        if (e.isControllable()[i]) {
+          for (State disablementState : disablementStates) {
+            neighborMap.put(disablementState, new LinkedHashSet<>());
+            ambLevelMap.get(disablementState)[i] = new MutableInt(Integer.MAX_VALUE);
+          }
+          for (State enablementState : enablementStates) {
+            neighborMap.put(enablementState, new LinkedHashSet<>());
+            ambLevelMap.get(enablementState)[i] = new MutableInt(Integer.MAX_VALUE);
+          }
+        } else {
+          for (State disablementState : disablementStates) {
+            neighborMap.put(disablementState, null);
+          }
+          for (State enablementState : enablementStates) {
+            neighborMap.put(enablementState, null);
+          }
+        }
+      }
+
+      for (int i = 0; i < nControllers; i++) {
+        List<List<State>> indistinguishableStateLists = indistinguishableStatesArr[i];
+        for (List<State> indistinguishableStateList : indistinguishableStateLists) {
+          for (State disablementState : disablementStates) {
+            for (State enablementState : enablementStates) {
+              if (indistinguishableStateList.contains(disablementState) && indistinguishableStateList.contains(enablementState)) {
+                neighborMap.get(disablementState).get(i).add(enablementState);
+                neighborMap.get(enablementState).get(i).add(disablementState);
+              }
+            }
+          }
+        }
+      }
+
+      Set<State> R = new LinkedHashSet<>();
+
+      int ambLevel = 0;
+
+      for (State v : neighborMap.keySet()) {
+        for (int i = 0; i < nControllers; i++) {
+          if (e.isControllable()[i] && neighborMap.get(v).get(i).isEmpty()) {
+            R.add(v);
+            ambLevelMap.get(v)[i].setValue(0);
+          }
+        }
+      }
+
+      Set<State> resolved = new LinkedHashSet<>(R);
+
+      while (!R.isEmpty()) {
+        Set<State> rPrime = new LinkedHashSet<>();
+        ambLevel += 1;
+        for (State r : R) {
+          for (int i = 0; i < nControllers; i++) {
+            if (e.isControllable()[i]) {
+              for (State vPrime : neighborMap.get(r).get(i)) {
+                neighborMap.get(vPrime).get(i).remove(r);
+                if (neighborMap.get(vPrime).get(i).isEmpty()) {
+                  if (!resolved.contains(vPrime)) {
+                    rPrime.add(vPrime);
+                  }
+                  ambLevelMap.get(vPrime)[i].setValue(ambLevel);
+                }
+              }
+            }
+          }
+        }
+        R = rPrime;
+        resolved.addAll(R);
+      }
+      if (resolved.size() < neighborMap.keySet().size()) {
+        return false;
+      }
 
     }
 
-    // Copy over the states and transitions to the centralized automaton
-    // NOTE: I attempted to do this by simply copying the .bdy file, because it would be more efficient,
-    //       however there are many other things that need to be considered (capacities, initial state,
-    //       re-opening the RandomAccessFile object for the body file, etc.)
-    for (long s = 1; s <= getNumberOfStates(); s++) {
-      State state = getState(s);
-
-      // Add state
-      centralizedAutomaton.addState(state.getLabel(), state.isMarked(), s == getInitialStateID());
-
-      // Add transitions
-      for (Transition t : state.getTransitions())
-        centralizedAutomaton.addTransition(s, t.getEvent().getID(), t.getTargetStateID());
-
-    }
-
-    // Copy over all special transitions to the centralized automaton
-    copyOverSpecialTransitions(centralizedAutomaton);
-
-    // Take the U-Structure
-    UStructure uStructure = centralizedAutomaton.synchronizedComposition();
-
-    // The presence of violations indicate that the system is not observable
-    return !uStructure.hasViolations();
+    return true;
 
   }
 
@@ -2296,7 +2353,10 @@ public class Automaton implements Cloneable {
   public boolean containsTransition(State startingState, Event event, long targetStateID) {
     if (startingState == null) return false;
     else if (event == null) return false;
-    return startingState.getTransitions().contains(new Transition(event, targetStateID));
+    else if (!startingState.equals(getState(startingState.getID()))) {
+      throw new IllegalArgumentException("State information inconsistent");
+    }
+    return getState(startingState.getID()).getTransitions().contains(new Transition(event, targetStateID));
   }
 
   /**
@@ -2698,6 +2758,17 @@ public class Automaton implements Cloneable {
    **/
   public State getState(long id) {
     return states.get(id);
+  }
+
+  /**
+   * Given the label of a state, get the state information.
+   * @param label   The label associated with the state
+   * @return        The requested state
+   * 
+   * @since 2.0
+   */
+  public State getState(String label) {
+    return getState(getStateID(label));
   }
 
   /**

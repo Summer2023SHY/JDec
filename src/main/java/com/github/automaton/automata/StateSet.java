@@ -26,6 +26,7 @@ import java.util.*;
 
 import org.apache.commons.collections4.*;
 import org.apache.commons.collections4.multimap.*;
+import org.apache.commons.lang3.ObjectUtils;
 
 /**
  * A set of states.
@@ -35,9 +36,12 @@ import org.apache.commons.collections4.multimap.*;
  */
 public class StateSet extends State {
     /** Set of states */
-    private SortedSet<State> set;
+    private transient SortedSet<State> set;
     /** Maximum value of the IDs */
-    private long maxID;
+    private transient long maxID;
+
+    /** Private constructor */
+    private StateSet() {}
 
     /**
      * Constructs a new {@code StateSet}.
@@ -58,7 +62,6 @@ public class StateSet extends State {
             }
         });
         this.set.addAll(set);
-        this.set = Collections.unmodifiableSortedSet(this.set);
         StateVector sv = toStateVector();
         setID(sv.getID());
         buildLabel();
@@ -73,6 +76,58 @@ public class StateSet extends State {
     @Override
     final void setLabel(String label) {
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Adds a state to this state set.
+     * 
+     * @param s the state to add to this set
+     * 
+     * @return {@code true} if the specified state was successfully added
+     * to this {@code StateSet}; {@code false} otherwise
+     */
+    boolean add(State s) {
+        if (this.set.add(s)) {
+            buildLabel();
+            return true;
+        } else return false;
+    }
+
+    /**
+     * Removes a state from this state set.
+     * 
+     * @param s the state to remove from this set
+     * @return {@code true} if the specified state was successfully removed
+     * from this {@code StateSet}; {@code false} otherwise
+     */
+    boolean remove(State s) {
+        if (this.set.remove(s)) {
+            buildLabel();
+            return true;
+        } else return false;
+    }
+
+    /**
+     * Removes a state with the matching label from this state set.
+     * 
+     * @param label the label of the state to remove from this set
+     * @return {@code true} if there was a state with the matching label
+     * to remove from this {@code StateSet}; {@code false} otherwise
+     */
+    boolean removeByLabel(String label) {
+        if (Objects.requireNonNull(label).isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+        Iterator<State> stateIterator = set.iterator();
+        while (stateIterator.hasNext()) {
+            State s = stateIterator.next();
+            String origLabel = s.getLabel().split("-")[0];
+            if (Objects.equals(label, origLabel)) {
+                stateIterator.remove();
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -148,6 +203,8 @@ public class StateSet extends State {
                     t -> {
                         if (t.getEvent().getVector().getLabelAtIndex(this.controller).equals("*")) {
                             return false;
+                        } else if (controller > 0 && !t.getEvent().isObservable()[controller - 1]) {
+                            return false;
                         }
                         return !uniqueTransitions.contains(t);
                     }
@@ -192,6 +249,21 @@ public class StateSet extends State {
         return set.containsAll(other.set);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public Object clone() {
+        StateSet ss = new StateSet();
+        ss.set = ObjectUtils.clone(this.set);
+        ss.maxID = this.maxID;
+        StateVector sv = ss.toStateVector();
+        ss.setID(sv.getID());
+        ss.buildLabel();
+        for (Transition orig : this.getTransitions()) {
+            ss.getTransitions().add(ObjectUtils.clone(orig));
+        }
+        return ss;
+    }
+
     /**
      * Indicates whether an object is "equal to" this state set
      * 
@@ -203,9 +275,11 @@ public class StateSet extends State {
         if (this == other) {
             return true;
         } else if (!(other instanceof StateSet)) {
-            return false;
+            return super.equals(other);
+        } else {
+            StateSet ss = (StateSet) other;
+            return this.set.containsAll(ss.set) && ss.set.containsAll(this.set);
         }
-        return CollectionUtils.isEqualCollection(this.set, ((StateSet) other).set);
     }
 
 }

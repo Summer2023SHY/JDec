@@ -24,6 +24,8 @@ package com.github.automaton.automata;
 
 import java.util.*;
 
+import org.apache.commons.lang3.ObjectUtils;
+
 /**
  * Represents a vector of {@link State}s. A {@code StateVector} is
  * treated as a {@link State} in
@@ -36,6 +38,17 @@ import java.util.*;
  */
 public class StateVector extends State implements Iterable<State> {
     private transient List<State> states;
+
+    /**
+     * Private constructor. This is used for {@link #clone() cloning}.
+     * 
+     * @param states list of internally stored states.
+     * 
+     * @since 2.0
+     */
+    private StateVector(List<State> states) {
+        this.states = states;
+    }
 
     /**
      * Constructs a new {@code StateVector}.
@@ -86,6 +99,22 @@ public class StateVector extends State implements Iterable<State> {
      */
     public List<State> getStates() {
         return states;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @since 2.0
+     */
+    @Override
+    public Object clone() {
+        StateVector sv = new StateVector(states);
+        sv.setLabel(this.getLabel());
+        sv.setID(this.getID());
+        for (Transition orig : this.getTransitions()) {
+            sv.getTransitions().add(ObjectUtils.clone(orig));
+        }
+        return sv;
     }
 
     /**

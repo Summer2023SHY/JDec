@@ -36,7 +36,7 @@ package com.github.automaton.automata;
  * 
  * @since 1.0
  */
-public class TransitionData {
+public class TransitionData implements Cloneable {
 
     /* PUBLIC INSTANCE VARIABLES */
 
@@ -103,6 +103,18 @@ public class TransitionData {
   }
 
     /* OVERRIDDEN METHODS */
+
+  /**
+   * Creates and returns a copy of this {@code TransitionData}.
+   * 
+   * @return a copy of this {@code TransitionData}
+   * 
+   * @since 2.0
+   */
+  @Override
+  public Object clone() {
+    return new TransitionData(initialStateID, eventID, targetStateID);
+  }
 
   /**
    * Indicates whether an object is "equal to" this transition data

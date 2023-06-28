@@ -27,6 +27,7 @@ import java.math.*;
 import java.util.*;
 
 import org.apache.commons.collections4.*;
+import org.apache.commons.collections4.multiset.HashMultiSet;
 import org.apache.commons.lang3.*;
 import org.apache.logging.log4j.*;
 
@@ -543,20 +544,16 @@ public class UStructure extends Automaton {
     while (!stateQueue.isEmpty()) {
       StateSet u = stateQueue.remove();
       MultiValuedMap<Event, Long> observableTransitions = u.groupAndGetObservableTransitions(controller);
-      Map<Event, Collection<Long>> observableTransitionMap = observableTransitions.asMap();
-      inner: for (Event e : observableTransitions.keys()) {
+      for (Event e : observableTransitions.keys()) {
         List<State> targetStates = new ArrayList<>();
-        for (long targetStateID : observableTransitionMap.get(e)) {
+        for (long targetStateID : observableTransitions.get(e)) {
           targetStates.add(getState(targetStateID));
         }
         StateSet ss = nullClosure(targetStates, controller);
-        for (StateSet added : addedStates) {
-          if (added.containsAll(ss)) {
-            continue inner;
-          }
+        if (!addedStates.contains(ss)) {
+          automaton.addStateAt(ss, false);
+          addedStates.add(ss);
         }
-        automaton.addStateAt(ss, false);
-        addedStates.add(ss);
         if (!automaton.containsTransition(u, e, ss.getID())) {
           automaton.addTransition(u, e.getLabel(), ss);
           stateQueue.add(ss);
@@ -597,7 +594,7 @@ public class UStructure extends Automaton {
     for (State s : states) {
       Set<State> tempSet = new HashSet<>();
       nullClosure(tempSet, s, controller);
-      indistinguishableStates = SetUtils.union(indistinguishableStates, tempSet);
+      indistinguishableStates.addAll(tempSet);
     }
     return new StateSet(indistinguishableStates, nStates);
   }
@@ -632,6 +629,177 @@ public class UStructure extends Automaton {
         nullClosure(stateSet, targetState, controller);
       }
     }
+  }
+
+  /**
+   * Creates a copy of this U-Structure that has copies of same state(s)
+   * if the state appears in more than one projections.
+   * 
+   * @return a copy of this U-Structure with relabeled states
+   * 
+   * @since 2.0
+   */
+  public UStructure relabelConfigurationStates() {
+
+    UStructure relabeled = ObjectUtils.clone(this);
+    Automaton subsetConstruction = relabeled.subsetConstruction();
+    long nIndistinguishableStates = subsetConstruction.getNumberOfStates();
+    Automaton invSubsetConstruction = subsetConstruction.invert();
+
+    Iterator<State> invSubsetStateIterator = invSubsetConstruction.states.values().iterator();
+
+    while (invSubsetStateIterator.hasNext()) {
+      State s = invSubsetStateIterator.next();
+      List<Transition> outgoingTransitions = new ArrayList<>(s.getTransitions());
+      Iterator<Transition> outgoingTransitionsIterator = outgoingTransitions.iterator();
+      while (outgoingTransitionsIterator.hasNext()) {
+        Transition t = outgoingTransitionsIterator.next();
+        if (s.getID() == t.getTargetStateID()) {
+          outgoingTransitionsIterator.remove();
+        }
+      }
+      for (int i = 1; i < outgoingTransitions.size(); i++) {
+        State indistinguishable = subsetConstruction.getState(s.getID());
+        State indistinguishableCopy = ObjectUtils.clone(indistinguishable);
+        State invIndistinguishableCopy = ObjectUtils.clone(s);
+        indistinguishableCopy.setID(indistinguishable.getID() + i * nIndistinguishableStates);
+        invIndistinguishableCopy.setID(indistinguishable.getID() + i * nIndistinguishableStates);
+        for (Transition tCopy : indistinguishableCopy.getTransitions()) {
+          if (tCopy.getTargetStateID() == s.getID()) {
+            tCopy.setTargetStateID(indistinguishableCopy.getID());
+          }
+        }
+        for (Transition tCopy : invIndistinguishableCopy.getTransitions()) {
+          if (tCopy.getTargetStateID() == s.getID()) {
+            tCopy.setTargetStateID(indistinguishableCopy.getID());
+          }
+        }
+        subsetConstruction.addStateAt(indistinguishableCopy, false);
+        invSubsetConstruction.addStateAt(indistinguishableCopy, false);
+        State parentState = subsetConstruction.getState(outgoingTransitions.get(i).getTargetStateID());
+        parentState.addTransition(new Transition(outgoingTransitions.get(i).getEvent(), indistinguishableCopy.getID()));
+        s.removeTransition(outgoingTransitions.get(i));
+        invIndistinguishableCopy.getTransitions().clear();
+        invIndistinguishableCopy.addTransition(outgoingTransitions.get(i));
+      }
+      if (outgoingTransitions.size() > 1) {
+        invSubsetStateIterator = invSubsetConstruction.states.values().iterator();
+      }
+    }
+
+    MultiSet<State> stateMultiSet = new HashMultiSet<>();
+
+    for (State indistinguishableState : subsetConstruction.states.values()) {
+      List<State> states = relabeled.getStatesFromLabel(new LabelVector(indistinguishableState.getLabel()));
+      for (int i = 0; i < states.size(); i++) {
+        State s = states.get(i);
+        
+        if (stateMultiSet.getCount(s) > 0) {
+          State duplicate = ObjectUtils.clone(s);
+          duplicate.setID(duplicate.getID() + (stateMultiSet.getCount(s) * nStates));
+          duplicate.setLabel(duplicate.getLabel() + "-" + (stateMultiSet.getCount(s)));
+          for (int j = 0; j < states.size(); j++) {
+            if (i == j) {
+              states.set(i, duplicate);
+              for (Transition t : IterableUtils.filteredIterable(
+                duplicate.getTransitions(), transition -> transition.getTargetStateID() == s.getID()
+              )) {
+                t.setTargetStateID(duplicate.getID());
+              }
+              if (!((StateSet) indistinguishableState).remove(s)) {
+                logger.error("Failed to remove state " + s + " from " + indistinguishableState);
+              } else {
+                logger.debug("Removed " + s + " from " + indistinguishableState);
+              }
+              if (!((StateSet) indistinguishableState).add(duplicate)) {
+                logger.error("Failed to add state " + duplicate + " to " + indistinguishableState);
+              } else {
+                logger.debug("Added " + duplicate + " to " + indistinguishableState);
+              }
+              invSubsetConstruction = subsetConstruction.invert();
+              relabeled.addStateAt(duplicate, false);
+            } else {
+              for (Transition t : IterableUtils.filteredIterable(
+                states.get(j).getTransitions(), transition -> transition.getTargetStateID() == s.getID()
+              )) {
+                if (states.get(j).getID() != s.getID())
+                  t.setTargetStateID(duplicate.getID());
+              }
+            }
+          }
+          
+          for (Transition t : invSubsetConstruction.getState(indistinguishableState.getID()).getTransitions()) {
+            List<State> parentStates = relabeled.getStatesFromLabel(
+              new LabelVector(subsetConstruction.getState(t.getTargetStateID()).getLabel())
+            );
+            if (subsetConstruction.getState(t.getTargetStateID()).getLabel().equals(invSubsetConstruction.getState(indistinguishableState.getID()).getLabel()))
+              continue;
+            for (State parentState : parentStates) {
+              for (Transition incomingTransition : IterableUtils.filteredIterable(
+                parentState.getTransitions(), transition -> {
+                  return transition.getTargetStateID() == s.getID();
+                }
+              )) {
+                incomingTransition.setTargetStateID(duplicate.getID());
+              }
+            }
+          }
+
+          for (TransitionData td : conditionalViolations) {
+            TransitionData copy = null;
+            if (td.initialStateID == s.getID()) {
+              copy = ObjectUtils.clone(td);
+              copy.initialStateID = duplicate.getID();
+            }
+            if (td.targetStateID == s.getID()) {
+              copy = Objects.requireNonNullElse(copy, ObjectUtils.clone(td));
+              copy.targetStateID = duplicate.getID();
+            }
+            if (Objects.nonNull(copy)) {
+              relabeled.conditionalViolations.add(copy);
+            }
+          }
+          for (TransitionData td : unconditionalViolations) {
+            TransitionData copy = null;
+            if (td.initialStateID == s.getID()) {
+              copy = ObjectUtils.clone(td);
+              copy.initialStateID = duplicate.getID();
+            }
+            if (td.targetStateID == s.getID()) {
+              copy = Objects.requireNonNullElse(copy, ObjectUtils.clone(td));
+              copy.targetStateID = duplicate.getID();
+            }
+            if (Objects.nonNull(copy)) {
+              relabeled.unconditionalViolations.add(copy);
+            }
+          }
+        }
+        stateMultiSet.add(s);
+      }
+    }
+
+    relabeled.renumberStates();
+
+    return relabeled;
+  }
+
+  /**
+   * Given a vector of state labels, returns a list of states that
+   * correspond to the vector elements.
+   * 
+   * @param lv a label vector
+   * @return a list of states
+   * 
+   * @throws NullPointerException if argument is {@code null}
+   * 
+   * @since 2.0
+   */
+  List<State> getStatesFromLabel(LabelVector lv) {
+    List<State> states = new ArrayList<>();
+    for (String label : Objects.requireNonNull(lv)) {
+      states.add(getState(label));
+    }
+    return states;
   }
 
   /**
@@ -1841,6 +2009,52 @@ public class UStructure extends Automaton {
    **/
   public List<DisablementData> getDisablementDecisions() {
     return disablementDecisions;
+  }
+
+  /**
+   * Returns the set of enablement states.
+   * 
+   * @return the set of enablement states
+   * 
+   * @since 2.0
+   */
+  public Set<State> getEnablementStates(String eventLabel) {
+    Set<State> enablementStates = new HashSet<>();
+    for (State s : states.values()) {
+      inner: for (Transition t : s.getTransitions()) {
+        if (
+          t.getEvent().getVector().getLabelAtIndex(0).equals(eventLabel)
+          && conditionalViolations.contains(new TransitionData(s.getID(), t.getEvent().getID(), t.getTargetStateID()))
+        ) {
+          enablementStates.add(s);
+          break inner;
+        }
+      }
+    }
+    return enablementStates;
+  }
+
+  /**
+   * Returns the set of disablement states.
+   * 
+   * @return the set of disablement states
+   * 
+   * @since 2.0
+   */
+  public Set<State> getDisablementStates(String eventLabel) {
+    Set<State> disablementStates = new HashSet<>();
+    for (State s : states.values()) {
+      inner: for (Transition t : s.getTransitions()) {
+        if (
+          t.getEvent().getVector().getLabelAtIndex(0).equals(eventLabel)
+          && unconditionalViolations.contains(new TransitionData(s.getID(), t.getEvent().getID(), t.getTargetStateID()))
+        ) {
+          disablementStates.add(s);
+          break inner;
+        }
+      }
+    }
+    return disablementStates;
   }
 
 }
