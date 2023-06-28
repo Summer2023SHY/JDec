@@ -41,7 +41,7 @@ import javax.xml.transform.*;
 import javax.xml.transform.dom.*;
 import javax.xml.transform.stream.*;
 
-import org.apache.batik.swing.svg.JSVGComponent;
+import org.apache.batik.swing.JSVGCanvas;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -573,7 +573,7 @@ public class JDec extends JFrame implements ActionListener {
         tab.transitionInput.setText("");
 
         // Set blank image
-        tab.canvas.loadSVGDocument(null);
+        tab.canvas.setURI(null);
 
         break;
 
@@ -601,6 +601,8 @@ public class JDec extends JFrame implements ActionListener {
             tab.setSaved(true);
           } catch (IOException ioe) {
             displayException(ioe);
+          } catch (RuntimeException re) {
+            displayException(re);
           }
           break;
         }
@@ -1300,7 +1302,7 @@ public class JDec extends JFrame implements ActionListener {
       tab.generateImageButton.setEnabled(false);
     } else {
       tab.generateImageButton.setEnabled(true);
-      tab.canvas.loadSVGDocument(null);
+      tab.canvas.setURI(null);
     }
 
     // Refresh GUI
@@ -2199,7 +2201,7 @@ public class JDec extends JFrame implements ActionListener {
     public JTextPane eventInput, stateInput, transitionInput;
     public JSpinner controllerInput;
     public JButton generateAutomatonButton, generateImageButton, viewImageInBrowserButton, exploreAutomatonButton;
-    public JSVGComponent canvas = null;
+    public JSVGCanvas canvas = null;
 
     // Automaton properties
     public AutomatonIOAdapter ioAdapter;
