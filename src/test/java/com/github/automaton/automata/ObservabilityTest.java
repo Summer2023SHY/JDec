@@ -156,6 +156,7 @@ public class ObservabilityTest {
     }
 
     private static Automaton[] testUnobservableAutomata() throws IOException {
+        AutomatonJsonFileAdapter fig1Adapter = new AutomatonJsonFileAdapter(new File("aut/fig-1.json"));
         return new Automaton[] {
                 AutomatonGenerator.generateFromGUICode(
                         new Automaton(2),
@@ -184,29 +185,7 @@ public class ObservabilityTest {
                                 "6,sigma,6:BAD\n" +
                                 "7,sigma,7" // Transitions
                 ),
-                AutomatonGenerator.generateFromGUICode(
-                        new Automaton(2),
-                        "a1,TF,FF\n" + //
-                                "a2,TF,FF\n" + //
-                                "b1,FT,FF\n" + //
-                                "b2,FT,FF\n" + //
-                                "sigma,FF,TT", // Events
-
-                        "@0,F\n" + //
-                                "1,F\n" + //
-                                "2,F\n" + //
-                                "3,F\n" + //
-                                "4,F", // States
-
-                        "0,a1,1\n" + //
-                                "0,a2,2\n" + //
-                                "1,b1,3\n" + //
-                                "1,b2,4\n" + //
-                                "2,b2,3\n" + //
-                                "2,b1,4\n" + //
-                                "3,sigma,3\n" + //
-                                "4,sigma,4:BAD" // Transitions
-                )
+                fig1Adapter.getAutomaton()
         };
     }
 
