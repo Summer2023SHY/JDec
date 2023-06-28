@@ -305,7 +305,9 @@ public class JDec extends JFrame implements ActionListener {
 
     // Information menu
     menuBar.add(createMenu("About",
-      "Third-party License"
+      "Third-party License",
+      "Open GitHub Repository",
+      "View License"
     ));
 
     this.setJMenuBar(menuBar);
@@ -967,6 +969,20 @@ public class JDec extends JFrame implements ActionListener {
           displayMessage("Third-party License Notice", "Third-party license information not found!", JOptionPane.WARNING_MESSAGE);
         } catch (IOException ioe) {
           displayException(ioe);
+        }
+        break;
+      case "Open GitHub Repository":
+        try {
+          Desktop.getDesktop().browse(new URI("https://github.com/Summer2023SHY/Automata"));
+        } catch (IOException | URISyntaxException e) {
+          displayException(e);
+        }
+        break;
+      case "View License":
+        try {
+          Desktop.getDesktop().browse(new URI("https://github.com/Summer2023SHY/Automata/blob/main/LICENSE"));
+        } catch (IOException | URISyntaxException e) {
+          displayException(e);
         }
         break;
     }
