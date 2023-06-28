@@ -783,6 +783,7 @@ public class JDec extends JFrame implements ActionListener {
             }
             currTab.nUsingThreads.decrementAndGet();
             syncCompositionLock.unlock();
+            updateComponentsWhichRequireAutomaton();
           });
           synchronizedCompositionThread.setName(FilenameUtils.removeExtension(tab.ioAdapter.getFile().getName()) + " - Synchronized composition");
           synchronizedCompositionThread.start();
@@ -1485,7 +1486,7 @@ public class JDec extends JFrame implements ActionListener {
    * Update the components in the menu bar that require a specific type of automaton, by
    * enabling/disabling them as appropriate.
    **/
-  public void updateComponentsWhichRequireAutomaton() {
+  public synchronized void updateComponentsWhichRequireAutomaton() {
     updateComponentsWhichRequireAnyAutomaton();
     updateComponentsWhichRequireBasicAutomaton();
     updateComponentsWhichRequireUStructure();
@@ -2474,7 +2475,7 @@ public class JDec extends JFrame implements ActionListener {
      * 
      * @param newSavedStatus the new saved status
      **/
-    public void setSaved(boolean newSavedStatus) {
+    public synchronized void setSaved(boolean newSavedStatus) {
 
       if (newSavedStatus != saved) {
         saved = newSavedStatus;
