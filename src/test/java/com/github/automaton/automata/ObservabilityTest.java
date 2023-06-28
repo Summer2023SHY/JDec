@@ -24,6 +24,7 @@ package com.github.automaton.automata;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.*;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.*;
@@ -31,6 +32,7 @@ import org.junit.jupiter.params.*;
 import org.junit.jupiter.params.provider.*;
 
 import com.github.automaton.gui.util.AutomatonGenerator;
+import com.github.automaton.io.json.AutomatonJsonFileAdapter;
 
 @DisplayName("Inference Observability Test")
 public class ObservabilityTest {
@@ -43,7 +45,8 @@ public class ObservabilityTest {
         assertTrue(automaton.testObservability());
     }
 
-    private static Automaton[] testObservableAutomata() {
+    private static Automaton[] testObservableAutomata() throws IOException {
+        AutomatonJsonFileAdapter fig6Adapter = new AutomatonJsonFileAdapter(new File("aut/fig-6.json"));
         return new Automaton[] {
                 AutomatonGenerator.generateFromGUICode(
                         new Automaton(2),
@@ -139,7 +142,8 @@ public class ObservabilityTest {
                                 "10,sigma,10:BAD\n" + //
                                 "11,sigma,11:BAD\n" + //
                                 "12,sigma,12" // Transitions
-                )
+                ),
+                fig6Adapter.getAutomaton()
         };
     }
 
@@ -151,7 +155,7 @@ public class ObservabilityTest {
         assertFalse(automaton.testObservability());
     }
 
-    private static Automaton[] testUnobservableAutomata() {
+    private static Automaton[] testUnobservableAutomata() throws IOException {
         return new Automaton[] {
                 AutomatonGenerator.generateFromGUICode(
                         new Automaton(2),
