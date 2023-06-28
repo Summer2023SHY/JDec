@@ -44,7 +44,7 @@ import javax.xml.transform.stream.*;
 import org.apache.batik.swing.JSVGCanvas;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.*;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.logging.log4j.*;
 import org.w3c.dom.*;
@@ -252,6 +252,7 @@ public class JDec extends JFrame implements ActionListener {
       "Open",
       "Save[TAB]",
       "Save As...[TAB]",
+      "Export...[TAB]",
       "Refresh Tab[TAB]",
       null,
       "Clear[TAB]",
@@ -618,6 +619,12 @@ public class JDec extends JFrame implements ActionListener {
         }
           
         break;
+
+      case "Export":
+
+        throw new NotImplementedException();
+
+        // break;
 
       case "Open":
 
