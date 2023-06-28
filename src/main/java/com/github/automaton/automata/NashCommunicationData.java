@@ -36,7 +36,7 @@ import org.apache.commons.lang3.ArrayUtils;
  * 
  * @since 1.0
  */
-public class NashCommunicationData extends CommunicationData implements Cloneable {
+public class NashCommunicationData extends CommunicationData {
 
     /* INSTANCE VARIABLES */
 

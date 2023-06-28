@@ -107,6 +107,18 @@ public class CommunicationData extends TransitionData {
     /* OVERRIDDEN METHODS */
 
   /**
+   * Creates and returns a copy of this {@code CommunicationData}.
+   * 
+   * @return a copy of this {@code CommunicationData}
+   * 
+   * @since 2.0
+   */
+  @Override
+  public Object clone() {
+    return new CommunicationData(initialStateID, eventID, targetStateID, roles.clone());
+  }
+
+  /**
    * Indicates whether an object is "equal to" this communication data
    * 
    * @param obj the reference object with which to compare
