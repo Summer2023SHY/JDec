@@ -57,6 +57,8 @@ import com.github.automaton.io.AutomatonIOAdapter;
 import com.github.automaton.io.json.AutomatonJsonFileAdapter;
 import com.github.automaton.io.legacy.*;
 
+import guru.nidi.graphviz.engine.Format;
+
 /**
  * A Java application for Decentralized Control. This application has been design to build
  * and manipulate various structures such as Automata and U-Structures.
@@ -620,11 +622,71 @@ public class JDec extends JFrame implements ActionListener {
           
         break;
 
-      case "Export":
+      case "Export...":
 
-        throw new NotImplementedException();
+        {
+          JFileChooser fileChooser = new JFileChooser() {
+            @Override protected JDialog createDialog(Component parent) throws HeadlessException {
+              JDialog dialog = super.createDialog(JDec.this);
+              dialog.setModal(true);
+              return dialog;
+            }
 
-        // break;
+            @Override
+            public void approveSelection() {
+              // Overwrite protection
+              // Adapted from https://stackoverflow.com/a/3729157
+              if (getSelectedFile().exists() && getDialogType() == SAVE_DIALOG) {
+                int result = JOptionPane.showConfirmDialog(this,"Selected file exists, overwrite?","Existing file",JOptionPane.YES_NO_OPTION);
+                switch (result) {
+                  case JOptionPane.YES_OPTION:
+                    break;
+                  case JOptionPane.CANCEL_OPTION:
+                    cancelSelection();
+                  case JOptionPane.NO_OPTION:
+                  case JOptionPane.CLOSED_OPTION:
+                    return;
+                }
+              }
+              super.approveSelection();
+            }
+          };
+          fileChooser.setAcceptAllFileFilterUsed(false);
+          fileChooser.setDialogTitle("Export");
+          final java.util.List<Format> supportedFormats = java.util.List.of(Format.PNG, Format.SVG, Format.DOT);
+          for (Format f : supportedFormats) {
+            fileChooser.addChoosableFileFilter(new FileNameExtensionFilter(f.name() + " file", f.fileExtension));
+          }
+          if (currentDirectory != null)
+            fileChooser.setCurrentDirectory(currentDirectory);
+
+            /* Prompt user to select a filename */
+
+          int result = fileChooser.showSaveDialog(null);
+
+            /* No file was selected */
+
+          if (result != JFileChooser.APPROVE_OPTION || fileChooser.getSelectedFile() == null)
+            return;
+
+          FileNameExtensionFilter usedFilter = (FileNameExtensionFilter) fileChooser.getFileFilter();
+
+          if (!FilenameUtils.isExtension(fileChooser.getSelectedFile().getName(), usedFilter.getExtensions())) {
+            fileChooser.setSelectedFile(new File(
+              fileChooser.getSelectedFile().getAbsolutePath()
+              + FilenameUtils.EXTENSION_SEPARATOR
+              + usedFilter.getExtensions()[0]
+            ));
+          }
+
+          try {
+            tab.automaton.export(fileChooser.getSelectedFile());
+          } catch (IOException ioe) {
+            logger.catching(ioe);
+          }
+        }
+
+        break;
 
       case "Open":
 

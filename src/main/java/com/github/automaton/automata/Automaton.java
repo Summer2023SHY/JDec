@@ -1800,6 +1800,35 @@ public class Automaton implements Cloneable {
   }
 
   /**
+   * Exports this automaton to a file
+   * 
+   * @param file the destination file to export this automaton to
+   * @return the exported file
+   * 
+   * @throws NullPointerException if argument is {@code null}
+   * @throws IllegalArgumentException if argument is using an unsupported
+   * file extension
+   * @throws IOException if an I/O error occurs
+   * 
+   * @since 2.0
+   **/
+  public final File export(File file) throws IOException {
+
+    Format format = Format.valueOf(
+      FilenameUtils.getExtension(
+        Objects.requireNonNull(file).getName()
+      ).toUpperCase()
+    );
+
+      /* Generate image */
+
+    MutableGraph g = generateGraph();
+    Graphviz.fromGraph(g).render(format).toFile(file);
+
+    return file;
+  }
+
+  /**
    * Generate a graph that represents this automaton
    * 
    * @return a Graphviz graph that represents this automaton
