@@ -370,7 +370,6 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
         int nInvalidCommunications = ByteManipulator.readBytesAsInt(buffer, 12, Integer.BYTES);
         int nNashCommunications = ByteManipulator.readBytesAsInt(buffer, 16, Integer.BYTES);
         int nDisablementDecisions = ByteManipulator.readBytesAsInt(buffer, 20, Integer.BYTES);
-        int nSuppressedTransitions = ByteManipulator.readBytesAsInt(buffer, 24, Integer.BYTES);
 
         List<TransitionData> unconditionalViolations = readTransitionDataFromHeader(nUnconditionalViolations);
         List<TransitionData> conditionalViolations = readTransitionDataFromHeader(nConditionalViolations);
@@ -380,7 +379,6 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
         List<NashCommunicationData> nashCommunications = readNashCommunicationDataFromHeader(nNashCommunications,
                 jsonObj);
         List<DisablementData> disablementDecisions = readDisablementDataFromHeader(nDisablementDecisions, jsonObj);
-        List<TransitionData> suppressedTransitions = readTransitionDataFromHeader(nSuppressedTransitions);
 
         JsonUtils.addListPropertyToJsonObject(jsonObj, "unconditionalViolations", unconditionalViolations,
                 TransitionData.class);
@@ -394,8 +392,6 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
                 NashCommunicationData.class);
         JsonUtils.addListPropertyToJsonObject(jsonObj, "disablementDecisions", disablementDecisions,
                 DisablementData.class);
-        JsonUtils.addListPropertyToJsonObject(jsonObj, "suppressedTransitions", suppressedTransitions,
-                TransitionData.class);
     }
 
     /**
@@ -826,9 +822,6 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
         ByteManipulator.writeLongAsBytes(buffer, 16, uStructure.getNashCommunications().size(), Integer.BYTES);
         // Disablement decisions
         ByteManipulator.writeLongAsBytes(buffer, 20, uStructure.getDisablementDecisions().size(), Integer.BYTES);
-        // Suppressed transitions
-        ByteManipulator.writeLongAsBytes(buffer, 24,
-                readUStructureData(uStructure, "suppressedTransitions", TransitionData.class).size(), Integer.BYTES);
         haf.write(buffer);
 
         /* Write special transitions to the .hdr file */
@@ -839,7 +832,6 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
         writeTransitionDataToHeader(readUStructureData(uStructure, "invalidCommunications", TransitionData.class));
         writeNashCommunicationDataToHeader(uStructure.getNashCommunications());
         writeDisablementDataToHeader(uStructure.getDisablementDecisions());
-        writeTransitionDataToHeader(readUStructureData(uStructure, "suppressedTransitions", TransitionData.class));
     }
 
     /**

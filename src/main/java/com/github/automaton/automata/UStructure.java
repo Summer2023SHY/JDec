@@ -58,12 +58,6 @@ public class UStructure extends Automaton {
     /* INSTANCE VARIABLES */
 
   // Special transitions
-  /**
-   * Transitions that are graphically suppressed for readability
-   * 
-   * @since 1.3
-   */
-  protected List<TransitionData> suppressedTransitions;
   protected List<TransitionData> unconditionalViolations;
   protected List<TransitionData> conditionalViolations;
   protected List<CommunicationData> potentialCommunications;
@@ -104,7 +98,6 @@ public class UStructure extends Automaton {
 
     super.initializeLists();
 
-    suppressedTransitions = new ArrayList<TransitionData>();
     unconditionalViolations = new ArrayList<TransitionData>();
     conditionalViolations   = new ArrayList<TransitionData>();
     potentialCommunications = new ArrayList<CommunicationData>();
@@ -978,10 +971,6 @@ public class UStructure extends Automaton {
 
     UStructure uStructure = (UStructure) automaton;
 
-    for (TransitionData data : suppressedTransitions)
-      if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
-          uStructure.addSuppressedTransition(data.initialStateID, data.eventID, data.targetStateID);
-
     for (TransitionData data : unconditionalViolations)
       if (uStructure.stateExists(data.initialStateID) && uStructure.stateExists(data.targetStateID))
         uStructure.addUnconditionalViolation(data.initialStateID, data.eventID, data.targetStateID);
@@ -1519,7 +1508,6 @@ public class UStructure extends Automaton {
   @Override
   protected void renumberStatesInAllTransitionData(Map<Long, Long> mappingHashMap) {
 
-    renumberStatesInTransitionData(mappingHashMap, suppressedTransitions);
     renumberStatesInTransitionData(mappingHashMap, unconditionalViolations);
     renumberStatesInTransitionData(mappingHashMap, conditionalViolations);
     renumberStatesInTransitionData(mappingHashMap, potentialCommunications);
@@ -1698,10 +1686,6 @@ public class UStructure extends Automaton {
   @Override
   protected void addAdditionalLinkProperties(Map<String, Attributes<? extends ForLink>> map) {
 
-    for (TransitionData data : suppressedTransitions) {
-      combineAttributesInMap(map, createKey(data), Attributes.attrs(Color.TRANSPARENT, Label.of("")));
-    }
-
     for (TransitionData data : unconditionalViolations) {
       combineAttributesInMap(map, createKey(data), Attributes.attrs(Color.RED, Color.RED.font()));
     }
@@ -1788,7 +1772,6 @@ public class UStructure extends Automaton {
     addTransitionDataToJsonObject(jsonObj, "invalidCommunications", invalidCommunications);
     JsonUtils.addListPropertyToJsonObject(jsonObj, "nashCommunications", nashCommunications, NashCommunicationData.class);
     JsonUtils.addListPropertyToJsonObject(jsonObj, "disablementDecisions", disablementDecisions, DisablementData.class);
-    addTransitionDataToJsonObject(jsonObj, "suppressedTransitions", suppressedTransitions);
 
   }
 
@@ -1800,7 +1783,6 @@ public class UStructure extends Automaton {
     invalidCommunications = readTransitionDataFromJsonObject(jsonObj, "invalidCommunications");
     nashCommunications = JsonUtils.readListPropertyFromJsonObject(jsonObj, "nashCommunications", NashCommunicationData.class);
     disablementDecisions = JsonUtils.readListPropertyFromJsonObject(jsonObj, "disablementDecisions", DisablementData.class);
-    suppressedTransitions = readTransitionDataFromJsonObject(jsonObj, "suppressedTransitions");
   }
 
     /* MUTATOR METHODS */
@@ -1811,8 +1793,6 @@ public class UStructure extends Automaton {
    **/
   @Override protected void removeTransitionData(TransitionData data) {
 
-    suppressedTransitions.remove(data);
-    
     unconditionalViolations.remove(data);
 
     conditionalViolations.remove(data);
@@ -1827,18 +1807,6 @@ public class UStructure extends Automaton {
 
     disablementDecisions.remove(data);
 
-  }
-
-  /**
-   * Add a suppressed transition.
-   * @param initialStateID   The initial state
-   * @param eventID          The event triggering the transition
-   * @param targetStateID    The target state
-   * 
-   * @since 1.3
-   **/
-  public void addSuppressedTransition(long initialStateID, int eventID, long targetStateID) {
-    suppressedTransitions.add(new TransitionData(initialStateID, eventID, targetStateID));
   }
 
   /**

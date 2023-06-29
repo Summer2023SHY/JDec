@@ -1096,8 +1096,6 @@ public class Automaton implements Cloneable {
         // Add transition
         int eventID = uStructure.addTransition(stateVector, eventLabelVector, targetStateVector);
 
-        boolean suppressed = false;
-
         inner : for (int i = 0; i < nControllers; i++) {
           if ((isConditionalViolation || isUnconditionalViolation) && !transitionExistsWithEvent(stateVector.getStateFor(i + 1).getID(), getEvent(combinedEvent.get(0)).getID())) {
             isUnconditionalViolation = false;
@@ -1172,28 +1170,6 @@ public class Automaton implements Cloneable {
             int eventID = uStructure.addTransition(stateVector, eventLabelVector, targetStateVector);
             if (eventID == 0)
               logger.error("Failed to add transition.");
-
-            boolean suppressed = false;
-
-            if (combinedEvent.get(0).equals("*") && Objects.equals(stateVector, targetStateVector)) {
-              Iterator<State> stateIterator = stateVector.iterator();
-              stateIterator.next();
-              inner: while(stateIterator.hasNext()) {
-                State s = stateIterator.next();
-                logger.debug("s = " + s);
-                for (Transition tran : s.getTransitions()) {
-                  if (!BooleanUtils.or(tran.getEvent().isControllable())) {
-                    logger.debug("tran = " + tran);
-                    suppressed = true;
-                    break inner;
-                  }
-                }
-              }
-            }
-            if(suppressed) {
-              uStructure.addSuppressedTransition(stateVector.getID(), eventID, targetStateVector.getID());
-            }
-
           }
         }
 
