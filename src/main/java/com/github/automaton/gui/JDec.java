@@ -2519,7 +2519,7 @@ public class JDec extends JFrame implements ActionListener {
      * NOTE: This method is quite expensive, as it requires the entire automaton to be read and then
      *       turned in a form representable by strings.
      **/
-    public void refreshGUI() {
+    public synchronized void refreshGUI() {
 
       logger.info("Starting refresh...");
       StopWatch stopWatch = StopWatch.createStarted();
