@@ -30,6 +30,7 @@ import javax.swing.*;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.github.automaton.automata.*;
+import com.github.automaton.gui.util.AmbiguityLevelTable;
 
 /**
  * Displays the calculated ambiguity levels from observability tests.
@@ -72,22 +73,8 @@ public class AmbiguityLevelOutput extends JDialog {
      * Builds the GUI components of this {@code AmbiguityLevelOutput}.
      */
     private void buildComponents() {
-        String[] tableHeader = { "State", "Type", "Event", "Controller", "Ambiguity Level" };
-        ArrayList<String[]> tableEntryList = new ArrayList<>();
-        for (AmbiguityData ad : data) {
-            String[] entry = {
-                    ad.getState().getLabel(),
-                    ad.isEnablement() ? "Enablement" : "Disablement",
-                    ad.getEvent().getLabel(),
-                    Integer.toString(ad.getController()),
-                    ad.getAmbiguityLevel() == AmbiguityData.MAX_AMB_LEVEL ? "infinity"
-                            : Integer.toString(ad.getAmbiguityLevel())
-            };
-            tableEntryList.add(entry);
-        }
-        String[][] tableBody = tableEntryList.toArray(new String[0][]);
-        dataTable = new JTable(tableBody, tableHeader);
-        dataTable.setCellEditor(null);
+        
+        dataTable = new JTable(new AmbiguityLevelTable(data));
         JOptionPane resultPane = new JOptionPane("The system is " + (this.result ? "" : " not ") + "observable.",
                 JOptionPane.INFORMATION_MESSAGE);
         resultPane.addPropertyChangeListener(e -> {
