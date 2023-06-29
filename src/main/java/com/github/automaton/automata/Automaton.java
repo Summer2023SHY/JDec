@@ -1769,18 +1769,30 @@ public class Automaton implements Cloneable {
    * @param outputFileName name of the exported file
    * @param format file format to export with
    * @return the exported file
+   * @throws IllegalArgumentException if {@code outputFileName} has a file
+   * file extension that is not consistent with {@code format}
    * @throws NullPointerException if any argument is {@code null}
    * @throws IOException If I/O error occurs
    * @since 1.1
    **/
   public final File export(String outputFileName, Format format) throws IOException {
-    Objects.requireNonNull(outputFileName);
     Objects.requireNonNull(format);
+
+    File destFile;
+
+    if (FilenameUtils.getExtension(Objects.requireNonNull(outputFileName)).isEmpty()) {
+      destFile = new File(outputFileName + FilenameUtils.EXTENSION_SEPARATOR + format.fileExtension);
+    } else if (Objects.equals(FilenameUtils.getExtension(outputFileName), format.fileExtension)) {
+      destFile = new File(outputFileName);
+    } else {
+      throw new IllegalArgumentException(
+        String.format("\"%s\" does not have the expected extension %s", outputFileName, format.fileExtension)
+      );
+    }
 
       /* Generate image */
 
     MutableGraph g = generateGraph();
-    File destFile = new File(outputFileName + FilenameUtils.EXTENSION_SEPARATOR + format.fileExtension);
     Graphviz.fromGraph(g).render(format).toFile(destFile);
 
     return destFile;
