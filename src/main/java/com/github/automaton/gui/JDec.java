@@ -943,13 +943,7 @@ public class JDec extends JFrame implements ActionListener {
                 currTab.remove(label);
                 if (observability.getLeft())
                   if (displayAmbLevel) {
-                    TextPopup result = new TextPopup(JDec.this, "Passed Test");
-                    PrintStream ps = new PrintStream(result.getOutputStream());
-                    ps.println("The system is observable.");
-                    ps.print("\n\n");
-                    for (AmbiguityData ad : observability.getRight()) {
-                      ps.println(ad);
-                    }
+                    new AmbiguityLevelOutput(JDec.this, "Passed Test", observability);
                   } else
                     displayMessage("Passed Test", "The system is observable.", JOptionPane.INFORMATION_MESSAGE);
                 else
