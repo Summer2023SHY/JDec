@@ -1321,6 +1321,8 @@ public class JDec extends JFrame implements ActionListener {
       tab.canvas.setURI(null);
     }
 
+    tab.generateAutomatonButton.setEnabled(false);
+
     // Refresh GUI
     updateComponentsWhichRequireAutomaton(); 
 
