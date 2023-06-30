@@ -2497,15 +2497,15 @@ public class Automaton implements Closeable {
     
     byte[] buffer = new byte[HeaderAccessFile.HEADER_SIZE];
 
-    ByteManipulator.writeLongAsBytes(buffer, 0,  type.getNumericValue(), 1);
-    ByteManipulator.writeLongAsBytes(buffer, 1,  nStates, 8);
-    ByteManipulator.writeLongAsBytes(buffer, 9,  eventCapacity, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 13, stateCapacity, 8);
-    ByteManipulator.writeLongAsBytes(buffer, 21, transitionCapacity, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 25, labelLength, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 29, initialState, 8);
-    ByteManipulator.writeLongAsBytes(buffer, 37, nControllers, 4);
-    ByteManipulator.writeLongAsBytes(buffer, 41, events.size(), 4);
+    ByteManipulator.writeLongAsBytes(buffer, 0,  type.getNumericValue(), Byte.BYTES);
+    ByteManipulator.writeLongAsBytes(buffer, 1,  nStates, Long.BYTES);
+    ByteManipulator.writeLongAsBytes(buffer, 9,  eventCapacity, Integer.BYTES);
+    ByteManipulator.writeLongAsBytes(buffer, 13, stateCapacity, Long.BYTES);
+    ByteManipulator.writeLongAsBytes(buffer, 21, transitionCapacity, Integer.BYTES);
+    ByteManipulator.writeLongAsBytes(buffer, 25, labelLength, Integer.BYTES);
+    ByteManipulator.writeLongAsBytes(buffer, 29, initialState, Long.BYTES);
+    ByteManipulator.writeLongAsBytes(buffer, 37, nControllers, Integer.BYTES);
+    ByteManipulator.writeLongAsBytes(buffer, 41, events.size(), Integer.BYTES);
 
     try {
 
@@ -2517,7 +2517,7 @@ public class Automaton implements Closeable {
       for (Event e : events) {
       
         // Fill the buffer
-        buffer = new byte[ (2 * nControllers) + 4 + e.getLabel().length()];
+        buffer = new byte[ (2 * nControllers) + Integer.BYTES + e.getLabel().length()];
 
         // Read event properties (NOTE: If we ever need to condense the space required to hold an event
         // in a file, we can place a property in each bit instead of each byte)
@@ -2529,8 +2529,8 @@ public class Automaton implements Closeable {
         }
 
         // Write the length of the label
-        ByteManipulator.writeLongAsBytes(buffer, index, e.getLabel().length(), 4);
-        index += 4;
+        ByteManipulator.writeLongAsBytes(buffer, index, e.getLabel().length(), Integer.BYTES);
+        index += Integer.BYTES;
 
         // Write each character of the label
         for (int i = 0; i < e.getLabel().length(); i++)
@@ -2567,8 +2567,8 @@ public class Automaton implements Closeable {
 
       /* Write a number which indicates how many special transitions are in the file */
 
-    byte[] buffer = new byte[4];
-    ByteManipulator.writeLongAsBytes(buffer, 0, badTransitions.size(), 4);
+    byte[] buffer = new byte[Integer.BYTES];
+    ByteManipulator.writeLongAsBytes(buffer, 0, badTransitions.size(), Integer.BYTES);
     haf.write(buffer);
 
       /* Write special transitions to the .hdr file */
@@ -2593,14 +2593,14 @@ public class Automaton implements Closeable {
 
     for (TransitionData data : list) {
 
-      ByteManipulator.writeLongAsBytes(buffer, index, data.initialStateID, 8);
-      index += 8;
+      ByteManipulator.writeLongAsBytes(buffer, index, data.initialStateID, Long.BYTES);
+      index += Long.BYTES;
 
-      ByteManipulator.writeLongAsBytes(buffer, index, data.eventID, 4);
-      index += 4;
+      ByteManipulator.writeLongAsBytes(buffer, index, data.eventID, Integer.BYTES);
+      index += Integer.BYTES;
 
-      ByteManipulator.writeLongAsBytes(buffer, index, data.targetStateID, 8);
-      index += 8;
+      ByteManipulator.writeLongAsBytes(buffer, index, data.targetStateID, Long.BYTES);
+      index += Long.BYTES;
 
     }
 
@@ -2628,15 +2628,15 @@ public class Automaton implements Closeable {
 
         /* Calculate the values stored in these bytes */
 
-      type = Type.getType((byte) ByteManipulator.readBytesAsLong(buffer, 0,  1));
-      nStates            =       ByteManipulator.readBytesAsLong(buffer, 1,  8);
-      eventCapacity      =       ByteManipulator.readBytesAsInt(buffer, 9,  4);
-      stateCapacity      =       ByteManipulator.readBytesAsLong(buffer, 13, 8);
-      transitionCapacity =       ByteManipulator.readBytesAsInt(buffer, 21, 4);
-      labelLength        =       ByteManipulator.readBytesAsInt(buffer, 25, 4);
-      initialState       =       ByteManipulator.readBytesAsLong(buffer, 29, 8);
-      nControllers       =       ByteManipulator.readBytesAsInt(buffer, 37, 4);
-      int nEvents        =       ByteManipulator.readBytesAsInt(buffer, 41, 4);
+      type = Type.getType((byte) ByteManipulator.readBytesAsLong(buffer, 0,  Byte.BYTES));
+      nStates            =       ByteManipulator.readBytesAsLong(buffer, 1,  Long.BYTES);
+      eventCapacity      =       ByteManipulator.readBytesAsInt(buffer, 9,   Integer.BYTES);
+      stateCapacity      =       ByteManipulator.readBytesAsLong(buffer, 13, Long.BYTES);
+      transitionCapacity =       ByteManipulator.readBytesAsInt(buffer, 21,  Integer.BYTES);
+      labelLength        =       ByteManipulator.readBytesAsInt(buffer, 25,  Integer.BYTES);
+      initialState       =       ByteManipulator.readBytesAsLong(buffer, 29, Long.BYTES);
+      nControllers       =       ByteManipulator.readBytesAsInt(buffer, 37,  Integer.BYTES);
+      int nEvents        =       ByteManipulator.readBytesAsInt(buffer, 41,  Integer.BYTES);
 
       // None of the following things can exist if there are no events
       if (nEvents == 0)
@@ -2656,8 +2656,8 @@ public class Automaton implements Closeable {
         }
 
         // Read the number of characters in the label
-        buffer = haf.readHeaderBytes(4);
-        int eventLabelLength = ByteManipulator.readBytesAsInt(buffer, 0, 4);
+        buffer = haf.readHeaderBytes(Integer.BYTES);
+        int eventLabelLength = ByteManipulator.readBytesAsInt(buffer, 0, Integer.BYTES);
 
         // Read each character of the label, building an array of characters
         buffer = haf.readHeaderBytes(eventLabelLength);
@@ -2689,8 +2689,8 @@ public class Automaton implements Closeable {
 
       /* Read the number which indicates how many special transitions are in the file */
 
-    byte[] buffer = haf.readHeaderBytes(4);
-    int nBadTransitions = ByteManipulator.readBytesAsInt(buffer, 0, 4);
+    byte[] buffer = haf.readHeaderBytes(Integer.BYTES);
+    int nBadTransitions = ByteManipulator.readBytesAsInt(buffer, 0, Integer.BYTES);
 
       /* Read in special transitions from the .hdr file */
     
@@ -2716,14 +2716,14 @@ public class Automaton implements Closeable {
 
     for (int i = 0; i < nTransitions; i++) {
       
-      long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-      index += 8;
+      long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, Long.BYTES);
+      index += Long.BYTES;
       
-      int eventID = ByteManipulator.readBytesAsInt(buffer, index, 4);
-      index += 4;
+      int eventID = ByteManipulator.readBytesAsInt(buffer, index, Integer.BYTES);
+      index += Integer.BYTES;
       
-      long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-      index += 8;
+      long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, Long.BYTES);
+      index += Long.BYTES;
 
       list.add(new TransitionData(initialStateID, eventID, targetStateID));
     

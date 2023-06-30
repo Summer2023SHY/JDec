@@ -2173,12 +2173,12 @@ public class UStructure extends Automaton {
       /* Write numbers to indicate how many special transitions are in the file */
 
     byte[] buffer = new byte[24];
-    ByteManipulator.writeLongAsBytes(buffer, 0,  unconditionalViolations.size(), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 4,  conditionalViolations.size(),   4);
-    ByteManipulator.writeLongAsBytes(buffer, 8,  potentialCommunications.size(), 4);
-    ByteManipulator.writeLongAsBytes(buffer, 12, invalidCommunications.size(),   4);
-    ByteManipulator.writeLongAsBytes(buffer, 16, nashCommunications.size(),      4);
-    ByteManipulator.writeLongAsBytes(buffer, 20, disablementDecisions.size(),    4);
+    ByteManipulator.writeLongAsBytes(buffer, 0,  unconditionalViolations.size(), Integer.BYTES);
+    ByteManipulator.writeLongAsBytes(buffer, 4,  conditionalViolations.size(),   Integer.BYTES);
+    ByteManipulator.writeLongAsBytes(buffer, 8,  potentialCommunications.size(), Integer.BYTES);
+    ByteManipulator.writeLongAsBytes(buffer, 12, invalidCommunications.size(),   Integer.BYTES);
+    ByteManipulator.writeLongAsBytes(buffer, 16, nashCommunications.size(),      Integer.BYTES);
+    ByteManipulator.writeLongAsBytes(buffer, 20, disablementDecisions.size(),    Integer.BYTES);
     haf.write(buffer);
 
       /* Write special transitions to the .hdr file */
@@ -2206,14 +2206,14 @@ public class UStructure extends Automaton {
       byte[] buffer = new byte[20 + data.roles.length];
       int index = 0;
 
-      ByteManipulator.writeLongAsBytes(buffer, index, data.initialStateID, 8);
-      index += 8;
+      ByteManipulator.writeLongAsBytes(buffer, index, data.initialStateID, Long.BYTES);
+      index += Long.BYTES;
 
-      ByteManipulator.writeLongAsBytes(buffer, index, data.eventID, 4);
-      index += 4;
+      ByteManipulator.writeLongAsBytes(buffer, index, data.eventID, Integer.BYTES);
+      index += Integer.BYTES;
 
-      ByteManipulator.writeLongAsBytes(buffer, index, data.targetStateID, 8);
-      index += 8;
+      ByteManipulator.writeLongAsBytes(buffer, index, data.targetStateID, Long.BYTES);
+      index += Long.BYTES;
 
       for (CommunicationRole role : data.roles)
         buffer[index++] = role.getNumericValue();
@@ -2239,20 +2239,20 @@ public class UStructure extends Automaton {
       byte[] buffer = new byte[36 + data.roles.length];
       int index = 0;
 
-      ByteManipulator.writeLongAsBytes(buffer, index, data.initialStateID, 8);
-      index += 8;
+      ByteManipulator.writeLongAsBytes(buffer, index, data.initialStateID, Long.BYTES);
+      index += Long.BYTES;
 
-      ByteManipulator.writeLongAsBytes(buffer, index, data.eventID, 4);
-      index += 4;
+      ByteManipulator.writeLongAsBytes(buffer, index, data.eventID, Integer.BYTES);
+      index += Integer.BYTES;
 
-      ByteManipulator.writeLongAsBytes(buffer, index, data.targetStateID, 8);
-      index += 8;
+      ByteManipulator.writeLongAsBytes(buffer, index, data.targetStateID, Long.BYTES);
+      index += Long.BYTES;
 
-      ByteManipulator.writeLongAsBytes(buffer, index, Double.doubleToLongBits(data.cost), 8);
-      index += 8;
+      ByteManipulator.writeLongAsBytes(buffer, index, Double.doubleToLongBits(data.cost), Double.BYTES);
+      index += Double.BYTES;
 
-      ByteManipulator.writeLongAsBytes(buffer, index, Double.doubleToLongBits(data.probability), 8);
-      index += 8;
+      ByteManipulator.writeLongAsBytes(buffer, index, Double.doubleToLongBits(data.probability), Double.BYTES);
+      index += Double.BYTES;
 
       for (CommunicationRole role : data.roles)
         buffer[index++] = role.getNumericValue();
@@ -2276,14 +2276,14 @@ public class UStructure extends Automaton {
       byte[] buffer = new byte[20 + data.controllers.length];
       int index = 0;
 
-      ByteManipulator.writeLongAsBytes(buffer, index, data.initialStateID, 8);
-      index += 8;
+      ByteManipulator.writeLongAsBytes(buffer, index, data.initialStateID, Long.BYTES);
+      index += Long.BYTES;
 
-      ByteManipulator.writeLongAsBytes(buffer, index, data.eventID, 4);
-      index += 4;
+      ByteManipulator.writeLongAsBytes(buffer, index, data.eventID, Integer.BYTES);
+      index += Integer.BYTES;
 
-      ByteManipulator.writeLongAsBytes(buffer, index, data.targetStateID, 8);
-      index += 8;
+      ByteManipulator.writeLongAsBytes(buffer, index, data.targetStateID, Long.BYTES);
+      index += Long.BYTES;
 
       for (boolean b : data.controllers)
         buffer[index++] = (byte) BooleanUtils.toInteger(b);
@@ -2300,12 +2300,12 @@ public class UStructure extends Automaton {
 
     byte[] buffer = haf.readHeaderBytes(24);
 
-    int nUnconditionalViolations = (int) ByteManipulator.readBytesAsLong(buffer, 0,  4);
-    int nConditionalViolations   = (int) ByteManipulator.readBytesAsLong(buffer, 4,  4);
-    int nPotentialCommunications = (int) ByteManipulator.readBytesAsLong(buffer, 8,  4);
-    int nInvalidCommunications   = (int) ByteManipulator.readBytesAsLong(buffer, 12, 4);
-    int nNashCommunications      = (int) ByteManipulator.readBytesAsLong(buffer, 16, 4);
-    int nDisablementDecisions    = (int) ByteManipulator.readBytesAsLong(buffer, 20, 4);
+    int nUnconditionalViolations = (int) ByteManipulator.readBytesAsLong(buffer, 0,  Integer.BYTES);
+    int nConditionalViolations   = (int) ByteManipulator.readBytesAsLong(buffer, 4,  Integer.BYTES);
+    int nPotentialCommunications = (int) ByteManipulator.readBytesAsLong(buffer, 8,  Integer.BYTES);
+    int nInvalidCommunications   = (int) ByteManipulator.readBytesAsLong(buffer, 12, Integer.BYTES);
+    int nNashCommunications      = (int) ByteManipulator.readBytesAsLong(buffer, 16, Integer.BYTES);
+    int nDisablementDecisions    = (int) ByteManipulator.readBytesAsLong(buffer, 20, Integer.BYTES);
 
       /* Read in special transitions from the .hdr file */
     
@@ -2355,14 +2355,14 @@ public class UStructure extends Automaton {
 
     for (int i = 0; i < nCommunications; i++) {
 
-      long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-      index += 8;
+      long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, Long.BYTES);
+      index += Long.BYTES;
       
-      int eventID = ByteManipulator.readBytesAsInt(buffer, index, 4);
-      index += 4;
+      int eventID = ByteManipulator.readBytesAsInt(buffer, index, Integer.BYTES);
+      index += Integer.BYTES;
       
-      long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-      index += 8;
+      long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, Long.BYTES);
+      index += Long.BYTES;
 
       CommunicationRole[] roles = new CommunicationRole[nControllers];
       for (int j = 0; j < roles.length; j++)
@@ -2388,20 +2388,20 @@ public class UStructure extends Automaton {
 
     for (int i = 0; i < nCommunications; i++) {
 
-      long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-      index += 8;
+      long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, Long.BYTES);
+      index += Long.BYTES;
       
-      int eventID = ByteManipulator.readBytesAsInt(buffer, index, 4);
-      index += 4;
+      int eventID = ByteManipulator.readBytesAsInt(buffer, index, Integer.BYTES);
+      index += Integer.BYTES;
       
-      long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-      index += 8;
+      long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, Long.BYTES);
+      index += Long.BYTES;
 
-      double cost = Double.longBitsToDouble(ByteManipulator.readBytesAsLong(buffer, index, 8));
-      index += 8;
+      double cost = Double.longBitsToDouble(ByteManipulator.readBytesAsLong(buffer, index, Double.BYTES));
+      index += Double.BYTES;
 
-      double probability = Double.longBitsToDouble(ByteManipulator.readBytesAsLong(buffer, index, 8));
-      index += 8;
+      double probability = Double.longBitsToDouble(ByteManipulator.readBytesAsLong(buffer, index, Double.BYTES));
+      index += Double.BYTES;
 
       CommunicationRole[] roles = new CommunicationRole[nControllers];
       for (int j = 0; j < roles.length; j++)
@@ -2427,14 +2427,14 @@ public class UStructure extends Automaton {
 
     for (int i = 0; i < nDisablements; i++) {
 
-      long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-      index += 8;
+      long initialStateID = ByteManipulator.readBytesAsLong(buffer, index, Long.BYTES);
+      index += Long.BYTES;
       
-      int eventID = ByteManipulator.readBytesAsInt(buffer, index, 4);
-      index += 4;
+      int eventID = ByteManipulator.readBytesAsInt(buffer, index, Integer.BYTES);
+      index += Integer.BYTES;
       
-      long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, 8);
-      index += 8;
+      long targetStateID = ByteManipulator.readBytesAsLong(buffer, index, Long.BYTES);
+      index += Long.BYTES;
 
       boolean[] controllers = new boolean[nControllers];
       for (int j = 0; j < controllers.length; j++)
