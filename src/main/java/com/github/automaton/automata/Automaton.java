@@ -1173,41 +1173,13 @@ public class Automaton implements Closeable {
 
         // Add transition
         int eventID = uStructure.addTransition(stateVector, eventLabelVector, targetStateVector);
-
-        boolean suppressed = false;
-
         if (isUnconditionalViolation) {
-          inner: for (int i = 0; i < nControllers; i++) {
-            State s = stateVector.getStateFor(i + 1);
-            for (Transition tran : s.getTransitions()) {
-              if (!tran.getEvent().isControllable()[i]) {
-                uStructure.addSuppressedTransition(stateVector.getID(), eventID, targetStateVector.getID());
-                suppressed = true;
-                break inner;
-              }
-            }
-          }
-          if (!suppressed) {
-            uStructure.addUnconditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
-            stateVector.setDisablement(true);
-          }
+          uStructure.addUnconditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
+          stateVector.setDisablement(true);
         }
         if (isConditionalViolation) {
-
-          inner: for (int i = 0; i < nControllers; i++) {
-            State s = stateVector.getStateFor(i + 1);
-            for (Transition tran : s.getTransitions()) {
-              if (!tran.getEvent().isControllable()[i]) {
-                uStructure.addSuppressedTransition(stateVector.getID(), eventID, targetStateVector.getID());
-                suppressed = true;
-                break inner;
-              }
-            }
-          }
-          if (!suppressed) {
-            uStructure.addConditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
-            stateVector.setEnablement(true);
-          }
+          uStructure.addConditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
+          stateVector.setEnablement(true);
         }
         if (isDisablementDecision)
           uStructure.addDisablementDecision(stateVector.getID(), eventID, targetStateVector.getID(), disablementControllers);
@@ -1283,27 +1255,6 @@ public class Automaton implements Closeable {
             int eventID = uStructure.addTransition(stateVector, eventLabelVector, targetStateVector);
             if (eventID == 0)
               logger.error("Failed to add transition.");
-
-            boolean suppressed = false;
-
-            if (combinedEvent.get(0).equals("*") && Objects.equals(stateVector, targetStateVector)) {
-              Iterator<State> stateIterator = stateVector.iterator();
-              stateIterator.next();
-              inner: while(stateIterator.hasNext()) {
-                State s = stateIterator.next();
-                logger.debug("s = " + s);
-                for (Transition tran : s.getTransitions()) {
-                  if (!BooleanUtils.or(tran.getEvent().isControllable())) {
-                    logger.debug("tran = " + tran);
-                    suppressed = true;
-                    break inner;
-                  }
-                }
-              }
-            }
-            if(suppressed) {
-              uStructure.addSuppressedTransition(stateVector.getID(), eventID, targetStateVector.getID());
-            }
 
           }
         }
