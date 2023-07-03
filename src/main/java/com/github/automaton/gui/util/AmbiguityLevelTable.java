@@ -65,6 +65,11 @@ public class AmbiguityLevelTable extends AbstractTableModel {
     /** Column label for ambiguity levels */
     public static final String AMB_LEVEL_COLUMN_NAME = "Ambiguity Level";
 
+    /** String representation for enablement states */
+    static final String ENABLEMENT_STR_REPR = "Enablement";
+    /** String representation for disablement states */
+    static final String DISABLEMENT_STR_REPR = "Disablement";
+
     /** The underlying ambiguity data list */
     private List<AmbiguityData> dataList;
 
