@@ -1341,8 +1341,6 @@ public class Automaton implements Cloneable {
    * @implNote The technique used here is similar to how the complement works. This would not work
    *       in all cases, but G_{Sigma*} is a special case.
    * @return              The twin plant
-   * 
-   * @since 2.0
    **/
   public final Automaton generateTwinPlant() {
 
@@ -1422,8 +1420,6 @@ public class Automaton implements Cloneable {
     * @implNote The technique used here is similar to how the complement works. This would not work
     *       in all cases, but G_{Sigma*} is a special case.
     * @return              The twin plant
-    *
-    * @since 2.0
     **/
   public final Automaton generateTwinPlant2() {
 
