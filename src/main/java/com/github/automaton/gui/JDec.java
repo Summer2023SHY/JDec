@@ -44,7 +44,7 @@ import javax.xml.transform.stream.*;
 import org.apache.batik.swing.JSVGCanvas;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.*;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.*;
@@ -57,6 +57,8 @@ import com.github.automaton.gui.util.*;
 import com.github.automaton.io.AutomatonIOAdapter;
 import com.github.automaton.io.json.AutomatonJsonFileAdapter;
 import com.github.automaton.io.legacy.*;
+
+import guru.nidi.graphviz.engine.Format;
 
 /**
  * A Java application for Decentralized Control. This application has been design to build
@@ -253,6 +255,7 @@ public class JDec extends JFrame implements ActionListener {
       "Open",
       "Save[TAB]",
       "Save As...[TAB]",
+      "Export...[TAB]",
       "Refresh Tab[TAB]",
       null,
       "Clear[TAB]",
@@ -618,6 +621,72 @@ public class JDec extends JFrame implements ActionListener {
             tab.automaton = tab.ioAdapter.getAutomaton();
         }
           
+        break;
+
+      case "Export...":
+
+        {
+          JFileChooser fileChooser = new JFileChooser() {
+            @Override protected JDialog createDialog(Component parent) throws HeadlessException {
+              JDialog dialog = super.createDialog(JDec.this);
+              dialog.setModal(true);
+              return dialog;
+            }
+
+            @Override
+            public void approveSelection() {
+              // Overwrite protection
+              // Adapted from https://stackoverflow.com/a/3729157
+              if (getSelectedFile().exists() && getDialogType() == SAVE_DIALOG) {
+                int result = JOptionPane.showConfirmDialog(this,"Selected file exists, overwrite?","Existing file",JOptionPane.YES_NO_OPTION);
+                switch (result) {
+                  case JOptionPane.YES_OPTION:
+                    break;
+                  case JOptionPane.CANCEL_OPTION:
+                    cancelSelection();
+                  case JOptionPane.NO_OPTION:
+                  case JOptionPane.CLOSED_OPTION:
+                    return;
+                }
+              }
+              super.approveSelection();
+            }
+          };
+          fileChooser.setAcceptAllFileFilterUsed(false);
+          fileChooser.setDialogTitle("Export");
+          final java.util.List<Format> supportedFormats = java.util.List.of(Format.PNG, Format.SVG, Format.DOT);
+          for (Format f : supportedFormats) {
+            fileChooser.addChoosableFileFilter(new FileNameExtensionFilter(f.name() + " file", f.fileExtension));
+          }
+          if (currentDirectory != null)
+            fileChooser.setCurrentDirectory(currentDirectory);
+
+            /* Prompt user to select a filename */
+
+          int result = fileChooser.showSaveDialog(null);
+
+            /* No file was selected */
+
+          if (result != JFileChooser.APPROVE_OPTION || fileChooser.getSelectedFile() == null)
+            return;
+
+          FileNameExtensionFilter usedFilter = (FileNameExtensionFilter) fileChooser.getFileFilter();
+
+          if (!FilenameUtils.isExtension(fileChooser.getSelectedFile().getName(), usedFilter.getExtensions())) {
+            fileChooser.setSelectedFile(new File(
+              fileChooser.getSelectedFile().getAbsolutePath()
+              + FilenameUtils.EXTENSION_SEPARATOR
+              + usedFilter.getExtensions()[0]
+            ));
+          }
+
+          try {
+            tab.automaton.export(fileChooser.getSelectedFile());
+          } catch (IOException ioe) {
+            logger.catching(ioe);
+          }
+        }
+
         break;
 
       case "Open":
