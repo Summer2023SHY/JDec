@@ -46,6 +46,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.time.StopWatch;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.*;
 import org.w3c.dom.*;
 import org.xml.sax.*;
@@ -922,21 +923,29 @@ public class JDec extends JFrame implements ActionListener {
 
       case "Test Observability":
         {
+          final int ambLevelDisplayResponse = JOptionPane.showConfirmDialog(this, "Do you want the calculated ambiguity levels displayed?", "Display ambiguity level?", JOptionPane.YES_NO_OPTION);
+          if (ambLevelDisplayResponse == JOptionPane.CLOSED_OPTION) {
+            return;
+          }
           AutomatonTab currTab = tab;
           Thread observabilityThread = new Thread(new Runnable() {
               @Override
               public void run() {
+                final boolean displayAmbLevel = ambLevelDisplayResponse == JOptionPane.YES_OPTION;
                 JLabel label = new JLabel("Running observability test", SwingConstants.CENTER);
                 currTab.add(label, BorderLayout.SOUTH);
                 setBusyCursor(true);
                 currTab.nUsingThreads.incrementAndGet();
-                boolean observability = currTab.automaton.testObservability();
+                Pair<Boolean, java.util.List<AmbiguityData>> observability = currTab.automaton.testObservability(displayAmbLevel);
                 currTab.nUsingThreads.decrementAndGet();
                 tabbedPane.setSelectedComponent(currTab);
                 setBusyCursor(false);
                 currTab.remove(label);
-                if (observability)
-                  displayMessage("Passed Test", "The system is observable.", JOptionPane.INFORMATION_MESSAGE);
+                if (observability.getLeft())
+                  if (displayAmbLevel) {
+                    new AmbiguityLevelOutput(JDec.this, "Passed Test", observability);
+                  } else
+                    displayMessage("Passed Test", "The system is observable.", JOptionPane.INFORMATION_MESSAGE);
                 else
                   displayMessage("Failed Test", "The system is not observable.", JOptionPane.INFORMATION_MESSAGE);
               }

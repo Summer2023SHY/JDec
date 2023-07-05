@@ -54,6 +54,7 @@ import org.apache.commons.lang3.*;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.reflect.TypeUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.*;
 
 import com.github.automaton.io.json.*;
@@ -1193,15 +1194,34 @@ public class Automaton implements Cloneable {
    * @implNote This is an expensive test.
    * @return  Whether or not this system is observable
    **/
-  @SuppressWarnings("unchecked")
   public boolean testObservability() {
+    return testObservability(false).getLeft();
+  }
+
+  /**
+   * Test to see if this system is observable.
+   * 
+   * <p>This method may optionally return the ambiguity levels for each control
+   * decision as a list. The returned list is empty if this system is not
+   * observable or the user specified not to store this data.
+   * 
+   * @param storeAmbiguityLevel whether to store and return the calculated
+   *        ambiguity levels for each control decision
+   * @return Whether or not this system is observable and the list of ambiguity
+   *         levels for each control decision
+   * 
+   * @since 2.0
+   */
+  @SuppressWarnings("unchecked")
+  public Pair<Boolean, List<AmbiguityData>> testObservability(boolean storeAmbiguityLevel) {
+
+    List<AmbiguityData> ambData = Collections.emptyList();
+    if (storeAmbiguityLevel) {
+      ambData = new ArrayList<>();
+    }
 
     // Take the U-Structure, then relabel states as needed
     UStructure uStructure = synchronizedComposition().relabelConfigurationStates();
-
-    int[] dummy = new int[nControllers + 1];
-
-    Arrays.fill(dummy, -1);
 
     Automaton[] determinizations = new Automaton[nControllers];
     List<List<State>>[] indistinguishableStatesArr = new List[nControllers];
@@ -1302,12 +1322,23 @@ public class Automaton implements Cloneable {
         resolved.addAll(R);
       }
       if (resolved.size() < neighborMap.keySet().size()) {
-        return false;
+        return Pair.of(false, Collections.emptyList());
+      } else if (storeAmbiguityLevel) {
+        for (State controlState : ambLevelMap.keySet()) {
+          for (int i = 0; i < nControllers; i++) {
+            ambData.add(
+              new AmbiguityData(
+                controlState, e, i + 1, enablementStates.contains(controlState),
+                ambLevelMap.get(controlState)[i].intValue()
+              )
+            );
+          }
+        }
       }
 
     }
 
-    return true;
+    return Pair.of(true, ambData);
 
   }
 
