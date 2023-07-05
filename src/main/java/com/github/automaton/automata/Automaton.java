@@ -1759,7 +1759,7 @@ public class Automaton implements Cloneable {
       MutableGraph g = generateGraph();
       Graphviz graphviz = Graphviz.fromGraph(g);
       graphviz.render(Format.SVG_STANDALONE).toFile(new File(outputFileName + FilenameUtils.EXTENSION_SEPARATOR + Format.SVG_STANDALONE.fileExtension));
-      graphviz.render(Format.PNG).toFile(new File(outputFileName + FilenameUtils.EXTENSION_SEPARATOR + Format.PNG.fileExtension));
+      // graphviz.render(Format.PNG).toFile(new File(outputFileName + FilenameUtils.EXTENSION_SEPARATOR + Format.PNG.fileExtension));
       return true;
     } catch (IOException e) {
       logger.catching(e);
