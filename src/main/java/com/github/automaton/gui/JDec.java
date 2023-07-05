@@ -92,8 +92,10 @@ public class JDec extends JFrame implements ActionListener {
   }
 
   private static final String applicationTitle = String.format(
-    "JDec (%s) - A Java application for Decentralized Control",
-    Objects.requireNonNullElse(JDec.class.getPackage().getImplementationVersion(), "dev")
+    "JDec (%s - %s%s) - A Java application for Decentralized Control",
+    Objects.requireNonNullElse(JDec.class.getPackage().getImplementationVersion(), "dev"),
+    gitProperties.getProperty("git.commit.id.abbrev"),
+    Boolean.valueOf(gitProperties.getProperty("git.dirty")) ? "*" : ""
   );
   private static final String GUI_DATA_FILE_NAME  = "gui.data";
 
