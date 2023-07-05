@@ -75,10 +75,27 @@ public class JDec extends JFrame implements ActionListener {
 
   public static final int PREFERRED_DIALOG_WIDTH  = 500;
   public static final int PREFERRED_DIALOG_HEIGHT = 500;
-  
+
+  /**
+   * Automatically generated Git properties at build time
+   * 
+   * @since 2.0
+   */
+  private static Properties gitProperties;
+  static {
+    try (InputStream gitPropertiesInput = getResourceURL("git.properties").openStream()) {
+      gitProperties = new Properties();
+      gitProperties.load(gitPropertiesInput);
+    } catch (IOException ioe) {
+      throw new UncheckedIOException(ioe);
+    }
+  }
+
   private static final String applicationTitle = String.format(
-    "JDec (%s) - A Java application for Decentralized Control",
-    Objects.requireNonNullElse(JDec.class.getPackage().getImplementationVersion(), "dev")
+    "JDec (%s - %s%s) - A Java application for Decentralized Control",
+    Objects.requireNonNullElse(JDec.class.getPackage().getImplementationVersion(), "dev"),
+    gitProperties.getProperty("git.commit.id.abbrev"),
+    Boolean.valueOf(gitProperties.getProperty("git.dirty")) ? "*" : ""
   );
   private static final String GUI_DATA_FILE_NAME  = "gui.data";
 
