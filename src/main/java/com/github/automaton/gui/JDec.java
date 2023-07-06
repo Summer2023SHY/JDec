@@ -2313,7 +2313,7 @@ public class JDec extends JFrame implements ActionListener {
     public JSplitPane splitPane;
     public JTextPane eventInput, stateInput, transitionInput;
     public JSpinner controllerInput;
-    public JButton generateAutomatonButton, generateImageButton, viewImageInBrowserButton, exploreAutomatonButton;
+    public JButton generateAutomatonButton, generateImageButton, viewImageInBrowserButton, exploreAutomatonButton, showAutomatonInfoButton;
     public JSVGCanvas canvas = null;
 
     // Automaton properties
@@ -2497,6 +2497,22 @@ public class JDec extends JFrame implements ActionListener {
       c.ipady = 0; c.weightx = 0.5; c.weighty = 1.0; c.gridx = 0; c.gridy = 7;
       container.add(viewImageInBrowserButton, c);
 
+      /* Show Information Button */
+
+      showAutomatonInfoButton = new JButton("Show Information");
+      showAutomatonInfoButton.setFocusable(false);
+      showAutomatonInfoButton.setToolTipText("<html>Show basic information about this automaton.</html>");
+      showAutomatonInfoButton.addActionListener(e -> {
+        AutomatonTab tab = tabs.get(tabbedPane.getSelectedIndex());
+        try {
+          new AutomatonInfoOutput(JDec.this, "Automaton Info", tab.automaton);
+        } catch (RuntimeException re) {
+          displayException(re);
+        }
+      });
+      c.ipady = 0; c.weightx = 0.5; c.weighty = 1.0; c.gridx = 0; c.gridy = 8;
+      container.add(showAutomatonInfoButton, c);
+
         /* Explore Automaton Button */
 
       exploreAutomatonButton = new JButton("Explore");
@@ -2512,7 +2528,7 @@ public class JDec extends JFrame implements ActionListener {
           }
         }
       });
-      c.ipady = 0; c.weightx = 0.5; c.weighty = 1.0; c.gridx = 0; c.gridy = 8;
+      c.ipady = 0; c.weightx = 0.5; c.weighty = 1.0; c.gridx = 0; c.gridy = 9;
       container.add(exploreAutomatonButton, c);
 
       return container;
