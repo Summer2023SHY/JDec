@@ -118,22 +118,37 @@ public class AutomatonInfoOutput extends JDialog {
 
     /**
      * {@link TableModel} wrapper for {@link Automaton automata}.
+     * 
+     * @author Sung Ho Yoon
+     * 
+     * @since 2.0
      */
-    private static class AutomatonInfoTable extends AbstractTableModel {
+    protected static class AutomatonInfoTable extends AbstractTableModel {
 
         /**
          * Fixed number of columns that {@code AmbiguityLevelTable}s have.
          */
         static final int NUM_COLUMNS = 2;
 
+        /** Column index for automaton properties */
         static final int PROPERTY_COLUMN = 0;
+        /** Column label for automaton properties */
         static final String PROPERTY_COLUMN_NAME = "Property";
+        /** Column index for automaton property values */
         static final int VALUE_COLUMN = 1;
+        /** Column label for automaton property values */
         static final String VALUE_COLUMN_NAME = "Value";
 
         private Automaton automaton;
         private List<Pair<String, Long>> automatonInfo = new ArrayList<>();
 
+        /**
+         * Constructs a new {@code AutomatonInfoTable}.
+         * 
+         * @param automaton an automaton
+         * 
+         * @throws NullPointerException if argument is {@code null}
+         */
         public AutomatonInfoTable(Automaton automaton) {
             this.automaton = Objects.requireNonNull(automaton);
             automatonInfo.add(Pair.of("#States", this.automaton.getNumberOfStates()));
