@@ -54,10 +54,10 @@ public class AutomatonInfoOutput extends JDialog {
     /**
      * Constructs a new {@code AutomatonInfoOutput}.
      * 
-     * @param gui   a reference to the {@link JDec} instance that owns
-     *              this popup
-     * @param title the title for this popup
-     * @param data  the result from {@link Automaton#testObservability(boolean)}
+     * @param gui       a reference to the {@link JDec} instance that owns
+     *                  this popup
+     * @param title     the title for this popup
+     * @param automaton the automaton to extract data from
      */
     public AutomatonInfoOutput(JDec gui, String title, Automaton automaton) {
         super(gui, true);
