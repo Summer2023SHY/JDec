@@ -636,6 +636,7 @@ public class JDec extends JFrame implements ActionListener {
           tab.updateTabTitle();
           if (tab.automaton != null)
             tab.automaton = tab.ioAdapter.getAutomaton();
+          tab.setSaved(true);
         }
           
         break;
