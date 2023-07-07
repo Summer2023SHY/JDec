@@ -29,6 +29,7 @@ import java.io.*;
 import java.net.*;
 import java.nio.file.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -113,15 +114,15 @@ public class JDec extends JFrame implements ActionListener {
 
   // Tabs
   private JTabbedPane tabbedPane;
-  private ArrayList<AutomatonTab> tabs = new ArrayList<AutomatonTab>();
+  private java.util.List<AutomatonTab> tabs = Collections.synchronizedList(new ArrayList<>());
   
   // Enabling/disabling components
-  private java.util.List<Component> componentsWhichRequireTab              = new ArrayList<Component>();
-  private java.util.List<Component> componentsWhichRequireAnyAutomaton     = new ArrayList<Component>();
-  private java.util.List<Component> componentsWhichRequireBasicAutomaton   = new ArrayList<Component>();
-  private java.util.List<Component> componentsWhichRequireUStructure       = new ArrayList<Component>();
-  private java.util.List<Component> componentsWhichRequirePrunedUStructure = new ArrayList<Component>();
-  private java.util.List<Component> componentsWhichRequireAnyUStructure    = new ArrayList<Component>();
+  private java.util.List<Component> componentsWhichRequireTab              = Collections.synchronizedList(new ArrayList<>());
+  private java.util.List<Component> componentsWhichRequireAnyAutomaton     = Collections.synchronizedList(new ArrayList<>());
+  private java.util.List<Component> componentsWhichRequireBasicAutomaton   = Collections.synchronizedList(new ArrayList<>());
+  private java.util.List<Component> componentsWhichRequireUStructure       = Collections.synchronizedList(new ArrayList<>());
+  private java.util.List<Component> componentsWhichRequirePrunedUStructure = Collections.synchronizedList(new ArrayList<>());
+  private java.util.List<Component> componentsWhichRequireAnyUStructure    = Collections.synchronizedList(new ArrayList<>());
 
   // Miscellaneous
   private File currentDirectory = new File(SystemUtils.USER_DIR);
@@ -1091,7 +1092,7 @@ public class JDec extends JFrame implements ActionListener {
    * Create an empty tab.
    * @param assignTemporaryFiles  Whether or not temporary files should be assigned to the tab
    **/
-  private void createTab(boolean assignTemporaryFiles, Automaton.Type type) {
+  private synchronized void createTab(boolean assignTemporaryFiles, Automaton.Type type) {
 
       /* Add tab */
 
@@ -1117,9 +1118,13 @@ public class JDec extends JFrame implements ActionListener {
 
       /* Re-activate appropriate components if this is the first tab */
 
-    if (tabs.size() == 1)
-      for (Component component : componentsWhichRequireTab)
-        component.setEnabled(true);
+    if (tabs.size() == 1) {
+      synchronized (componentsWhichRequireTab) {
+        for (Component component : componentsWhichRequireTab)
+          component.setEnabled(true);
+      }
+    }
+      
 
       /* Refresh components which require a specific type of automaton */
     
@@ -1531,7 +1536,7 @@ public class JDec extends JFrame implements ActionListener {
    * @param index The tab's index
    **/
   @SuppressWarnings("removal")
-  private void refresh(final int index) {
+  private synchronized void refresh(final int index) {
       
     setBusyCursor(true);
 
@@ -1569,16 +1574,19 @@ public class JDec extends JFrame implements ActionListener {
 
         }*/
 
-        tab.refreshGUI();
+        synchronized (tab) {
 
-        // Generate an image (unless it's quite large)
-        if (tab.automaton.getNumberOfStates() <= N_STATES_TO_AUTOMATICALLY_DRAW) {
-          generateImage();
-          tab.generateImageButton.setEnabled(false);
-        } else
-          tab.generateImageButton.setEnabled(true);
+          tab.refreshGUI();
 
-        //tab.setSaved(true);
+          // Generate an image (unless it's quite large)
+          if (tab.automaton.getNumberOfStates() <= N_STATES_TO_AUTOMATICALLY_DRAW) {
+            generateImage();
+            tab.generateImageButton.setEnabled(false);
+          } else
+            tab.generateImageButton.setEnabled(true);
+
+          //tab.setSaved(true);
+        }
 
         EventQueue.invokeLater(new Runnable() {
             @Override public void run() {
@@ -1624,8 +1632,10 @@ public class JDec extends JFrame implements ActionListener {
     );
     
     // Enabled/disable all components in the list
-    for (Component component : componentsWhichRequireAnyAutomaton)
-      component.setEnabled(enabled);
+    synchronized (componentsWhichRequireAnyAutomaton) {
+      for (Component component : componentsWhichRequireAnyAutomaton)
+        component.setEnabled(enabled);
+    }
 
   }
 
@@ -1644,8 +1654,10 @@ public class JDec extends JFrame implements ActionListener {
     );
     
     // Enabled/disable all components in the list
-    for (Component component : componentsWhichRequireBasicAutomaton)
-      component.setEnabled(enabled);
+    synchronized (componentsWhichRequireBasicAutomaton) {
+      for (Component component : componentsWhichRequireBasicAutomaton)
+        component.setEnabled(enabled);
+    }
 
   }
 
@@ -1664,8 +1676,10 @@ public class JDec extends JFrame implements ActionListener {
     );
     
     // Enabled/disable all components in the list
-    for (Component component : componentsWhichRequireUStructure)
-      component.setEnabled(enabled);
+    synchronized (componentsWhichRequireUStructure) {
+      for (Component component : componentsWhichRequireUStructure)
+        component.setEnabled(enabled);
+    }
 
   }
 
@@ -1684,8 +1698,10 @@ public class JDec extends JFrame implements ActionListener {
     );
     
     // Enabled/disable all components in the list
-    for (Component component : componentsWhichRequirePrunedUStructure)
-      component.setEnabled(enabled);
+    synchronized (componentsWhichRequirePrunedUStructure) {
+      for (Component component : componentsWhichRequirePrunedUStructure)
+        component.setEnabled(enabled);
+    }
 
   }
 
@@ -1704,8 +1720,10 @@ public class JDec extends JFrame implements ActionListener {
     );
     
     // Enabled/disable all components in the list
-    for (Component component : componentsWhichRequireAnyUStructure)
-      component.setEnabled(enabled);
+    synchronized (componentsWhichRequireAnyUStructure) {
+      for (Component component : componentsWhichRequireAnyUStructure)
+        component.setEnabled(enabled);
+    }
 
   }
 
@@ -2155,7 +2173,7 @@ public class JDec extends JFrame implements ActionListener {
      * Changes the cursor to reflect the application's status.
      * @param busy  Whether or not the cursor should appear to be busy
      **/
-  public void setBusyCursor(boolean busy) {
+  public synchronized void setBusyCursor(boolean busy) {
   
     if (busy)
       nBusyActivities.incrementAndGet();
@@ -2325,7 +2343,7 @@ public class JDec extends JFrame implements ActionListener {
 
     // Tab properties
     public int index;
-    private boolean saved = true;
+    private AtomicBoolean saved = new AtomicBoolean(true);
     /**
      * Number of threads using this tab.
      * 
@@ -2590,12 +2608,12 @@ public class JDec extends JFrame implements ActionListener {
     /**
      * Update this tab's title, based on the filename and the saved status.
      **/
-    private void updateTabTitle() {
+    private synchronized void updateTabTitle() {
 
       String title = FilenameUtils.getBaseName(ioAdapter.getFile().getName());
 
       // Temporary files are always considered unsaved, since the directory is wiped upon closing of the program
-      if (!saved || usingTemporaryFiles())
+      if (!isSaved() || usingTemporaryFiles())
         title += "*";
 
       tabbedPane.setTitleAt(index, title);
@@ -2609,12 +2627,12 @@ public class JDec extends JFrame implements ActionListener {
      **/
     public synchronized void setSaved(boolean newSavedStatus) {
 
-      if (newSavedStatus != saved) {
-        saved = newSavedStatus;
+      if (newSavedStatus != isSaved()) {
+        saved.set(newSavedStatus);
         updateTabTitle();
       }
 
-      generateAutomatonButton.setEnabled(!saved);
+      generateAutomatonButton.setEnabled(!isSaved());
 
     }
 
@@ -2622,8 +2640,8 @@ public class JDec extends JFrame implements ActionListener {
      * Check to see if this tab is saved.
      * @return  Whether or not this tab is presently saved
      **/
-    public boolean isSaved() {
-      return saved;
+    public synchronized boolean isSaved() {
+      return saved.get();
     }
 
     /**
@@ -2636,17 +2654,17 @@ public class JDec extends JFrame implements ActionListener {
       logger.info("Starting refresh...");
       StopWatch stopWatch = StopWatch.createStarted();
 
-      automaton.generateInputForGUI();
+      final boolean prevSavedStatus = isSaved();
 
-      boolean prevSavedStatus = saved;
-
-      controllerInput.setValue(automaton.getNumberOfControllers());
-      eventInput.setText(automaton.getEventInput());
-      stateInput.setText(automaton.getStateInput());
-      transitionInput.setText(automaton.getTransitionInput());
-
-      if (prevSavedStatus)
-        setSaved(prevSavedStatus);
+      SwingUtilities.invokeLater(() -> {
+        automaton.generateInputForGUI();
+        controllerInput.setValue(automaton.getNumberOfControllers());
+        eventInput.setText(automaton.getEventInput());
+        stateInput.setText(automaton.getStateInput());
+        transitionInput.setText(automaton.getTransitionInput());
+        if (prevSavedStatus)
+          setSaved(prevSavedStatus);
+      });
       
       logger.debug("Finished in " + stopWatch.getTime() + "ms.");
 
@@ -2665,7 +2683,7 @@ public class JDec extends JFrame implements ActionListener {
         return false;
 
       // If there is ungenerated GUI input code, then there is unsaved information
-      if (!saved)
+      if (!isSaved())
         return true;
 
       // Temporary files are considered "unsaved"
@@ -2681,7 +2699,7 @@ public class JDec extends JFrame implements ActionListener {
      * Check to see if this tab is using temporary files.
      * @return  Whether or not the tab is using temporary files to store the automaton
      **/
-    public boolean usingTemporaryFiles() {
+    public synchronized boolean usingTemporaryFiles() {
 
       return ioAdapter.getFile().getParentFile().getAbsolutePath().equals(TEMPORARY_DIRECTORY.getAbsolutePath());
 
