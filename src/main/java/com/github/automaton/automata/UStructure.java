@@ -639,7 +639,7 @@ public class UStructure extends Automaton {
     long nIndistinguishableStates = subsetConstruction.getNumberOfStates();
     Automaton invSubsetConstruction = subsetConstruction.invert();
 
-    Iterator<State> invSubsetStateIterator = invSubsetConstruction.states.values().iterator();
+    Iterator<State> invSubsetStateIterator = invSubsetConstruction.getStates().iterator();
 
     while (invSubsetStateIterator.hasNext()) {
       State s = invSubsetStateIterator.next();
@@ -676,47 +676,47 @@ public class UStructure extends Automaton {
         invIndistinguishableCopy.addTransition(outgoingTransitions.get(i));
       }
       if (outgoingTransitions.size() > 1) {
-        invSubsetStateIterator = invSubsetConstruction.states.values().iterator();
+        invSubsetStateIterator = invSubsetConstruction.getStates().iterator();
       }
     }
 
     MultiSet<State> stateMultiSet = new HashMultiSet<>();
 
-    for (State indistinguishableState : subsetConstruction.states.values()) {
+    for (State indistinguishableState : subsetConstruction.getStates()) {
       List<State> states = relabeled.getStatesFromLabel(new LabelVector(indistinguishableState.getLabel()));
       for (int i = 0; i < states.size(); i++) {
         State s = states.get(i);
         
         if (stateMultiSet.getCount(s) > 0) {
           State duplicate = ObjectUtils.clone(s);
+          System.out.println("Duplicated " + duplicate);
           duplicate.setID(duplicate.getID() + (stateMultiSet.getCount(s) * nStates));
           duplicate.setLabel(duplicate.getLabel() + "-" + (stateMultiSet.getCount(s)));
+          System.out.println("Duplicated " + s + " (id = " + s.getID() +") as " + duplicate + " (id = " + duplicate.getID() +")");
+          states.set(i, duplicate);
+          for (Transition t : IterableUtils.filteredIterable(
+            duplicate.getTransitions(), transition -> transition.getTargetStateID() == s.getID()
+          )) {
+            t.setTargetStateID(duplicate.getID());
+          }
+          if (!((StateSet) indistinguishableState).remove(s)) {
+            logger.error("Failed to remove state " + s + " from " + indistinguishableState);
+          } else {
+            logger.debug("Removed " + s + " from " + indistinguishableState);
+          }
+          if (!((StateSet) indistinguishableState).add(duplicate)) {
+            logger.error("Failed to add state " + duplicate + " to " + indistinguishableState);
+          } else {
+            logger.debug("Added " + duplicate + " to " + indistinguishableState);
+          }
+          invSubsetConstruction = subsetConstruction.invert();
+          relabeled.addStateAt(duplicate, false);
           for (int j = 0; j < states.size(); j++) {
-            if (i == j) {
-              states.set(i, duplicate);
-              for (Transition t : IterableUtils.filteredIterable(
-                duplicate.getTransitions(), transition -> transition.getTargetStateID() == s.getID()
-              )) {
-                t.setTargetStateID(duplicate.getID());
-              }
-              if (!((StateSet) indistinguishableState).remove(s)) {
-                logger.error("Failed to remove state " + s + " from " + indistinguishableState);
-              } else {
-                logger.debug("Removed " + s + " from " + indistinguishableState);
-              }
-              if (!((StateSet) indistinguishableState).add(duplicate)) {
-                logger.error("Failed to add state " + duplicate + " to " + indistinguishableState);
-              } else {
-                logger.debug("Added " + duplicate + " to " + indistinguishableState);
-              }
-              invSubsetConstruction = subsetConstruction.invert();
-              relabeled.addStateAt(duplicate, false);
-            } else {
+            if (i != j)  {
               for (Transition t : IterableUtils.filteredIterable(
                 states.get(j).getTransitions(), transition -> transition.getTargetStateID() == s.getID()
               )) {
-                if (states.get(j).getID() != s.getID())
-                  t.setTargetStateID(duplicate.getID());
+                t.setTargetStateID(duplicate.getID());
               }
             }
           }
@@ -1990,7 +1990,7 @@ public class UStructure extends Automaton {
    */
   public Set<State> getEnablementStates(String eventLabel) {
     Set<State> enablementStates = new HashSet<>();
-    for (State s : states.values()) {
+    for (State s : getStates()) {
       inner: for (Transition t : s.getTransitions()) {
         if (
           t.getEvent().getVector().getLabelAtIndex(0).equals(eventLabel)
@@ -2015,7 +2015,7 @@ public class UStructure extends Automaton {
    */
   public Set<State> getDisablementStates(String eventLabel) {
     Set<State> disablementStates = new HashSet<>();
-    for (State s : states.values()) {
+    for (State s : getStates()) {
       inner: for (Transition t : s.getTransitions()) {
         if (
           t.getEvent().getVector().getLabelAtIndex(0).equals(eventLabel)

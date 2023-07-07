@@ -295,11 +295,11 @@ public class State implements Cloneable {
    */
   @Override
   public String toString() {
-    return "("
-      + "\"" + Objects.toString(label) + "\",ID:"
+    return "(" /* 
+      + "\"" */+ Objects.toString(label) /*+ "\",ID:"
       + id + ","
       + (marked ? "Marked" : "Unmarked") + ","
-      + "# Transitions: " + transitions.size()
+      + "# Transitions: " + transitions.size()*/
       + ")";
   }
 
