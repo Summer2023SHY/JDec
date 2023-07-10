@@ -1321,16 +1321,16 @@ public class Automaton implements Cloneable {
       while (!R.isEmpty()) {
         Set<State> rPrime = new LinkedHashSet<>();
         ambLevel += 1;
-        System.out.printf("ambLevel = %d\n", ambLevel);
+        logger.printf(Level.DEBUG, "ambLevel = %d", ambLevel);
         for (State r : R) {
-          System.out.printf("\tr = (%s)\n", r.getLabel());
+          logger.printf(Level.DEBUG, "\tr = (%s)", r.getLabel());
           for (int i = 0; i < nControllers; i++) {
-            System.out.printf("\t\tController %d\n", i);
-            System.out.printf("\t\tNeighbors = %s\n", neighborMap.get(r).get(i).toString());
+            logger.printf(Level.DEBUG, "\t\tController %d", i);
+            logger.printf(Level.DEBUG, "\t\tNeighbors = %s", neighborMap.get(r).get(i).toString());
             if (e.isControllable(i)) {
               for (State vPrime : neighborMap.get(r).get(i)) {
                 neighborMap.get(vPrime).get(i).remove(r);
-                System.out.println("\t\t\tRemoved " + r.getLabel() + " from neighbors of " + vPrime.getLabel());
+                logger.debug("\t\t\tRemoved " + r.getLabel() + " from neighbors of " + vPrime.getLabel());
                 if (neighborMap.get(vPrime).get(i).isEmpty()) {
                   //if (!resolved.contains(vPrime)) {
                     rPrime.add(vPrime);

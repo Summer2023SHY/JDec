@@ -49,6 +49,7 @@ import org.apache.commons.lang3.*;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.*;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.w3c.dom.*;
 import org.xml.sax.*;
 
@@ -207,7 +208,9 @@ public class JDec extends JFrame implements ActionListener {
    * @param args  Any arguments are simply ignored
    **/  
   public static void main(String[] args) {
-    
+
+    Configurator.setAllLevels(LogManager.ROOT_LOGGER_NAME, Level.DEBUG);
+
     if (SystemUtils.IS_OS_MAC) {
       // macOS-specific UI tinkering
       try {

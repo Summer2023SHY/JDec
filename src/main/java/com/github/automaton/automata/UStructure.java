@@ -689,10 +689,10 @@ public class UStructure extends Automaton {
         
         if (stateMultiSet.getCount(s) > 0) {
           State duplicate = ObjectUtils.clone(s);
-          System.out.println("Duplicated " + duplicate);
+          logger.debug("Duplicated " + duplicate);
           duplicate.setID(duplicate.getID() + (stateMultiSet.getCount(s) * nStates));
           duplicate.setLabel(duplicate.getLabel() + "-" + (stateMultiSet.getCount(s)));
-          System.out.println("Duplicated " + s + " (id = " + s.getID() +") as " + duplicate + " (id = " + duplicate.getID() +")");
+          logger.debug("Duplicated " + s + " (id = " + s.getID() +") as " + duplicate + " (id = " + duplicate.getID() +")");
           states.set(i, duplicate);
           for (Transition t : IterableUtils.filteredIterable(
             duplicate.getTransitions(), transition -> transition.getTargetStateID() == s.getID()
