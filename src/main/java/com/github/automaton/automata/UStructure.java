@@ -702,12 +702,12 @@ public class UStructure extends Automaton {
           if (!((StateSet) indistinguishableState).remove(s)) {
             logger.error("Failed to remove state " + s + " from " + indistinguishableState);
           } else {
-            logger.debug("Removed " + s + " from " + indistinguishableState);
+            logger.info("Removed " + s + " from " + indistinguishableState);
           }
           if (!((StateSet) indistinguishableState).add(duplicate)) {
             logger.error("Failed to add state " + duplicate + " to " + indistinguishableState);
           } else {
-            logger.debug("Added " + duplicate + " to " + indistinguishableState);
+            logger.info("Added " + duplicate + " to " + indistinguishableState);
           }
           invSubsetConstruction = subsetConstruction.invert();
           relabeled.addStateAt(duplicate, false);
@@ -765,6 +765,10 @@ public class UStructure extends Automaton {
             if (Objects.nonNull(copy)) {
               relabeled.unconditionalViolations.add(copy);
             }
+          }
+          try {
+            wait(0);
+          } catch (InterruptedException e) {
           }
         }
         stateMultiSet.add(s);
