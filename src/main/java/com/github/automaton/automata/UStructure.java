@@ -784,10 +784,7 @@ public class UStructure extends Automaton {
               relabeled.unconditionalViolations.add(copy);
             }
           }
-          try {
-            wait(0);
-          } catch (InterruptedException e) {
-          }
+          System.out.print("");
         }
         stateMultiSet.add(s);
       }
