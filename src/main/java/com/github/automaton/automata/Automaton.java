@@ -1323,14 +1323,14 @@ public class Automaton implements Cloneable {
         ambLevel += 1;
         logger.printf(Level.DEBUG, "ambLevel = %d", ambLevel);
         for (State r : R) {
-          logger.printf(Level.DEBUG, "\tr = (%s)", r.getLabel());
+          logger.printf(Level.TRACE, "\tr = (%s)", r.getLabel());
           for (int i = 0; i < nControllers; i++) {
-            logger.printf(Level.DEBUG, "\t\tController %d", i);
-            logger.printf(Level.DEBUG, "\t\tNeighbors = %s", neighborMap.get(r).get(i).toString());
+            logger.printf(Level.TRACE, "\t\tController %d", i);
+            logger.printf(Level.TRACE, "\t\tNeighbors = %s", neighborMap.get(r).get(i).toString());
             if (e.isControllable(i)) {
               for (State vPrime : neighborMap.get(r).get(i)) {
                 neighborMap.get(vPrime).get(i).remove(r);
-                logger.debug("\t\t\tRemoved " + r.getLabel() + " from neighbors of " + vPrime.getLabel());
+                logger.trace("\t\t\tRemoved " + r.getLabel() + " from neighbors of " + vPrime.getLabel());
                 if (neighborMap.get(vPrime).get(i).isEmpty()) {
                   //if (!resolved.contains(vPrime)) {
                     rPrime.add(vPrime);
@@ -1343,6 +1343,14 @@ public class Automaton implements Cloneable {
         }
         R = rPrime;
         resolved.addAll(R);
+        logger.debug("Resolved: {}", resolved);
+        logger.debug("Neighbors:");
+        for (State s : neighborMap.keySet()) {
+          List<Set<State>> neighbors = neighborMap.get(s);
+          for (int i = 0; i < nControllers && !resolved.contains(s); i++) {
+            logger.printf(Level.DEBUG, "- i = %d: {%s}", i, neighbors.toString());
+          }
+        }
       }
       if (resolved.size() < neighborMap.keySet().size()) {
         return Pair.of(false, Collections.emptyList());

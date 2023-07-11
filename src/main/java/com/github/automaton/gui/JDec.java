@@ -209,7 +209,7 @@ public class JDec extends JFrame implements ActionListener {
    **/  
   public static void main(String[] args) {
 
-    Configurator.setAllLevels(LogManager.ROOT_LOGGER_NAME, Level.INFO);
+    Configurator.setAllLevels(LogManager.ROOT_LOGGER_NAME, Level.DEBUG);
 
     if (SystemUtils.IS_OS_MAC) {
       // macOS-specific UI tinkering

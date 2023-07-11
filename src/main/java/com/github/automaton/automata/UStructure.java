@@ -668,24 +668,24 @@ public class UStructure extends Automaton {
           }
         }
         if (subsetConstruction.addStateAt(indistinguishableCopy, false)) {
-          logger.info("Successfully added " + indistinguishableCopy + " with ID " + indistinguishableCopy.getID());
+          logger.trace("Successfully added " + indistinguishableCopy + " with ID " + indistinguishableCopy.getID());
         } else {
           logger.error("Failed to add " + indistinguishableCopy + " with ID " + indistinguishableCopy.getID());
         }
         if (invSubsetConstruction.addStateAt(invIndistinguishableCopy, false)) {
-          logger.info("Successfully added " + invIndistinguishableCopy + " with ID " + invIndistinguishableCopy.getID());
+          logger.trace("Successfully added " + invIndistinguishableCopy + " with ID " + invIndistinguishableCopy.getID());
         } else {
           logger.error("Failed to add " + invIndistinguishableCopy + " with ID " + invIndistinguishableCopy.getID());
         }
 
         State parentState = subsetConstruction.getState(outgoingTransitions.get(i).getTargetStateID());
         if (parentState.addTransition(new Transition(outgoingTransitions.get(i).getEvent(), indistinguishableCopy.getID()))) {
-          logger.info("Successfully added transition");
+          logger.trace("Successfully added transition");
         } else {
           logger.error("Failed to add transition");
         }
         if (parentState.removeTransition(new Transition(outgoingTransitions.get(i).getEvent(), indistinguishable.getID()))) {
-          logger.info("Successfully removed transition");
+          logger.trace("Successfully removed transition");
         } else {
           logger.error("Failed to remove transition");
         }
@@ -707,10 +707,9 @@ public class UStructure extends Automaton {
         
         if (stateMultiSet.getCount(s) > 0) {
           State duplicate = ObjectUtils.clone(s);
-          logger.debug("Duplicated " + duplicate);
           duplicate.setID(duplicate.getID() + (stateMultiSet.getCount(s) * nStates));
           duplicate.setLabel(duplicate.getLabel() + "-" + (stateMultiSet.getCount(s)));
-          logger.debug("Duplicated " + s + " (id = " + s.getID() +") as " + duplicate + " (id = " + duplicate.getID() +")");
+          logger.trace("Duplicated " + s + " (id = " + s.getID() +") as " + duplicate + " (id = " + duplicate.getID() +")");
           states.set(i, duplicate);
           for (Transition t : IterableUtils.filteredIterable(
             duplicate.getTransitions(), transition -> transition.getTargetStateID() == s.getID()
@@ -720,12 +719,12 @@ public class UStructure extends Automaton {
           if (!((StateSet) indistinguishableState).remove(s)) {
             logger.error("Failed to remove state " + s + " from " + indistinguishableState);
           } else {
-            logger.info("Removed " + s + " from " + indistinguishableState);
+            logger.trace("Removed " + s + " from " + indistinguishableState);
           }
           if (!((StateSet) indistinguishableState).add(duplicate)) {
             logger.error("Failed to add state " + duplicate + " to " + indistinguishableState);
           } else {
-            logger.info("Added " + duplicate + " to " + indistinguishableState);
+            logger.trace("Added " + duplicate + " to " + indistinguishableState);
           }
           invSubsetConstruction = subsetConstruction.invert();
           relabeled.addStateAt(duplicate, false);
