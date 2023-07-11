@@ -1876,16 +1876,16 @@ public class Automaton implements Cloneable {
 
       /* Draw all states and their transitions */
 
-    for (long s = 1; s <= nStates; s++) {
+    for (State state : getStates()) {
 
       // Get state from file
-      State state = getState(s);
+      // State state = getState(s);
       String stateLabel = formatStateLabel(state);
-      MutableNode sourceNode = mutNode(stateLabel);
+      MutableNode sourceNode = mutNode(Long.toString(state.getID()));
       addAdditionalNodeProperties(state, sourceNode);
 
       // Draw state
-      g = g.add(sourceNode.add(Attributes.attr("peripheries", state.isMarked() ? 2 : 1), Label.nodeName()));
+      g = g.add(sourceNode.add(Attributes.attr("peripheries", state.isMarked() ? 2 : 1), Label.of(stateLabel)));
         
       // Find and draw all of the special transitions 
       ArrayList<Transition> transitionsToSkip = new ArrayList<Transition>();
@@ -1901,7 +1901,7 @@ public class Automaton implements Cloneable {
 
           transitionsToSkip.add(t);
 
-          MutableNode targetNode = mutNode(formatStateLabel(targetState));
+          MutableNode targetNode = mutNode(Long.toString(targetState.getID()));
           targetNode.addTo(g);
           if (!Objects.equals(properties.get("color"), "transparent")) {
             Link l = sourceNode.linkTo(targetNode);
@@ -1940,7 +1940,7 @@ public class Automaton implements Cloneable {
         }
 
         // Add transition
-        MutableNode targetNode = mutNode(formatStateLabel(getState(t1.getTargetStateID())));
+        MutableNode targetNode = mutNode(Long.toString(t1.getTargetStateID()));
         targetNode.addTo(g);
         Link l = sourceNode.linkTo(targetNode);
         l.add(Label.of(label));
@@ -1949,7 +1949,7 @@ public class Automaton implements Cloneable {
 
       if (initialState > 0) {
         MutableNode startNode = mutNode("").add(Shape.PLAIN_TEXT);
-        MutableNode initNode = mutNode(formatStateLabel(getState(initialState)));
+        MutableNode initNode = mutNode(Long.toString(initialState));
         Link init = startNode.linkTo(initNode);
         init.add(Color.BLUE);
         startNode.links().add(init);
