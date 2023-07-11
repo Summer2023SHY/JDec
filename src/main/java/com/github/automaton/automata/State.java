@@ -192,9 +192,11 @@ public class State implements Cloneable {
   /**
    * Add a transition to the list.
    * @param transition  The new transition
+   * 
+   * @revised 2.0
    **/
-  public void addTransition(Transition transition) {
-    transitions.add(transition);
+  public boolean addTransition(Transition transition) {
+    return transitions.add(transition);
   }
 
   /**

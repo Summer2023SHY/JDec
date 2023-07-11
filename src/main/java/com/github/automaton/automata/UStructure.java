@@ -667,10 +667,28 @@ public class UStructure extends Automaton {
             tCopy.setTargetStateID(indistinguishableCopy.getID());
           }
         }
-        subsetConstruction.addStateAt(indistinguishableCopy, false);
-        invSubsetConstruction.addStateAt(indistinguishableCopy, false);
+        if (subsetConstruction.addStateAt(indistinguishableCopy, false)) {
+          logger.info("Successfully added " + indistinguishableCopy + " with ID " + indistinguishableCopy.getID());
+        } else {
+          logger.error("Failed to add " + indistinguishableCopy + " with ID " + indistinguishableCopy.getID());
+        }
+        if (invSubsetConstruction.addStateAt(invIndistinguishableCopy, false)) {
+          logger.info("Successfully added " + invIndistinguishableCopy + " with ID " + invIndistinguishableCopy.getID());
+        } else {
+          logger.error("Failed to add " + invIndistinguishableCopy + " with ID " + invIndistinguishableCopy.getID());
+        }
+
         State parentState = subsetConstruction.getState(outgoingTransitions.get(i).getTargetStateID());
-        parentState.addTransition(new Transition(outgoingTransitions.get(i).getEvent(), indistinguishableCopy.getID()));
+        if (parentState.addTransition(new Transition(outgoingTransitions.get(i).getEvent(), indistinguishableCopy.getID()))) {
+          logger.info("Successfully added transition");
+        } else {
+          logger.error("Failed to add transition");
+        }
+        if (parentState.removeTransition(new Transition(outgoingTransitions.get(i).getEvent(), indistinguishable.getID()))) {
+          logger.info("Successfully removed transition");
+        } else {
+          logger.error("Failed to remove transition");
+        }
         s.removeTransition(outgoingTransitions.get(i));
         invIndistinguishableCopy.getTransitions().clear();
         invIndistinguishableCopy.addTransition(outgoingTransitions.get(i));
