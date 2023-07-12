@@ -1349,17 +1349,14 @@ public class Automaton implements Cloneable {
    **/
   public boolean testControllability() {
 
-    outer: for (TransitionData data : badTransitions) {
-      
-      Event event = getEvent(data.eventID);
-      
-      // Ensure that the event is controllable      
-      for (boolean b : event.isControllable())
-        if (b)
-          continue outer;
+    for (TransitionData data : badTransitions) {
 
-      // Otherwise this system is not controllable
-      return false;
+      Event event = getEvent(data.eventID);
+
+      // Ensure that the event is controllable
+      if (!BooleanUtils.or(event.isControllable()))
+        // Otherwise this system is not controllable
+        return false;
 
     }
 
@@ -3016,11 +3013,7 @@ public class Automaton implements Cloneable {
    **/
   public boolean hasSelfLoop(List<? extends TransitionData> list) {
 
-    for (TransitionData data : list)
-      if (data.initialStateID == data.targetStateID)
-        return true;
-
-    return false;
+    return IterableUtils.matchesAny(list, data -> data.initialStateID == data.targetStateID);
 
   }
 
