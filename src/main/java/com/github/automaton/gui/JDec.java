@@ -43,6 +43,7 @@ import javax.xml.transform.dom.*;
 import javax.xml.transform.stream.*;
 
 import org.apache.batik.swing.JSVGCanvas;
+import org.apache.commons.collections4.properties.PropertiesFactory;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.*;
@@ -84,9 +85,8 @@ public class JDec extends JFrame implements ActionListener {
    */
   private static Properties gitProperties;
   static {
-    try (InputStream gitPropertiesInput = getResourceURL("git.properties").openStream()) {
-      gitProperties = new Properties();
-      gitProperties.load(gitPropertiesInput);
+    try {
+      gitProperties = PropertiesFactory.INSTANCE.load(getResourceURL("git.properties"));
     } catch (IOException ioe) {
       throw new UncheckedIOException(ioe);
     }
