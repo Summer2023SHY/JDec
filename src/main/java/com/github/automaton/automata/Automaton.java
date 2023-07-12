@@ -2930,8 +2930,8 @@ public class Automaton implements Cloneable {
 
     List<Event> inactiveEvents = new ArrayList<Event>(events);
 
-    for (long s = 1; s <= getNumberOfStates(); s++)
-      for (Transition t : getState(s).getTransitions())
+    for (State state : getStates())
+      for (Transition t : state.getTransitions())
         inactiveEvents.remove(t.getEvent());
 
     return inactiveEvents;
