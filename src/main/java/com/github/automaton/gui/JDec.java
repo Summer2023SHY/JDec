@@ -2264,7 +2264,7 @@ public class JDec extends JFrame implements ActionListener {
   public void displayMessage(String title, String message, int messageType) {
     
     JOptionPane op = new JOptionPane(message, messageType);
-    JDialog dialog = op.createDialog(title);
+    JDialog dialog = op.createDialog(this, title);
     dialog.setAlwaysOnTop(true);
     dialog.setVisible(true);
 
