@@ -143,6 +143,8 @@ public class Automaton implements Cloneable {
   /** Enum constant that represents the type of the {@link Automaton}
    * 
    * @author Micah Stairs
+   * 
+   * @since 1.0
    */
   public static enum Type {
 
@@ -2860,7 +2862,7 @@ public class Automaton implements Cloneable {
    *           since there are cases where the event list is incomplete (for example,
    *           in {@link PrunedUStructure#removeInactiveEvents()}).
    * @param id  The unique identifier corresponding to the requested event
-   * @return    The requested event (or null if it does not exist)
+   * @return    The requested event (or {@code null} if it does not exist)
    **/
   public Event getEvent(int id) {
 
@@ -2885,7 +2887,7 @@ public class Automaton implements Cloneable {
   /**
    * Given the label of an event, get the event information.
    * @param label  The unique label corresponding to the requested event
-   * @return       The requested event (or null if it does not exist)
+   * @return       The requested event (or {@code null} if it does not exist)
    **/
   public Event getEvent(String label) {
     return eventsMap.get(label);
