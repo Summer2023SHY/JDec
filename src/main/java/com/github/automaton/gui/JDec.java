@@ -2150,20 +2150,15 @@ public class JDec extends JFrame implements ActionListener {
    **/
   private boolean askForConfirmation(String title, String message) {
 
-    String buttons[] = { "Yes", "No" };
-    
-    int promptResult = JOptionPane.showOptionDialog(
+    int promptResult = JOptionPane.showConfirmDialog(
       this,
       message,
       title,
-      JOptionPane.DEFAULT_OPTION,
-      JOptionPane.WARNING_MESSAGE,
-      null,
-      buttons,
-      buttons[1]
+      JOptionPane.YES_NO_OPTION,
+      JOptionPane.WARNING_MESSAGE
     );
 
-    return promptResult == 0;
+    return promptResult == JOptionPane.YES_OPTION;
   
   }
 
