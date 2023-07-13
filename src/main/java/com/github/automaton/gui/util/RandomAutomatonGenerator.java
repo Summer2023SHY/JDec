@@ -27,6 +27,9 @@ import java.awt.EventQueue;
 import java.util.*;
 import javax.swing.*;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.RandomUtils;
+
 import com.github.automaton.automata.Automaton;
 import com.github.automaton.automata.State;
 import com.github.automaton.automata.Transition;
@@ -290,7 +293,7 @@ public class RandomAutomatonGenerator {
 
     // Build the label character by character
     while (maxID > 0) {
-      label = (char) ((id % 26) + 97) + label;
+      label = (char) ((id % 26) + 'a') + label;
       id /= 26;
       maxID /= 26;
     }
@@ -307,17 +310,11 @@ public class RandomAutomatonGenerator {
    **/
   private static int generateInt(int min, int max) {
 
-    return min + (int) (Math.random() * ((double) (max - min + 1)));
-
-  }
-
-  /**
-   * Generate a random boolean value.
-   * @return  The randomly generated boolean value
-   **/
-  private static boolean generateBoolean() {
-
-    return generateInt(0, 1) == 1;
+    if (max == Integer.MAX_VALUE) {
+      /* Overflow protection */
+      return (int) RandomUtils.nextLong(min, 1L << 31);
+    }
+    return RandomUtils.nextInt(min, max + 1);
 
   }
 
@@ -325,13 +322,21 @@ public class RandomAutomatonGenerator {
    * Generate an array filled with random boolean values.
    * @param size  The number of boolean values to be generated
    * @return      The array of random boolean values
+   * 
+   * @throws NegativeArraySizeException if argument is negative
    **/
   private static boolean[] generateBooleanArray(int size) {
+
+    if (size < 0) {
+      throw new NegativeArraySizeException();
+    } else if (size == 0) {
+      return ArrayUtils.EMPTY_BOOLEAN_ARRAY;
+    }
 
     boolean[] arr = new boolean[size];
 
     for (int i = 0; i < size; i++)
-      arr[i] = generateBoolean();
+      arr[i] = RandomUtils.nextBoolean();
 
     return arr;
 
