@@ -2228,7 +2228,7 @@ public class JDec extends JFrame implements ActionListener {
    * Display an exception in a modal dialog which will stay on top of the GUI at all times.
    * @param exception Exception to display
    **/
-  public void displayException(Exception exception) {
+  public void displayException(Throwable exception) {
     logger.catching(exception);
     displayMessage("Exception: " + exception.getClass().getName(), exception.getMessage(), JOptionPane.ERROR_MESSAGE);
   }
