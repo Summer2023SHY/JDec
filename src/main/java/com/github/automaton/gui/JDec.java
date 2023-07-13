@@ -235,12 +235,14 @@ public class JDec extends JFrame implements ActionListener {
    **/
   public JDec() {
 
-    URL iconUrl = getResourceURL("icon.png");
-    ImageIcon icon = new ImageIcon(iconUrl);
-    if (SystemUtils.IS_OS_MAC) {
-      Taskbar.getTaskbar().setIconImage(icon.getImage());
-    } else
-      setIconImage(icon.getImage());
+    try {
+      URL iconUrl = getResourceURL("icon.png");
+      ImageIcon icon = new ImageIcon(iconUrl);
+      if (SystemUtils.IS_OS_MAC) {
+        Taskbar.getTaskbar().setIconImage(icon.getImage());
+      } else
+        setIconImage(icon.getImage());
+    } catch (IOException ioe) {}
 
     setMinimumSize(new Dimension(1280, 720));
 
@@ -2219,14 +2221,13 @@ public class JDec extends JFrame implements ActionListener {
    * @param fileName the filename of the local resource
    * @return a URL pointing to the specified resource
    * 
-   * @throws UncheckedIOException if the specified resource does not exist
+   * @throws IOException if the specified resource does not exist
+   * 
+   * @since 1.1
+   * @revised 2.0
    */
-  private static URL getResourceURL(String fileName) {
-    try {
-      return IOUtils.resourceToURL(fileName, JDec.class.getClassLoader());
-    } catch (IOException ioe) {
-      throw new UncheckedIOException(ioe);
-    }
+  private static URL getResourceURL(String fileName) throws IOException {
+    return IOUtils.resourceToURL(fileName, JDec.class.getClassLoader());
   }
 
   /**
