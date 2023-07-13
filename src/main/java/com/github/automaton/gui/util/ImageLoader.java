@@ -55,7 +55,12 @@ public final class ImageLoader {
      * 
      * @param fileName The name of the image to be loaded
      * @return The image, or null if it could not be loaded
+     * 
+     * @deprecated {@link com.github.automaton.gui.JDec JDec} no longer uses
+     * {@code .png} files for rendering graphs. Thus, this method is
+     * no longer used and is subject to removal.
      **/
+    @Deprecated(forRemoval = true, since = "2.0")
     public static BufferedImage loadImageFromFile(String fileName) {
         try {
             return ImageIO.read(new File(fileName));
