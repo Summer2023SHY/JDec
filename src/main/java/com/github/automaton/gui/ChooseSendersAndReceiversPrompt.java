@@ -139,16 +139,18 @@ public abstract class ChooseSendersAndReceiversPrompt extends JDialog {
     /* METHODS */
 
   /**
-   * This action is performed once the user has selected senders and receivers and moves on to the next step.
-   * @return  True if the action was completed (which will dispose of this dialog box), or false if the action
-   *          should be allowed to happen again.
+   * This action is performed once the user has selected senders and receivers
+   * and moves on to the next step.
+   * @return  {@code true} if the action was completed (which will dispose of
+   *          this dialog box), or {@code false} if the action should be
+   *          allowed to happen again.
    **/
   protected abstract boolean performAction();
 
   /**
    * Create a container with a 2-D grid of checkboxes, with each column and row corresponding to a specific
    * controller.
-   * NOTE: This method stores a reference to each JCheckBox object in a 2-D array instance variable.
+   * <p>NOTE: This method stores a reference to each JCheckBox object in a 2-D array instance variable.
    * @return  The container of checkboxes
    **/
   private Container createCheckBoxGrid() {

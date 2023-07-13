@@ -74,7 +74,9 @@ public class JDec extends JFrame implements ActionListener {
 
     /* CLASS CONSTANTS */
 
+  /** Preferred width for dialogs */
   public static final int PREFERRED_DIALOG_WIDTH  = 500;
+  /** Preferred height for dialogs */
   public static final int PREFERRED_DIALOG_HEIGHT = 500;
 
   /**
@@ -105,27 +107,42 @@ public class JDec extends JFrame implements ActionListener {
    * @since 1.3
    */
   private static final boolean DRAW_ENABLED = GraphvizEngineInitializer.setupGraphvizEngines();
+  /**
+   * Maximum number of states in an automaton to trigger automatic rendering
+   */
   private static final int N_STATES_TO_AUTOMATICALLY_DRAW = 20;
 
+  /** Logger */
   private static Logger logger = LogManager.getLogger();
 
     /* INSTANCE VARIABLES */
 
   // Tabs
+  /** Tabbed pane */
   private JTabbedPane tabbedPane;
+  /** Currently open tabs */
   private java.util.List<AutomatonTab> tabs = Collections.synchronizedList(new ArrayList<>());
   
   // Enabling/disabling components
+  /** Components of JDec that require a tab */
   private java.util.List<Component> componentsWhichRequireTab              = Collections.synchronizedList(new ArrayList<>());
+  /** Components of JDec that require any automaton */
   private java.util.List<Component> componentsWhichRequireAnyAutomaton     = Collections.synchronizedList(new ArrayList<>());
+  /** Components of JDec that require a {@link Automaton basic automaton} */
   private java.util.List<Component> componentsWhichRequireBasicAutomaton   = Collections.synchronizedList(new ArrayList<>());
+  /** Components of JDec that require a {@link UStructure U structure} */
   private java.util.List<Component> componentsWhichRequireUStructure       = Collections.synchronizedList(new ArrayList<>());
+  /** Components of JDec that require a {@link PrunedUStructure pruned U structure} */
   private java.util.List<Component> componentsWhichRequirePrunedUStructure = Collections.synchronizedList(new ArrayList<>());
+  /** Components of JDec that require any U structure */
   private java.util.List<Component> componentsWhichRequireAnyUStructure    = Collections.synchronizedList(new ArrayList<>());
 
   // Miscellaneous
+  /** The current directory */
   private File currentDirectory = new File(SystemUtils.USER_DIR);
+  /** Index for temporary files */
   private AtomicInteger temporaryFileIndex = new AtomicInteger(1);
+  /** Special message to display when no tabs are open */
   private JLabel noTabsMessage;
 
   // Synchronization
@@ -148,7 +165,7 @@ public class JDec extends JFrame implements ActionListener {
    */
   private Lock syncCompositionLock = new ReentrantLock(true);
 
-  // Tool-tip Text
+  /** Tool-tip Text */
   private static Document tooltipDocument;
   static {
     
@@ -169,7 +186,7 @@ public class JDec extends JFrame implements ActionListener {
 
   }
 
-  // Directory for temporary files
+  /** Directory for temporary files */
   private File TEMPORARY_DIRECTORY;
   {
     try {
@@ -183,7 +200,10 @@ public class JDec extends JFrame implements ActionListener {
     /* MAIN METHOD */
 
   /**
-   * Create an instance of this application, setting it to use the Mac's screen menu bar.
+   * Create an instance of this application.
+   * <p>When running on a Mac, the default behavior is to use the built-in
+   * screen menu bar.
+   * 
    * @param args  Any arguments are simply ignored
    **/  
   public static void main(String[] args) {
@@ -1429,8 +1449,12 @@ public class JDec extends JFrame implements ActionListener {
   }
 
   /**
-   * Generate an image of the graph, saving both .PNG and .SVG to file, and displaying the .PNG
-   * on the screen.
+   * Generates a graph representation of the automaton as an SVG file and
+   * displays it on the screen.
+   * 
+   * @see Automaton#generateImage(String)
+   * 
+   * @revised 2.0
    **/
   private void generateImage() {
 
@@ -1940,9 +1964,11 @@ public class JDec extends JFrame implements ActionListener {
   }
 
   /**
-   * Prompts the user to name and specify the filename that they wish to save the data to.
-   * @param title The title to give the window
-   * @return      The {@code .hdr} file to save the data to
+   * Saves the automaton stored in the current tab to a {@code .hdr} / {@code .bdy} file pair.
+   * @param selectedFile The {@code .hdr} selected by the user
+   * @return             The {@code .hdr} file that the data is saved in
+   * 
+   * @since 2.0
    **/
   private File saveBinaryFile(File selectedFile) {
 
@@ -1995,6 +2021,13 @@ public class JDec extends JFrame implements ActionListener {
       return headerFile;
   }
 
+  /**
+   * Saves the automaton stored in the current tab to a {@code .json} file.
+   * @param selectedFile The {@code .json} selected by the user
+   * @return             The {@code .json} file that the data is saved in
+   * 
+   * @since 2.0
+   **/
   private File saveJsonFile(File selectedFile) {
 
     
@@ -2106,8 +2139,8 @@ public class JDec extends JFrame implements ActionListener {
    * Allow the user to select a controller in the current automaton.
    * @param str                 The message to display
    * @param include0thComponent Whether or not the 0th component should be included as an option
-   * @return                    The index of the selected controller (or -1 if there was not a controller
-   *                            selected)
+   * @return                    The index of the selected controller (or {@code -1}
+   *                            if there was not a controller selected)
    **/
   public int pickController(String str, boolean include0thComponent) {
 
@@ -2145,7 +2178,7 @@ public class JDec extends JFrame implements ActionListener {
    * Given a title and a message, ask the user for confirmation, returning the result.
    * @param title   The title to display on the dialog box
    * @param message The message to display in the dialog box
-   * @return        True if the user selected "Yes", false if the user selected "No"
+   * @return        {@code true} if the user selected "Yes", or {@code false} otherwise
    **/
   private boolean askForConfirmation(String title, String message) {
 
@@ -2180,6 +2213,14 @@ public class JDec extends JFrame implements ActionListener {
   
   }
 
+  /**
+   * Gets a URL to the specified local resource.
+   * 
+   * @param fileName the filename of the local resource
+   * @return a URL pointing to the specified resource
+   * 
+   * @throws UncheckedIOException if the specified resource does not exist
+   */
   private static URL getResourceURL(String fileName) {
     try {
       return IOUtils.resourceToURL(fileName, JDec.class.getClassLoader());
@@ -2191,9 +2232,9 @@ public class JDec extends JFrame implements ActionListener {
   /**
    * Get the tooltip text for the specified input box and automaton type.
    * @param inputBox      A string representing the relevant input box
-   *                      NOTE: This is the same as the tag used in the XML file
+   *                      <p>NOTE: This is the same as the tag used in the XML file
    * @param automatonType The enum value associated with the automaton type
-   * @return              The HTML formatted tool-tip text, or null if it could not be found
+   * @return              The HTML formatted tool-tip text, or {@code null} if it could not be found
    **/
   private static String getTooltipText(String inputBox, Automaton.Type automatonType) {
 
@@ -2227,6 +2268,10 @@ public class JDec extends JFrame implements ActionListener {
   /**
    * Display an exception in a modal dialog which will stay on top of the GUI at all times.
    * @param exception Exception to display
+   * 
+   * @since 1.2
+   * 
+   * @revised 2.0
    **/
   public void displayException(Throwable exception) {
     logger.catching(exception);

@@ -44,7 +44,7 @@ public class TooltipComponent extends JPanel {
   /**
    * Construct a tool-tip component with the specified text.
    * @param component   The component that we are adding a tool-tip to
-   * @param tooltipText The text to be displayed in the tool-tip (if null, then the '?' button will be hidden)
+   * @param tooltipText The text to be displayed in the tool-tip (if {@code null}, then the '?' button will be hidden)
    **/
   public TooltipComponent(Component component, String tooltipText) {
 

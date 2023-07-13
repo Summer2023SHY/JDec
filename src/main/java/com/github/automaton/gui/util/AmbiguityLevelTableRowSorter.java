@@ -26,16 +26,37 @@ import java.util.*;
 
 import javax.swing.table.*;
 
+/**
+ * A {@link TableRowSorter} implementation for {@link AmbiguityLevelTable}s.
+ * 
+ * @author Sung Ho Yoon
+ * @since 2.0
+ */
 public class AmbiguityLevelTableRowSorter extends TableRowSorter<AmbiguityLevelTable> {
-    
+
+    /**
+     * Constructs a new {@code AmbiguityLevelTableRowSorter}.
+     */
     public AmbiguityLevelTableRowSorter() {
         super();
     }
 
+    /**
+     * Constructs a new {@code AmbiguityLevelTableRowSorter} using the
+     * specified table as the underlying {@link AmbiguityLevelTable}.
+     * @param table
+     */
     public AmbiguityLevelTableRowSorter(AmbiguityLevelTable table) {
         super(table);
     }
 
+    /**
+     * Returns the {@link Comparator} for the specified column.
+     * 
+     * @return the comparator for the specified column
+     * 
+     * @throws IndexOutOfBoundsException if argument is out of bounds
+     */
     @Override
     public Comparator<?> getComparator(int column) {
         switch (column) {

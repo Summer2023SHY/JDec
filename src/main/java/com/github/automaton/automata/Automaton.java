@@ -118,6 +118,7 @@ public class Automaton implements Cloneable {
   private List<TransitionData> badTransitions;
 
   // Basic properties of the automaton
+  /** The type of this automaton */
   protected Type type;
   /** Number of states in this automaton */
   protected long nStates      = 0;
@@ -127,8 +128,23 @@ public class Automaton implements Cloneable {
   protected int nControllers;
 
   // GUI input
+  /**
+   * Input builder for events
+   * 
+   * @see #getEventInput()
+   */
   protected transient StringBuilder eventInputBuilder;
+  /**
+   * Input builder for states
+   * 
+   * @see #getStateInput()
+   */
   protected transient StringBuilder stateInputBuilder;
+  /**
+   * Input builder for transitions
+   * 
+   * @see #getTransitionInput()
+   */
   protected transient StringBuilder transitionInputBuilder;
 
   /**

@@ -56,7 +56,7 @@ public final class ImageLoader {
      * Load the generated graph image from file.
      * 
      * @param fileName The name of the image to be loaded
-     * @return The image, or null if it could not be loaded
+     * @return The image, or {@code null} if it could not be loaded
      * 
      * @deprecated {@link com.github.automaton.gui.JDec JDec} no longer uses
      * {@code .png} files for rendering graphs. Thus, this method is

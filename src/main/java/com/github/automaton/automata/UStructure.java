@@ -1949,7 +1949,7 @@ public class UStructure extends Automaton {
 
   /**
    * Get the size of the union of the list of potential communications and Nash communications.
-   * NOTE: This method gets the size without actually creating a union of the two sets.
+   * <p>NOTE: This method gets the size without actually creating a union of the two sets.
    * @return  The combined size of the potential communications and Nash communications
    **/
   public int getSizeOfPotentialAndNashCommunications() {
@@ -1958,7 +1958,7 @@ public class UStructure extends Automaton {
 
   /**
    * Get the union of the list of potential communications and Nash communications.
-   * NOTE: This method generates a new list each time it is called.
+   * <p>NOTE: This method generates a new list each time it is called.
    * @return  The potential communications and Nash communications
    **/
   public List<CommunicationData> getPotentialAndNashCommunications() {
@@ -1980,7 +1980,9 @@ public class UStructure extends Automaton {
   }
 
   /**
-   * Returns the set of enablement states.
+   * Returns the set of enablement states for a specific event.
+   * 
+   * @param eventLabel the label of an event
    * 
    * @return the set of enablement states
    * 
@@ -2003,7 +2005,9 @@ public class UStructure extends Automaton {
   }
 
   /**
-   * Returns the set of disablement states.
+   * Returns the set of disablement states for a specific event.
+   * 
+   * @param eventLabel the label of an event
    * 
    * @return the set of disablement states
    * 
