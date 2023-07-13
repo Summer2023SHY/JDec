@@ -25,6 +25,8 @@ package com.github.automaton.gui.util;
 
 import java.awt.image.*;
 import java.io.*;
+import java.util.Objects;
+
 import javax.imageio.*;
 
 import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
@@ -76,6 +78,7 @@ public final class ImageLoader {
      * @param fileName The name of the image to be loaded
      * @return the SVG document
      * @throws IOException if I/O error occurs
+     * @throws NullPointerException if argument is {@code null}
      **/
     public static SVGDocument loadSVGFromFile(String fileName) throws IOException {
         return loadSVGFromFile(new File(fileName));
@@ -87,8 +90,9 @@ public final class ImageLoader {
      * @param file {@link File} that points to the image to be loaded
      * @return the SVG document
      * @throws IOException if I/O error occurs
+     * @throws NullPointerException if argument is {@code null}
      **/
     public static SVGDocument loadSVGFromFile(File file) throws IOException {
-        return svgFactory.createSVGDocument(file.toURI().toString());
+        return svgFactory.createSVGDocument(Objects.requireNonNull(file).toURI().toString());
     }
 }
