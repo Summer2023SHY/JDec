@@ -1081,7 +1081,7 @@ public class JDec extends JFrame implements ActionListener {
           InputStream thirdPartyInfo = getResourceURL("THIRD-PARTY.txt").openStream();
           TextPopup popup = new TextPopup(this, "Third-party License Notice");
           thirdPartyInfo.transferTo(popup.getOutputStream());
-        } catch (IllegalArgumentException iae) {
+        } catch (UncheckedIOException ioe) {
           displayMessage("Third-party License Notice", "Third-party license information not found!", JOptionPane.WARNING_MESSAGE);
         } catch (IOException ioe) {
           displayException(ioe);
