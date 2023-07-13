@@ -44,8 +44,7 @@ import javax.xml.transform.stream.*;
 
 import org.apache.batik.swing.JSVGCanvas;
 import org.apache.commons.collections4.properties.PropertiesFactory;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.*;
 import org.apache.commons.lang3.*;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
@@ -2181,16 +2180,12 @@ public class JDec extends JFrame implements ActionListener {
   
   }
 
-  private static URL getResourceURL(String fileName) 
-  {
-      URL url = JDec.class
-          .getClassLoader()
-          .getResource(fileName);
-      
-      if(url == null) {
-          throw new IllegalArgumentException(fileName + " is not found!");
-      }
-      return url;
+  private static URL getResourceURL(String fileName) {
+    try {
+      return IOUtils.resourceToURL(fileName, JDec.class.getClassLoader());
+    } catch (IOException ioe) {
+      throw new UncheckedIOException(ioe);
+    }
   }
 
   /**
