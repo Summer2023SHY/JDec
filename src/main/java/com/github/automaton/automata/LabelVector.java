@@ -85,10 +85,7 @@ public class LabelVector implements Iterable<String> {
    * @since 1.3
    */
   public LabelVector(String[] labels) {
-    Objects.requireNonNull(labels);
-    if (ObjectUtils.anyNull((Object[]) labels)) {
-      throw new IllegalArgumentException("Argument contains null element");
-    }
+    Validate.noNullElements(labels);
     this.vector = ArrayUtils.clone(labels);
     StringBuilder labelBuilder = new StringBuilder();
     labelBuilder.append('<');
