@@ -31,7 +31,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 @DisplayName("U Structure Property Test")
 public class UStructureTest {
     @ParameterizedTest
-    @MethodSource("com.github.automaton.automata.ObservabilityTest#testObservableAutomata")
+    @MethodSource({"com.github.automaton.automata.ObservabilityTest#testObservableAutomata", "com.github.automaton.automata.ObservabilityTest#testUnobservableAutomata"})
     public void testRelabeling(Automaton automaton) {
         UStructure origUStructure = automaton.synchronizedComposition();
         UStructure relabel1 = origUStructure.relabelConfigurationStates();

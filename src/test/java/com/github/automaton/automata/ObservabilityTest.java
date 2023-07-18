@@ -169,7 +169,7 @@ public class ObservabilityTest {
         assertFalse(automaton.testObservability());
     }
 
-    private static Automaton[] testUnobservableAutomata() throws IOException {
+    static Automaton[] testUnobservableAutomata() throws IOException {
         AutomatonJsonFileAdapter fig1Adapter = new AutomatonJsonFileAdapter(new File("aut/fig-1.json"));
         return new Automaton[] {
                 AutomatonGenerator.generateFromGUICode(
