@@ -139,11 +139,39 @@ public class Event {
   }
 
   /**
+   * Checks whether a specific controller can observe this event.
+   * 
+   * @param controller a controller
+   * @return {@code true} if the specified controller can observe this event
+   * 
+   * @throws IndexOutOfBoundsException if argument is out of bounds
+   * 
+   * @since 2.0
+   **/
+  public boolean isObservable(int controller) {
+    return observable[Objects.checkIndex(controller, observable.length)];
+  }
+
+  /**
    * Get the controllability property of the event for each controller.
    * @return  Whether or not the event is controllable
    **/
   public boolean[] isControllable() {
     return controllable;
+  }
+
+  /**
+   * Checks whether a specific controller can control this event.
+   * 
+   * @param controller a controller
+   * @return {@code true} if the specified controller can control this event
+   * 
+   * @throws IndexOutOfBoundsException if argument is out of bounds
+   * 
+   * @since 2.0
+   **/
+  public boolean isControllable(int controller) {
+    return controllable[Objects.checkIndex(controller, controllable.length)];
   }
 
   /**

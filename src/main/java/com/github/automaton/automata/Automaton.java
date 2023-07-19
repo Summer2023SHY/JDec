@@ -1030,7 +1030,7 @@ public class Automaton implements Cloneable {
         // A conditional violation can only occur when an event is controllable by at least 2 controllers, and the system must have a good transition
         int counter = 0;
         for (int i = 0; i < nControllers; i++)
-          if (e.isControllable()[i])
+          if (e.isControllable(i))
             counter++;
         boolean isConditionalViolation = (counter >= 2 && !isBadTransition);
 
@@ -1042,7 +1042,7 @@ public class Automaton implements Cloneable {
         for (int i = 0; i < nControllers; i++) {
 
           // Observable events by this controller
-          if (e.isObservable()[i]) {
+          if (e.isObservable(i)) {
 
             observable[i] = true;
 
@@ -1058,7 +1058,7 @@ public class Automaton implements Cloneable {
             combinedEvent.add(e.getLabel());
             targetStates.add(target);
 
-            if (e.isControllable()[i]) {
+            if (e.isControllable(i)) {
 
               controllable[i] = true;
 
@@ -1141,7 +1141,7 @@ public class Automaton implements Cloneable {
       outer: for (int i = 0; i < nControllers; i++) {
 
         for (Transition t : listOfStates.get(i + 1).getTransitions()) {
-          if (!t.getEvent().isObservable()[i]) {
+          if (!t.getEvent().isObservable(i)) {
 
             List<State> targetStates = new ArrayList<State>();
             List<String> combinedEvent = new ArrayList<>();
@@ -1165,7 +1165,7 @@ public class Automaton implements Cloneable {
             // Add event
             boolean[] observable = new boolean[nControllers];
             boolean[] controllable = new boolean[nControllers];
-            controllable[i] = t.getEvent().isControllable()[i];
+            controllable[i] = t.getEvent().isControllable(i);
             uStructure.addEventIfNonExisting(eventLabelVector, observable, controllable);
 
             // Add state if it doesn't already exist
@@ -1270,7 +1270,7 @@ public class Automaton implements Cloneable {
       }
 
       for (int i = 0; i < nControllers; i++) {
-        if (e.isControllable()[i]) {
+        if (e.isControllable(i)) {
           for (State disablementState : disablementStates) {
             neighborMap.put(disablementState, new LinkedHashSet<>());
             ambLevelMap.get(disablementState)[i] = new MutableInt(Integer.MAX_VALUE);
@@ -1309,7 +1309,7 @@ public class Automaton implements Cloneable {
 
       for (State v : neighborMap.keySet()) {
         for (int i = 0; i < nControllers; i++) {
-          if (e.isControllable()[i] && neighborMap.get(v).get(i).isEmpty()) {
+          if (e.isControllable(i) && neighborMap.get(v).get(i).isEmpty()) {
             R.add(v);
             ambLevelMap.get(v)[i].setValue(0);
           }
@@ -1323,7 +1323,7 @@ public class Automaton implements Cloneable {
         ambLevel += 1;
         for (State r : R) {
           for (int i = 0; i < nControllers; i++) {
-            if (e.isControllable()[i]) {
+            if (e.isControllable(i)) {
               for (State vPrime : neighborMap.get(r).get(i)) {
                 neighborMap.get(vPrime).get(i).remove(r);
                 if (neighborMap.get(vPrime).get(i).isEmpty()) {
@@ -2061,12 +2061,12 @@ public class Automaton implements Cloneable {
       // Observability properties
       eventInputBuilder.append(",");
       for (int i = 0; i < nControllers; i++)
-        eventInputBuilder.append(BooleanUtils.toString(e.isObservable()[i], "T", "F"));
+        eventInputBuilder.append(BooleanUtils.toString(e.isObservable(i), "T", "F"));
 
       // Controllability properties
       eventInputBuilder.append(",");
       for (int i = 0; i < nControllers; i++)
-        eventInputBuilder.append(BooleanUtils.toString(e.isControllable()[i], "T", "F"));
+        eventInputBuilder.append(BooleanUtils.toString(e.isControllable(i), "T", "F"));
 
       // End of line character
       if (++counter < events.size())

@@ -233,8 +233,8 @@ public class TestAutomata {
         printTestOutput("Adding an event that is controllable and observable...", 3);
         int id = a.addEventIfNonExisting("firstEvent", new boolean[] { true }, new boolean[] { true });
         printTestCase("Ensuring that 'events' set was expanded", new TestResult(a.getEvents().size(), 1), counter);
-        printTestCase("Ensuring that the added event is observable", new TestResult(a.getEvent(id).isObservable()[0], true), counter);
-        printTestCase("Ensuring that the added event is controllable", new TestResult(a.getEvent(id).isControllable()[0], true), counter);
+        printTestCase("Ensuring that the added event is observable", new TestResult(a.getEvent(id).isObservable(0), true), counter);
+        printTestCase("Ensuring that the added event is controllable", new TestResult(a.getEvent(id).isControllable(0), true), counter);
       }
 
       @Test
@@ -244,8 +244,8 @@ public class TestAutomata {
         printTestOutput("Adding an event that is observable, but not controllable...", 3);
         int id = a.addEventIfNonExisting("secondEvent", new boolean[] { true }, new boolean[] { false });
         printTestCase("Ensuring that 'events' set was expanded", new TestResult(a.getEvents().size(), 2), counter);
-        printTestCase("Ensuring that the added event is observable", new TestResult(a.getEvent(id).isObservable()[0], true), counter);
-        printTestCase("Ensuring that the added event is not controllable", new TestResult(a.getEvent(id).isControllable()[0], false), counter);
+        printTestCase("Ensuring that the added event is observable", new TestResult(a.getEvent(id).isObservable(0), true), counter);
+        printTestCase("Ensuring that the added event is not controllable", new TestResult(a.getEvent(id).isControllable(0), false), counter);
       }
 
       @Test
@@ -255,8 +255,8 @@ public class TestAutomata {
         printTestOutput("Adding an event that is controllable, but not observable...", 3);
         int id = a.addEventIfNonExisting("thirdEvent", new boolean[] { false }, new boolean[] { true });
         printTestCase("Ensuring that 'events' set was expanded", new TestResult(a.getEvents().size(), 3), counter);
-        printTestCase("Ensuring that the added event is not observable", new TestResult(a.getEvent(id).isObservable()[0], false), counter);
-        printTestCase("Ensuring that the added event is controllable", new TestResult(a.getEvent(id).isControllable()[0], true), counter);
+        printTestCase("Ensuring that the added event is not observable", new TestResult(a.getEvent(id).isObservable(0), false), counter);
+        printTestCase("Ensuring that the added event is controllable", new TestResult(a.getEvent(id).isControllable(0), true), counter);
       }
 
       @Test
@@ -266,8 +266,8 @@ public class TestAutomata {
         printTestOutput("Adding an event that neither controllable, nor observable...", 3);
         int id = a.addEventIfNonExisting("fourthEvent", new boolean[] { false }, new boolean[] { false });
         printTestCase("Ensuring that 'events' set was expanded", new TestResult(a.getEvents().size(), 4), counter);
-        printTestCase("Ensuring that the added event is not observable", new TestResult(a.getEvent(id).isObservable()[0], false), counter);
-        printTestCase("Ensuring that the added event is not controllable", new TestResult(a.getEvent(id).isControllable()[0], false), counter);
+        printTestCase("Ensuring that the added event is not observable", new TestResult(a.getEvent(id).isObservable(0), false), counter);
+        printTestCase("Ensuring that the added event is not controllable", new TestResult(a.getEvent(id).isControllable(0), false), counter);
       }
       
       @Test

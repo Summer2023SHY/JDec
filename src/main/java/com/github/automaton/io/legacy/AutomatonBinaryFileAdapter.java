@@ -714,8 +714,8 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
             // in a file, we can place a property in each bit instead of each byte)
             int index = 0;
             for (int i = 0; i < getAutomaton().getNumberOfControllers(); i++) {
-                buffer[index] = (byte) (e.isObservable()[i] ? 1 : 0);
-                buffer[index + 1] = (byte) (e.isControllable()[i] ? 1 : 0);
+                buffer[index] = (byte) (e.isObservable(i) ? 1 : 0);
+                buffer[index + 1] = (byte) (e.isControllable(i) ? 1 : 0);
                 index += 2;
             }
 

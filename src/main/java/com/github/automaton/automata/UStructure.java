@@ -156,8 +156,8 @@ public class UStructure extends Automaton {
       LabelVector vector = e.getVector();
       for (int i = 1; i < vector.getSize(); i++) {
         String label = vector.getLabelAtIndex(i);
-        observableMapping.put(label + i, e.isObservable()[i - 1]);    
-        controllableMapping.put(label + i, e.isControllable()[i - 1]);    
+        observableMapping.put(label + i, e.isObservable(i - 1));
+        controllableMapping.put(label + i, e.isControllable(i - 1));
       }
     }
 
@@ -612,7 +612,7 @@ public class UStructure extends Automaton {
         else if (controller == 0) {
           return false;
         }
-        return !t.getEvent().isObservable()[controller - 1];
+        return !t.getEvent().isObservable(controller - 1);
       }
     );
     while (nullTransitions.hasNext()) {
@@ -1643,7 +1643,7 @@ public class UStructure extends Automaton {
     for (int i = 0; i < getNumberOfControllers(); i++) {
 
       // In counter-example notation, we put a dash if the controller cannot control the final event
-      if (!finalEvent.isControllable()[i])
+      if (!finalEvent.isControllable(i))
         continue;
 
       // Build sequence

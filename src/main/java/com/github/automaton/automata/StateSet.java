@@ -203,7 +203,7 @@ public class StateSet extends State {
                     t -> {
                         if (t.getEvent().getVector().getLabelAtIndex(this.controller).equals("*")) {
                             return false;
-                        } else if (controller > 0 && !t.getEvent().isObservable()[controller - 1]) {
+                        } else if (controller > 0 && !t.getEvent().isObservable(controller - 1)) {
                             return false;
                         }
                         return !uniqueTransitions.contains(t);
