@@ -125,13 +125,13 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
     }
 
     /**
-     * Wraps an automaton so that it can be saved as a JSON file
+     * Wraps an automaton so that it can be saved as a {@code .hdr} / {@code .bdy} file pair.
      * 
      * @param <T>        type of automaton
      * @param automaton  automaton to wrap
      * @param headerFile header file to save data to
      * @param bodyFile   body file to save data to
-     * @return an {@code AutomatonJsonFileAdapter} that wraps the specified
+     * @return an {@code AutomatonBinaryFileAdapter} that wraps the specified
      *         automaton
      * @throws IOException if an I/O error occurs
      */
@@ -890,13 +890,13 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
 
     /**
      * A helper method to write a list of communications to the header file.
-     * NOTE: This could be made more efficient by using one buffer for all
+     * <p>NOTE: This could be made more efficient by using one buffer for all
      * communication data. This
      * is possible because each piece of data in the list is supposed to have the
      * same number of roles.
      * 
      * @param list The list of communication data
-     * @throws IOException If there was problems writing to file
+     * @throws IOException if an I/O error occurs
      **/
     private void writeCommunicationDataToHeader(List<CommunicationData> list) throws IOException {
 
@@ -925,13 +925,13 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
 
     /**
      * A helper method to write a list of communications to the header file.
-     * NOTE: This could be made more efficient by using one buffer for all
+     * <p>NOTE: This could be made more efficient by using one buffer for all
      * communication data. This
      * is possible because each piece of data in the list is supposed to have the
      * same number of roles.
      * 
      * @param list The list of nash communication data
-     * @throws IOException If there was problems writing to file
+     * @throws IOException if an I/O error occurs
      **/
     private void writeNashCommunicationDataToHeader(List<NashCommunicationData> list) throws IOException {
 
@@ -966,11 +966,11 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
 
     /**
      * A helper method to write a list of disablement decisions to the header file.
-     * NOTE: This could be made more efficient by using one buffer for all
+     * <p>NOTE: This could be made more efficient by using one buffer for all
      * disablement decisions.
      * 
      * @param list The list of disablement decisions
-     * @throws IOException If there were any problems writing to file
+     * @throws IOException if an I/O error occurs
      **/
     private void writeDisablementDataToHeader(List<DisablementData> list) throws IOException {
 
