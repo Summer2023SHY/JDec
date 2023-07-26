@@ -540,26 +540,28 @@ public class JDec extends JFrame implements ActionListener {
     this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
     
     addWindowListener(new WindowAdapter() {
-      @Override public synchronized void windowClosing(WindowEvent event) { 
+      @Override
+      public void windowClosing(WindowEvent event) { 
 
-          /* Check for unsaved information */
-        boolean tabInUse = false;
-        boolean unSavedInformation = false;
-        for (int i = 0; i < tabbedPane.getTabCount(); i++) {
-          if (tabs.get(i).hasUnsavedInformation())
-            unSavedInformation = true;
-          if (tabs.get(i).nUsingThreads.get() > 0)
-            tabInUse = true;
+        synchronized(JDec.this) {
+            /* Check for unsaved information */
+          boolean tabInUse = false;
+          boolean unSavedInformation = false;
+          for (int i = 0; i < tabbedPane.getTabCount(); i++) {
+            if (tabs.get(i).hasUnsavedInformation())
+              unSavedInformation = true;
+            if (tabs.get(i).nUsingThreads.get() > 0)
+              tabInUse = true;
+          }
+          
+          if (!unSavedInformation && !tabInUse)
+            System.exit(0);
+
+            /* Prompt user to save */
+
+          if (askForConfirmation("Unsaved Information", "Are you sure you want to exit? Any unsaved information will be lost."))
+            System.exit(0);
         }
-        
-        if (!unSavedInformation && !tabInUse)
-          System.exit(0);
-
-          /* Prompt user to save */
-
-        if (askForConfirmation("Unsaved Information", "Are you sure you want to exit? Any unsaved information will be lost."))
-          System.exit(0);
-
       }
     });
 
@@ -2682,8 +2684,9 @@ public class JDec extends JFrame implements ActionListener {
 
     /**
      * Refresh the GUI by re-generating the GUI input code.
-     * NOTE: This method is quite expensive, as it requires the entire automaton to be read and then
-     *       turned in a form representable by strings.
+     * <p>NOTE: This method is quite expensive, as it requires the entire
+     *    automaton to be read and then turned in a form representable by
+     *    strings.
      **/
     public synchronized void refreshGUI() {
 
@@ -2700,9 +2703,8 @@ public class JDec extends JFrame implements ActionListener {
         transitionInput.setText(automaton.getTransitionInput());
         if (prevSavedStatus)
           setSaved(prevSavedStatus);
+        logger.debug("Finished in " + stopWatch.getTime() + "ms.");
       });
-      
-      logger.debug("Finished in " + stopWatch.getTime() + "ms.");
 
     }
 
