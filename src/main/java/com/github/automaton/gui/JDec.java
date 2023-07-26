@@ -2715,7 +2715,7 @@ public class JDec extends JFrame implements ActionListener {
     public synchronized boolean hasUnsavedInformation() {
 
       // If there is nothing in the input boxes, then obviously there is no unsaved information
-      if (eventInput.getText().equals("") && stateInput.getText().equals("") && transitionInput.getText().equals(""))
+      if (eventInput.getText().isEmpty() && stateInput.getText().isEmpty() && transitionInput.getText().isEmpty())
         return false;
 
       // If there is ungenerated GUI input code, then there is unsaved information
