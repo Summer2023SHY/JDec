@@ -24,7 +24,6 @@ package com.github.automaton.gui;
  */
 
 import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
 
 import com.github.automaton.automata.Automaton;
@@ -94,15 +93,14 @@ public class AutomataExplorer extends JDialog {
     transitionPanel.add(new JSeparator(SwingConstants.HORIZONTAL));
     transitionPanel.add(new JLabel("Outgoing transitions: "));
     for (Transition t : currentState.getTransitions()) {
-      final JButton button = new JButton(t.toString());
+      final JButton button = new JButton(String.format(
+        "(%s, %s)", t.getEvent().toString(),
+        this.automaton.getState(t.getTargetStateID()).getLabel()
+      ));
       final long targetStateID = t.getTargetStateID();
-      button.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          changeState(targetStateID);
-          SwingUtilities.invokeLater(new Runnable() {
-            public void run() { button.setEnabled(false); }
-          });
-        }
+      button.addActionListener(e -> {
+        changeState(targetStateID);
+        SwingUtilities.invokeLater(() -> button.setEnabled(false));
       });
       transitionPanel.add(button);
     }
@@ -112,15 +110,14 @@ public class AutomataExplorer extends JDialog {
     transitionPanel.add(new JSeparator(SwingConstants.HORIZONTAL));
     transitionPanel.add(new JLabel("Incoming transitions: "));
     for (Transition t : currentStateInverted.getTransitions()) {
-      final JButton button = new JButton(t.toString());
+      final JButton button = new JButton(String.format(
+        "(%s, %s)", t.getEvent().toString(),
+        this.automaton.getState(t.getTargetStateID()).getLabel()
+      ));
       final long targetStateID = t.getTargetStateID();
-      button.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          changeState(targetStateID);
-          SwingUtilities.invokeLater(new Runnable() {
-            public void run() { button.setEnabled(false); }
-          });
-        }
+      button.addActionListener(e -> {
+        changeState(targetStateID);
+        SwingUtilities.invokeLater(() -> button.setEnabled(false));
       });
       transitionPanel.add(button);
     }
@@ -167,16 +164,12 @@ public class AutomataExplorer extends JDialog {
       /* Add Jump To State button */
 
     JButton jumpToStateButton = new JButton("Jump To State");
-    jumpToStateButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        String stateLabel = JOptionPane.showInputDialog("Enter the state's label:", "");
-        if (stateLabel == null) return;
-        for (long s = 1; s <= automaton.getNumberOfStates(); s++) {
-          if (stateLabel.equals(automaton.getState(s).getLabel())) {
-            changeState(s);
-            return;
-          }
-        }
+    jumpToStateButton.addActionListener(e -> {
+      String stateLabel = JOptionPane.showInputDialog("Enter the state's label:", "");
+      if (stateLabel == null) return;
+      try {
+        changeState(AutomataExplorer.this.automaton.getStateID(stateLabel));
+      } catch (NullPointerException npe) {
         JOptionPane.showMessageDialog(gui, "The state '" + stateLabel + "' was unable to be found.");
       }
     });
@@ -185,10 +178,8 @@ public class AutomataExplorer extends JDialog {
       /* Add dismiss button */
 
     JButton dismissedButton = new JButton("Dismiss");
-    dismissedButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        AutomataExplorer.this.dispose();
-      }
+    dismissedButton.addActionListener(e -> {
+      AutomataExplorer.this.dispose();
     });
     buttonPanel.add(dismissedButton);
 
@@ -208,22 +199,20 @@ public class AutomataExplorer extends JDialog {
    **/
   private void setGUIproperties(final String title) {
 
-    SwingUtilities.invokeLater(new Runnable() {
-      public void run() {
+    SwingUtilities.invokeLater(() -> {
 
-          /* Sets screen location in the center of the screen (only works after calling pack) */
+      /* Sets screen location in the center of the screen (only works after calling pack) */
 
-        setLocationRelativeTo(null);
+      setLocationRelativeTo(gui);
 
-          /* Update title */
+      /* Update title */
 
-        setTitle(title);
+      setTitle(title);
 
-          /* Show screen */
+      /* Show screen */
 
-        setVisible(true);
+      setVisible(true);
 
-      }
     });
 
   }

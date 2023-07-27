@@ -24,7 +24,6 @@ package com.github.automaton.gui;
  */
 
 import java.awt.*;
-import java.awt.event.*;
 // import java.io.*;
 import java.util.*;
 import javax.swing.*;
@@ -125,29 +124,24 @@ public class FeasibleProtocolOutput extends JDialog {
       // Add a button to generate the U-Structure with this protocol
       final JButton button = new JButton("Generate Automaton");
       final int index = i;
-      button.addActionListener(new ActionListener() {
-   
-        public void actionPerformed(ActionEvent e) {
+      button.addActionListener(e -> {
 
-          if (alreadyPressed[index])
-            return;
+        if (alreadyPressed[index])
+          return;
 
-          // Prevent the user from pressing this button again later
-          alreadyPressed[index] = true;
-          EventQueue.invokeLater(new Runnable() {
-            @Override public void run() {
-              button.setEnabled(false);
-            }
-          });
+        // Prevent the user from pressing this button again later
+        alreadyPressed[index] = true;
+        EventQueue.invokeLater(() -> {
+          button.setEnabled(false);
+        });
 
-          // Apply the protocol, and place the generated Automaton in a new tab
-          // String fileName = gui.getTemporaryFileName();
-          // File headerFile = new File(fileName + ".hdr");
-          // File bodyFile = new File(fileName + ".bdy");
-          Automaton generatedAutomaton = uStructure.applyProtocol(protocol, true);
-          gui.createTab(generatedAutomaton);
+        // Apply the protocol, and place the generated Automaton in a new tab
+        // String fileName = gui.getTemporaryFileName();
+        // File headerFile = new File(fileName + ".hdr");
+        // File bodyFile = new File(fileName + ".bdy");
+        Automaton generatedAutomaton = uStructure.applyProtocol(protocol, true);
+        gui.createTab(generatedAutomaton);
 
-        }
 
       });
       containerForTextAndButton.add(button);
@@ -179,10 +173,8 @@ public class FeasibleProtocolOutput extends JDialog {
       /* Add "Dismissed" Button */
 
     JButton dismissedButton = new JButton("Dismiss");
-    dismissedButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        FeasibleProtocolOutput.this.dispose();
-      }
+    dismissedButton.addActionListener(e -> {
+      FeasibleProtocolOutput.this.dispose();
     });
     add(dismissedButton, BorderLayout.SOUTH);
 

@@ -81,26 +81,23 @@ public class TextPopup extends JDialog {
          * AutomataExplorer.setGUIProperties(String)
          */
 
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
+        SwingUtilities.invokeLater(() -> {
 
-                /*
-                 * Sets screen location in the center of the screen
-                 * (only works after calling pack)
-                 */
+            /*
+             * Sets screen location in the center of the screen
+             * (only works after calling pack)
+             */
 
-                setLocationRelativeTo(gui);
+            setLocationRelativeTo(gui);
 
-                /* Update title */
+            /* Update title */
 
-                setTitle(title);
+            setTitle(title);
 
-                /* Show screen */
+            /* Show screen */
 
-                setVisible(true);
+            setVisible(true);
 
-            }
         });
 
     }

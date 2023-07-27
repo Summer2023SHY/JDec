@@ -26,7 +26,6 @@ package com.github.automaton.gui;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 
@@ -106,48 +105,40 @@ public class MakeProtocolFeasiblePrompt extends JDialog {
       /* Add Button */
 
     JButton button = new JButton("Make Protocol Feasible");
-    button.addActionListener(new ActionListener() {
- 
-      public void actionPerformed(ActionEvent e) {
+    button.addActionListener(e -> {
 
-        // Start this process in a new thread because it will take a while
-        new Thread() {
-          @Override public void run() {
+      // Start this process in a new thread because it will take a while
+      new Thread(() -> {
 
-            // Create list of selected communications
-            Set<CommunicationData> protocol = new HashSet<CommunicationData>();
-            for (int i = 0; i < checkBoxes.length; i++)
-              if (checkBoxes[i].isSelected())
-                protocol.add(communications.get(i));
+        // Create list of selected communications
+        Set<CommunicationData> protocol = new HashSet<CommunicationData>();
+        for (int i = 0; i < checkBoxes.length; i++)
+          if (checkBoxes[i].isSelected())
+            protocol.add(communications.get(i));
   
-            // Find all feasible protocols which include the chosen communications
-            List<Set<CommunicationData>> feasibleProtocols = uStructure.makeProtocolFeasible(protocol);
+        // Find all feasible protocols which include the chosen communications
+        List<Set<CommunicationData>> feasibleProtocols = uStructure.makeProtocolFeasible(protocol);
 
-            if (feasibleProtocols.size() == 0) {
+        if (feasibleProtocols.size() == 0) {
 
-                  gui.displayMessage("No Feasible Protocols", "The specified protocol could not be made into a feasible protocol by adding communications.", JOptionPane.INFORMATION_MESSAGE);
+          gui.displayMessage("No Feasible Protocols", "The specified protocol could not be made into a feasible protocol by adding communications.", JOptionPane.INFORMATION_MESSAGE);
             
-            } else {
+        } else {
 
-              // Hide this window
-              EventQueue.invokeLater(new Runnable() {
-                @Override public void run() {
-                  MakeProtocolFeasiblePrompt.this.setVisible(false);
-                }
-              });
+          // Hide this window
+          EventQueue.invokeLater(
+            () -> MakeProtocolFeasiblePrompt.this.setVisible(false)
+          );
             
-              // Display results in another window
-              new FeasibleProtocolOutput(gui, uStructure, feasibleProtocols, "Feasible Protocols", " Here are the feasible protocols: ");
+          // Display results in another window
+          new FeasibleProtocolOutput(gui, uStructure, feasibleProtocols, "Feasible Protocols", " Here are the feasible protocols: ");
 
-              // Dispose of this window
-              MakeProtocolFeasiblePrompt.this.dispose();
+          // Dispose of this window
+          MakeProtocolFeasiblePrompt.this.dispose();
 
-            }
-          }
+        }
+      }).start();
 
-        }.start();
-
-      }
 
     });
     add(button);
