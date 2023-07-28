@@ -192,10 +192,13 @@ public class State implements Cloneable {
   /**
    * Add a transition to the list.
    * @param transition  The new transition
+   * @return {@code true} if the transition was added successfully
    * 
    * @revised 2.0
    **/
   public boolean addTransition(Transition transition) {
+    if (transitions.contains(transition))
+      return false;
     return transitions.add(transition);
   }
 
@@ -206,6 +209,15 @@ public class State implements Cloneable {
    **/
   public boolean removeTransition(Transition transition) {
     return transitions.remove(transition);
+  }
+
+  /**
+   * Removes all transitions from this {@code State}.
+   * 
+   * @since 2.0
+   */
+  public void clearTransitions() {
+    transitions.clear();
   }
 
     /* ACCESSOR METHODS */
@@ -255,11 +267,25 @@ public class State implements Cloneable {
   }
 
   /**
+   * Gets the transition leading out from this state with
+   * the specified index.
+   * 
+   * @param index the index of the transition
+   * @return  the transition with the specified index
+   * @throws IndexOutOfBoundsException if argument is out of bounds
+   * 
+   * @since 2.0
+   **/
+  public Transition getTransition(int index) {
+    return transitions.get(Objects.checkIndex(index, getNumberOfTransitions()));
+  }
+
+  /**
    * Get the list of transitions leading out from this state.
    * @return  The list of transitions
    **/
   public List<Transition> getTransitions() {
-    return transitions;
+    return Collections.unmodifiableList(transitions);
   }
 
   /**

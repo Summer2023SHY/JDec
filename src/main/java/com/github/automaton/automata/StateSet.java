@@ -259,9 +259,18 @@ public class StateSet extends State {
         ss.setID(sv.getID());
         ss.buildLabel();
         for (Transition orig : this.getTransitions()) {
-            ss.getTransitions().add(ObjectUtils.clone(orig));
+            ss.addTransition(ObjectUtils.clone(orig));
         }
         return ss;
+    }
+
+    /**
+     * Returns the {@link Set} view of this {@code StateSet}.
+     * 
+     * @return the {@link Set} view of this {@code StateSet}
+     */
+    Set<State> getSet() {
+        return Collections.unmodifiableSet(set);
     }
 
     /**

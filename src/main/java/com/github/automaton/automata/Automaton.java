@@ -2388,7 +2388,10 @@ public class Automaton implements Cloneable {
       /* Add transition and update the file */
 
     Event event = getEvent(eventID);
-    startingState.addTransition(new Transition(event, targetStateID));
+    if (!startingState.addTransition(new Transition(event, targetStateID))) {
+      logger.error("Transition already exists.");
+      return false;
+    }
 
     return true;
 
@@ -3003,6 +3006,22 @@ public class Automaton implements Cloneable {
   
     return nTransitions;
 
+  }
+
+  /**
+   * Generates and returns the list of all transitions in this automaton.
+   * 
+   * @return the list of all transitions in this automaton
+   * @since 2.0
+   */
+  List<TransitionData> getAllTransitions() {
+    List<TransitionData> list = new ArrayList<>();
+    for (State s : getStates()) {
+      for (Transition t : s.getTransitions()) {
+        list.add(new TransitionData(s.getID(), t.getEvent().getID(), t.getTargetStateID()));
+      }
+    }
+    return list;
   }
 
   /**
