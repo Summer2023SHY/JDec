@@ -32,6 +32,9 @@ import org.apache.commons.collections4.map.AbstractMapDecorator;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.apache.commons.collections4.multiset.HashMultiSet;
 import org.apache.commons.lang3.*;
+import org.apache.commons.lang3.mutable.Mutable;
+import org.apache.commons.lang3.mutable.MutableObject;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.*;
 
 import com.github.automaton.io.json.JsonUtils;
@@ -639,86 +642,47 @@ public class UStructure extends Automaton {
 
     Automaton subsetConstruction = this.subsetConstruction();
     long nIndistinguishableStates = subsetConstruction.getNumberOfStates();
-    Automaton invSubsetConstruction = subsetConstruction.invert();
-
-    Iterator<State> invSubsetStateIterator = invSubsetConstruction.getStates().iterator();
-
-    while (invSubsetStateIterator.hasNext()) {
-      State s = invSubsetStateIterator.next();
-      List<Transition> outgoingTransitions = new ArrayList<>(s.getTransitions());
-      Iterator<Transition> outgoingTransitionsIterator = outgoingTransitions.iterator();
-      while (outgoingTransitionsIterator.hasNext()) {
-        Transition t = outgoingTransitionsIterator.next();
-        if (s.getID() == t.getTargetStateID()) {
-          outgoingTransitionsIterator.remove();
-        }
-      }
-      for (int i = 1; i < outgoingTransitions.size(); i++) {
-        State indistinguishable = subsetConstruction.getState(s.getID());
-        State indistinguishableCopy = ObjectUtils.clone(indistinguishable);
-        State invIndistinguishableCopy = ObjectUtils.clone(s);
-        indistinguishableCopy.setID(indistinguishable.getID() + i * nIndistinguishableStates);
-        invIndistinguishableCopy.setID(indistinguishable.getID() + i * nIndistinguishableStates);
-        for (Transition tCopy : indistinguishableCopy.getTransitions()) {
-          if (tCopy.getTargetStateID() == s.getID()) {
-            tCopy.setTargetStateID(indistinguishableCopy.getID());
-          }
-        }
-        for (Transition tCopy : invIndistinguishableCopy.getTransitions()) {
-          if (tCopy.getTargetStateID() == s.getID()) {
-            tCopy.setTargetStateID(indistinguishableCopy.getID());
-          }
-        }
-        if (subsetConstruction.addStateAt(indistinguishableCopy, false)) {
-          logger.trace("Successfully added " + indistinguishableCopy + " with ID " + indistinguishableCopy.getID());
-        } else {
-          logger.error("Failed to add " + indistinguishableCopy + " with ID " + indistinguishableCopy.getID());
-        }
-        if (invSubsetConstruction.addStateAt(invIndistinguishableCopy, false)) {
-          logger.trace("Successfully added " + invIndistinguishableCopy + " with ID " + invIndistinguishableCopy.getID());
-        } else {
-          logger.error("Failed to add " + invIndistinguishableCopy + " with ID " + invIndistinguishableCopy.getID());
-        }
-
-        State parentState = subsetConstruction.getState(outgoingTransitions.get(i).getTargetStateID());
-        if (parentState.addTransition(new Transition(outgoingTransitions.get(i).getEvent(), indistinguishableCopy.getID()))) {
-          logger.trace("Successfully added transition");
-        } else {
-          logger.error("Failed to add transition");
-        }
-        if (parentState.removeTransition(new Transition(outgoingTransitions.get(i).getEvent(), indistinguishable.getID()))) {
-          logger.trace("Successfully removed transition");
-        } else {
-          logger.error("Failed to remove transition");
-        }
-        s.removeTransition(outgoingTransitions.get(i));
-        invIndistinguishableCopy.clearTransitions();
-        invIndistinguishableCopy.addTransition(outgoingTransitions.get(i));
-      }
-      if (outgoingTransitions.size() > 1) {
-        invSubsetStateIterator = invSubsetConstruction.getStates().iterator();
-      }
-    }
 
     MultiSet<Long> stateIDMultiSet = new HashMultiSet<>();
+    MultiSet<Long> combinedStateIDMultiSet = new HashMultiSet<>();
     SetValuedMap<Long, Long> relabelMapping = new HashSetValuedHashMap<>();
 
-    Queue<Long> combinedStateIDQueue = new ArrayDeque<>();
-    combinedStateIDQueue.add(subsetConstruction.initialState);
+    Queue<Pair<Long, Sequence>> combinedStateQueue = new ArrayDeque<>();
+    Set<Long> processedCombinedStateIDs = new HashSet<>();
+    combinedStateQueue.add(Pair.of(subsetConstruction.initialState, new Sequence(subsetConstruction.initialState)));
+    processedCombinedStateIDs.add(subsetConstruction.initialState);
 
-    while (!combinedStateIDQueue.isEmpty()) {
-      StateSet ss = (StateSet) subsetConstruction.getState(combinedStateIDQueue.remove());
-      for (State s : ss.getSet()) {
+    while (!combinedStateQueue.isEmpty()) {
+      Pair<Long, Sequence> combinedStateID = combinedStateQueue.remove();
+      
+      Mutable<StateSet> ss = new MutableObject<>((StateSet) subsetConstruction.getState(combinedStateID.getLeft()));
+      if (combinedStateIDMultiSet.getCount(combinedStateID.getLeft()) > 1) {
+        ss.setValue(ObjectUtils.clone(ss.getValue()));
+        ss.getValue().setID(ss.getValue().getID() + nIndistinguishableStates * combinedStateIDMultiSet.getCount(combinedStateID.getLeft()));
+        subsetConstruction.addStateAt(ss.getValue(), false);
+        long prevStateID = combinedStateID.getRight().getState(combinedStateID.getRight().length() - 1);
+        State prevState = subsetConstruction.getState(prevStateID);
+        for (Transition t : prevState.getTransitions()) {
+          if (t.getTargetStateID() == combinedStateID.getLeft()) {
+            t.setTargetStateID(ss.getValue().getID());
+          }
+        }
+      }
+      for (State s : ss.getValue().getSet()) {
         long origID = s.getID();
         long modID = origID + nStates * stateIDMultiSet.getCount(origID);
-        relabelMapping.put(ss.getID(), modID);
+        relabelMapping.put(ss.getValue().getID(), modID);
         stateIDMultiSet.add(origID);
       }
       for (Transition t : IterableUtils.filteredIterable(
-        ss.getTransitions(), t -> t.getTargetStateID() != ss.getID()
+        ss.getValue().getTransitions(), t -> t.getTargetStateID() != ss.getValue().getID()
       )) {
-        combinedStateIDQueue.add(t.getTargetStateID());
+        if (!combinedStateID.getRight().containsState(t.getTargetStateID())) {
+          combinedStateQueue.add(Pair.of(t.getTargetStateID(), combinedStateID.getRight().append(t.getEvent().getID(), t.getTargetStateID())));
+          processedCombinedStateIDs.add(t.getTargetStateID());
+        }
       }
+      combinedStateIDMultiSet.add(combinedStateID.getLeft());
     }
 
     UStructure relabeled = new UStructure(nControllers);
@@ -767,6 +731,9 @@ public class UStructure extends Automaton {
       }
     }
 
+    processedCombinedStateIDs.clear();
+    processedCombinedStateIDs.add(subsetConstruction.initialState);
+    Queue<Long> combinedStateIDQueue = new ArrayDeque<>();
     combinedStateIDQueue.add(subsetConstruction.initialState);
     while (!combinedStateIDQueue.isEmpty()) {
       StateSet ss = (StateSet) subsetConstruction.getState(combinedStateIDQueue.remove());
@@ -793,7 +760,10 @@ public class UStructure extends Automaton {
               }
             }
           }
-          combinedStateIDQueue.add(t.getTargetStateID());
+          if (!processedCombinedStateIDs.contains(t.getTargetStateID())) {
+            processedCombinedStateIDs.add(t.getTargetStateID());
+            combinedStateIDQueue.add(t.getTargetStateID());
+          }
         }
       }
     }

@@ -1332,12 +1332,23 @@ public class Automaton implements Cloneable {
                 neighborMap.get(vPrime).get(i).remove(r);
                 logger.trace("\t\t\tRemoved " + r.getLabel() + " from neighbors of " + vPrime.getLabel());
                 if (neighborMap.get(vPrime).get(i).isEmpty()) {
-                  //if (!resolved.contains(vPrime)) {
+                  if (!resolved.contains(vPrime)) {
                     rPrime.add(vPrime);
-                  //}
+                  }
                   ambLevelMap.get(vPrime)[i].setValue(ambLevel);
+                  logger.printf(
+                    Level.TRACE,
+                    "\t\t\tAmbiguity level for %s (controller %d) set as %d",
+                    vPrime.toString(), i, ambLevel
+                  );
+                  /* 
+                   * Using sets for representing graph does not remove edge from
+                   * both ends, and thus, leaves ambLevels unchanged
+                   */
                 }
               }
+              ambLevelMap.get(r)[i].setValue(Math.min(ambLevelMap.get(r)[i].intValue(), ambLevel));
+              neighborMap.get(r).set(i, Collections.emptySet());
             }
           }
         }
@@ -1347,8 +1358,15 @@ public class Automaton implements Cloneable {
         logger.debug("Neighbors:");
         for (State s : neighborMap.keySet()) {
           List<Set<State>> neighbors = neighborMap.get(s);
-          for (int i = 0; i < nControllers && !resolved.contains(s); i++) {
-            logger.printf(Level.DEBUG, "- i = %d: {%s}", i, neighbors.toString());
+          for (int i = 0; i < nControllers /*&& !resolved.contains(s)*/; i++) {
+            if (!neighbors.get(i).isEmpty()) {
+              logger.printf(
+                Level.DEBUG,
+                "%s %s- i = %d: {%s}",
+                s.toString(), resolved.contains(s) ? "(resolved) " : "",
+                i, neighbors.get(i).toString()
+              );
+            }
           }
         }
       }
