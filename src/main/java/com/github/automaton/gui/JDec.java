@@ -211,8 +211,27 @@ public class JDec extends JFrame implements ActionListener {
 
     final OsThemeDetector detector = OsThemeDetector.getDetector();
 
+    if (SystemUtils.IS_OS_MAC) {
+      // macOS-specific UI tinkering
+      
+      // Use system menu bar
+      System.setProperty("apple.laf.useScreenMenuBar", "true");
+      // Set application name
+      System.setProperty("apple.awt.application.name", "JDec");
+      // Use system theme for title bar
+      System.setProperty("apple.awt.application.appearance", "system" );
+      // Associate cmd+Q with the our window handler
+      System.setProperty("apple.eawt.quitStrategy", "CLOSE_ALL_WINDOWS");
+    }
+
     try {
-      if (detector.isDark())
+      if (SystemUtils.IS_OS_MAC) {
+        if (detector.isDark())
+          UIManager.setLookAndFeel("com.formdev.flatlaf.themes.FlatMacDarkLaf");
+        else
+          UIManager.setLookAndFeel("com.formdev.flatlaf.themes.FlatMacLightLaf");
+        UIManager.put("TabbedPane.tabAreaInsets", new Insets(0, 70, 0, 0) );
+      } else if (detector.isDark())
         UIManager.setLookAndFeel("com.formdev.flatlaf.FlatDarkLaf");
       else
         UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
@@ -220,20 +239,7 @@ public class JDec extends JFrame implements ActionListener {
       logger.catching(e);
     }
 
-    if (SystemUtils.IS_OS_MAC) {
-      // macOS-specific UI tinkering
-      try {
-        // Use system menu bar
-        System.setProperty("apple.laf.useScreenMenuBar", "true");
-        // Set application name
-        System.setProperty("com.apple.mrj.application.apple.menu.about.name", "JDec");
-        // Associate cmd+Q with the our window handler
-        System.setProperty("apple.eawt.quitStrategy", "CLOSE_ALL_WINDOWS");
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-      } catch (ReflectiveOperationException | UnsupportedLookAndFeelException e) {
-        logger.catching(e);
-      }
-    }
+    
 
     // Start the application  
     JDec jdec = new JDec();
@@ -241,11 +247,16 @@ public class JDec extends JFrame implements ActionListener {
     detector.registerListener(isDark -> {
       SwingUtilities.invokeLater(() -> {
         try {
-          if (isDark) {
+          if (SystemUtils.IS_OS_MAC) {
+            if (isDark)
+              UIManager.setLookAndFeel("com.formdev.flatlaf.themes.FlatMacDarkLaf");
+            else
+              UIManager.setLookAndFeel("com.formdev.flatlaf.themes.FlatMacLightLaf");
+            UIManager.put("TabbedPane.tabAreaInsets", new Insets(0, 70, 0, 0) );
+          } else if (isDark)
             UIManager.setLookAndFeel("com.formdev.flatlaf.FlatDarkLaf");
-          } else {
+          else
             UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
-          }
           SwingUtilities.updateComponentTreeUI(jdec);
         } catch (ReflectiveOperationException | UnsupportedLookAndFeelException e) {
           logger.catching(e);
@@ -606,7 +617,15 @@ public class JDec extends JFrame implements ActionListener {
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
     // Update title
-    setTitle(applicationTitle);
+    if (SystemUtils.IS_OS_MAC) {
+      getRootPane().putClientProperty( "apple.awt.fullWindowContent", true );
+      getRootPane().putClientProperty( "apple.awt.transparentTitleBar", true );
+      if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_17))
+        getRootPane().putClientProperty( "apple.awt.windowTitleVisible", false );
+      else
+        setTitle(null);
+    } else
+      setTitle(applicationTitle);
 
     // Show screen
     setVisible(true);
