@@ -338,7 +338,7 @@ public class JDec extends JFrame implements ActionListener {
       "Clear[TAB]",
       "Close Tab[TAB]",
       null,
-      "Quit"
+      "Quit[NOT_MACOS]"
     ));
 
     // View menu
@@ -469,6 +469,13 @@ public class JDec extends JFrame implements ActionListener {
     boolean requiresAnyUStructure = str.contains("[ANY_U_STRUCTURE]");
     if (requiresAnyUStructure)
       str = str.replace("[ANY_U_STRUCTURE]", "");
+
+    // Check to see if this menu item is not displayed in macOS
+    boolean requiresNotMacOS = str.contains("[NOT_MACOS]");
+    if (requiresNotMacOS && SystemUtils.IS_OS_MAC)
+      return;
+    else
+      str = str.replace("[NOT_MACOS]", "");
 
     // Create menu item object
     JMenuItem menuItem = new JMenuItem(str);
