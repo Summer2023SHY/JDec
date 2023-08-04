@@ -58,6 +58,7 @@ import com.github.automaton.gui.util.*;
 import com.github.automaton.io.AutomatonIOAdapter;
 import com.github.automaton.io.json.AutomatonJsonFileAdapter;
 import com.github.automaton.io.legacy.*;
+import com.jthemedetecor.OsThemeDetector;
 
 import guru.nidi.graphviz.engine.Format;
 
@@ -207,7 +208,18 @@ public class JDec extends JFrame implements ActionListener {
    * @param args  Any arguments are simply ignored
    **/  
   public static void main(String[] args) {
-    
+
+    final OsThemeDetector detector = OsThemeDetector.getDetector();
+
+    try {
+      if (detector.isDark())
+        UIManager.setLookAndFeel("com.formdev.flatlaf.FlatDarkLaf");
+      else
+        UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
+    } catch (ReflectiveOperationException | UnsupportedLookAndFeelException e) {
+      logger.catching(e);
+    }
+
     if (SystemUtils.IS_OS_MAC) {
       // macOS-specific UI tinkering
       try {
@@ -224,7 +236,22 @@ public class JDec extends JFrame implements ActionListener {
     }
 
     // Start the application  
-    new JDec();
+    JDec jdec = new JDec();
+
+    detector.registerListener(isDark -> {
+      SwingUtilities.invokeLater(() -> {
+        try {
+          if (isDark) {
+            UIManager.setLookAndFeel("com.formdev.flatlaf.FlatDarkLaf");
+          } else {
+            UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
+          }
+          SwingUtilities.updateComponentTreeUI(jdec);
+        } catch (ReflectiveOperationException | UnsupportedLookAndFeelException e) {
+          logger.catching(e);
+        }
+      });
+    });
   
   }
 
