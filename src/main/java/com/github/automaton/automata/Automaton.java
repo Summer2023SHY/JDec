@@ -1347,7 +1347,7 @@ public class Automaton implements Cloneable {
                    */
                 }
               }
-              ambLevelMap.get(r)[i].setValue(Math.min(ambLevelMap.get(r)[i].intValue(), ambLevel));
+              ambLevelMap.get(r)[i].setValue(Math.min(ambLevelMap.get(r)[i].intValue(), ambLevel + 1));
               neighborMap.get(r).set(i, Collections.emptySet());
             }
           }
