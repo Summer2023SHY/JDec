@@ -59,6 +59,7 @@ import com.github.automaton.gui.util.*;
 import com.github.automaton.io.AutomatonIOAdapter;
 import com.github.automaton.io.json.AutomatonJsonFileAdapter;
 import com.github.automaton.io.legacy.*;
+import com.jthemedetecor.OsThemeDetector;
 
 import guru.nidi.graphviz.engine.Format;
 
@@ -210,24 +211,60 @@ public class JDec extends JFrame implements ActionListener {
   public static void main(String[] args) {
 
     Configurator.setAllLevels(LogManager.ROOT_LOGGER_NAME, Level.DEBUG);
+    final OsThemeDetector detector = OsThemeDetector.getDetector();
 
     if (SystemUtils.IS_OS_MAC) {
       // macOS-specific UI tinkering
-      try {
-        // Use system menu bar
-        System.setProperty("apple.laf.useScreenMenuBar", "true");
-        // Set application name
-        System.setProperty("com.apple.mrj.application.apple.menu.about.name", "JDec");
-        // Associate cmd+Q with the our window handler
-        System.setProperty("apple.eawt.quitStrategy", "CLOSE_ALL_WINDOWS");
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-      } catch (ReflectiveOperationException | UnsupportedLookAndFeelException e) {
-        logger.catching(e);
-      }
+      
+      // Use system menu bar
+      System.setProperty("apple.laf.useScreenMenuBar", "true");
+      // Set application name
+      System.setProperty("apple.awt.application.name", "JDec");
+      // Use system theme for title bar
+      System.setProperty("apple.awt.application.appearance", "system" );
+      // Associate cmd+Q with the our window handler
+      System.setProperty("apple.eawt.quitStrategy", "CLOSE_ALL_WINDOWS");
     }
 
+    try {
+      if (SystemUtils.IS_OS_MAC) {
+        if (detector.isDark())
+          UIManager.setLookAndFeel("com.formdev.flatlaf.themes.FlatMacDarkLaf");
+        else
+          UIManager.setLookAndFeel("com.formdev.flatlaf.themes.FlatMacLightLaf");
+        UIManager.put("TabbedPane.tabAreaInsets", new Insets(0, 70, 0, 0) );
+      } else if (detector.isDark())
+        UIManager.setLookAndFeel("com.formdev.flatlaf.FlatDarkLaf");
+      else
+        UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
+    } catch (ReflectiveOperationException | UnsupportedLookAndFeelException e) {
+      logger.catching(e);
+    }
+
+    
+
     // Start the application  
-    new JDec();
+    JDec jdec = new JDec();
+
+    detector.registerListener(isDark -> {
+      SwingUtilities.invokeLater(() -> {
+        try {
+          if (SystemUtils.IS_OS_MAC) {
+            if (isDark)
+              UIManager.setLookAndFeel("com.formdev.flatlaf.themes.FlatMacDarkLaf");
+            else
+              UIManager.setLookAndFeel("com.formdev.flatlaf.themes.FlatMacLightLaf");
+            UIManager.put("TabbedPane.tabAreaInsets", new Insets(0, 70, 0, 0) );
+          } else if (isDark)
+            UIManager.setLookAndFeel("com.formdev.flatlaf.FlatDarkLaf");
+          else
+            UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
+          SwingUtilities.updateComponentTreeUI(jdec);
+        } catch (ReflectiveOperationException | UnsupportedLookAndFeelException e) {
+          logger.catching(e);
+        }
+      });
+    });
   
   }
 
@@ -303,7 +340,7 @@ public class JDec extends JFrame implements ActionListener {
       "Clear[TAB]",
       "Close Tab[TAB]",
       null,
-      "Quit"
+      "Quit[NOT_MACOS]"
     ));
 
     // View menu
@@ -435,6 +472,13 @@ public class JDec extends JFrame implements ActionListener {
     if (requiresAnyUStructure)
       str = str.replace("[ANY_U_STRUCTURE]", "");
 
+    // Check to see if this menu item is not displayed in macOS
+    boolean requiresNotMacOS = str.contains("[NOT_MACOS]");
+    if (requiresNotMacOS && SystemUtils.IS_OS_MAC)
+      return;
+    else
+      str = str.replace("[NOT_MACOS]", "");
+
     // Create menu item object
     JMenuItem menuItem = new JMenuItem(str);
     menuItem.addActionListener(this);
@@ -543,26 +587,28 @@ public class JDec extends JFrame implements ActionListener {
     this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
     
     addWindowListener(new WindowAdapter() {
-      @Override public synchronized void windowClosing(WindowEvent event) { 
+      @Override
+      public void windowClosing(WindowEvent event) { 
 
-          /* Check for unsaved information */
-        boolean tabInUse = false;
-        boolean unSavedInformation = false;
-        for (int i = 0; i < tabbedPane.getTabCount(); i++) {
-          if (tabs.get(i).hasUnsavedInformation())
-            unSavedInformation = true;
-          if (tabs.get(i).nUsingThreads.get() > 0)
-            tabInUse = true;
+        synchronized(JDec.this) {
+            /* Check for unsaved information */
+          boolean tabInUse = false;
+          boolean unSavedInformation = false;
+          for (int i = 0; i < tabbedPane.getTabCount(); i++) {
+            if (tabs.get(i).hasUnsavedInformation())
+              unSavedInformation = true;
+            if (tabs.get(i).nUsingThreads.get() > 0)
+              tabInUse = true;
+          }
+          
+          if (!unSavedInformation && !tabInUse)
+            System.exit(0);
+
+            /* Prompt user to save */
+
+          if (askForConfirmation("Unsaved Information", "Are you sure you want to exit? Any unsaved information will be lost."))
+            System.exit(0);
         }
-        
-        if (!unSavedInformation && !tabInUse)
-          System.exit(0);
-
-          /* Prompt user to save */
-
-        if (askForConfirmation("Unsaved Information", "Are you sure you want to exit? Any unsaved information will be lost."))
-          System.exit(0);
-
       }
     });
 
@@ -580,7 +626,15 @@ public class JDec extends JFrame implements ActionListener {
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
     // Update title
-    setTitle(applicationTitle);
+    if (SystemUtils.IS_OS_MAC) {
+      getRootPane().putClientProperty( "apple.awt.fullWindowContent", true );
+      getRootPane().putClientProperty( "apple.awt.transparentTitleBar", true );
+      if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_17))
+        getRootPane().putClientProperty( "apple.awt.windowTitleVisible", false );
+      else
+        setTitle(null);
+    } else
+      setTitle(applicationTitle);
 
     // Show screen
     setVisible(true);
@@ -2698,8 +2752,9 @@ public class JDec extends JFrame implements ActionListener {
 
     /**
      * Refresh the GUI by re-generating the GUI input code.
-     * NOTE: This method is quite expensive, as it requires the entire automaton to be read and then
-     *       turned in a form representable by strings.
+     * <p>NOTE: This method is quite expensive, as it requires the entire
+     *    automaton to be read and then turned in a form representable by
+     *    strings.
      **/
     public synchronized void refreshGUI() {
 
@@ -2716,9 +2771,8 @@ public class JDec extends JFrame implements ActionListener {
         transitionInput.setText(automaton.getTransitionInput());
         if (prevSavedStatus)
           setSaved(prevSavedStatus);
+        logger.debug("Finished in " + stopWatch.getTime() + "ms.");
       });
-      
-      logger.debug("Finished in " + stopWatch.getTime() + "ms.");
 
     }
 
@@ -2731,7 +2785,7 @@ public class JDec extends JFrame implements ActionListener {
     public synchronized boolean hasUnsavedInformation() {
 
       // If there is nothing in the input boxes, then obviously there is no unsaved information
-      if (eventInput.getText().equals("") && stateInput.getText().equals("") && transitionInput.getText().equals(""))
+      if (eventInput.getText().isEmpty() && stateInput.getText().isEmpty() && transitionInput.getText().isEmpty())
         return false;
 
       // If there is ungenerated GUI input code, then there is unsaved information

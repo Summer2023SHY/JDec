@@ -144,7 +144,7 @@ public class NashEquilibriaOutput extends JDialog {
     pack();
 
     // Sets screen location in the center of the screen (only works after calling pack)
-    setLocationRelativeTo(null);
+    setLocationRelativeTo(gui);
 
     // Update title
     setTitle(title);

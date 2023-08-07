@@ -25,7 +25,6 @@ package com.github.automaton.gui;
 
 import java.awt.Container;
 import java.awt.GridLayout;
-import java.awt.event.*;
 import javax.swing.*;
 
 import com.github.automaton.automata.UStructure;
@@ -96,40 +95,33 @@ public abstract class ChooseSendersAndReceiversPrompt extends JDialog {
       /* Add Button */
 
     final JButton button = new JButton(buttonText);
-    button.addActionListener(new ActionListener() {
- 
-        public void actionPerformed(ActionEvent e) {
+    button.addActionListener(e -> {
 
-            if (buttonPressed)
-              return;
+      if (buttonPressed)
+        return;
 
-            buttonPressed = true;
+      buttonPressed = true;
 
-            // Needs to be called on the event dispatch thread, or it will not update in time
-            SwingUtilities.invokeLater(new Runnable() {
-              public void run() {
-                button.setEnabled(false);
-              }
-            });
+      // Needs to be called on the event dispatch thread, or it will not update in time
+      SwingUtilities.invokeLater(() -> {
+        button.setEnabled(false);
+      });
 
-            // Perform the overridden action
-            if (performAction()) {
+      // Perform the overridden action
+      if (performAction()) {
               
-              // Dispose of the dialog box if the action was completed
-              dispose();
+        // Dispose of the dialog box if the action was completed
+        dispose();
 
-            } else {
+      } else {
               
-              // Allow the user to press the button again if the action was not completed successfully
-              buttonPressed = false;
-              SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                  button.setEnabled(true);
-                }
-              });
+        // Allow the user to press the button again if the action was not completed successfully
+        buttonPressed = false;
+        SwingUtilities.invokeLater(() -> {
+          button.setEnabled(true);
+        });
 
-            }
-        }
+      }
 
     });
     add(button);

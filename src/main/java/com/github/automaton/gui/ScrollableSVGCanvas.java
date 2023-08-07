@@ -36,7 +36,7 @@ import org.apache.batik.swing.svg.SVGUserAgent;
  * @author Sung Ho Yoon
  * @since 1.3
  */
-class ScrollableSVGCanvas extends JSVGCanvas implements MouseWheelListener {
+class ScrollableSVGCanvas extends JSVGCanvas {
 
     /**
      * Creates a new {@code ScrollableSVGCanvas}.
@@ -64,6 +64,7 @@ class ScrollableSVGCanvas extends JSVGCanvas implements MouseWheelListener {
         List<Interactor> intl = getInteractors();
         intl.remove(super.panInteractor);
         super.panInteractor = new AbstractPanInteractor() {
+            @Override
             public boolean startInteraction(InputEvent ie) {
                 int mods = ie.getModifiersEx();
                 return ie.getID() == MouseEvent.MOUSE_PRESSED &&
@@ -71,49 +72,36 @@ class ScrollableSVGCanvas extends JSVGCanvas implements MouseWheelListener {
             }
         };
         intl.add(super.panInteractor);
-        addMouseWheelListener(this);
+        addMouseWheelListener(e -> {
+            if (e.isControlDown()) {
+                if (e.getWheelRotation() < 0) {
+                    Action action = getActionMap().get(ZOOM_IN_ACTION);
+                    if (action != null)
+                        action.actionPerformed(null);
+
+                } else if (e.getWheelRotation() > 0) {
+                    Action action = getActionMap().get(ZOOM_OUT_ACTION);
+                    if (action != null)
+                        action.actionPerformed(null);
+
+                }
+            } else {
+                if (e.getWheelRotation() < 0) {
+                    Action action = getActionMap().get(FAST_SCROLL_UP_ACTION);
+                    if (action != null)
+                        action.actionPerformed(null);
+
+                } else if (e.getWheelRotation() > 0) {
+                    Action action = getActionMap().get(FAST_SCROLL_DOWN_ACTION);
+                    if (action != null)
+                        action.actionPerformed(null);
+
+                }
+            }
+        });
         setEnableZoomInteractor(false);
         setEnableRotateInteractor(false);
         setEnablePanInteractor(true);
-    }
-
-    /**
-     * Implements scrolling / zooming with scroll wheel.
-     * {@inheritDoc}
-     */
-    @Override
-    public void mouseWheelMoved(MouseWheelEvent e) {
-        if (e.isControlDown()) {
-            if (e.getWheelRotation() < 0) {
-                JComponent component = (JComponent) e.getComponent();
-                Action action = component.getActionMap().get(ZOOM_IN_ACTION);
-                if (action != null)
-                    action.actionPerformed(null);
-
-            } else if (e.getWheelRotation() > 0) {
-                JComponent component = (JComponent) e.getComponent();
-                Action action = component.getActionMap().get(ZOOM_OUT_ACTION);
-                if (action != null)
-                    action.actionPerformed(null);
-
-            }
-        } else {
-            if (e.getWheelRotation() < 0) {
-                JComponent component = (JComponent) e.getComponent();
-                Action action = component.getActionMap().get(FAST_SCROLL_UP_ACTION);
-                if (action != null)
-                    action.actionPerformed(null);
-
-            } else if (e.getWheelRotation() > 0) {
-                JComponent component = (JComponent) e.getComponent();
-                Action action = component.getActionMap().get(FAST_SCROLL_DOWN_ACTION);
-                if (action != null)
-                    action.actionPerformed(null);
-
-            } else {
-                System.out.println("scrolled down");
-            }
-        }
     }
 
 }

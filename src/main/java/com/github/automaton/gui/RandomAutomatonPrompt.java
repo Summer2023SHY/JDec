@@ -157,66 +157,58 @@ public class RandomAutomatonPrompt extends JDialog {
       /* Cancel button */
 
     final JButton cancelButton = new JButton("Cancel");
-    cancelButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        RandomAutomatonPrompt.this.dispose();
-      }
-    });
+    cancelButton.addActionListener(
+      e -> RandomAutomatonPrompt.this.dispose()
+    );
     c.gridx = 0; c.gridy = 8; c.gridwidth = 1;
     add(cancelButton, c);
 
       /* Generate button */
 
     final JButton generateButton = new JButton("Generate");
-    generateButton.addActionListener(new ActionListener() {
- 
-      public void actionPerformed(ActionEvent e) {
+    generateButton.addActionListener(e -> {
 
-        final int nEventsValue         = (Integer) nEvents.getValue();
-        final int nStatesValue         = (Integer) nStates.getValue();
-        final int minTransitionsValue  = (Integer) minTransitions.getValue();
-        final int maxTransitionsValue  = (Integer) maxTransitions.getValue();
-        final int nControllersValue    = (Integer) nControllers.getValue();
-        final int nBadTransitionsValue = (Integer) nBadTransitions.getValue();
+      final int nEventsValue         = (Integer) nEvents.getValue();
+      final int nStatesValue         = (Integer) nStates.getValue();
+      final int minTransitionsValue  = (Integer) minTransitions.getValue();
+      final int maxTransitionsValue  = (Integer) maxTransitions.getValue();
+      final int nControllersValue    = (Integer) nControllers.getValue();
+      final int nBadTransitionsValue = (Integer) nBadTransitions.getValue();
 
-        // Ensure that the min. # of transition is not larger than the max. # of transitions
-        if (minTransitionsValue > maxTransitionsValue) {
-          gui.displayErrorMessage("Invalid Input", "The minimum number of transitions per state cannot be larger than the maximum number of transitions per state.");
-          return;
-        }
-
-        if (nBadTransitionsValue > nStatesValue * maxTransitionsValue) {
-          gui.displayErrorMessage("Invalid Input", "The number of bad transitions cannot be larger than the number of states multiplied by the maximum number of transitions per state.");
-          return;
-        }
-
-        if (maxTransitionsValue > nEventsValue) {
-          gui.displayErrorMessage("Invalid Input", "The maximum number of transitions per state cannot be larger than the number of events since we are dealing with deterministic automata.");
-          return;
-        }
-
-        progressIndicator.setVisible(true);
-        cancelButton.setVisible(false);
-        generateButton.setVisible(false);
-
-        // Create a new thread since this can be a long task
-        new Thread() {
-          public void run() {
-            gui.generateRandomAutomaton(
-              RandomAutomatonPrompt.this,
-              nEventsDefault         = nEventsValue,
-              nStatesDefault         = nStatesValue,
-              minTransitionsDefault  = minTransitionsValue,
-              maxTransitionsDefault  = maxTransitionsValue,
-              nControllersDefault    = nControllersValue,
-              nBadTransitionsDefault = nBadTransitionsValue,
-              progressIndicator
-            );
-            RandomAutomatonPrompt.this.dispose();
-          }
-        }.start();
-
+      // Ensure that the min. # of transition is not larger than the max. # of transitions
+      if (minTransitionsValue > maxTransitionsValue) {
+        gui.displayErrorMessage("Invalid Input", "The minimum number of transitions per state cannot be larger than the maximum number of transitions per state.");
+        return;
       }
+
+      if (nBadTransitionsValue > nStatesValue * maxTransitionsValue) {
+        gui.displayErrorMessage("Invalid Input", "The number of bad transitions cannot be larger than the number of states multiplied by the maximum number of transitions per state.");
+        return;
+      }
+
+      if (maxTransitionsValue > nEventsValue) {
+        gui.displayErrorMessage("Invalid Input", "The maximum number of transitions per state cannot be larger than the number of events since we are dealing with deterministic automata.");
+        return;
+      }
+
+      progressIndicator.setVisible(true);
+      cancelButton.setVisible(false);
+      generateButton.setVisible(false);
+
+      // Create a new thread since this can be a long task
+      new Thread(() -> {
+        gui.generateRandomAutomaton(
+          RandomAutomatonPrompt.this,
+          nEventsDefault         = nEventsValue,
+          nStatesDefault         = nStatesValue,
+          minTransitionsDefault  = minTransitionsValue,
+          maxTransitionsDefault  = maxTransitionsValue,
+          nControllersDefault    = nControllersValue,
+          nBadTransitionsDefault = nBadTransitionsValue,
+          progressIndicator
+        );
+        RandomAutomatonPrompt.this.dispose();
+      }).start();
 
     });
     c.gridx = 1; c.gridy = 8;
