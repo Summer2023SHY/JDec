@@ -28,7 +28,8 @@ import java.util.*;
 import javax.swing.*;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.RandomUtils;
+import org.apache.commons.rng.UniformRandomProvider;
+import org.apache.commons.rng.simple.RandomSource;
 
 import com.github.automaton.automata.Automaton;
 import com.github.automaton.automata.State;
@@ -47,6 +48,13 @@ import com.github.automaton.gui.RandomAutomatonPrompt;
 public class RandomAutomatonGenerator {
   /** Private constructor */
   private RandomAutomatonGenerator() {}
+
+  /**
+   * Internally used random number generator
+   * 
+   * @since 2.0
+   */
+  private static UniformRandomProvider ung = RandomSource.XO_RO_SHI_RO_128_PP.create();
 
     /* RANDOM AUTOMATON GENERATION */
 
@@ -312,9 +320,9 @@ public class RandomAutomatonGenerator {
 
     if (max == Integer.MAX_VALUE) {
       /* Overflow protection */
-      return (int) RandomUtils.nextLong(min, 1L << 31);
+      return (int) ung.nextLong(min, 1L << 31);
     }
-    return RandomUtils.nextInt(min, max + 1);
+    return ung.nextInt(min, max + 1);
 
   }
 
@@ -336,7 +344,7 @@ public class RandomAutomatonGenerator {
     boolean[] arr = new boolean[size];
 
     for (int i = 0; i < size; i++)
-      arr[i] = RandomUtils.nextBoolean();
+      arr[i] = ung.nextBoolean();
 
     return arr;
 
