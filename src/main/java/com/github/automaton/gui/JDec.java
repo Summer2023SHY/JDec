@@ -58,6 +58,7 @@ import com.github.automaton.gui.util.*;
 import com.github.automaton.io.AutomatonIOAdapter;
 import com.github.automaton.io.json.AutomatonJsonFileAdapter;
 import com.github.automaton.io.legacy.*;
+import com.jthemedetecor.OsThemeDetector;
 
 import guru.nidi.graphviz.engine.Format;
 
@@ -207,24 +208,61 @@ public class JDec extends JFrame implements ActionListener {
    * @param args  Any arguments are simply ignored
    **/  
   public static void main(String[] args) {
-    
+
+    final OsThemeDetector detector = OsThemeDetector.getDetector();
+
     if (SystemUtils.IS_OS_MAC) {
       // macOS-specific UI tinkering
-      try {
-        // Use system menu bar
-        System.setProperty("apple.laf.useScreenMenuBar", "true");
-        // Set application name
-        System.setProperty("com.apple.mrj.application.apple.menu.about.name", "JDec");
-        // Associate cmd+Q with the our window handler
-        System.setProperty("apple.eawt.quitStrategy", "CLOSE_ALL_WINDOWS");
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-      } catch (ReflectiveOperationException | UnsupportedLookAndFeelException e) {
-        logger.catching(e);
-      }
+      
+      // Use system menu bar
+      System.setProperty("apple.laf.useScreenMenuBar", "true");
+      // Set application name
+      System.setProperty("apple.awt.application.name", "JDec");
+      // Use system theme for title bar
+      System.setProperty("apple.awt.application.appearance", "system" );
+      // Associate cmd+Q with the our window handler
+      System.setProperty("apple.eawt.quitStrategy", "CLOSE_ALL_WINDOWS");
     }
 
+    try {
+      if (SystemUtils.IS_OS_MAC) {
+        if (detector.isDark())
+          UIManager.setLookAndFeel("com.formdev.flatlaf.themes.FlatMacDarkLaf");
+        else
+          UIManager.setLookAndFeel("com.formdev.flatlaf.themes.FlatMacLightLaf");
+        UIManager.put("TabbedPane.tabAreaInsets", new Insets(0, 70, 0, 0) );
+      } else if (detector.isDark())
+        UIManager.setLookAndFeel("com.formdev.flatlaf.FlatDarkLaf");
+      else
+        UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
+    } catch (ReflectiveOperationException | UnsupportedLookAndFeelException e) {
+      logger.catching(e);
+    }
+
+    
+
     // Start the application  
-    new JDec();
+    JDec jdec = new JDec();
+
+    detector.registerListener(isDark -> {
+      SwingUtilities.invokeLater(() -> {
+        try {
+          if (SystemUtils.IS_OS_MAC) {
+            if (isDark)
+              UIManager.setLookAndFeel("com.formdev.flatlaf.themes.FlatMacDarkLaf");
+            else
+              UIManager.setLookAndFeel("com.formdev.flatlaf.themes.FlatMacLightLaf");
+            UIManager.put("TabbedPane.tabAreaInsets", new Insets(0, 70, 0, 0) );
+          } else if (isDark)
+            UIManager.setLookAndFeel("com.formdev.flatlaf.FlatDarkLaf");
+          else
+            UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
+          SwingUtilities.updateComponentTreeUI(jdec);
+        } catch (ReflectiveOperationException | UnsupportedLookAndFeelException e) {
+          logger.catching(e);
+        }
+      });
+    });
   
   }
 
@@ -300,7 +338,7 @@ public class JDec extends JFrame implements ActionListener {
       "Clear[TAB]",
       "Close Tab[TAB]",
       null,
-      "Quit"
+      "Quit[NOT_MACOS]"
     ));
 
     // View menu
@@ -431,6 +469,13 @@ public class JDec extends JFrame implements ActionListener {
     boolean requiresAnyUStructure = str.contains("[ANY_U_STRUCTURE]");
     if (requiresAnyUStructure)
       str = str.replace("[ANY_U_STRUCTURE]", "");
+
+    // Check to see if this menu item is not displayed in macOS
+    boolean requiresNotMacOS = str.contains("[NOT_MACOS]");
+    if (requiresNotMacOS && SystemUtils.IS_OS_MAC)
+      return;
+    else
+      str = str.replace("[NOT_MACOS]", "");
 
     // Create menu item object
     JMenuItem menuItem = new JMenuItem(str);
@@ -579,7 +624,15 @@ public class JDec extends JFrame implements ActionListener {
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
     // Update title
-    setTitle(applicationTitle);
+    if (SystemUtils.IS_OS_MAC) {
+      getRootPane().putClientProperty( "apple.awt.fullWindowContent", true );
+      getRootPane().putClientProperty( "apple.awt.transparentTitleBar", true );
+      if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_17))
+        getRootPane().putClientProperty( "apple.awt.windowTitleVisible", false );
+      else
+        setTitle(null);
+    } else
+      setTitle(applicationTitle);
 
     // Show screen
     setVisible(true);
