@@ -39,14 +39,8 @@ class HelperMethodTest {
 
     static Logger logger = LogManager.getLogger();
 
-    TestCounter counter;
     Automaton automaton;
     List<List<String>> labelSequences;
-
-    @BeforeEach
-    void setupCounter() {
-        counter = new TestCounter();
-    }
 
     @Test
     @DisplayName("Liu's Thesis - findCounterExample()")
