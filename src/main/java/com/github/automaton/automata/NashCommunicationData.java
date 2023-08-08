@@ -1,5 +1,8 @@
 package com.github.automaton.automata;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 /* 
  * Copyright (C) 2016 Micah Stairs
  * Copyright (C) 2023 Sung Ho Yoon
@@ -33,6 +36,7 @@ import org.apache.commons.lang3.ArrayUtils;
  * Nash equilibria.
  *
  * @author Micah Stairs
+ * @author Sung Ho Yoon
  * 
  * @since 1.0
  */
@@ -109,5 +113,37 @@ public class NashCommunicationData extends CommunicationData {
   public Object clone() {
     return new NashCommunicationData(initialStateID, eventID, targetStateID, ArrayUtils.clone(roles), cost, probability);
   }
+
+  /**
+   * Indicates whether an object is "equal to" this Nash communication data
+   * 
+   * @param obj the reference object with which to compare
+   * @return {@code true} if this Nash communication data is the same as the argument
+   * 
+   * @since 2.0
+   */
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) return true;
+    else if (!super.equals(obj)) return false;
+    else if (obj instanceof NashCommunicationData nash) {
+      return this.probability == nash.probability && this.cost == nash.cost;
+    }
+    else return false;
+  }
+
+  /**
+   * Returns a hash code for this {@code NashCommunicationData}.
+   * 
+   * @return a hash code value
+   * 
+   * @since 2.0
+   */
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.initialStateID, super.eventID, super.targetStateID, Arrays.hashCode(roles), cost, probability);
+  }
+
+
 
 }

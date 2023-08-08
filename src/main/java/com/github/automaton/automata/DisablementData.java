@@ -100,10 +100,14 @@ public class DisablementData extends TransitionData {
     else return false;
   }
 
-  /** {@inheritDoc} */
+  /**
+   * Returns a hash code for this {@code DisablementData}.
+   * 
+   * @return a hash code value
+   */
   @Override
   public int hashCode() {
-    return Long.hashCode(initialStateID);
+    return Objects.hash(super.initialStateID, super.eventID, super.targetStateID, Arrays.hashCode(controllers));
   }
 
 }

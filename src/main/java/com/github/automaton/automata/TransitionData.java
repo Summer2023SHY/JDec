@@ -23,6 +23,8 @@ package com.github.automaton.automata;
  * THE SOFTWARE.
  */
 
+import java.util.Objects;
+
 /**
  * Holds all 3 pieces of information needed to identify a transition.
  *
@@ -135,10 +137,14 @@ public class TransitionData implements Cloneable {
     else return false;
   }
 
-  /** {@inheritDoc} */
+  /**
+   * Returns a hash code for this {@code TransitionData}.
+   * 
+   * @return a hash code value
+   */
   @Override
   public int hashCode() {
-    return Long.hashCode(initialStateID);
+    return Objects.hash(initialStateID, eventID, targetStateID);
   }
 
   /**

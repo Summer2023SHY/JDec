@@ -34,6 +34,7 @@ import org.apache.logging.log4j.*;
  * and which are the receivers.
  *
  * @author Micah Stairs
+ * @author Sung Ho Yoon
  * 
  * @since 1.0
  */
@@ -132,6 +133,18 @@ public class CommunicationData extends TransitionData {
       return Arrays.deepEquals(roles, ((CommunicationData) obj).roles);
     }
     else return false;
+  }
+
+  /**
+   * Returns a hash code for this {@code CommunicationData}.
+   * 
+   * @return a hash code value
+   * 
+   * @since 2.0
+   */
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.initialStateID, super.eventID, super.targetStateID, Arrays.hashCode(roles));
   }
 
   /** {@inheritDoc} */
