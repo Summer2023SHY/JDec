@@ -461,9 +461,13 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
             index += Long.BYTES;
 
             CommunicationRole[] roles = new CommunicationRole[nControllers];
-            for (int j = 0; j < roles.length; j++)
-                roles[j] = CommunicationRole.getRole(buffer[index++]);
-
+            for (int j = 0; j < roles.length; j++) {
+                try {
+                    roles[j] = CommunicationRole.valueOf(buffer[index++]);
+                } catch (IllegalArgumentException iae) {
+                    haf.getLogger().catching(iae);
+                }
+            }
             list.add(new CommunicationData(initialStateID, eventID, targetStateID, roles));
 
         }
@@ -508,9 +512,13 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
             index += Long.BYTES;
 
             CommunicationRole[] roles = new CommunicationRole[nControllers];
-            for (int j = 0; j < roles.length; j++)
-                roles[j] = CommunicationRole.getRole(buffer[index++]);
-
+            for (int j = 0; j < roles.length; j++) {
+                try {
+                    roles[j] = CommunicationRole.valueOf(buffer[index++]);
+                } catch (IllegalArgumentException iae) {
+                    haf.getLogger().catching(iae);
+                }
+            }
             list.add(new NashCommunicationData(initialStateID, eventID, targetStateID, roles, cost, probability));
 
         }
