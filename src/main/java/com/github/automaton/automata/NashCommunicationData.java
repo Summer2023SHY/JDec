@@ -97,7 +97,14 @@ public class NashCommunicationData extends CommunicationData {
   }
 
     /* OVERRIDDEN METHOD */
-  /** {@inheritDoc} */
+
+  /**
+   * Creates and returns a copy of this {@code NashCommunicationData}.
+   * 
+   * @return a copy of this {@code NashCommunicationData}
+   * 
+   * @since 2.0
+   */
   @Override
   public Object clone() {
     return new NashCommunicationData(initialStateID, eventID, targetStateID, ArrayUtils.clone(roles), cost, probability);

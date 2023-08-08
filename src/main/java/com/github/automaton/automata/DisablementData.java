@@ -32,6 +32,7 @@ import org.apache.commons.lang3.ArrayUtils;
  * as information on which controllers are able to disable this transition.
  *
  * @author Micah Stairs
+ * @author Sung Ho Yoon
  * 
  * @since 1.0
  */
@@ -69,6 +70,18 @@ public class DisablementData extends TransitionData {
   }
 
     /* OVERRIDDEN METHODS */
+
+  /**
+   * Creates and returns a copy of this {@code DisablementData}.
+   * 
+   * @return a copy of this {@code DisablementData}
+   * 
+   * @since 2.0
+   */
+  @Override
+  public Object clone() {
+    return new DisablementData(super.initialStateID, super.eventID, super.targetStateID, controllers.clone());
+  }
 
   /**
    * Indicates whether an object is "equal to" this disablement data
