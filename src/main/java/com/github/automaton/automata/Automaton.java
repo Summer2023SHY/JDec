@@ -1321,23 +1321,54 @@ public class Automaton implements Cloneable {
       while (!R.isEmpty()) {
         Set<State> rPrime = new LinkedHashSet<>();
         ambLevel += 1;
+        logger.printf(Level.DEBUG, "ambLevel = %d", ambLevel);
         for (State r : R) {
+          logger.printf(Level.TRACE, "\tr = (%s)", r.getLabel());
           for (int i = 0; i < nControllers; i++) {
+            logger.printf(Level.TRACE, "\t\tController %d", i);
+            logger.printf(Level.TRACE, "\t\tNeighbors = %s", neighborMap.get(r).get(i).toString());
             if (e.isControllable(i)) {
               for (State vPrime : neighborMap.get(r).get(i)) {
                 neighborMap.get(vPrime).get(i).remove(r);
+                logger.trace("\t\t\tRemoved " + r.getLabel() + " from neighbors of " + vPrime.getLabel());
                 if (neighborMap.get(vPrime).get(i).isEmpty()) {
                   if (!resolved.contains(vPrime)) {
                     rPrime.add(vPrime);
                   }
                   ambLevelMap.get(vPrime)[i].setValue(ambLevel);
+                  logger.printf(
+                    Level.TRACE,
+                    "\t\t\tAmbiguity level for %s (controller %d) set as %d",
+                    vPrime.toString(), i, ambLevel
+                  );
+                  /* 
+                   * Using sets for representing graph does not remove edge from
+                   * both ends, and thus, leaves ambLevels unchanged
+                   */
                 }
               }
+              ambLevelMap.get(r)[i].setValue(Math.min(ambLevelMap.get(r)[i].intValue(), ambLevel + 1));
+              neighborMap.get(r).set(i, Collections.emptySet());
             }
           }
         }
         R = rPrime;
         resolved.addAll(R);
+        logger.debug("Resolved: {}", resolved);
+        logger.debug("Neighbors:");
+        for (State s : neighborMap.keySet()) {
+          List<Set<State>> neighbors = neighborMap.get(s);
+          for (int i = 0; i < nControllers /*&& !resolved.contains(s)*/; i++) {
+            if (!neighbors.get(i).isEmpty()) {
+              logger.printf(
+                Level.DEBUG,
+                "%s %s- i = %d: {%s}",
+                s.toString(), resolved.contains(s) ? "(resolved) " : "",
+                i, neighbors.get(i).toString()
+              );
+            }
+          }
+        }
       }
       if (resolved.size() < neighborMap.keySet().size()) {
         return Pair.of(false, Collections.emptyList());
@@ -1871,16 +1902,16 @@ public class Automaton implements Cloneable {
 
       /* Draw all states and their transitions */
 
-    for (long s = 1; s <= nStates; s++) {
+    for (State state : getStates()) {
 
       // Get state from file
-      State state = getState(s);
+      // State state = getState(s);
       String stateLabel = formatStateLabel(state);
-      MutableNode sourceNode = mutNode(stateLabel);
+      MutableNode sourceNode = mutNode(Long.toString(state.getID()));
       addAdditionalNodeProperties(state, sourceNode);
 
       // Draw state
-      g = g.add(sourceNode.add(Attributes.attr("peripheries", state.isMarked() ? 2 : 1), Label.nodeName()));
+      g = g.add(sourceNode.add(Attributes.attr("peripheries", state.isMarked() ? 2 : 1), Label.of(stateLabel)));
         
       // Find and draw all of the special transitions 
       ArrayList<Transition> transitionsToSkip = new ArrayList<Transition>();
@@ -1896,7 +1927,7 @@ public class Automaton implements Cloneable {
 
           transitionsToSkip.add(t);
 
-          MutableNode targetNode = mutNode(formatStateLabel(targetState));
+          MutableNode targetNode = mutNode(Long.toString(targetState.getID()));
           targetNode.addTo(g);
           if (!Objects.equals(properties.get("color"), "transparent")) {
             Link l = sourceNode.linkTo(targetNode);
@@ -1935,7 +1966,7 @@ public class Automaton implements Cloneable {
         }
 
         // Add transition
-        MutableNode targetNode = mutNode(formatStateLabel(getState(t1.getTargetStateID())));
+        MutableNode targetNode = mutNode(Long.toString(t1.getTargetStateID()));
         targetNode.addTo(g);
         Link l = sourceNode.linkTo(targetNode);
         l.add(Label.of(label));
@@ -1944,7 +1975,7 @@ public class Automaton implements Cloneable {
 
       if (initialState > 0) {
         MutableNode startNode = mutNode("").add(Shape.PLAIN_TEXT);
-        MutableNode initNode = mutNode(formatStateLabel(getState(initialState)));
+        MutableNode initNode = mutNode(Long.toString(initialState));
         Link init = startNode.linkTo(initNode);
         init.add(Color.BLUE);
         startNode.links().add(init);
@@ -2375,7 +2406,10 @@ public class Automaton implements Cloneable {
       /* Add transition and update the file */
 
     Event event = getEvent(eventID);
-    startingState.addTransition(new Transition(event, targetStateID));
+    if (!startingState.addTransition(new Transition(event, targetStateID))) {
+      logger.error("Transition already exists.");
+      return false;
+    }
 
     return true;
 
@@ -2990,6 +3024,22 @@ public class Automaton implements Cloneable {
   
     return nTransitions;
 
+  }
+
+  /**
+   * Generates and returns the list of all transitions in this automaton.
+   * 
+   * @return the list of all transitions in this automaton
+   * @since 2.0
+   */
+  List<TransitionData> getAllTransitions() {
+    List<TransitionData> list = new ArrayList<>();
+    for (State s : getStates()) {
+      for (Transition t : s.getTransitions()) {
+        list.add(new TransitionData(s.getID(), t.getEvent().getID(), t.getTargetStateID()));
+      }
+    }
+    return list;
   }
 
   /**

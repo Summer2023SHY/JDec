@@ -25,8 +25,10 @@ package com.github.automaton.automata;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.*;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.*;
 import org.junit.jupiter.params.provider.*;
@@ -45,7 +47,19 @@ public class ObservabilityTest {
         assertTrue(automaton.testObservability());
     }
 
-    private static Automaton[] testObservableAutomata() throws IOException {
+    @ParameterizedTest(name = "Test {index}")
+    @MethodSource("testObservableAutomata")
+    @DisplayName("Test Ambiguity Levels for Observable Automata")
+    @Timeout(value = 3, unit = TimeUnit.MINUTES, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
+    public void testAmbiguityLevel(Automaton automaton) {
+        Pair<Boolean, List<AmbiguityData>> result = automaton.testObservability(true);
+        assertTrue(result.getLeft());
+        for (AmbiguityData data : result.getRight()) {
+            assertNotEquals(AmbiguityData.MAX_AMB_LEVEL, data.getAmbiguityLevel());
+        }
+    }
+
+    static Automaton[] testObservableAutomata() throws IOException {
         AutomatonJsonFileAdapter fig6Adapter = new AutomatonJsonFileAdapter(new File("aut/fig-6.json"));
         return new Automaton[] {
                 AutomatonGenerator.generateFromGUICode(
@@ -155,7 +169,7 @@ public class ObservabilityTest {
         assertFalse(automaton.testObservability());
     }
 
-    private static Automaton[] testUnobservableAutomata() throws IOException {
+    static Automaton[] testUnobservableAutomata() throws IOException {
         AutomatonJsonFileAdapter fig1Adapter = new AutomatonJsonFileAdapter(new File("aut/fig-1.json"));
         return new Automaton[] {
                 AutomatonGenerator.generateFromGUICode(
