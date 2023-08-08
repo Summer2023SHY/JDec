@@ -26,8 +26,6 @@ import java.util.*;
 
 import javax.swing.table.*;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.github.automaton.automata.AmbiguityData;
 
 /**

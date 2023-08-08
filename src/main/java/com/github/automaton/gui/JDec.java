@@ -1413,7 +1413,6 @@ public class JDec extends JFrame implements ActionListener {
   /**
    * Generate an automaton using the entered GUI input code.
    **/
-  @SuppressWarnings("removal")
   private void generateAutomatonButtonPressed() {
 
     // Get the current tab
@@ -1615,7 +1614,6 @@ public class JDec extends JFrame implements ActionListener {
    * NOTE: A loading bar is displayed to keep track of the progress.
    * @param index The tab's index
    **/
-  @SuppressWarnings("removal")
   private synchronized void refresh(final int index) {
       
     setBusyCursor(true);
