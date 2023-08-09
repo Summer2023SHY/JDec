@@ -86,7 +86,7 @@ public class JDec extends JFrame implements ActionListener {
    * 
    * @since 2.0
    */
-  private static Properties gitProperties;
+  private static final Properties gitProperties;
   static {
     try {
       gitProperties = PropertiesFactory.INSTANCE.load(getResourceURL("git.properties"));
