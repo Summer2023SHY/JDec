@@ -74,10 +74,15 @@ public class Event {
    * @param id            The ID of the event
    * @param observable    Whether or not the event can be observed
    * @param controllable  Whether or not the event can be controlled
+   * 
+   * @throws IllegalArgumentException if {@code observable.length != controllable.length}
+   * @throws NullPointerException if any argument is {@code null}
    **/
   public Event(String label, int id, boolean[] observable, boolean[] controllable) {
-
-    this.label = label;
+    if (Objects.requireNonNull(observable).length != Objects.requireNonNull(controllable).length) {
+      throw new IllegalArgumentException("Invalid input arrays");
+    }
+    this.label = Objects.requireNonNull(label);
     this.id = id;
     this.observable = observable;
     this.controllable = controllable;
@@ -92,10 +97,16 @@ public class Event {
    * @param observable    Whether or not the event can be observed
    * @param controllable  Whether or not the event can be controlled
    * 
+   * @throws IllegalArgumentException if {@code observable.length != controllable.length}
+   * @throws NullPointerException if any argument is {@code null}
+   * 
    * @since 1.3
    */
   public Event(LabelVector labelVector, int id, boolean[] observable, boolean[] controllable) {
-    this.label = labelVector.toString();
+    if (Objects.requireNonNull(observable).length != Objects.requireNonNull(controllable).length) {
+      throw new IllegalArgumentException("Invalid input arrays");
+    }
+    this.label = Objects.requireNonNull(labelVector).toString();
     this.vector = labelVector;
     this.id = id;
     this.observable = observable;
