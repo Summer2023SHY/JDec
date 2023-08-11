@@ -334,7 +334,7 @@ public class State implements Cloneable {
   /** {@inheritDoc} */
   @Override
   public int hashCode() {
-    return Long.hashCode(id);
+    return Objects.hash(label, id);
   }
 
   /**
