@@ -132,7 +132,7 @@ public class Transition implements Cloneable {
     if (this == obj) return true;
     else if (obj instanceof Transition) {
       Transition other = (Transition) obj;
-      return targetStateID == other.targetStateID && event.equals(other.event);
+      return targetStateID == other.targetStateID && Objects.equals(this.event, other.event);
     }
     else return false;
   }
