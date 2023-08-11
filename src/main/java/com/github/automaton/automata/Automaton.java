@@ -2513,7 +2513,7 @@ public class Automaton implements Cloneable {
    * @param isInitialState  Whether or not this is the initial state
    * @return                The ID of the added state; or {@code 0} if the addition was unsuccessful
    **/
-  public long addState(String label, boolean marked, ArrayList<Transition> transitions, boolean isInitialState) {
+  public long addState(String label, boolean marked, List<Transition> transitions, boolean isInitialState) {
 
     if (transitions == null)
       transitions = new ArrayList<Transition>();
