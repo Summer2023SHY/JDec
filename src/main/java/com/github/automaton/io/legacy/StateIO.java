@@ -33,7 +33,7 @@ import org.apache.logging.log4j.*;
 import com.github.automaton.automata.*;
 
 /**
- * I/O Utility class for {@link State}s.
+ * Legacy I/O Utility class for {@link State}s.
  * 
  * @author Micah Stairs
  * @author Sung Ho Yoon
@@ -42,7 +42,7 @@ import com.github.automaton.automata.*;
  * @since 1.1
  * @revised 2.0
  */
-class StateIO {
+public class StateIO {
 
     /** 
      * The UTF-8 Charset used for state label encoding
@@ -52,33 +52,58 @@ class StateIO {
     private static final Charset UTF8_CHARSET = Charset.forName("UTF-8");
 
     /**
+     * Bitmask for checking whether or not a state actually exists here
+     * 
+     * @since 2.0
+     */
+    public static final int EXISTS_MASK = 0b00000010;
+    /**
+     * Bitmask for checking whether or not a state is marked
+     * 
+     * @since 2.0
+     */
+    public static final int MARKED_MASK = 0b00000001;
+    /**
+     * Bitmask for checking whether or not a state is an enablement state
+     * 
+     * @since 2.0
+     */
+    public static final int ENABLEMENT_MASK = 0b00000100;
+    /**
+     * Bitmask for checking whether or not a state is a disablement state
+     * 
+     * @since 2.0
+     */
+    public static final int DISABLEMENT_MASK = 0b00001000;
+
+    /**
      * Bit field for checking whether or not a state actually exists
      * 
      * @see State#EXISTS_MASK
      * @since 1.3
      */
-    private static final BitField EXISTS_FIELD = new BitField(State.EXISTS_MASK);
+    private static final BitField EXISTS_FIELD = new BitField(EXISTS_MASK);
     /**
      * Bit field for checking whether or not a state is marked
      * 
      * @see State#MARKED_MASK
      * @since 1.3
      */
-    private static final BitField MARKED_FIELD = new BitField(State.MARKED_MASK);
+    private static final BitField MARKED_FIELD = new BitField(MARKED_MASK);
     /**
      * Bit field for checking whether or not a state actually exists
      * 
      * @see State#ENABLEMENT_MASK
      * @since 1.3
      */
-    private static final BitField ENABLEMENT_FIELD = new BitField(State.ENABLEMENT_MASK);
+    private static final BitField ENABLEMENT_FIELD = new BitField(ENABLEMENT_MASK);
     /**
      * Bit field for checking whether or not a state is a disablement state
      * 
      * @see State#DISABLEMENT_MASK
      * @since 1.3
      */
-    private static final BitField DISABLEMENT_FIELD = new BitField(State.DISABLEMENT_MASK);
+    private static final BitField DISABLEMENT_FIELD = new BitField(DISABLEMENT_MASK);
 
     private static Logger logger = LogManager.getLogger();
 
@@ -100,7 +125,7 @@ class StateIO {
      * @throws IOException if an I/O error occurs
      * @throws NullPointerException if any one of the arguments is {@code null}
      **/
-    static State readFromFile(List<Event> events, Map<String, Number> properties, BodyAccessFile bodyAccessFile, long id) throws IOException {
+    public static State readFromFile(List<Event> events, Map<String, Number> properties, BodyAccessFile bodyAccessFile, long id) throws IOException {
 
         if (id < 0) 
             throw new IllegalArgumentException("Invalid state ID: " + id);
@@ -193,7 +218,7 @@ class StateIO {
      * @param nBytesPerStateID The number of bytes used to store a state ID
      * @return Whether or not the operation was successful
      **/
-    static boolean writeToFile(State s, BodyAccessFile bodyAccessFile, long nBytesPerState, int labelLength,
+    public static boolean writeToFile(State s, BodyAccessFile bodyAccessFile, long nBytesPerState, int labelLength,
             int nBytesPerEventID, int nBytesPerStateID) {
 
         RandomAccessFile file = bodyAccessFile.getRAFile();
@@ -202,7 +227,7 @@ class StateIO {
 
         /* Exists and marked status */
 
-        bytesToWrite[0] = (byte) (State.EXISTS_MASK);
+        bytesToWrite[0] = (byte) (EXISTS_MASK);
         bytesToWrite[0] = MARKED_FIELD.setByteBoolean(bytesToWrite[0], s.isMarked());
         bytesToWrite[0] = ENABLEMENT_FIELD.setByteBoolean(bytesToWrite[0], s.isEnablementState());
         bytesToWrite[0] = DISABLEMENT_FIELD.setByteBoolean(bytesToWrite[0], s.isDisablementState());

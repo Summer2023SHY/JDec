@@ -40,21 +40,42 @@ public class State implements Cloneable {
     /* CLASS CONSTANTS */
 
   // These masks allow us to store and access multiple true/false values within the same byte
-  /** Bitmask for checking whether or not a state actually exists here */
+  /**
+   * Bitmask for checking whether or not a state actually exists here
+   * 
+   * @deprecated This constant is for the legacy I/O component and no longer
+   * used. Use {@link com.github.automaton.io.legacy.StateIO#EXISTS_MASK}
+   * instead.
+   */
+  @Deprecated(since = "2.0", forRemoval = true)
   public static final int EXISTS_MASK = 0b00000010;
-  /** Bitmask for checking whether or not a state is marked */
+  /**
+   * Bitmask for checking whether or not a state is marked
+   * @deprecated This constant is for the legacy I/O component and no longer
+   * used. Use {@link com.github.automaton.io.legacy.StateIO#MARKED_MASK}
+   * instead.
+   */
+  @Deprecated(since = "2.0", forRemoval = true)
   public static final int MARKED_MASK = 0b00000001;
   /**
    * Bitmask for checking whether or not a state is an enablement state
    * 
    * @since 1.3
+   * @deprecated This constant is for the legacy I/O component and no longer
+   * used. Use {@link com.github.automaton.io.legacy.StateIO#ENABLEMENT_MASK}
+   * instead.
    */
+  @Deprecated(since = "2.0", forRemoval = true)
   public static final int ENABLEMENT_MASK = 0b00000100;
   /**
    * Bitmask for checking whether or not a state is a disablement state
    * 
    * @since 1.3
+   * @deprecated This constant is for the legacy I/O component and no longer
+   * used. Use {@link com.github.automaton.io.legacy.StateIO#DISABLEMENT_MASK}
+   * instead.
    */
+  @Deprecated(since = "2.0", forRemoval = true)
   public static final int DISABLEMENT_MASK = 0b00001000;
     
     /* INSTANCE VARIABLES */
@@ -282,6 +303,7 @@ public class State implements Cloneable {
 
   /**
    * Get the list of transitions leading out from this state.
+   * The returned list is {@link Collections#unmodifiableList(List) unmodifiable}.
    * @return  The list of transitions
    **/
   public List<Transition> getTransitions() {
