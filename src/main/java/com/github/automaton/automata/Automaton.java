@@ -1819,7 +1819,7 @@ public class Automaton implements Cloneable {
    * @param format file format to export with
    * @return the exported file
    * @throws IllegalArgumentException if {@code outputFileName} has a file
-   * file extension that is not consistent with {@code format}
+   * extension that is not consistent with {@code format}
    * @throws NullPointerException if any argument is {@code null}
    * @throws IOException If I/O error occurs
    * @since 1.1
