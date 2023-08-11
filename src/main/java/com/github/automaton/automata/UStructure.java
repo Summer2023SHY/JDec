@@ -1752,8 +1752,6 @@ public class UStructure extends Automaton {
 
   }
 
-    /* WORKING WITH FILES */
-
   @Override
   public Object clone() {
     return new UStructure(toJsonObject());
@@ -1762,7 +1760,7 @@ public class UStructure extends Automaton {
   @Override
   protected void addSpecialTransitionsToJsonObject(JsonObject jsonObj) {
 
-      /* Write special transitions to the .hdr file */
+      /* Write special transitions to the JSON object */
 
     addTransitionDataToJsonObject(jsonObj, "unconditionalViolations", unconditionalViolations);
     addTransitionDataToJsonObject(jsonObj, "conditionalViolations", conditionalViolations);

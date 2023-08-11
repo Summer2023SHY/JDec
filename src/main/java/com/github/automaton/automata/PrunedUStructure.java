@@ -201,7 +201,7 @@ public class PrunedUStructure extends UStructure {
 
       /* Re-number event IDs */
 
-    // Update event IDs in body file
+    // Update event IDs
     for (long s = 1; s <= getNumberOfStates(); s++) {
       
       State state = getState(s);
@@ -214,7 +214,7 @@ public class PrunedUStructure extends UStructure {
 
     }
 
-    // Update event IDs in header file
+    // Update event IDs
     for (Event e : getEvents())
       e.setID(mapping.get(e.getID()));
     renumberEventsInTransitionData(mapping, unconditionalViolations);
@@ -259,7 +259,7 @@ public class PrunedUStructure extends UStructure {
 
   /**
    * Helper method to re-number event IDs in the specified list of special transitions.
-   * @param mapping The binary file containing the state ID mappings
+   * @param mapping The state ID mappings
    * @param list    The list of special transition data
    **/
   private void renumberEventsInTransitionData(Map<Integer, Integer> mapping,

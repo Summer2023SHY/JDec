@@ -57,6 +57,7 @@ import org.apache.commons.lang3.reflect.TypeUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.*;
 
+import com.github.automaton.io.StateNotFoundException;
 import com.github.automaton.io.json.*;
 import com.google.gson.*;
 import com.google.gson.reflect.*;
@@ -1904,8 +1905,6 @@ public class Automaton implements Cloneable {
 
     for (State state : getStates()) {
 
-      // Get state from file
-      // State state = getState(s);
       String stateLabel = formatStateLabel(state);
       MutableNode sourceNode = mutNode(Long.toString(state.getID()));
       addAdditionalNodeProperties(state, sourceNode);
@@ -2386,7 +2385,7 @@ public class Automaton implements Cloneable {
 
   /**
    * Adds a transition based on the specified IDs (which means that the states and event must already exist).
-   * @implNote This method could be made more efficient since the entire state is written to file instead of only writing the new transition to file.
+   * 
    * @param startingStateID The ID of the state where the transition originates from
    * @param eventID         The ID of the event that triggers the transition
    * @param targetStateID   The ID of the state where the transition leads to
@@ -2399,11 +2398,11 @@ public class Automaton implements Cloneable {
     State startingState  = getState(startingStateID);
 
     if (startingState == null) {
-      logger.error("Could not add transition to file (starting state does not exist).");
+      logger.error("Could not add transition.", new StateNotFoundException(targetStateID));
       return false;
     }
 
-      /* Add transition and update the file */
+      /* Add transition to this automaton */
 
     Event event = getEvent(eventID);
     if (!startingState.addTransition(new Transition(event, targetStateID))) {
@@ -2466,7 +2465,7 @@ public class Automaton implements Cloneable {
     State startingState  = getState(startingStateID);
 
     if (startingState == null) {
-      logger.error("Could not remove transition from file (starting state does not exist).");
+      logger.error("Could not remove transition.", new StateNotFoundException(targetStateID));
       return false;
     }
 
@@ -2518,12 +2517,10 @@ public class Automaton implements Cloneable {
     if (transitions == null)
       transitions = new ArrayList<Transition>();
 
-      /* Ensure that we haven't already reached the limit (NOTE: This will likely never be the case since we are using longs) */
-
 
     long id = ++nStates;
 
-      /* Write new state to file */
+    /* Add new state to this automaton */
     
     State state = new State(label, id, marked, transitions);
     states.put(id, state);
@@ -2539,8 +2536,8 @@ public class Automaton implements Cloneable {
   /**
    * Add the specified state to the automaton.
    * @implNote This method assumes that no state already exists with the specified ID.
-   * @implNote It is recommended to call {@link #renumberStates()} some time after using this method has been called since
-   * the IDs of the states may not be consecutive.
+   * @implNote The method {@link #renumberStates()} should be called some time
+   * after using this method has been called to make the state IDs consecutive.
    * @param label           The "name" of the new state
    * @param marked          Whether or not the states is marked
    * @param transitions     The list of transitions (if {@code null}, then a new list is made)
@@ -2555,9 +2552,8 @@ public class Automaton implements Cloneable {
 
   /**
    * Add the specified state to the automaton.
-   * @implNote This method assumes that no state already exists with the specified ID.
-   * @implNote The method {@link #renumberStates()} must be called some time after using this method has been called since it can create empty
-   * spots in the {@code .bdy} file where states don't actually exist (this happens during automata operations such as intersection).
+   * @implNote The method {@link #renumberStates()} should be called some time after using
+   * this method to make the state IDs consecutive.
    * @param label           The "name" of the new state
    * @param marked          Whether or not the states is marked
    * @param transitions     The list of transitions (if {@code null}, then a new list is made)
@@ -2570,6 +2566,9 @@ public class Automaton implements Cloneable {
    * @since 2.0
    **/
   public boolean addStateAt(String label, boolean marked, List<Transition> transitions, boolean isInitialState, long id, boolean enablement, boolean disablement) {
+
+    if (stateExists(id))
+      return false;
 
     return addStateAt(new State(label, id, marked, Objects.requireNonNullElse(transitions, new ArrayList<Transition>()), enablement, disablement), isInitialState);
   }
@@ -2586,10 +2585,10 @@ public class Automaton implements Cloneable {
    */
   public boolean addStateAt(State state, boolean isInitialState) {
   
-        /* Write new state to file */
+        /* Add new state to this automaton */
       
       if (states.containsKey(state.getID())) {
-        logger.error("Could not write state to file.");
+        logger.error("State with matching ID already exists");
         return false;
       }
   
