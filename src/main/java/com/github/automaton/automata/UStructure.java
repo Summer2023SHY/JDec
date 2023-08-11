@@ -28,7 +28,6 @@ import java.util.*;
 
 import org.apache.commons.collections4.*;
 import org.apache.commons.collections4.iterators.EntrySetMapIterator;
-import org.apache.commons.collections4.map.AbstractMapDecorator;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.apache.commons.collections4.multiset.HashMultiSet;
 import org.apache.commons.lang3.*;
@@ -1397,7 +1396,7 @@ public class UStructure extends Automaton {
 
     List<Long> listOfIDs = new ArrayList<Long>();
 
-    for (Long s : setOfStates)
+    for (long s : setOfStates)
       listOfIDs.add(s);
 
     Collections.sort(listOfIDs);
