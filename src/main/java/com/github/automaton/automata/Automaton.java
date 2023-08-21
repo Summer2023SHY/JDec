@@ -407,7 +407,7 @@ public class Automaton implements Cloneable {
       return null;
 
     // Add the initial state to the stack
-    Stack<Long> stack = new Stack<Long>(); 
+    Deque<Long> stack = new ArrayDeque<Long>(); 
     stack.push(initialState);
 
       /* Build automaton from the accessible part of this automaton */
@@ -490,7 +490,7 @@ public class Automaton implements Cloneable {
     automaton.addAllEvents(events);
 
     // Add all marked states to the stack (NOTE: This may have complications if there are more than Integer.MAX_VALUE marked states)
-    Stack<Long> stack = new Stack<Long>();
+    Deque<Long> stack = new ArrayDeque<Long>();
     for (long s = 1; s <= nStates; s++) {
 
       State state = invertedAutomaton.getState(s);
@@ -723,8 +723,8 @@ public class Automaton implements Cloneable {
     Automaton automaton = new Automaton(first.getNumberOfControllers());
 
     // These two stacks should always have the same size
-    Stack<Long> stack1 = new Stack<Long>(); 
-    Stack<Long> stack2 = new Stack<Long>();
+    Deque<Long> stack1 = new ArrayDeque<Long>();
+    Deque<Long> stack2 = new ArrayDeque<Long>();
 
     // Add the initial states to the stack
     stack1.push(first.getInitialStateID());
@@ -831,8 +831,8 @@ public class Automaton implements Cloneable {
     Automaton automaton = new Automaton(first.getNumberOfControllers());
 
     // These two stacks should always have the same size
-    Stack<Long> stack1 = new Stack<Long>(); 
-    Stack<Long> stack2 = new Stack<Long>();
+    Deque<Long> stack1 = new ArrayDeque<Long>();
+    Deque<Long> stack2 = new ArrayDeque<Long>();
 
     // Add the initial states to the stack
     stack1.push(first.getInitialStateID());
@@ -971,7 +971,7 @@ public class Automaton implements Cloneable {
 
       /* Setup */
 
-    Stack<StateVector> stack = new Stack<StateVector>();
+    Deque<StateVector> stack = new ArrayDeque<StateVector>();
     HashSet<StateVector> valuesInStack = new HashSet<StateVector>();
     UStructure uStructure = new UStructure(nControllers);
 
