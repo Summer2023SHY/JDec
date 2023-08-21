@@ -88,21 +88,4 @@ public class IOUtility {
         } // catch
 
     }
-
-    /**
-     * Checks whether there is enough space available on the file system.
-     * 
-     * @param nBytes size of the file to create, in bytes
-     * 
-     * @throws IOException if there is not enough space to write on the file system
-     * 
-     * @see File#getUsableSpace()
-     * 
-     * @since 2.0
-     */
-    public static void checkSpace(long nBytes) throws IOException {
-        if (nBytes > getTemporaryFile().getUsableSpace()) {
-            throw new IOException("There is not enough space to write file with size " + nBytes +".");
-        }
-    }
 }
