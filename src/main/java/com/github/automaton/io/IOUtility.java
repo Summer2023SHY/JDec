@@ -35,7 +35,10 @@ import org.apache.logging.log4j.*;
  * @author Micah Stairs
  * @author Sung Ho Yoon
  * @since 1.1
+ * 
+ * @deprecated This class is no longer used by JDec, and is subject to removal.
  */
+@Deprecated(since = "2.0", forRemoval = true)
 public class IOUtility {
 
     private static Logger logger = LogManager.getLogger();
@@ -52,7 +55,10 @@ public class IOUtility {
      * @implNote These temporary files do not have extensions. Do not use them
      *           directly in JDec.
      * @return The temporary file
+     * 
+     * @deprecated This method is no longer used by JDec.
      **/
+    @Deprecated(since = "2.0", forRemoval = true)
     public static File getTemporaryFile() {
 
         try {
