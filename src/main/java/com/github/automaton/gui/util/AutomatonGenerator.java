@@ -59,7 +59,6 @@ public final class AutomatonGenerator {
       StyleConstants.setForeground(errorStyle, Color.red);
 
       normalStyle = styleContext.addStyle("ValidSyntax", null);
-      StyleConstants.setForeground(normalStyle, Color.black);
     
     }
 
