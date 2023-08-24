@@ -27,7 +27,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.automaton</groupId>
   <artifactId>JDec</artifactId>
-  <version>v2.0-dev</version>
+  <version>v2.0.0-beta4</version>
   <name>Automata</name>
   <url>https://github.com/Summer2023SHY/Automata</url>
   <properties>
