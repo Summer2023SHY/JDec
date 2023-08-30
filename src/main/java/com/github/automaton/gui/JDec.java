@@ -927,7 +927,7 @@ public class JDec extends JFrame implements ActionListener {
 
         // Check for unmarked states and display warning.
         if (tab.automaton.hasUnmarkedState())
-          displayMessage("Unmarked States", "There are 1 or more states that are unmarked. Since it is assumed that\nthe system is prefix-closed, those states will be considered marked.", JOptionPane.WARNING_MESSAGE);
+          displayMessage("Unmarked States", "There are 1 or more states that are unmarked. Since it is assumed that the system is prefix-closed, those states will be considered marked.", JOptionPane.WARNING_MESSAGE);
 
         {
           final AutomatonTab currTab = tab;
@@ -1341,7 +1341,7 @@ public class JDec extends JFrame implements ActionListener {
       // Create message to display in pop-up
       String message = "Are you sure you want to close this tab? ";
       if (tab.usingTemporaryFiles())
-        message += "This automaton is only being saved temporarily. To save this automaton\npermanently, ensure that you have generated the automaton, then select 'Save As...' from the 'File' menu.";
+        message += "This automaton is only being saved temporarily. To save this automaton permanently, ensure that you have generated the automaton, then select 'Save As...' from the 'File' menu.";
       else
         message += "Any un-generated GUI input code will be lost.";
 
