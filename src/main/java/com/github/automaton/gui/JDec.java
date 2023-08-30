@@ -89,7 +89,7 @@ public class JDec extends JFrame implements ActionListener {
   private static final Properties gitProperties;
   static {
     try {
-      gitProperties = PropertiesFactory.INSTANCE.load(getResourceURL("git.properties"));
+      gitProperties = PropertiesFactory.INSTANCE.load(JDec.class.getClassLoader(), "git.properties");
     } catch (IOException ioe) {
       throw new UncheckedIOException(ioe);
     }
