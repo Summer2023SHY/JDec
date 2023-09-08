@@ -276,7 +276,7 @@ public class JDec extends JFrame implements ActionListener {
   public JDec() {
 
     try {
-      URL iconUrl = getResourceURL("icon.png");
+      URL iconUrl = getResourceURL("icon.jpg");
       ImageIcon icon = new ImageIcon(iconUrl);
       if (SystemUtils.IS_OS_MAC) {
         Taskbar.getTaskbar().setIconImage(icon.getImage());
