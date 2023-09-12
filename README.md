@@ -1,11 +1,11 @@
 # <img src="logo.png" width="48"> JDec v2.0-dev
 
-[![CI](https://github.com/Summer2023SHY/Automata/actions/workflows/ci.yml/badge.svg)](https://github.com/Summer2023SHY/Automata/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![CI](https://github.com/Summer2023SHY/JDec/actions/workflows/ci.yml/badge.svg)](https://github.com/Summer2023SHY/JDec/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
 ## Downloading
 
 ```bash
-git clone https://github.com/Summer2023SHY/Automata.git
+git clone https://github.com/Summer2023SHY/JDec.git
 ```
 
 ## Updating
