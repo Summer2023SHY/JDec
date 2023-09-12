@@ -23,22 +23,27 @@
 <project
   xmlns="http://maven.apache.org/POM/4.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+     http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+  <!-- parent pom -->
   <groupId>com.github.automaton</groupId>
-  <artifactId>JDec</artifactId>
+  <artifactId>jdec-parent</artifactId>
   <version>v2.0-dev</version>
+  <packaging>pom</packaging>
   <name>JDec</name>
   <url>https://github.com/Summer2023SHY/JDec</url>
+  <!-- sub modules -->
+  <modules>
+    <module>jdec-api</module>
+    <module>jdec-launcher</module>
+    <module>jdec-assembly</module>
+  </modules>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
   </properties>
-  <repositories>
-    <repository>
-        <id>jitpack.io</id>
-        <url>https://jitpack.io</url>
-    </repository>
-  </repositories>
   <dependencies>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
@@ -47,125 +52,26 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>guru.nidi</groupId>
-      <artifactId>graphviz-java-min-deps</artifactId>
-      <version>0.18.1</version>
-      <exclusions>
-        <exclusion>
-          <groupId>guru.nidi.com.eclipsesource.j2v8</groupId>
-          <artifactId>j2v8_win32_x86_64</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>guru.nidi.com.eclipsesource.j2v8</groupId>
-          <artifactId>j2v8_linux_x86_64</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>guru.nidi.com.eclipsesource.j2v8</groupId>
-          <artifactId>j2v8_macosx_x86_64</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>guru.nidi.com.eclipsesource.j2v8</groupId>
-          <artifactId>j2v8_win32_x86_64</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>guru.nidi.com.eclipsesource.j2v8</groupId>
-          <artifactId>j2v8_win32_x86</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
-    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>3.13.0</version>
       <scope>compile</scope>
     </dependency>
-    <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>2.13.0</version>
     </dependency>
-    <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-collections4 -->
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-collections4</artifactId>
       <version>4.4</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-rng-simple</artifactId>
-      <version>1.5</version>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/org.apache.xmlgraphics/batik-swing -->
-    <dependency>
-      <groupId>org.apache.xmlgraphics</groupId>
-      <artifactId>batik-swing</artifactId>
-      <version>1.17</version>
-    </dependency>
-    <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-api</artifactId>
       <version>2.20.0</version>
       <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-core</artifactId>
-      <version>2.20.0</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-exec</artifactId>
-      <version>1.3</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.code.gson</groupId>
-      <artifactId>gson</artifactId>
-      <version>2.10.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.openjdk.nashorn</groupId>
-      <artifactId>nashorn-core</artifactId>
-      <version>15.4</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>net.arnx</groupId>
-      <artifactId>nashorn-promise</artifactId>
-      <version>0.1.3</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.xmlgraphics</groupId>
-      <artifactId>batik-rasterizer</artifactId>
-      <version>1.17</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.webjars.npm</groupId>
-      <artifactId>viz.js-graphviz-java</artifactId>
-      <version>2.1.3</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-slf4j-impl</artifactId>
-      <version>2.20.0</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.formdev</groupId>
-      <artifactId>flatlaf</artifactId>
-      <version>3.2.1</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.github.Dansoftowner</groupId>
-      <artifactId>jSystemThemeDetector</artifactId>
-      <version>3.8</version>
     </dependency>
   </dependencies>
   <build>
@@ -177,66 +83,27 @@
           <artifactId>maven-clean-plugin</artifactId>
           <version>3.3.1</version>
         </plugin>
-        <!-- default lifecycle, jar packaging: see https://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging -->
-        <plugin>
-          <artifactId>maven-resources-plugin</artifactId>
-          <version>3.3.1</version>
-          <executions>
-            <execution>
-              <id>copy-resources</id>
-              <phase>process-resources</phase>
-              <goals>
-                <goal>copy-resources</goal>
-              </goals>
-              <configuration>
-                <overwrite>true</overwrite>
-                <outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}/</outputDirectory>
-                <resources>
-                  <resource>
-                    <directory>${project.basedir}/src/main/resources</directory>
-                  </resource>
-                </resources>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
-        <plugin>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.11.0</version>
-          <configuration>
-            <source>17</source>
-            <target>17</target>
-          </configuration>
-        </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>3.1.2</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-assembly-plugin</artifactId>
-          <configuration>
-            <archive>
-              <manifest>
-                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-                <mainClass>com.github.automaton.gui.JDec</mainClass>
-              </manifest>
-              <manifestEntries>
-                <Multi-Release>true</Multi-Release>
-              </manifestEntries>
-            </archive>
-            <descriptorRefs>
-              <descriptorRef>jar-with-dependencies</descriptorRef>
-            </descriptorRefs>
-          </configuration>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>exec-maven-plugin</artifactId>
           <version>3.1.0</version>
           <configuration>
-            <mainClass>com.github.automaton.gui.JDec</mainClass>
+            <skip>true</skip>
+            <mainClass>none</mainClass>
+            <executable>java</executable>
           </configuration>
+          <executions>
+            <execution>
+              <phase>verify</phase>
+              <goals>
+                <goal>java</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -264,23 +131,6 @@
               </tag>
             </tags>
             <detectLinks>true</detectLinks>
-            <dependencyLinks>
-              <dependencyLink>
-                <groupId>guru.nidi</groupId>
-                <artifactId>graphviz-java-min-deps</artifactId>
-                <url>https://www.javadoc.io/doc/guru.nidi/graphviz-java/latest/</url>
-              </dependencyLink>
-              <dependencyLink>
-                <groupId>com.google.code.gson</groupId>
-                <artifactId>gson</artifactId>
-                <url>https://www.javadoc.io/doc/com.google.code.gson/gson/latest/</url>
-              </dependencyLink>
-              <dependencyLink>
-                <groupId>org.apache.xmlgraphics</groupId>
-                <artifactId>batik-swing</artifactId>
-                <url>https://xmlgraphics.apache.org/batik/javadoc/</url>
-              </dependencyLink>
-            </dependencyLinks>
             <links>
               <link>https://www.javadoc.io/doc/xml-apis/xml-apis/latest/</link>
             </links>
@@ -288,6 +138,17 @@
               <![CDATA[Copyright &#169; 2016 Micah Stairs, 2023 Sung Ho Yoon. Licensed under the <a href="https://opensource.org/license/mit/" target="_blank">MIT License</a>.]]>
             </bottom>
           </configuration>
+          <executions>
+            <execution>
+              <id>aggregate</id>
+              <goals>
+                <goal>aggregate</goal>
+              </goals>
+              <configuration>
+                <destDir>javadoc</destDir>
+              </configuration>
+            </execution>
+          </executions>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -342,20 +203,6 @@
               <goal>revision</goal>
             </goals>
             <phase>initialize</phase>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>make-assembly</id>
-            <!-- this is used for inheritance merges -->
-            <phase>package</phase>
-            <!-- bind to the packaging phase -->
-            <goals>
-              <goal>single</goal>
-            </goals>
           </execution>
         </executions>
       </plugin>

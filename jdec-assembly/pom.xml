@@ -1,0 +1,56 @@
+<project
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>jdec-parent</artifactId>
+    <groupId>com.github.automaton</groupId>
+    <version>v2.0-dev</version>
+  </parent>
+  <artifactId>jdec-assembly</artifactId>
+  <packaging>pom</packaging>
+  <name>JDec JAR</name>
+  <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>jdec-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>jdec-launcher</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>make-bundles</id>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <descriptors>
+                <descriptor>jdec-assembly.xml</descriptor>
+              </descriptors>
+              <archive>
+                <manifest>
+                  <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                  <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                  <mainClass>com.github.automaton.gui.JDec</mainClass>
+                </manifest>
+                <manifestEntries>
+                  <Multi-Release>true</Multi-Release>
+                </manifestEntries>
+              </archive>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

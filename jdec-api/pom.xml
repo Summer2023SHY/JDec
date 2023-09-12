@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (C) 2023 Sung Ho Yoon
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+-->
+<project
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <!-- parent pom -->
+  <parent>
+    <artifactId>jdec-parent</artifactId>
+    <groupId>com.github.automaton</groupId>
+    <version>v2.0-dev</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>jdec-api</artifactId>
+  <packaging>jar</packaging>
+  <name>JDec API</name>
+  <dependencies>
+    <dependency>
+      <groupId>guru.nidi</groupId>
+      <artifactId>graphviz-java-min-deps</artifactId>
+      <version>0.18.1</version>
+      <exclusions>
+        <exclusion>
+          <groupId>guru.nidi.com.eclipsesource.j2v8</groupId>
+          <artifactId>j2v8_win32_x86_64</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>guru.nidi.com.eclipsesource.j2v8</groupId>
+          <artifactId>j2v8_linux_x86_64</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>guru.nidi.com.eclipsesource.j2v8</groupId>
+          <artifactId>j2v8_macosx_x86_64</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>guru.nidi.com.eclipsesource.j2v8</groupId>
+          <artifactId>j2v8_win32_x86_64</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>guru.nidi.com.eclipsesource.j2v8</groupId>
+          <artifactId>j2v8_win32_x86</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-exec</artifactId>
+      <version>1.3</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <version>2.20.0</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.10.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.xmlgraphics</groupId>
+      <artifactId>batik-rasterizer</artifactId>
+      <version>1.17</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.webjars.npm</groupId>
+      <artifactId>viz.js-graphviz-java</artifactId>
+      <version>2.1.3</version>
+      <scope>runtime</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <workingDirectory>${project.parent.basedir}</workingDirectory>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <dependencyLinks>
+            <dependencyLink>
+              <groupId>guru.nidi</groupId>
+              <artifactId>graphviz-java-min-deps</artifactId>
+              <url>https://www.javadoc.io/doc/guru.nidi/graphviz-java/latest/</url>
+            </dependencyLink>
+            <dependencyLink>
+              <groupId>com.google.code.gson</groupId>
+              <artifactId>gson</artifactId>
+              <url>https://www.javadoc.io/doc/com.google.code.gson/gson/latest/</url>
+            </dependencyLink>
+            <dependencyLink>
+              <groupId>org.apache.xmlgraphics</groupId>
+              <artifactId>batik-rasterizer</artifactId>
+              <url>https://xmlgraphics.apache.org/batik/javadoc/</url>
+            </dependencyLink>
+          </dependencyLinks>
+          <links>
+            <link>https://www.javadoc.io/doc/xml-apis/xml-apis/latest/</link>
+          </links>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
