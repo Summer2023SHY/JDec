@@ -8,7 +8,7 @@
     <version>v2.0-dev</version>
   </parent>
   <artifactId>jdec-assembly</artifactId>
-  <packaging>pom</packaging>
+  <packaging>jar</packaging>
   <name>JDec JAR</name>
   <dependencies>
     <dependency>

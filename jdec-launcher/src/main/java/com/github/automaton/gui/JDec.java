@@ -1150,7 +1150,7 @@ public class JDec extends JFrame implements ActionListener {
       
       case "Third-party License":
         try {
-          InputStream thirdPartyInfo = getResourceURL("THIRD-PARTY.txt").openStream();
+          InputStream thirdPartyInfo = getResourceURL("META-INF/jdec-assembly-THIRD-PARTY.txt").openStream();
           TextPopup popup = new TextPopup(this, "Third-party License Notice");
           thirdPartyInfo.transferTo(popup.getOutputStream());
         } catch (UncheckedIOException ioe) {

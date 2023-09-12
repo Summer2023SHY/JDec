@@ -12,7 +12,6 @@
       <useTransitiveDependencies>true</useTransitiveDependencies>
       <outputDirectory>/</outputDirectory>
       <unpack>true</unpack>
-      
     </dependencySet>
   </dependencySets>
   <moduleSets>

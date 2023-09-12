@@ -44,6 +44,13 @@
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
   </properties>
+  <licenses>
+    <license>
+      <name>MIT</name>
+      <url>https://opensource.org/license/mit/</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
   <dependencies>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
@@ -161,10 +168,11 @@
             <licenseName>mit</licenseName>
             <licenseFile>${basedir}/LICENSE</licenseFile>
             <licenseMerges>
-              <licenseMerge>Apache License, Version 2.0|The Apache Software License, Version 2.0|The Apache License, Version 2.0|Apache-2.0|Apache License 2.0</licenseMerge>
+              <licenseMerge>Apache License, Version 2.0|The Apache Software License, Version 2.0|The Apache License, Version 2.0|Apache-2.0|Apache License 2.0|Apache 2.0</licenseMerge>
               <licenseMerge>MIT License|MIT</licenseMerge>
             </licenseMerges>
             <excludedScopes>system,test,provided</excludedScopes>
+            <excludedGroups>${project.groupId}</excludedGroups>
             <generateBundle>true</generateBundle>
           </configuration>
         </plugin>
@@ -190,6 +198,7 @@
             <goals>
               <goal>add-third-party</goal>
             </goals>
+            <phase>generate-resources</phase>
           </execution>
         </executions>
       </plugin>
