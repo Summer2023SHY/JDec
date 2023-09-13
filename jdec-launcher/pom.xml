@@ -29,7 +29,7 @@
   <parent>
     <artifactId>jdec-parent</artifactId>
     <groupId>com.github.automaton</groupId>
-    <version>v2.0-dev</version>
+    <version>2.0.0-beta5</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>jdec-launcher</artifactId>
