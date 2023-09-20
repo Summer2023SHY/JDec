@@ -115,7 +115,7 @@ public class CommunicationData extends TransitionData {
    * @since 2.0
    */
   @Override
-  public Object clone() {
+  public CommunicationData clone() {
     return new CommunicationData(initialStateID, eventID, targetStateID, roles.clone());
   }
 

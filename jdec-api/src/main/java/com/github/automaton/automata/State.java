@@ -331,7 +331,7 @@ public class State implements Cloneable {
    * @since 2.0
    */
   @Override
-  public Object clone() {
+  public State clone() {
     List<Transition> clonedTransitions = new ArrayList<>();
     for (Transition orig : transitions) {
       clonedTransitions.add(ObjectUtils.clone(orig));

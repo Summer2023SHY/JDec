@@ -2227,7 +2227,7 @@ public class Automaton implements Cloneable {
    * @since 2.0
    **/
   @Override
-  public Object clone() {
+  public Automaton clone() {
     return new Automaton(this.toJsonObject());
   }
 

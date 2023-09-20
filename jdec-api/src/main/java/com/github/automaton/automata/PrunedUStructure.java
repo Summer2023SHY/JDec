@@ -168,7 +168,7 @@ public class PrunedUStructure extends UStructure {
   }
 
   @Override
-  public Object clone() {
+  public PrunedUStructure clone() {
     return new PrunedUStructure(toJsonObject());
   }
 

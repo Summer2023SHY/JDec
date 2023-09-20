@@ -114,7 +114,7 @@ public class TransitionData implements Cloneable {
    * @since 2.0
    */
   @Override
-  public Object clone() {
+  public TransitionData clone() {
     return new TransitionData(initialStateID, eventID, targetStateID);
   }
 

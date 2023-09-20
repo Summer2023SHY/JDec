@@ -107,12 +107,12 @@ public class StateVector extends State implements Iterable<State> {
      * @since 2.0
      */
     @Override
-    public Object clone() {
+    public StateVector clone() {
         StateVector sv = new StateVector(states);
         sv.setLabel(this.getLabel());
         sv.setID(this.getID());
         for (Transition orig : this.getTransitions()) {
-            sv.getTransitions().add(ObjectUtils.clone(orig));
+            sv.getTransitions().add(orig.clone());
         }
         return sv;
     }

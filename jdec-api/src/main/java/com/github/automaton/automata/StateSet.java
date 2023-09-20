@@ -251,7 +251,7 @@ public class StateSet extends State {
 
     /** {@inheritDoc} */
     @Override
-    public Object clone() {
+    public StateSet clone() {
         StateSet ss = new StateSet();
         ss.set = ObjectUtils.clone(this.set);
         ss.maxID = this.maxID;
@@ -259,7 +259,7 @@ public class StateSet extends State {
         ss.setID(sv.getID());
         ss.buildLabel();
         for (Transition orig : this.getTransitions()) {
-            ss.addTransition(ObjectUtils.clone(orig));
+            ss.addTransition(orig.clone());
         }
         return ss;
     }

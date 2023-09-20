@@ -178,7 +178,7 @@ public class UStructure extends Automaton {
     } else
       generateLeastUpperBounds(leastUpperBounds);
 
-    UStructure uStructure = ObjectUtils.clone(this);
+    UStructure uStructure = this.clone();
 
       /* Add communications (marking the potential communications) */
 
@@ -1295,7 +1295,7 @@ public class UStructure extends Automaton {
    **/
   private boolean isFeasibleProtocol(Set<CommunicationData> protocol, boolean mustAlsoSolveControlProblem) {
 
-    UStructure copy = ObjectUtils.clone(this);
+    UStructure copy = this.clone();
     copy = copy.applyProtocol(protocol, true);
 
     // If it must also solve the control problem, but there are still violations, then return false
@@ -1753,7 +1753,7 @@ public class UStructure extends Automaton {
   }
 
   @Override
-  public Object clone() {
+  public UStructure clone() {
     return new UStructure(toJsonObject());
   }
 

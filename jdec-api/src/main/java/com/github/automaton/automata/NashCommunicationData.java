@@ -110,7 +110,7 @@ public class NashCommunicationData extends CommunicationData {
    * @since 2.0
    */
   @Override
-  public Object clone() {
+  public NashCommunicationData clone() {
     return new NashCommunicationData(initialStateID, eventID, targetStateID, ArrayUtils.clone(roles), cost, probability);
   }
 

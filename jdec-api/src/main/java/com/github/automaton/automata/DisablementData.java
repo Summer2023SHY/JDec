@@ -79,7 +79,7 @@ public class DisablementData extends TransitionData {
    * @since 2.0
    */
   @Override
-  public Object clone() {
+  public DisablementData clone() {
     return new DisablementData(super.initialStateID, super.eventID, super.targetStateID, controllers.clone());
   }
 

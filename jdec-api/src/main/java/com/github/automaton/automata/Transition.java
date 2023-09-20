@@ -117,7 +117,7 @@ public class Transition implements Cloneable {
    * @since 2.0
    */
   @Override
-  public Object clone() {
+  public Transition clone() {
       return new Transition(event, targetStateID);
   }
 
