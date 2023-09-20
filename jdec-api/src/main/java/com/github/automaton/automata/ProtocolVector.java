@@ -137,9 +137,9 @@ public class ProtocolVector {
     StringBuilder stringBuilder = new StringBuilder();
 
     for (NashCommunicationData[] element : communications) { 
-      String str = StringUtils.EMPTY;
+      StringBuilder str = new StringBuilder();
       for (NashCommunicationData data : element)
-        str += "," + data.toString(automaton);
+        str.append("," + data.toString(automaton));
 
       if (str.length() > 0)
         stringBuilder.append(",[" + str.substring(1) + "]");

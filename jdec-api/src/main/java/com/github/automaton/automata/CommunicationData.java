@@ -151,11 +151,11 @@ public class CommunicationData extends TransitionData {
   @Override
   public String toString(Automaton automaton) {
 
-    String str = " (";
+    StringBuilder str = new StringBuilder(" (");
     for (CommunicationRole role : roles)
-      str += role.getCharacter();
+      str.append(role.getCharacter());
 
-    return super.toString(automaton) + str + ")";
+    return super.toString(automaton) + str.toString() + ")";
 
   }
 

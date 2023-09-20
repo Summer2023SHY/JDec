@@ -2212,7 +2212,7 @@ public class JDec extends JFrame implements ActionListener {
 
     java.util.List<String> optionsList = new ArrayList<String>();
     for (int i = (include0thComponent ? 0 : 1); i <= uStructure.getNumberOfControllers(); i++)
-      optionsList.add(String.valueOf(i));
+      optionsList.add(Integer.toString(i));
     String[] options = optionsList.toArray(new String[optionsList.size()]);
 
       /* Display prompt to user */

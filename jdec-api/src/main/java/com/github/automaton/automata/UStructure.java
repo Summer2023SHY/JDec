@@ -1146,7 +1146,7 @@ public class UStructure extends Automaton {
           /* Build least upper bound */
 
         boolean valid = true;
-        String potentialCommunication = StringUtils.EMPTY;
+        StringBuilder potentialCommunicationBuilder = new StringBuilder();
         String eventLabel = null;
 
         for (int i = 0; i < v1.getSize(); i++) {
@@ -1163,17 +1163,17 @@ public class UStructure extends Automaton {
           // Append vector element
           String newEventLabel = null;
           if (!label1.equals("*")) {
-            potentialCommunication += "," + label1;
+            potentialCommunicationBuilder.append("," + label1);
             newEventLabel = label1;
             if (i > 0)
               roles[i - 1] = CommunicationRole.SENDER;
           } else if (!label2.equals("*")) {
-            potentialCommunication += "," + label2;
+            potentialCommunicationBuilder.append("," + label2);
             newEventLabel = label2;
             if (i > 0)
               roles[i - 1] = CommunicationRole.RECEIVER;
           } else {
-            potentialCommunication += ",*";
+            potentialCommunicationBuilder.append(",*");
             if (i > 0)
               roles[i - 1] = CommunicationRole.NONE;
           }
@@ -1206,7 +1206,7 @@ public class UStructure extends Automaton {
                   copy[j] = CommunicationRole.NONE;
               
               // Add potential communication
-              potentialCommunications.add(new CommunicationLabelVector("<" + potentialCommunication.substring(1) + ">", copy));
+              potentialCommunications.add(new CommunicationLabelVector("<" + potentialCommunicationBuilder.substring(1) + ">", copy));
 
             }
 
@@ -1248,7 +1248,7 @@ public class UStructure extends Automaton {
             /* Build least upper bound */
 
           boolean valid = true;
-          String leastUpperBound = StringUtils.EMPTY;
+          StringBuilder leastUpperBoundBuilder = new StringBuilder();
           for (int i = 0; i < v1.getSize(); i++) {
 
             String label1 = v1.getLabelAtIndex(i);
@@ -1262,16 +1262,16 @@ public class UStructure extends Automaton {
 
             // Append vector element
             if (label1.equals("*"))
-              leastUpperBound += "," + label2;
+              leastUpperBoundBuilder.append("," + label2);
             else
-              leastUpperBound += "," + label1;
+              leastUpperBoundBuilder.append("," + label1);
 
           }
 
             /* Add to the temporary list */
 
           if (valid)
-            temporaryList.add(new LabelVector("<" + leastUpperBound.substring(1) + ">"));
+            temporaryList.add(new LabelVector("<" + leastUpperBoundBuilder.substring(1) + ">"));
 
         } // for
       } // for
@@ -1710,46 +1710,46 @@ public class UStructure extends Automaton {
 
   @Override protected String getInputCodeForSpecialTransitions(TransitionData transitionData) {
 
-    String str = StringUtils.EMPTY;
+    StringBuilder strBuilder = new StringBuilder();
 
     if (unconditionalViolations.contains(transitionData))
-      str += ",UNCONDITIONAL_VIOLATION";
+      strBuilder.append(",UNCONDITIONAL_VIOLATION");
     
     if (conditionalViolations.contains(transitionData))
-      str += ",CONDITIONAL_VIOLATION";
+      strBuilder.append(",CONDITIONAL_VIOLATION");
     
     // Search entire list since there may be more than one potential communication
     String identifier = (type == Type.U_STRUCTURE ? ",POTENTIAL_COMMUNICATION-" : ",COMMUNICATION-");
     for (CommunicationData communicationData : potentialCommunications)
       if (transitionData.equals(communicationData)) {
-        str += identifier;
+        strBuilder.append(identifier);
         for (CommunicationRole role : communicationData.roles)
-          str += role.getCharacter();
+          strBuilder.append(role.getCharacter());
       }
 
     if (invalidCommunications.contains(transitionData))
-      str += ",INVALID_COMMUNICATION";
+      strBuilder.append(",INVALID_COMMUNICATION");
 
     // Search entire list since there may be more than one Nash communication
     for (NashCommunicationData communicationData : nashCommunications)
       if (transitionData.equals(communicationData)) {
-        str += ",NASH_COMMUNICATION-";
+        strBuilder.append(",NASH_COMMUNICATION-");
         for (CommunicationRole role : communicationData.roles)
-          str += role.getCharacter();
-        str += "-" + communicationData.cost;
-        str += "-" + communicationData.probability;
+          strBuilder.append(role.getCharacter());
+        strBuilder.append("-" + communicationData.cost);
+        strBuilder.append("-" + communicationData.probability);
       }
 
     // There is only supposed to be one piece of disablement data per transition
     for (DisablementData disablementData : disablementDecisions)
       if (transitionData.equals(disablementData)) {
-        str += ",DISABLEMENT_DECISION-";
+        strBuilder.append(",DISABLEMENT_DECISION-");
         for (boolean b : disablementData.controllers)
-          str += BooleanUtils.toString(b, "T", "F");
+          strBuilder.append(BooleanUtils.toString(b, "T", "F"));
         break;
       }
     
-    return str;
+    return strBuilder.toString();
 
   }
 
