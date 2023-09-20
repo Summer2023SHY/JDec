@@ -2151,7 +2151,7 @@ public class JDec extends JFrame implements ActionListener {
 
       /* Create list of options */
 
-    ArrayList<String> optionsList = new ArrayList<String>();
+    java.util.List<String> optionsList = new ArrayList<String>();
 
     for (int i = 0; i < tabbedPane.getTabCount(); i++) {
 
@@ -2210,7 +2210,7 @@ public class JDec extends JFrame implements ActionListener {
 
       /* Create list of options */
 
-    ArrayList<String> optionsList = new ArrayList<String>();
+    java.util.List<String> optionsList = new ArrayList<String>();
     for (int i = (include0thComponent ? 0 : 1); i <= uStructure.getNumberOfControllers(); i++)
       optionsList.add(String.valueOf(i));
     String[] options = optionsList.toArray(new String[optionsList.size()]);

@@ -971,7 +971,7 @@ public class Automaton implements Cloneable {
       /* Setup */
 
     Deque<StateVector> stack = new ArrayDeque<StateVector>();
-    HashSet<StateVector> valuesInStack = new HashSet<StateVector>();
+    Set<StateVector> valuesInStack = new HashSet<StateVector>();
     UStructure uStructure = new UStructure(nControllers);
 
       /* Add initial state to the stack */
@@ -1897,7 +1897,7 @@ public class Automaton implements Cloneable {
 
       /* Mark special transitions */
 
-    HashMap<String, Attributes<? extends ForLink>> additionalEdgeProperties = new HashMap<String, Attributes<? extends ForLink>>();
+    Map<String, Attributes<? extends ForLink>> additionalEdgeProperties = new HashMap<String, Attributes<? extends ForLink>>();
     addAdditionalLinkProperties(additionalEdgeProperties);
 
       /* Draw all states and their transitions */
@@ -1912,7 +1912,7 @@ public class Automaton implements Cloneable {
       g = g.add(sourceNode.add(Attributes.attr("peripheries", state.isMarked() ? 2 : 1), Label.of(stateLabel)));
         
       // Find and draw all of the special transitions 
-      ArrayList<Transition> transitionsToSkip = new ArrayList<Transition>();
+      List<Transition> transitionsToSkip = new ArrayList<Transition>();
       for (Transition t : state.getTransitions()) {
 
         State targetState = getState(t.getTargetStateID());

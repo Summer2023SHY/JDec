@@ -127,8 +127,8 @@ public final class AutomatonGenerator {
         
       /* Setup */
 
-    HashMap<String, Integer> eventMapping = new HashMap<String, Integer>(); // Maps the events' labels to the events' ID
-    HashMap<String, Long> stateMapping = new HashMap<String, Long>(); // Maps the states' labels to the state's ID
+    Map<String, Integer> eventMapping = new HashMap<String, Integer>(); // Maps the events' labels to the events' ID
+    Map<String, Long> stateMapping = new HashMap<String, Long>(); // Maps the states' labels to the state's ID
     Automaton.Type automatonType = automaton.getType();
     boolean hasErrors = false;
 
@@ -539,7 +539,7 @@ public final class AutomatonGenerator {
    **/  
   public static String[] splitStringWithVectors(String str) {
 
-    ArrayList<String> list = new ArrayList<String>();
+    List<String> list = new ArrayList<String>();
 
     int start = 0;
     int insideVector = 0;

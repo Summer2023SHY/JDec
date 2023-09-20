@@ -164,7 +164,7 @@ class HelperMethodTest {
        *                    no longer eligible to be considered as part of the pareto front.
        *                    NOTE: To consider all individuals, pass an array filled with false values
        **/
-      private static ArrayList<Integer> getParetoFront(int[] objective1, int[] objective2, boolean[] alreadyUsed) {
+      private static List<Integer> getParetoFront(int[] objective1, int[] objective2, boolean[] alreadyUsed) {
     
         // Error checking
         if (objective1.length != objective2.length || objective1.length != alreadyUsed.length)
@@ -172,7 +172,7 @@ class HelperMethodTest {
     
         // Setup
         int nIndividuals = objective1.length;
-        ArrayList<Integer> individualsInFront = new ArrayList<Integer>();
+        List<Integer> individualsInFront = new ArrayList<Integer>();
     
         // Build pareto front
         for (int i = 0; i < nIndividuals; i++) {
