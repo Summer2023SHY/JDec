@@ -27,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.*;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.*;
 import org.junit.jupiter.api.*;
 
@@ -251,7 +252,7 @@ public class TestAutomata {
         new Automaton(),
         "a\nb,F,F\na,F,F\nb", // Events
         "@c\nc,F", // States  
-        "" // Transitions
+        StringUtils.EMPTY // Transitions
       );
       automaton.generateInputForGUI();
       logger.debug("Ensuring the event input was saved and loaded correctly");
@@ -901,16 +902,16 @@ public class TestAutomata {
       Automaton automaton1 = AutomatonGenerator.generateFromGUICode(
         new Automaton(),
         "a,T,T\nb,T,F\nc,F,T\nd,F,F", // Events
-        "", // States  
-        "" // Transitions
+        StringUtils.EMPTY, // States  
+        StringUtils.EMPTY // Transitions
       );
 
       logger.debug("Instantiating a second automaton (with an incompatible event)...");
       Automaton automaton2 = AutomatonGenerator.generateFromGUICode(
         new Automaton(),
         "a,T,T\nc,T,T\ne,T,F", // Events
-        "", // States  
-        "" // Transitions
+        StringUtils.EMPTY, // States  
+        StringUtils.EMPTY // Transitions
       );
 
       assertThrows(IncompatibleAutomataException.class, () -> {
@@ -928,16 +929,16 @@ public class TestAutomata {
       Automaton automaton1 = AutomatonGenerator.generateFromGUICode(
         new Automaton(),
         "a,T,T\nb,T,F\nc,F,T\nd,F,F", // Events
-        "", // States  
-        "" // Transitions
+        StringUtils.EMPTY, // States  
+        StringUtils.EMPTY // Transitions
       );
 
       logger.debug("Instantiating a third automaton (with different number of controllers)...");
       Automaton automaton3 = AutomatonGenerator.generateFromGUICode(
         new Automaton(2),
-        "", // Events
-        "", // States  
-        "" // Transitions
+        StringUtils.EMPTY, // Events
+        StringUtils.EMPTY, // States  
+        StringUtils.EMPTY // Transitions
       );
 
       assertThrows(IncompatibleAutomataException.class, () -> {
@@ -956,7 +957,7 @@ public class TestAutomata {
       // Put each communication as a string into a list
       List<String> communications = new ArrayList<String>();
       for (CommunicationData data : protocol)
-        communications.add(data.toString(uStructure) + "\n");
+        communications.add(data.toString(uStructure) + StringUtils.LF);
 
       // Sort the list, so that the it is always in alphabetical order (meaning the test cases are more consistent)
       Collections.sort(communications);
@@ -983,7 +984,7 @@ public class TestAutomata {
       // Put each communication as a string into a list
       List<String> communications = new ArrayList<String>();
       for (NashCommunicationData data : equilibrium)
-        communications.add(data.toNashString(uStructure) + "\n");
+        communications.add(data.toNashString(uStructure) + StringUtils.LF);
 
       // Sort the list, so that the it is always in alphabetical order (meaning the test cases are more consistent)
       Collections.sort(communications);
@@ -1002,7 +1003,7 @@ public class TestAutomata {
   }
 
   private static void assertMultiLineEquals(String expected, String actual) {
-    assertStringArrayEqualsIgnoreOrder(expected.split("\n"), actual.split("\n"));
+    assertStringArrayEqualsIgnoreOrder(expected.split(StringUtils.LF), actual.split(StringUtils.LF));
   }
 
   private static void assertStringArrayEqualsIgnoreOrder(String[] expected, String[] actual) {

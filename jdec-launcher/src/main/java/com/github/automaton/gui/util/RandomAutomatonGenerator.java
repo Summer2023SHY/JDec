@@ -28,6 +28,7 @@ import java.util.*;
 import javax.swing.*;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.rng.UniformRandomProvider;
 import org.apache.commons.rng.simple.RandomSource;
 
@@ -293,7 +294,7 @@ public class RandomAutomatonGenerator {
    **/
   private static String generateEventLabel(int id, int maxID) {
 
-    String label = "";
+    String label = StringUtils.EMPTY;
 
     // It's easier to calculate if they are 0-based, not 1-based
     id--;

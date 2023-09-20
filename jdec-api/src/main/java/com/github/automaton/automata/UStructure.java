@@ -31,6 +31,7 @@ import org.apache.commons.collections4.iterators.EntrySetMapIterator;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.apache.commons.collections4.multiset.HashMultiSet;
 import org.apache.commons.lang3.*;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.mutable.Mutable;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.commons.lang3.tuple.Pair;
@@ -1145,7 +1146,7 @@ public class UStructure extends Automaton {
           /* Build least upper bound */
 
         boolean valid = true;
-        String potentialCommunication = "";
+        String potentialCommunication = StringUtils.EMPTY;
         String eventLabel = null;
 
         for (int i = 0; i < v1.getSize(); i++) {
@@ -1247,7 +1248,7 @@ public class UStructure extends Automaton {
             /* Build least upper bound */
 
           boolean valid = true;
-          String leastUpperBound = "";
+          String leastUpperBound = StringUtils.EMPTY;
           for (int i = 0; i < v1.getSize(); i++) {
 
             String label1 = v1.getLabelAtIndex(i);
@@ -1709,7 +1710,7 @@ public class UStructure extends Automaton {
 
   @Override protected String getInputCodeForSpecialTransitions(TransitionData transitionData) {
 
-    String str = "";
+    String str = StringUtils.EMPTY;
 
     if (unconditionalViolations.contains(transitionData))
       str += ",UNCONDITIONAL_VIOLATION";

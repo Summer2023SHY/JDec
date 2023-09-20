@@ -30,6 +30,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.text.*;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.*;
 
@@ -134,7 +135,7 @@ public final class AutomatonGenerator {
       /* States */
     
     int endIndex = 0;
-    for (String line : stateInputText.split("\n")) {
+    for (String line : stateInputText.split(StringUtils.LF)) {
 
       int startIndex = endIndex;
       endIndex += line.length() + 1;
@@ -218,7 +219,7 @@ public final class AutomatonGenerator {
       /* Events */
 
     endIndex = 0;
-    for (String line : eventInputText.split("\n")) {
+    for (String line : eventInputText.split(StringUtils.LF)) {
 
       int startIndex = endIndex;
       endIndex += line.length() + 1;
@@ -313,7 +314,7 @@ public final class AutomatonGenerator {
       /* Transitions */
 
     endIndex = 0;
-    for (String line : transitionInputText.split("\n")) {
+    for (String line : transitionInputText.split(StringUtils.LF)) {
 
       int startIndex = endIndex;
       endIndex += line.length() + 1;

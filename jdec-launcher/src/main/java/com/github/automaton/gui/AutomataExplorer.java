@@ -26,6 +26,8 @@ package com.github.automaton.gui;
 import java.awt.*;
 import javax.swing.*;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.github.automaton.automata.Automaton;
 import com.github.automaton.automata.NoInitialStateException;
 import com.github.automaton.automata.State;
@@ -165,7 +167,7 @@ public class AutomataExplorer extends JDialog {
 
     JButton jumpToStateButton = new JButton("Jump To State");
     jumpToStateButton.addActionListener(e -> {
-      String stateLabel = JOptionPane.showInputDialog("Enter the state's label:", "");
+      String stateLabel = JOptionPane.showInputDialog("Enter the state's label:", StringUtils.EMPTY);
       if (stateLabel == null) return;
       try {
         changeState(AutomataExplorer.this.automaton.getStateID(stateLabel));

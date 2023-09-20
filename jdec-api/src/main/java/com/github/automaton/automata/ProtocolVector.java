@@ -26,6 +26,7 @@ package com.github.automaton.automata;
 import java.util.*;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Used to vectorize a communication protocol into multiple components, based on the
@@ -136,7 +137,7 @@ public class ProtocolVector {
     StringBuilder stringBuilder = new StringBuilder();
 
     for (NashCommunicationData[] element : communications) { 
-      String str = "";
+      String str = StringUtils.EMPTY;
       for (NashCommunicationData data : element)
         str += "," + data.toString(automaton);
 

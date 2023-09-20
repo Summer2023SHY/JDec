@@ -100,7 +100,7 @@ public class JDec extends JFrame implements ActionListener {
     "JDec (%s - %s%s) - A Java application for Decentralized Control",
     Objects.requireNonNullElse(JDec.class.getPackage().getImplementationVersion(), "dev"),
     gitProperties.getProperty("git.commit.id.abbrev"),
-    Boolean.valueOf(gitProperties.getProperty("git.dirty")) ? "*" : ""
+    Boolean.valueOf(gitProperties.getProperty("git.dirty")) ? "*" : StringUtils.EMPTY
   );
   private static final String GUI_DATA_FILE_NAME  = "gui.data";
 
@@ -401,7 +401,7 @@ public class JDec extends JFrame implements ActionListener {
   /**
    * Helper method to help make the code look cleaner for menu creation.
    * @param menuTitle The title of the menu
-   * @param strings   The list of menu items (where null is recognized as a separator)
+   * @param strings   The list of menu items (where {@code null} is recognized as a separator)
    * @return          The created menu
    **/
   private JMenu createMenu(String menuTitle, String... strings) {
@@ -446,39 +446,39 @@ public class JDec extends JFrame implements ActionListener {
     // Check to see if this menu item requires a tab
     boolean requiresTab = str.contains("[TAB]");
     if (requiresTab)
-      str = str.replace("[TAB]", "");
+      str = str.replace("[TAB]", StringUtils.EMPTY);
 
     // Check to see if this menu item requires any type of automaton
     boolean requiresAnyAutomaton = str.contains("[ANY_AUTOMATON]");
     if (requiresAnyAutomaton)
-      str = str.replace("[ANY_AUTOMATON]", "");
+      str = str.replace("[ANY_AUTOMATON]", StringUtils.EMPTY);
 
     // Check to see if this menu item requires a basic automaton (so not a U-Structure)
     boolean requiresBasicAutomaton = str.contains("[BASIC_AUTOMATON]");
     if (requiresBasicAutomaton)
-      str = str.replace("[BASIC_AUTOMATON]", "");
+      str = str.replace("[BASIC_AUTOMATON]", StringUtils.EMPTY);
 
     // Check to see if this menu item requires a U-Structure
     boolean requiresUStructure = str.contains("[U_STRUCTURE]");
     if (requiresUStructure)
-      str = str.replace("[U_STRUCTURE]", "");
+      str = str.replace("[U_STRUCTURE]", StringUtils.EMPTY);
 
     // Check to see if this menu item requires a pruned U-Structure
     boolean requiresPrunedUStructure = str.contains("[PRUNED_U_STRUCTURE]");
     if (requiresPrunedUStructure)
-      str = str.replace("[PRUNED_U_STRUCTURE]", "");
+      str = str.replace("[PRUNED_U_STRUCTURE]", StringUtils.EMPTY);
 
     // Check to see if this menu item requires a U-Structure or a pruned U-Structure
     boolean requiresAnyUStructure = str.contains("[ANY_U_STRUCTURE]");
     if (requiresAnyUStructure)
-      str = str.replace("[ANY_U_STRUCTURE]", "");
+      str = str.replace("[ANY_U_STRUCTURE]", StringUtils.EMPTY);
 
     // Check to see if this menu item is not displayed in macOS
     boolean requiresNotMacOS = str.contains("[NOT_MACOS]");
     if (requiresNotMacOS && SystemUtils.IS_OS_MAC)
       return;
     else
-      str = str.replace("[NOT_MACOS]", "");
+      str = str.replace("[NOT_MACOS]", StringUtils.EMPTY);
 
     // Create menu item object
     JMenuItem menuItem = new JMenuItem(str);
@@ -671,9 +671,9 @@ public class JDec extends JFrame implements ActionListener {
       case "Clear":
 
         // Clear input fields
-        tab.eventInput.setText("");
-        tab.stateInput.setText("");
-        tab.transitionInput.setText("");
+        tab.eventInput.setText(StringUtils.EMPTY);
+        tab.stateInput.setText(StringUtils.EMPTY);
+        tab.transitionInput.setText(StringUtils.EMPTY);
 
         // Set blank image
         tab.canvas.setURI(null);
@@ -1192,7 +1192,7 @@ public class JDec extends JFrame implements ActionListener {
     AutomatonTab tab = new AutomatonTab(index, type);
     tabs.add(tab);
 
-    tabbedPane.addTab(null, null, tab, "");
+    tabbedPane.addTab(null, null, tab, StringUtils.EMPTY);
     tabbedPane.setSelectedIndex(index);
 
     try {
@@ -2318,7 +2318,7 @@ public class JDec extends JFrame implements ActionListener {
       // Remove the outer tag, trim it, then return it
       String startTag = "<" + automatonType.name() + ">";
       String endTag = "</" + automatonType.name() + ">";
-      return buffer.toString().replace(startTag, "").replace(endTag, "").trim();
+      return buffer.toString().replace(startTag, StringUtils.EMPTY).replace(endTag, StringUtils.EMPTY).trim();
 
     } catch (NullPointerException | TransformerException e) { }
 

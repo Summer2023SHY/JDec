@@ -48,7 +48,7 @@ public class TooltipComponent extends JPanel {
    **/
   public TooltipComponent(Component component, String tooltipText) {
 
-    if (tooltipText != null && tooltipText.equals(""))
+    if (tooltipText != null && tooltipText.isEmpty())
       tooltipText = null;
 
       /* Inject constants into the HTML */

@@ -27,6 +27,7 @@ import java.util.*;
 
 import javax.swing.*;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.github.automaton.automata.*;
@@ -76,7 +77,7 @@ public class AmbiguityLevelOutput extends JDialog {
         AmbiguityLevelTable ambLevelTable = new AmbiguityLevelTable(data);
         dataTable = new JTable(ambLevelTable);
         dataTable.setRowSorter(new AmbiguityLevelTableRowSorter(ambLevelTable));
-        JOptionPane resultPane = new JOptionPane("The system is " + (this.result ? "" : " not ") + "observable.",
+        JOptionPane resultPane = new JOptionPane("The system is " + (this.result ? StringUtils.EMPTY : " not ") + "observable.",
                 JOptionPane.INFORMATION_MESSAGE);
         resultPane.addPropertyChangeListener(e -> {
             if (AmbiguityLevelOutput.this.isVisible() && e.getSource() == resultPane

@@ -28,6 +28,8 @@ import java.awt.*;
 import java.util.*;
 import javax.swing.*;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.github.automaton.automata.Automaton;
 import com.github.automaton.automata.CommunicationData;
 import com.github.automaton.automata.UStructure;
@@ -151,7 +153,7 @@ public class FeasibleProtocolOutput extends JDialog {
       // Add text to a text pane and make it so that the user cannot edit it
       StringBuilder protocolText = new StringBuilder();
       for (CommunicationData data : protocol)
-        protocolText.append(data.toString(uStructure) + "\n");
+        protocolText.append(data.toString(uStructure) + StringUtils.LF);
       detailedProtocolText[i] = new JTextPane();
       detailedProtocolText[i].setText(protocolText.toString());
       detailedProtocolText[i].setEditable(false);

@@ -51,6 +51,7 @@ import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.RandomAccessFileMode;
 import org.apache.commons.lang3.*;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.reflect.TypeUtils;
@@ -1362,7 +1363,7 @@ public class Automaton implements Cloneable {
               logger.printf(
                 Level.DEBUG,
                 "%s %s- i = %d: {%s}",
-                s.toString(), resolved.contains(s) ? "(resolved) " : "",
+                s.toString(), resolved.contains(s) ? "(resolved) " : StringUtils.EMPTY,
                 i, neighbors.get(i).toString()
               );
             }
@@ -1917,7 +1918,7 @@ public class Automaton implements Cloneable {
         State targetState = getState(t.getTargetStateID());
 
         // Check to see if this transition has additional properties (meaning it's a special transition)
-        String key = "" + stateLabel + " " + t.getEvent().getID() + " " + formatStateLabel(targetState);
+        String key = stateLabel + " " + t.getEvent().getID() + " " + formatStateLabel(targetState);
         Attributes<? extends ForLink> properties = additionalEdgeProperties.get(key);
 
         if (properties != null) {
@@ -1971,7 +1972,7 @@ public class Automaton implements Cloneable {
       }
 
       if (initialState > 0) {
-        MutableNode startNode = mutNode("").add(Shape.PLAIN_TEXT);
+        MutableNode startNode = mutNode(StringUtils.EMPTY).add(Shape.PLAIN_TEXT);
         MutableNode initNode = mutNode(Long.toString(initialState));
         Link init = startNode.linkTo(initNode);
         init.add(Color.BLUE);
@@ -2037,9 +2038,9 @@ public class Automaton implements Cloneable {
    * @return      A string used to identify this particular transition
    **/
   protected String createKey(TransitionData data) {
-    return "" + formatStateLabel(getState(data.initialStateID)) + " "
-              + data.eventID + " "
-              + formatStateLabel(getState(data.targetStateID));
+    return  formatStateLabel(getState(data.initialStateID)) + StringUtils.SPACE
+            + data.eventID + StringUtils.SPACE
+            + formatStateLabel(getState(data.targetStateID));
   }
 
   /**
@@ -2098,7 +2099,7 @@ public class Automaton implements Cloneable {
 
       // End of line character
       if (++counter < events.size())
-        eventInputBuilder.append("\n");
+        eventInputBuilder.append(StringUtils.LF);
 
     }
 
@@ -2134,7 +2135,7 @@ public class Automaton implements Cloneable {
       
       // Add line separator after unless this is the last state
       if (s < nStates)
-        stateInputBuilder.append("\n");
+        stateInputBuilder.append(StringUtils.LF);
 
       // Append all transitions
       for (Transition t : state.getTransitions()) {
@@ -2143,7 +2144,7 @@ public class Automaton implements Cloneable {
         if (firstTransitionInStringBuilder)
           firstTransitionInStringBuilder = false;
         else
-          transitionInputBuilder.append("\n");
+          transitionInputBuilder.append(StringUtils.LF);
 
         // Append transition
         transitionInputBuilder.append(
@@ -2157,7 +2158,7 @@ public class Automaton implements Cloneable {
         TransitionData transitionData = new TransitionData(s, t.getEvent().getID(), t.getTargetStateID());
         String specialTransitionInfo = getInputCodeForSpecialTransitions(transitionData);
         
-        if (!specialTransitionInfo.equals(""))
+        if (!specialTransitionInfo.isEmpty())
           transitionInputBuilder.append(":" + specialTransitionInfo.substring(1));
 
       }
@@ -2174,7 +2175,7 @@ public class Automaton implements Cloneable {
    */
   protected String getInputCodeForSpecialTransitions(TransitionData data) {
 
-    return (badTransitions.contains(data)) ? ",BAD" : "";
+    return (badTransitions.contains(data)) ? ",BAD" : StringUtils.EMPTY;
 
   }
 

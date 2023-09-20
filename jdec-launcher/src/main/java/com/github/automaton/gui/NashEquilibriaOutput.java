@@ -27,6 +27,8 @@ import java.awt.*;
 import java.util.*;
 import javax.swing.*;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.github.automaton.automata.CommunicationData;
 import com.github.automaton.automata.NashCommunicationData;
 import com.github.automaton.automata.UStructure;
@@ -113,7 +115,7 @@ public class NashEquilibriaOutput extends JDialog {
       // Add text to a text pane and make it so that the user cannot edit it
       StringBuilder text = new StringBuilder();
       for (CommunicationData data : equilibrium)
-        text.append(data.toString(uStructure) + "\n");
+        text.append(data.toString(uStructure) + StringUtils.LF);
       detailedText[i] = new JTextPane();
       detailedText[i].setText(text.toString());
       detailedText[i].setEditable(false);
