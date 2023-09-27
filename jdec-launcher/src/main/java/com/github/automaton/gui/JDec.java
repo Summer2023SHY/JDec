@@ -43,6 +43,7 @@ import javax.xml.transform.dom.*;
 import javax.xml.transform.stream.*;
 
 import org.apache.batik.swing.JSVGCanvas;
+import org.apache.batik.swing.gvt.AbstractPanInteractor;
 import org.apache.commons.collections4.properties.PropertiesFactory;
 import org.apache.commons.io.*;
 import org.apache.commons.lang3.*;
@@ -2454,6 +2455,7 @@ public class JDec extends JFrame implements ActionListener {
      * @param index The index of this tab
      * @param type  The type of the automaton this tab will hold
      **/
+    @SuppressWarnings("unchecked")
     public AutomatonTab(int index, Automaton.Type type) {
 
       this.index = index;
@@ -2472,7 +2474,35 @@ public class JDec extends JFrame implements ActionListener {
 
       // Create containers
       Container inputContainer = createInputContainer(type);
-      canvas = new ScrollableSVGCanvas();
+      canvas = new JSVGCanvas();
+
+      // Use mouse for translation
+      canvas.getInteractors().add(new AbstractPanInteractor() {
+        @Override
+        public boolean startInteraction(InputEvent ie) {
+          int mods = ie.getModifiersEx();
+          return ie.getID() == MouseEvent.MOUSE_PRESSED &&
+              (mods & InputEvent.BUTTON1_DOWN_MASK) != 0;
+        }
+      });
+
+      canvas.addMouseWheelListener(e -> {
+        Action action = null;
+        if (e.isControlDown()) {
+          if (e.getWheelRotation() < 0)
+            action = canvas.getActionMap().get(JSVGCanvas.ZOOM_IN_ACTION);
+          else if (e.getWheelRotation() > 0)
+            action = canvas.getActionMap().get(JSVGCanvas.ZOOM_OUT_ACTION);
+        } else {
+          if (e.getWheelRotation() < 0) {
+            action = canvas.getActionMap().get(JSVGCanvas.FAST_SCROLL_UP_ACTION);
+          } else if (e.getWheelRotation() > 0) {
+            action = canvas.getActionMap().get(JSVGCanvas.FAST_SCROLL_DOWN_ACTION);
+          }
+        }
+        if (action != null)
+          action.actionPerformed(null);
+      });
 
       // Create a split pane with the two scroll panes in it
       splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, inputContainer, canvas);
