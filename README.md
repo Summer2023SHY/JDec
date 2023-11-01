@@ -29,7 +29,7 @@ mvn test
 ## Creating and Opening Javadocs
 
 ```bash
-mvn javadoc:javadoc
+mvn javadoc:aggregate
 ```
 
 Then open `target/site/apidocs/index.html`

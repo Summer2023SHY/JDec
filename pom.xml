@@ -140,6 +140,13 @@
               </tag>
             </tags>
             <detectLinks>true</detectLinks>
+            <dependencyLinks>
+              <dependencyLink>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <url>https://logging.apache.org/log4j/2.x/javadoc/log4j-api/</url>
+              </dependencyLink>
+            </dependencyLinks>
             <links>
               <link>https://www.javadoc.io/doc/xml-apis/xml-apis/latest/</link>
             </links>
@@ -147,17 +154,6 @@
               <![CDATA[Copyright &#169; 2016 Micah Stairs, 2023 Sung Ho Yoon. Licensed under the <a href="https://opensource.org/license/mit/" target="_blank">MIT License</a>.]]>
             </bottom>
           </configuration>
-          <executions>
-            <execution>
-              <id>aggregate</id>
-              <goals>
-                <goal>aggregate</goal>
-              </goals>
-              <configuration>
-                <destDir>javadoc</destDir>
-              </configuration>
-            </execution>
-          </executions>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
