@@ -23,8 +23,9 @@ package com.github.automaton.io.legacy;
  * THE SOFTWARE.
  */
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.*;
-import java.nio.charset.Charset;
 import java.util.*;
 
 import org.apache.commons.lang3.BooleanUtils;
@@ -79,11 +80,6 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
      * hold.
      **/
     public static final int MAX_LABEL_LENGTH = 100000;
-
-    /**
-     * The UTF-8 Charset used for state label encoding
-     */
-    private static final Charset UTF8_CHARSET = Charset.forName("UTF-8");
 
     private HeaderAccessFile haf;
     private BodyAccessFile baf;
@@ -189,7 +185,7 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
             buffer = haf.readHeaderBytes(eventLabelLength);
 
             // Create the event and add it to the list
-            events.add(new Event(new String(buffer, UTF8_CHARSET), e, observable, controllable));
+            events.add(new Event(new String(buffer, UTF_8), e, observable, controllable));
 
         }
 
@@ -732,7 +728,7 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
             index += Integer.BYTES;
 
             // Write characters of the label
-            byte[] labelData = e.getLabel().getBytes(UTF8_CHARSET);
+            byte[] labelData = e.getLabel().getBytes(UTF_8);
             System.arraycopy(labelData, 0, buffer, index, labelData.length);
 
             haf.write(buffer);

@@ -23,8 +23,9 @@ package com.github.automaton.io.legacy;
  * THE SOFTWARE.
  */
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.*;
-import java.nio.charset.Charset;
 import java.util.*;
 
 import org.apache.commons.lang3.*;
@@ -43,13 +44,6 @@ import com.github.automaton.automata.*;
  * @revised 2.0
  */
 public class StateIO {
-
-    /** 
-     * The UTF-8 Charset used for state label encoding
-     * 
-     * @since 1.3
-     */
-    private static final Charset UTF8_CHARSET = Charset.forName("UTF-8");
 
     /**
      * Bitmask for checking whether or not a state actually exists here
@@ -173,7 +167,7 @@ public class StateIO {
         labelLength = labelLength == ArrayUtils.INDEX_NOT_FOUND ? arr.length : labelLength;
 
         // Instantiate the state
-        State state = new State(new String(arr, 0, labelLength, UTF8_CHARSET), id, marked, enablement, disablement);
+        State state = new State(new String(arr, 0, labelLength, UTF_8), id, marked, enablement, disablement);
 
         /* Transitions */
 
@@ -234,7 +228,7 @@ public class StateIO {
 
         /* State's label */
 
-        System.arraycopy(s.getLabel().getBytes(UTF8_CHARSET), 0, bytesToWrite, 1, Math.min(labelLength, s.getLabel().length()));
+        System.arraycopy(s.getLabel().getBytes(UTF_8), 0, bytesToWrite, 1, Math.min(labelLength, s.getLabel().length()));
 
         /* Transitions */
 
