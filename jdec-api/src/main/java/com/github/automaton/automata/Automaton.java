@@ -314,10 +314,10 @@ public class Automaton implements Cloneable {
 
     initializeLists();;
 
-    type = Type.getType(gson.fromJson(jsonObject.get("type"), Byte.TYPE));
-    nStates = gson.fromJson(jsonObject.get("nStates"), Long.TYPE);
-    initialState = gson.fromJson(jsonObject.get("initialState"), Long.TYPE);
-    nControllers = gson.fromJson(jsonObject.get("nControllers"), Integer.TYPE);
+    type = Type.getType(jsonObject.getAsJsonPrimitive("type").getAsByte());
+    nStates = jsonObject.getAsJsonPrimitive("nStates").getAsLong();
+    initialState = jsonObject.getAsJsonPrimitive("initialState").getAsLong();
+    nControllers = jsonObject.getAsJsonPrimitive("nControllers").getAsInt();
 
     events = JsonUtils.readListPropertyFromJsonObject(jsonObject, "events", Event.class);
     for (Event e : events) {
