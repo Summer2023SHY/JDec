@@ -108,7 +108,7 @@ public class LabelVector implements Iterable<String> {
    * @since 1.3
    */
   public LabelVector(List<String> labels) {
-    this(Objects.requireNonNull(labels).toArray(new String[0]));
+    this(Objects.requireNonNull(labels).toArray(String[]::new));
   }
 
     /* ACCESSOR METHODS */

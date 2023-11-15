@@ -177,7 +177,7 @@ public class StateSet extends State {
      * @return a {@link StateVector} representation of this {@code StateSet}
      */
     public StateVector toStateVector() {
-        return new StateVector(Arrays.asList(set.toArray(new State[0])), maxID);
+        return new StateVector(Arrays.asList(set.toArray(State[]::new)), maxID);
     }
 
     /**
