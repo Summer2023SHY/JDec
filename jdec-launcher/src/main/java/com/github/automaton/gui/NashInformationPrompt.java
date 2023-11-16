@@ -282,7 +282,7 @@ public abstract class NashInformationPrompt extends JDialog {
               probabilities[i] = (Double) tableModel.getValueAt(i, 2);
               totalProbability += probabilities[i];
             }
-          } catch (NumberFormatException e) {
+          } catch (ClassCastException | NumberFormatException e) {
             gui.displayErrorMessage("Input Errors", "Not all entered values could be interpreted as a number. Please fix all cells highlighted in red.");
             return;
           }
