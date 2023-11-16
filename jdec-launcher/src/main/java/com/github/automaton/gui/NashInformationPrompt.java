@@ -23,13 +23,16 @@ package com.github.automaton.gui;
  * THE SOFTWARE.
  */
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.event.*;
+import java.util.List;
+
 import javax.swing.*;
 import javax.swing.table.*;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.DoubleRange;
 
 import com.github.automaton.automata.CommunicationData;
 import com.github.automaton.automata.NashCommunicationData;
@@ -154,7 +157,7 @@ public abstract class NashInformationPrompt extends JDialog {
 
     final TableModel tableModel = new AbstractTableModel() {
 
-      private static final java.util.List<String> columnNames = java.util.List.of("Communication", "Cost", "Probability");
+      private static final List<String> columnNames = List.of("Communication", "Cost", "Probability");
 
       @Override
       public String getColumnName(int column) {
@@ -295,11 +298,8 @@ public abstract class NashInformationPrompt extends JDialog {
 
           // Prevent user from pressing this button more than once
           pressedNext = true;
-          EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-              button.setEnabled(false);
-            }
+          EventQueue.invokeLater(() -> {
+            button.setEnabled(false);
           });
 
           // Remove all pre-existing potential communications and Nash communications
@@ -378,11 +378,11 @@ public abstract class NashInformationPrompt extends JDialog {
         Double.valueOf((String) value);
       
         if (isSelected)
-          component.setBackground(javax.swing.UIManager.getColor("Table.selectionBackground"));
+          component.setBackground(UIManager.getColor("Table.selectionBackground"));
         else if (hasFocus)
-          component.setBackground(javax.swing.UIManager.getColor("Table.focusCellBackground"));
+          component.setBackground(UIManager.getColor("Table.focusCellBackground"));
         else
-          component.setBackground(javax.swing.UIManager.getColor("Table.background"));  
+          component.setBackground(UIManager.getColor("Table.background"));  
       
       } catch (NumberFormatException e) {
         component.setBackground(Color.RED);
@@ -406,11 +406,11 @@ public abstract class NashInformationPrompt extends JDialog {
         Double.valueOf((String) value);
       
         if (isSelected)
-          component.setBackground(javax.swing.UIManager.getColor("Table.selectionBackground"));
+          component.setBackground(UIManager.getColor("Table.selectionBackground"));
         else if (hasFocus)
-          component.setBackground(javax.swing.UIManager.getColor("Table.focusCellBackground"));
+          component.setBackground(UIManager.getColor("Table.focusCellBackground"));
         else
-          component.setBackground(javax.swing.UIManager.getColor("Table.background"));  
+          component.setBackground(UIManager.getColor("Table.background"));  
       
       } catch (NumberFormatException e) {
         component.setBackground(Color.RED);
