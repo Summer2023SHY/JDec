@@ -155,7 +155,6 @@ public abstract class NashInformationPrompt extends JDialog {
     final TableModel tableModel = new AbstractTableModel() {
 
       private static final java.util.List<String> columnNames = java.util.List.of("Communication", "Cost", "Probability");
-      private static final DoubleRange PROBABILITY_RANGE = DoubleRange.of(0d, 1d);
 
       @Override
       public String getColumnName(int column) {
@@ -216,7 +215,7 @@ public abstract class NashInformationPrompt extends JDialog {
               return;
             case 2:
               // Format the probabilities as doubles in the [0,1] range
-              probabilities[row] = PROBABILITY_RANGE.fit(doubleValue);
+              probabilities[row] = NashCommunicationData.PROBABILITY_RANGE.fit(doubleValue);
               return;
             default:
               break;

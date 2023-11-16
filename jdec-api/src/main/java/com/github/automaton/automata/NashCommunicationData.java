@@ -27,6 +27,7 @@ import java.util.Objects;
  */
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.DoubleRange;
 
 /**
  * Holds all 3 pieces of information needed to identify a transition, as well
@@ -41,6 +42,13 @@ import org.apache.commons.lang3.ArrayUtils;
  * @since 1.0
  */
 public class NashCommunicationData extends CommunicationData {
+
+  /**
+   * The range of valid probabilities.
+   * 
+   * @since 2.0
+   */
+  public static final DoubleRange PROBABILITY_RANGE = DoubleRange.of(0d, 1d);
 
     /* INSTANCE VARIABLES */
 
@@ -80,12 +88,7 @@ public class NashCommunicationData extends CommunicationData {
       this.cost = cost;
 
     // Ensure that probability is a value found in the range [0,1]
-    if (probability < 0.0)
-      this.probability = 0.0;
-    else if (probability > 1.0)
-      this.probability = 1.0;
-    else
-      this.probability = probability;
+    this.probability = PROBABILITY_RANGE.fit(probability);
 
   }
 
