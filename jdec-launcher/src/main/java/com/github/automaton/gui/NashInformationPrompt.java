@@ -28,6 +28,9 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.table.*;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.DoubleRange;
+
 import com.github.automaton.automata.CommunicationData;
 import com.github.automaton.automata.NashCommunicationData;
 import com.github.automaton.automata.UStructure;
@@ -107,7 +110,6 @@ public abstract class NashInformationPrompt extends JDialog {
     java.util.List<CommunicationData> potentialCommunications = uStructure.getPotentialCommunications();
     java.util.List<NashCommunicationData> nashCommunications = uStructure.getNashCommunications();
     final int nCommunications = potentialCommunications.size() + nashCommunications.size();
-    String[][] tableData = new String[nCommunications][N_COLUMNS];
     int index = 0;
 
     // Calculate how much probability has already been assigned
@@ -116,77 +118,111 @@ public abstract class NashInformationPrompt extends JDialog {
       totalProbability += data.probability;
     totalProbability = Math.min(1d, totalProbability);
 
-    // Create array to maintain communication data information
+    // Create arrays to maintain communication data information
     final CommunicationData[] communications = new CommunicationData[nCommunications];
+    final double[] costs = new double[nCommunications];
+    final double[] probabilities = new double[nCommunications];
 
     // Add communications to the table with default probability and cost values
     for (CommunicationData data : potentialCommunications) {
 
-      String[] row = new String[N_COLUMNS];
-      row[0] = data.toString(uStructure);
-      row[1] = "1";
+      costs[index] = 1d;
 
       // Calculate default probability so that it is dispersed as equally as possible, but so that
       // it also equals exactly 1.0
       double defaultProbability = (1d - totalProbability) / (double) (nCommunications - index);
       totalProbability += defaultProbability;
       
-      row[2] = Double.toString(defaultProbability);
+      probabilities[index] = defaultProbability;
 
       communications[index] = data;
-      tableData[index++] = row;
+      
+      index++;
 
     }
 
     // Add communications to the table which have pre-assigned probability and cost values
     for (NashCommunicationData data : nashCommunications) {
 
-      String[] row = new String[N_COLUMNS];
-      row[0] = data.toString(uStructure);
-      row[1] = Double.toString(data.cost);
-      row[2] = Double.toString(data.probability);
+      costs[index] = data.cost;
+      probabilities[index] = data.probability;
 
       communications[index] = data;
-      tableData[index++] = row;
+      index++;
 
     }
 
-    String[] columnNames = {"Communication", "Cost", "Probability"};
+    final TableModel tableModel = new AbstractTableModel() {
 
-    final TableModel tableModel = new DefaultTableModel(tableData, columnNames) {
+      private static final java.util.List<String> columnNames = java.util.List.of("Communication", "Cost", "Probability");
+      private static final DoubleRange PROBABILITY_RANGE = DoubleRange.of(0d, 1d);
+
+      @Override
+      public String getColumnName(int column) {
+        return columnNames.get(column);
+      }
+
+      @Override
+      public int findColumn(String columnName) {
+        return columnNames.indexOf(columnName);
+      }
+
+      @Override
+      public Class<?> getColumnClass(int columnIndex) {
+        switch (columnIndex) {
+          case 0:
+            return String.class;
+          case 1:
+          case 2:
+            return Double.TYPE;
+          default:
+            throw new IndexOutOfBoundsException(columnIndex);
+        }
+      }
+
+      @Override
+      public int getColumnCount() {
+        return N_COLUMNS;
+      }
+
+      @Override
+      public int getRowCount() {
+        return nCommunications;
+      }
+
+      @Override
+      public Object getValueAt(int rowIndex, int columnIndex) {
+        switch (columnIndex) {
+          case 0:
+            return communications[rowIndex].toString(uStructure);
+          case 1:
+            return costs[rowIndex];
+          case 2:
+            return probabilities[rowIndex];
+          default:
+            throw new IndexOutOfBoundsException(columnIndex);
+        }
+      }
 
       // Automatically adjust entered values to reflect how they are being interpreted
       @Override
       public void setValueAt(Object value, int row, int column) {
-
-        // Format the costs as non-negative doubles
-        if (column == 1) {
-          try {
-        
-            double doubleValue = Double.valueOf((String) value);
-            value = Double.toString(Math.max(0, doubleValue));
-
-          } catch (NumberFormatException e) { }
-
-        // Format the probabilities as doubles in the [0,1] range
-        } else if (column == 2) {
-
-          try {
-          
-            double doubleValue = Double.valueOf((String) value);
-
-            if (doubleValue < 0)
-              value = "0.0";
-            else if (doubleValue > 1)
-              value = "1.0";
-            else
-              value = Double.toString(doubleValue);
-
-          } catch (NumberFormatException e) { }
-
+        try {
+          double doubleValue = Double.valueOf((String) value);
+          switch (column) {
+            case 1:
+              // Format the costs as non-negative doubles
+              costs[row] = Math.max(0, doubleValue);
+              return;
+            case 2:
+              // Format the probabilities as doubles in the [0,1] range
+              probabilities[row] = PROBABILITY_RANGE.fit(doubleValue);
+              return;
+            default:
+              break;
+          }
+        } catch (NumberFormatException e) {
         }
-
-        super.setValueAt(value, row, column);
 
       }
 
@@ -243,8 +279,8 @@ public abstract class NashInformationPrompt extends JDialog {
           double totalProbability = 0d;
           try {
             for (int i = 0; i < nCommunications; i++) {
-              costs[i] = Double.valueOf(tableModel.getValueAt(i, 1).toString());
-              probabilities[i] = Double.valueOf(tableModel.getValueAt(i, 2).toString());
+              costs[i] = (Double) tableModel.getValueAt(i, 1);
+              probabilities[i] = (Double) tableModel.getValueAt(i, 2);
               totalProbability += probabilities[i];
             }
           } catch (NumberFormatException e) {
