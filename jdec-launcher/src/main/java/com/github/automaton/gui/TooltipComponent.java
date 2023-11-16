@@ -54,7 +54,7 @@ public class TooltipComponent extends JPanel {
       /* Inject constants into the HTML */
 
     if (tooltipText != null)
-      tooltipText = tooltipText.replaceAll("TOOL_TIP_WIDTH", String.valueOf(TOOL_TIP_WIDTH));
+      tooltipText = tooltipText.replaceAll("TOOL_TIP_WIDTH", Integer.toString(TOOL_TIP_WIDTH));
 
       /* Create tool-tip */
 

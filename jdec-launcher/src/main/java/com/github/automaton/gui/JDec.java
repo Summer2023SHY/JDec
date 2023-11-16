@@ -726,7 +726,8 @@ public class JDec extends JFrame implements ActionListener {
 
         {
           JFileChooser fileChooser = new JFileChooser() {
-            @Override protected JDialog createDialog(Component parent) throws HeadlessException {
+            @Override
+            protected JDialog createDialog(Component parent) {
               JDialog dialog = super.createDialog(JDec.this);
               dialog.setModal(true);
               return dialog;
@@ -1826,7 +1827,8 @@ public class JDec extends JFrame implements ActionListener {
       /* Set up the file chooser */
 
     JFileChooser fileChooser = new JFileChooser() {
-      @Override protected JDialog createDialog(Component parent) throws HeadlessException {
+      @Override
+      protected JDialog createDialog(Component parent) {
         JDialog dialog = super.createDialog(JDec.this);
         dialog.setModal(true);
         return dialog;
@@ -1955,7 +1957,8 @@ public class JDec extends JFrame implements ActionListener {
       /* Set up the file chooser */
 
     JFileChooser fileChooser = new JFileChooser() {
-      @Override protected JDialog createDialog(Component parent) throws HeadlessException {
+      @Override
+      protected JDialog createDialog(Component parent) {
         JDialog dialog = super.createDialog(JDec.this);
         dialog.setModal(true);
         return dialog;
@@ -2214,7 +2217,7 @@ public class JDec extends JFrame implements ActionListener {
     java.util.List<String> optionsList = new ArrayList<String>();
     for (int i = (include0thComponent ? 0 : 1); i <= uStructure.getNumberOfControllers(); i++)
       optionsList.add(Integer.toString(i));
-    String[] options = optionsList.toArray(new String[optionsList.size()]);
+    String[] options = optionsList.toArray(String[]::new);
 
       /* Display prompt to user */
     
@@ -2534,11 +2537,7 @@ public class JDec extends JFrame implements ActionListener {
 
       // Controller input spinner
       controllerInput = new JSpinner(new SpinnerNumberModel(1, 1, Automaton.MAX_NUMBER_OF_CONTROLLERS, 1));
-      controllerInput.addChangeListener(new ChangeListener() {
-        @Override public void stateChanged(ChangeEvent e) {
-          setSaved(false);
-        }
-      });
+      controllerInput.addChangeListener(e -> setSaved(false));
       c.ipady = 0; c.weightx = 0.5; c.weighty = 0.0; c.gridx = 1; c.gridy = 0;
       container.add(controllerInput, c);
 
@@ -2551,7 +2550,8 @@ public class JDec extends JFrame implements ActionListener {
       // Event input box
       eventInput = createTextPaneWithTraversal();
       JScrollPane eventInputScrollPane = new JScrollPane(eventInput) {
-        @Override public Dimension getPreferredSize() {
+        @Override
+        public Dimension getPreferredSize() {
           return new Dimension(200, 200);  
         }
       };
@@ -2587,7 +2587,8 @@ public class JDec extends JFrame implements ActionListener {
       // Transition input box
       transitionInput = createTextPaneWithTraversal();
       JScrollPane transitionInputScrollPane = new JScrollPane(transitionInput) {
-        @Override public Dimension getPreferredSize() {
+        @Override
+        public Dimension getPreferredSize() {
           return new Dimension(200, 200);  
         }
       };
@@ -2604,11 +2605,7 @@ public class JDec extends JFrame implements ActionListener {
           + "<b><u>NOTE</u></b>: The generated automaton is saved to file, not the code itself. "
           + "This means that your automaton is not saved until you have generated it.</html>"
       );
-      generateAutomatonButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          generateAutomatonButtonPressed();
-        }
-      });
+      generateAutomatonButton.addActionListener(e -> generateAutomatonButtonPressed());
       c.ipady = 0; c.weightx = 0.5; c.weighty = 1.0; c.gridx = 0; c.gridy = 5;
       container.add(generateAutomatonButton, c);
 
@@ -2620,12 +2617,7 @@ public class JDec extends JFrame implements ActionListener {
         "<html>Given the generated automaton, produce an image of the graph, displaying it to the right.<br>"
         + "<b><u>NOTE</u></b>: This process can take a long time for large automata.</html>"
       );
-      generateImageButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          generateImage();
-          
-        }
-      });
+      generateImageButton.addActionListener(e -> generateImage());
       c.ipady = 0; c.weightx = 0.5; c.weighty = 1.0; c.gridx = 0; c.gridy = 6;
       container.add(generateImageButton, c);
 
@@ -2634,11 +2626,7 @@ public class JDec extends JFrame implements ActionListener {
       viewImageInBrowserButton = new JButton("View Image in Browser");
       viewImageInBrowserButton.setFocusable(false);
       viewImageInBrowserButton.setToolTipText("<html>View an enlarged version of the generated image in your default browser.</html>");
-      viewImageInBrowserButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          viewInBrowser();
-        }
-      });
+      viewImageInBrowserButton.addActionListener(e -> viewInBrowser());
       c.ipady = 0; c.weightx = 0.5; c.weighty = 1.0; c.gridx = 0; c.gridy = 7;
       container.add(viewImageInBrowserButton, c);
 
@@ -2663,14 +2651,12 @@ public class JDec extends JFrame implements ActionListener {
       exploreAutomatonButton = new JButton("Explore");
       exploreAutomatonButton.setFocusable(false);
       exploreAutomatonButton.setToolTipText("<html>Interactively crawl through the structure, state by state.</html>");
-      exploreAutomatonButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          AutomatonTab tab = tabs.get(tabbedPane.getSelectedIndex());
-          try {
-            new AutomataExplorer(JDec.this, tab.automaton, "Explore");
-          } catch (RuntimeException re) {
-            displayException(re);
-          }
+      exploreAutomatonButton.addActionListener(e -> {
+        AutomatonTab tab = tabs.get(tabbedPane.getSelectedIndex());
+        try {
+          new AutomataExplorer(JDec.this, tab.automaton, "Explore");
+        } catch (RuntimeException re) {
+          displayException(re);
         }
       });
       c.ipady = 0; c.weightx = 0.5; c.weighty = 1.0; c.gridx = 0; c.gridy = 9;
@@ -2716,19 +2702,22 @@ public class JDec extends JFrame implements ActionListener {
 
       textPane.getDocument().addDocumentListener(new DocumentListener() {
 
-        @Override public void changedUpdate(DocumentEvent e) {
+        @Override
+        public void changedUpdate(DocumentEvent e) {
           setSaved(false);
         }
 
-        @Override public void insertUpdate(DocumentEvent e) {
+        @Override
+        public void insertUpdate(DocumentEvent e) {
           setSaved(false);
         }
 
-        @Override public void removeUpdate(DocumentEvent e) {
+        @Override
+        public void removeUpdate(DocumentEvent e) {
           setSaved(false);
         }
 
-      });  
+      });
     }
 
     /**
@@ -2800,6 +2789,7 @@ public class JDec extends JFrame implements ActionListener {
      * Check to see if this tab has any unsaved information (which includes information subject to
      * loss due to temporary files). The only un-generated code this won't account for is if there
      * was input code, then it was all cleared.
+     * 
      * @return  Whether or not this tab has any unsaved information
      **/
     public synchronized boolean hasUnsavedInformation() {

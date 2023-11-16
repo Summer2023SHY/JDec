@@ -119,7 +119,7 @@ public class RandomAutomatonGenerator {
         updateProgressIndicator(progressIndicator, "Adding states...", nAttempts);
         int nPreExistingStates = (int) automaton.getNumberOfStates();
         for (int s = nPreExistingStates + 1; s <= nStates; s++)
-          automaton.addStateAt(String.valueOf(nextStateLabel++), true, null, s == initialStateID, s);
+          automaton.addStateAt(Integer.toString(nextStateLabel++), true, null, s == initialStateID, s);
 
         // Generate transitions
         updateProgressIndicator(progressIndicator, "Adding transitions...", nAttempts);

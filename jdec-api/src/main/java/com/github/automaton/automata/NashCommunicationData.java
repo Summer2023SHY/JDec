@@ -74,8 +74,8 @@ public class NashCommunicationData extends CommunicationData {
     super(initialStateID, eventID, targetStateID, roles);
 
     // Ensure that the cost is a non-negative value
-    if (cost < 0.0)
-      this.cost = 0.0;
+    if (cost < 0d)
+      this.cost = 0d;
     else
       this.cost = cost;
 

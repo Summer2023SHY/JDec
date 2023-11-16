@@ -107,14 +107,14 @@ public abstract class NashInformationPrompt extends JDialog {
     java.util.List<CommunicationData> potentialCommunications = uStructure.getPotentialCommunications();
     java.util.List<NashCommunicationData> nashCommunications = uStructure.getNashCommunications();
     final int nCommunications = potentialCommunications.size() + nashCommunications.size();
-    Object[][] tableData = new Object[nCommunications][N_COLUMNS];
+    String[][] tableData = new String[nCommunications][N_COLUMNS];
     int index = 0;
 
     // Calculate how much probability has already been assigned
-    double totalProbability = 0.0;
+    double totalProbability = 0d;
     for (NashCommunicationData data : nashCommunications)
       totalProbability += data.probability;
-    totalProbability = Math.min(1.0, totalProbability);
+    totalProbability = Math.min(1d, totalProbability);
 
     // Create array to maintain communication data information
     final CommunicationData[] communications = new CommunicationData[nCommunications];
@@ -122,16 +122,16 @@ public abstract class NashInformationPrompt extends JDialog {
     // Add communications to the table with default probability and cost values
     for (CommunicationData data : potentialCommunications) {
 
-      Object[] row = new Object[N_COLUMNS];
+      String[] row = new String[N_COLUMNS];
       row[0] = data.toString(uStructure);
       row[1] = "1";
 
       // Calculate default probability so that it is dispersed as equally as possible, but so that
       // it also equals exactly 1.0
-      double defaultProbability = (1.0 - totalProbability) / (double) (nCommunications - index);
+      double defaultProbability = (1d - totalProbability) / (double) (nCommunications - index);
       totalProbability += defaultProbability;
       
-      row[2] = String.valueOf(defaultProbability);
+      row[2] = Double.toString(defaultProbability);
 
       communications[index] = data;
       tableData[index++] = row;
@@ -141,17 +141,17 @@ public abstract class NashInformationPrompt extends JDialog {
     // Add communications to the table which have pre-assigned probability and cost values
     for (NashCommunicationData data : nashCommunications) {
 
-      Object[] row = new Object[N_COLUMNS];
+      String[] row = new String[N_COLUMNS];
       row[0] = data.toString(uStructure);
-      row[1] = String.valueOf(data.cost);
-      row[2] = String.valueOf(data.probability);
+      row[1] = Double.toString(data.cost);
+      row[2] = Double.toString(data.probability);
 
       communications[index] = data;
       tableData[index++] = row;
 
     }
 
-    String[] columnNames = new String[] {"Communication", "Cost", "Probability"};
+    String[] columnNames = {"Communication", "Cost", "Probability"};
 
     final TableModel tableModel = new DefaultTableModel(tableData, columnNames) {
 
@@ -164,7 +164,7 @@ public abstract class NashInformationPrompt extends JDialog {
           try {
         
             double doubleValue = Double.valueOf((String) value);
-            value = String.valueOf(Math.max(0, doubleValue));
+            value = Double.toString(Math.max(0, doubleValue));
 
           } catch (NumberFormatException e) { }
 
@@ -180,7 +180,7 @@ public abstract class NashInformationPrompt extends JDialog {
             else if (doubleValue > 1)
               value = "1.0";
             else
-              value = String.valueOf(doubleValue);
+              value = Double.toString(doubleValue);
 
           } catch (NumberFormatException e) { }
 
@@ -240,7 +240,7 @@ public abstract class NashInformationPrompt extends JDialog {
           // Ensure that there are no validation errors
           double[] costs          = new double[nCommunications];
           double[] probabilities  = new double[nCommunications];
-          double totalProbability = 0.0;
+          double totalProbability = 0d;
           try {
             for (int i = 0; i < nCommunications; i++) {
               costs[i] = Double.valueOf(tableModel.getValueAt(i, 1).toString());
@@ -253,7 +253,7 @@ public abstract class NashInformationPrompt extends JDialog {
           }
 
           // Ensure that the column of probability adds up to exactly 1.0
-          if (totalProbability != 1.0) {
+          if (totalProbability != 1d) {
             gui.displayErrorMessage("Probability Values", "The sum of the probability values must equal exactly 1. The entered sum was '" + totalProbability + "'");
             return;
           }

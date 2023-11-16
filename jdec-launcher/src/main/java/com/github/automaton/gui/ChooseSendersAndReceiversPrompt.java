@@ -157,13 +157,13 @@ public abstract class ChooseSendersAndReceiversPrompt extends JDialog {
     // Add titles at the top of each column
     container.add(new JLabel("S\\R", SwingConstants.CENTER));
     for (int x = 1; x <= nControllers; x++)
-      container.add(new JLabel(String.valueOf(x), SwingConstants.CENTER));
+      container.add(new JLabel(Integer.toString(x), SwingConstants.CENTER));
 
     // For each row
     for (int y = 0; y < nControllers; y++) {
 
       // Add title for this row
-      container.add(new JLabel(String.valueOf(y + 1), SwingConstants.CENTER));
+      container.add(new JLabel(Integer.toString(y + 1), SwingConstants.CENTER));
 
       // For each column
       for (int x = 0; x < nControllers; x++) {
