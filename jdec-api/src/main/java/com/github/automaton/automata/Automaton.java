@@ -1278,7 +1278,7 @@ public class Automaton implements Cloneable {
         }
       }
 
-      for (int i = 0; i < nControllers; i++) {
+      IntStream.range(0, nControllers).parallel().forEach(i -> {
         List<List<State>> indistinguishableStateLists = indistinguishableStatesArr[i];
         for (List<State> indistinguishableStateList : indistinguishableStateLists) {
           for (State disablementState : disablementStates) {
@@ -1290,7 +1290,7 @@ public class Automaton implements Cloneable {
             }
           }
         }
-      }
+      });
 
       Set<State> R = new LinkedHashSet<>();
 
