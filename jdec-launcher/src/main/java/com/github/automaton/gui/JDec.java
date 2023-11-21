@@ -195,7 +195,7 @@ public class JDec extends JFrame implements ActionListener {
   {
     try {
       TEMPORARY_DIRECTORY = Files.createTempDirectory(null).toFile();
-    } catch (Exception e) {
+    } catch (IOException e) {
       logger.warn("Temporary directory could not be created.", e);
       TEMPORARY_DIRECTORY = new File("JDec_Temporary_Files");
     }
