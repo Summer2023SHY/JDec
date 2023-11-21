@@ -3004,12 +3004,7 @@ public class Automaton implements Cloneable {
    **/
   public long getNumberOfTransitions() {
 
-    long nTransitions = 0;
-
-    for (State s : getStates())
-      nTransitions += s.getNumberOfTransitions();
-  
-    return nTransitions;
+    return getStates().parallelStream().mapToInt(State::getNumberOfTransitions).sum();
 
   }
 
