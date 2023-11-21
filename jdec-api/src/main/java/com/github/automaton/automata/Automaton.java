@@ -1271,22 +1271,10 @@ public class Automaton implements Cloneable {
       }
 
       for (int i = 0; i < nControllers; i++) {
-        if (e.isControllable(i)) {
-          for (State disablementState : disablementStates) {
-            neighborMap.put(disablementState, new LinkedHashSet<>());
-            ambLevelMap.get(disablementState)[i] = new MutableInt(Integer.MAX_VALUE);
-          }
-          for (State enablementState : enablementStates) {
-            neighborMap.put(enablementState, new LinkedHashSet<>());
-            ambLevelMap.get(enablementState)[i] = new MutableInt(Integer.MAX_VALUE);
-          }
-        } else {
-          for (State disablementState : disablementStates) {
-            neighborMap.put(disablementState, Collections.emptySet());
-          }
-          for (State enablementState : enablementStates) {
-            neighborMap.put(enablementState, Collections.emptySet());
-          }
+        for (State controlState : SetUtils.union(enablementStates, disablementStates)) {
+          neighborMap.put(controlState, e.isControllable(i) ? new LinkedHashSet<>() : Collections.emptySet());
+          if (e.isControllable(i))
+            ambLevelMap.get(controlState)[i] = new MutableInt(Integer.MAX_VALUE);
         }
       }
 
