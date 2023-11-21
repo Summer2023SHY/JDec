@@ -45,6 +45,7 @@ import static guru.nidi.graphviz.model.Factory.*;
 import java.io.*;
 import java.math.*;
 import java.util.*;
+import java.util.stream.IntStream;
 
 import org.apache.commons.collections4.*;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
@@ -1244,13 +1245,13 @@ public class Automaton implements Cloneable {
     Automaton[] determinizations = new Automaton[nControllers];
     List<List<State>>[] indistinguishableStatesArr = new List[nControllers];
 
-    for (int i = 0; i < nControllers; i++) {
+    IntStream.range(0, nControllers).parallel().forEach(i -> {
       determinizations[i] = uStructure.subsetConstruction(i + 1);
       indistinguishableStatesArr[i] = new ArrayList<>();
       for (State indistinguishableStates : determinizations[i].states.values()) {
         indistinguishableStatesArr[i].add(uStructure.getStatesFromLabel(new LabelVector(indistinguishableStates.getLabel())));
       }
-    }
+    });
 
     for (Event e : IterableUtils.filteredIterable(
       events, event -> BooleanUtils.or(event.isControllable()))
