@@ -1282,10 +1282,10 @@ public class Automaton implements Cloneable {
           }
         } else {
           for (State disablementState : disablementStates) {
-            neighborMap.put(disablementState, null);
+            neighborMap.put(disablementState, Collections.emptySet());
           }
           for (State enablementState : enablementStates) {
-            neighborMap.put(enablementState, null);
+            neighborMap.put(enablementState, Collections.emptySet());
           }
         }
       }
