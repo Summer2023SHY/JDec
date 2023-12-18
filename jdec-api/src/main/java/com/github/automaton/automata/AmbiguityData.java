@@ -52,7 +52,12 @@ public final class AmbiguityData {
      * @param state a state
      * @param event an event
      * @param controller the controller (1-based index)
-     * @param isEnablement whether this decision
+     * @param isEnablement whether this decision is an enablement decision
+     * @param ambLevel     the ambiguity level associated with the data
+     * 
+     * @throws IllegalArgumentException if {@code ambLevel} is negative
+     * @throws IndexOutOfBoundsException if {@code controller} is invalid for the specified event
+     * @throws NullPointerException if either one of {@code state} or {@code event} is {@code null}
      */
     AmbiguityData(State state, Event event, int controller, boolean isEnablement, int ambLevel) {
         this.state = Objects.requireNonNull(state);
