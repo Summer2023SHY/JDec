@@ -193,16 +193,16 @@ public class AmbiguityLevelTable extends AbstractTableModel {
         AmbiguityData dataEntry = dataList.get(rowIndex);
         switch (columnIndex) {
             case STATE_COLUMN:
-                return dataEntry.getState().getLabel();
+                return dataEntry.state().getLabel();
             case STATE_TYPE_COLUMN:
                 return dataEntry.isEnablement() ? "Enablement" : "Disablement";
             case EVENT_COLUMN:
-                return dataEntry.getEvent().getLabel();
+                return dataEntry.event().getLabel();
             case CONTROLLER_COLUMN:
-                return dataEntry.getController();
+                return dataEntry.controller();
             case AMB_LEVEL_COLUMN:
-                return dataEntry.getAmbiguityLevel() == AmbiguityData.MAX_AMB_LEVEL ? "infinity"
-                        : dataEntry.getAmbiguityLevel();
+                return dataEntry.ambLevel() == AmbiguityData.MAX_AMB_LEVEL ? "infinity"
+                        : dataEntry.ambLevel();
             default:
                 throw new IndexOutOfBoundsException("Column index out of bounds: " + columnIndex);
         }

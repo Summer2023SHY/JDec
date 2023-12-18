@@ -25,41 +25,36 @@ package com.github.automaton.automata;
 import java.util.Objects;
 
 /**
- * The {@code AmbiguityData} class represents control decision of 
- * an inference observable system.
+ * Represents control decision of an inference observable system.
  * 
  * @author Sung Ho Yoon
  * @since 2.0
  * 
  * @see Automaton#testObservability(boolean)
  */
-public final class AmbiguityData {
+public record AmbiguityData(State state, Event event, int controller, boolean isEnablement, int ambLevel) {
 
     /**
      * The maximum ambiguity level.
      */
     public static final int MAX_AMB_LEVEL = Integer.MAX_VALUE;
 
-    private State state;
-    private Event event;
-    private int controller;
-    private boolean isEnablement;
-    private int ambLevel;
-
     /**
-     * Constructs a new {@code AmbiguityData} object.
+     * Constructs a new {@code AmbiguityData}.
      * 
-     * @param state a state
-     * @param event an event
-     * @param controller the controller (1-based index)
+     * @param state        a state
+     * @param event        an event
+     * @param controller   the controller (1-based index)
      * @param isEnablement whether this decision is an enablement decision
      * @param ambLevel     the ambiguity level associated with the data
      * 
-     * @throws IllegalArgumentException if {@code ambLevel} is negative
-     * @throws IndexOutOfBoundsException if {@code controller} is invalid for the specified event
-     * @throws NullPointerException if either one of {@code state} or {@code event} is {@code null}
+     * @throws IllegalArgumentException  if {@code ambLevel} is negative
+     * @throws IndexOutOfBoundsException if {@code controller} is invalid for the
+     *                                   specified event
+     * @throws NullPointerException      if either one of {@code state} or
+     *                                   {@code event} is {@code null}
      */
-    AmbiguityData(State state, Event event, int controller, boolean isEnablement, int ambLevel) {
+    public AmbiguityData(State state, Event event, int controller, boolean isEnablement, int ambLevel) {
         this.state = Objects.requireNonNull(state);
         this.event = Objects.requireNonNull(event);
         if (controller <= 0 || controller > event.isObservable().length) {
@@ -78,7 +73,7 @@ public final class AmbiguityData {
      * 
      * @return the state for this data
      */
-    public State getState() {
+    public State state() {
         return state;
     }
 
@@ -87,7 +82,7 @@ public final class AmbiguityData {
      * 
      * @return the event for this data
      */
-    public Event getEvent() {
+    public Event event() {
         return event;
     }
 
@@ -96,7 +91,7 @@ public final class AmbiguityData {
      * 
      * @return the controller (1-based index)
      */
-    public int getController() {
+    public int controller() {
         return controller;
     }
 
@@ -114,7 +109,7 @@ public final class AmbiguityData {
      * 
      * @return the ambiguity level
      */
-    public int getAmbiguityLevel() {
+    public int ambLevel() {
         return ambLevel;
     }
 
@@ -130,7 +125,8 @@ public final class AmbiguityData {
             return true;
         else if (obj instanceof AmbiguityData ad) {
             return Objects.equals(this.state, ad.state) && Objects.equals(this.event, ad.event) &&
-                    (this.controller == ad.controller) && (this.isEnablement == ad.isEnablement);
+                    (this.controller == ad.controller) && (this.isEnablement == ad.isEnablement) &&
+                    (this.ambLevel == ad.ambLevel);
         } else
             return false;
     }
@@ -138,7 +134,7 @@ public final class AmbiguityData {
     /** {@inheritDoc} */
     @Override
     public int hashCode() {
-        return Objects.hash(state, event, controller, isEnablement);
+        return Objects.hash(state, event, controller, isEnablement, ambLevel);
     }
 
     /**
@@ -149,10 +145,9 @@ public final class AmbiguityData {
     @Override
     public String toString() {
         return String.format(
-            "(%s: %s) - (%s) - (%d) : %d",
-            state.getLabel(), isEnablement ? "enablement" : "disablement",
-            event.getLabel(), getController(), ambLevel
-        );
+                "(%s: %s) - (%s) - (%d) : %d",
+                state.getLabel(), isEnablement ? "enablement" : "disablement",
+                event.getLabel(), controller(), ambLevel);
     }
 
 }

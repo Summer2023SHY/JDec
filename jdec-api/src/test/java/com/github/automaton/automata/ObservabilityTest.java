@@ -55,7 +55,7 @@ public class ObservabilityTest {
         Pair<Boolean, List<AmbiguityData>> result = automaton.testObservability(true);
         assertTrue(result.getLeft());
         for (AmbiguityData data : result.getRight()) {
-            assertNotEquals(AmbiguityData.MAX_AMB_LEVEL, data.getAmbiguityLevel());
+            assertNotEquals(AmbiguityData.MAX_AMB_LEVEL, data.ambLevel());
         }
     }
 
