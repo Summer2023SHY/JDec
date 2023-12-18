@@ -118,6 +118,23 @@ public final class AmbiguityData {
         return ambLevel;
     }
 
+    /**
+     * Determines whether an object is "equal to" this ambiguity data.
+     * 
+     * @param obj the object to be checked for equality
+     * @return {@code true} if this data is equal to the argument
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        else if (obj instanceof AmbiguityData ad) {
+            return Objects.equals(this.state, ad.state) && Objects.equals(this.event, ad.event) &&
+                    (this.controller == ad.controller) && (this.isEnablement == ad.isEnablement);
+        } else
+            return false;
+    }
+
     /** {@inheritDoc} */
     @Override
     public int hashCode() {
