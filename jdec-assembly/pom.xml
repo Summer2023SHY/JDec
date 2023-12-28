@@ -36,12 +36,10 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jdec-api</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jdec-launcher</artifactId>
-      <version>${project.version}</version>
     </dependency>
   </dependencies>
   <build>

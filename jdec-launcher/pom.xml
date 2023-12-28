@@ -35,56 +35,47 @@
   <artifactId>jdec-launcher</artifactId>
   <packaging>jar</packaging>
   <name>JDec Launcher</name>
-  <repositories>
-    <repository>
-      <id>jitpack.io</id>
-      <url>https://jitpack.io</url>
-    </repository>
-  </repositories>
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jdec-api</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-rng-simple</artifactId>
-      <version>1.5</version>
     </dependency>
     <dependency>
       <groupId>org.apache.xmlgraphics</groupId>
       <artifactId>batik-swing</artifactId>
-      <version>${batik.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
-      <version>${log4j.version}</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.openjdk.nashorn</groupId>
       <artifactId>nashorn-core</artifactId>
-      <version>15.4</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>net.arnx</groupId>
       <artifactId>nashorn-promise</artifactId>
-      <version>0.1.3</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>com.formdev</groupId>
       <artifactId>flatlaf</artifactId>
-      <version>3.2.5</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>com.github.Dansoftowner</groupId>
       <artifactId>jSystemThemeDetector</artifactId>
-      <version>3.8</version>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
   <build>
@@ -99,20 +90,6 @@
       </plugin>
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <configuration>
-          <dependencyLinks>
-            <dependencyLink>
-              <groupId>guru.nidi</groupId>
-              <artifactId>graphviz-java-min-deps</artifactId>
-              <url>https://www.javadoc.io/doc/guru.nidi/graphviz-java/latest/</url>
-            </dependencyLink>
-            <dependencyLink>
-              <groupId>org.apache.xmlgraphics</groupId>
-              <artifactId>batik-swing</artifactId>
-              <url>https://xmlgraphics.apache.org/batik/javadoc/</url>
-            </dependencyLink>
-          </dependencyLinks>
-        </configuration>
       </plugin>
     </plugins>
   </build>
