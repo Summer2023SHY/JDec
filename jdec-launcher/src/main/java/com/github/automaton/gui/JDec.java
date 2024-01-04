@@ -1123,14 +1123,15 @@ public class JDec extends JFrame implements ActionListener {
               currTab.add(label, BorderLayout.SOUTH);
               setBusyCursor(true);
               currTab.nUsingThreads.incrementAndGet();
-              Pair<Boolean, java.util.List<AmbiguityData>> observability = currTab.automaton.testObservability(displayAmbLevel);
+              Pair<Boolean, OptionalInt> observability = currTab.automaton.testObservability(displayAmbLevel);
               currTab.nUsingThreads.decrementAndGet();
               tabbedPane.setSelectedComponent(currTab);
               setBusyCursor(false);
               currTab.remove(label);
               if (observability.getLeft())
                 if (displayAmbLevel) {
-                  new AmbiguityLevelOutput(JDec.this, "Passed Test", observability);
+                  // new AmbiguityLevelOutput(JDec.this, "Passed Test", observability);
+                  displayMessage("Passed Test", "The system is observable with " + observability.getRight().getAsInt() + (observability.getRight().getAsInt() == 1 ? " level" : " levels") + " of inferencing", JOptionPane.INFORMATION_MESSAGE);
                 } else
                   displayMessage("Passed Test", "The system is observable.", JOptionPane.INFORMATION_MESSAGE);
               else
