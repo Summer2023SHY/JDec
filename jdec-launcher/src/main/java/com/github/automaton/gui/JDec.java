@@ -2155,7 +2155,7 @@ public class JDec extends JFrame implements ActionListener {
 
       /* Create list of options */
 
-    java.util.List<String> optionsList = new ArrayList<String>();
+    java.util.List<String> optionsList = new ArrayList<>();
 
     for (int i = 0; i < tabbedPane.getTabCount(); i++) {
 
@@ -2170,7 +2170,7 @@ public class JDec extends JFrame implements ActionListener {
 
     }
 
-    String[] options = optionsList.toArray(new String[optionsList.size()]);
+    String[] options = optionsList.toArray(String[]::new);
 
       /* Show error message if there is no second automaton to pick from */
 
@@ -2214,14 +2214,14 @@ public class JDec extends JFrame implements ActionListener {
 
       /* Create list of options */
 
-    java.util.List<String> optionsList = new ArrayList<String>();
+    java.util.List<Integer> optionsList = new ArrayList<>();
     for (int i = (include0thComponent ? 0 : 1); i <= uStructure.getNumberOfControllers(); i++)
-      optionsList.add(Integer.toString(i));
-    String[] options = optionsList.toArray(String[]::new);
+      optionsList.add(i);
+    Integer[] options = optionsList.toArray(Integer[]::new);
 
       /* Display prompt to user */
     
-    String choice = (String) JOptionPane.showInputDialog(
+    Integer choice = (Integer) JOptionPane.showInputDialog(
         this,
         str,
         "Choose Controller",
@@ -2233,10 +2233,7 @@ public class JDec extends JFrame implements ActionListener {
 
       /* Return index of chosen controller */
 
-    if (choice == null)
-      return -1;
-
-    return Integer.valueOf(choice);
+    return choice == null ? -1 : choice;
 
   }
 
