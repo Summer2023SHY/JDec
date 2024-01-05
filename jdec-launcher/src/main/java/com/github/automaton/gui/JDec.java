@@ -119,6 +119,13 @@ public class JDec extends JFrame implements ActionListener {
   /** Logger */
   private static Logger logger = LogManager.getLogger();
 
+  /**
+   * Singleton instance.
+   * 
+   * @since 2.0
+   */
+  private static JDec instance;
+
     /* INSTANCE VARIABLES */
 
   // Tabs
@@ -246,7 +253,7 @@ public class JDec extends JFrame implements ActionListener {
     
 
     // Start the application  
-    JDec jdec = new JDec();
+    JDec jdec = instance();
 
     detector.registerListener(isDark -> {
       SwingUtilities.invokeLater(() -> {
@@ -271,11 +278,26 @@ public class JDec extends JFrame implements ActionListener {
   }
 
     /* CONSTRUCTOR */
+
+  /**
+   * Returns the singleton instance of JDec.
+   * 
+   * @return the singleton instance of JDec
+   * 
+   * @since 2.0
+   */
+  public static JDec instance() {
+    synchronized (JDec.class) {
+      if (instance == null)
+        instance = new JDec();
+      return instance;
+    }
+  }
  
   /**
    * Construct and display the GUI.
    **/
-  public JDec() {
+  private JDec() {
 
     try {
       URL iconUrl = getResourceURL("icon.jpg");
