@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Sung Ho Yoon. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ */
+
 package com.github.automaton.io.legacy;
 
 /* 

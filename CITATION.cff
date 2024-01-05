@@ -1,5 +1,5 @@
-# This CITATION.cff file was generated with cffinit.
-# Visit https://bit.ly/cffinit to generate yours today!
+# Copyright (C) Sung Ho Yoon. All rights reserved.
+# Licensed under the MIT license. See LICENSE file in the project root for details.
 
 cff-version: 1.2.0
 title: JDec
