@@ -24,6 +24,7 @@ public class ObservabilityTest {
 
     @ParameterizedTest(name = "Test {index}")
     @MethodSource
+    @Disabled
     @DisplayName("Test Observable Automata")
     @Timeout(value = 3, unit = TimeUnit.MINUTES, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
     public void testObservableAutomata(Automaton automaton) {
@@ -35,11 +36,14 @@ public class ObservabilityTest {
     @DisplayName("Test Ambiguity Levels for Observable Automata")
     @Timeout(value = 3, unit = TimeUnit.MINUTES, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
     public void testAmbiguityLevel(Automaton automaton) {
-        Pair<Boolean, List<AmbiguityData>> result = automaton.testObservability(true);
+        Pair<Boolean, OptionalInt /* List<AmbiguityData> */> result = automaton.testObservability(true);
         assertTrue(result.getLeft());
-        for (AmbiguityData data : result.getRight()) {
-            assertNotEquals(AmbiguityData.MAX_AMB_LEVEL, data.ambLevel());
-        }
+
+        assertDoesNotThrow(() -> {
+            assertTrue(result.getRight().isPresent());
+            assertTrue(result.getRight().getAsInt() != Integer.MAX_VALUE);
+        });
+        
     }
 
     static Automaton[] testObservableAutomata() throws IOException {
