@@ -1216,11 +1216,6 @@ public class Automaton implements Cloneable {
   @SuppressWarnings("unchecked")
   public Pair<Boolean, OptionalInt> testObservability(boolean storeAmbiguityLevel) {
 
-    List<AmbiguityData> ambData = Collections.emptyList();
-    if (storeAmbiguityLevel) {
-      ambData = new ArrayList<>();
-    }
-
     // Take the U-Structure, then relabel states as needed
     UStructure uStructure = synchronizedComposition().relabelConfigurationStates();
 
