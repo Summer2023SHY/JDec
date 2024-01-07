@@ -382,7 +382,7 @@ public class JDec extends JFrame implements ActionListener {
 
     // Properties menu
     menuBar.add(createMenu("Properties",
-      "Test Observability[BASIC_AUTOMATON]",
+      "Test Inference Observability[BASIC_AUTOMATON]",
       "Test Controllability[BASIC_AUTOMATON]",
       null
     ));
@@ -1109,9 +1109,9 @@ public class JDec extends JFrame implements ActionListener {
         }
         break;
 
-      case "Test Observability":
+      case "Test Inference Observability":
         {
-          final int ambLevelDisplayResponse = JOptionPane.showConfirmDialog(this, "Do you want the calculated ambiguity levels displayed?", "Display ambiguity level?", JOptionPane.YES_NO_OPTION);
+          final int ambLevelDisplayResponse = JOptionPane.showConfirmDialog(this, "Do you want the calculated inference level displayed?", "Display inference level?", JOptionPane.YES_NO_OPTION);
           if (ambLevelDisplayResponse == JOptionPane.CLOSED_OPTION) {
             return;
           }
@@ -1131,11 +1131,11 @@ public class JDec extends JFrame implements ActionListener {
               if (observability.getLeft())
                 if (displayAmbLevel) {
                   // new AmbiguityLevelOutput(JDec.this, "Passed Test", observability);
-                  displayMessage("Passed Test", "The system is observable with " + observability.getRight().getAsInt() + (observability.getRight().getAsInt() == 1 ? " level" : " levels") + " of inferencing", JOptionPane.INFORMATION_MESSAGE);
+                  displayMessage("Passed Test", "The system is inference observable with " + observability.getRight().getAsInt() + (observability.getRight().getAsInt() == 1 ? " level" : " levels") + " of inferencing", JOptionPane.INFORMATION_MESSAGE);
                 } else
-                  displayMessage("Passed Test", "The system is observable.", JOptionPane.INFORMATION_MESSAGE);
+                  displayMessage("Passed Test", "The system is inference observable.", JOptionPane.INFORMATION_MESSAGE);
               else
-                displayMessage("Failed Test", "The system is not observable.", JOptionPane.INFORMATION_MESSAGE);
+                displayMessage("Failed Test", "The system is not inference observable.", JOptionPane.INFORMATION_MESSAGE);
             },
             FilenameUtils.removeExtension(currTab.ioAdapter.getFile().getName()) + " - Observability Test");
           observabilityThread.start();
