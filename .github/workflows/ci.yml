@@ -45,7 +45,7 @@ jobs:
     - name: Upload JAR file
       # if: false
       if: startsWith(github.ref, 'refs/tags/v')
-      uses: actions/upload-artifact@v4.2.0
+      uses: actions/upload-artifact@v4.3.0
       with:
         name: JDec-JAR
         path: jdec-assembly/target/*.jar
