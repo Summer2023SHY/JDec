@@ -27,6 +27,7 @@ import static guru.nidi.graphviz.model.Factory.*;
 import java.io.*;
 import java.math.*;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import org.apache.commons.collections4.*;
@@ -38,6 +39,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.reflect.TypeUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.*;
 
@@ -1216,6 +1218,8 @@ public class Automaton implements Cloneable {
   @SuppressWarnings("unchecked")
   public Pair<Boolean, OptionalInt> testObservability(boolean storeAmbiguityLevel) {
 
+    StopWatch sw = StopWatch.createStarted();
+
     // Take the U-Structure, then relabel states as needed
     UStructure uStructure = synchronizedComposition().relabelConfigurationStates();
 
@@ -1312,10 +1316,16 @@ public class Automaton implements Cloneable {
         prevDist = currDist;
       }
       if (vDist.size() < neighborMap.keySet().size()) {
+        long timeTaken = sw.getTime(TimeUnit.MILLISECONDS);
+        logger.info("Time taken: " + timeTaken + " ms");
         return Pair.of(false, OptionalInt.empty());
       }
     }
     OptionalInt n = nValues.values().stream().mapToInt(MutableInt::intValue).max();
+
+    long timeTaken = sw.getTime(TimeUnit.MILLISECONDS);
+    logger.info("Time taken: " + timeTaken + " ms");
+
     return Pair.of(true, n);
 
   }
