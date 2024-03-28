@@ -132,7 +132,7 @@ public class JDec extends JFrame implements ActionListener {
 
   // Miscellaneous
   /** The current directory */
-  private File currentDirectory = new File(SystemUtils.USER_DIR);
+  private File currentDirectory = SystemUtils.getUserDir();
   /** Index for temporary files */
   private AtomicInteger temporaryFileIndex = new AtomicInteger(1);
   /** Special message to display when no tabs are open */
@@ -186,7 +186,7 @@ public class JDec extends JFrame implements ActionListener {
       TEMPORARY_DIRECTORY = Files.createTempDirectory(null).toFile();
     } catch (IOException e) {
       logger.warn("Temporary directory could not be created.", e);
-      TEMPORARY_DIRECTORY = new File("JDec_Temporary_Files");
+      TEMPORARY_DIRECTORY = new File(SystemUtils.getJavaIoTmpDir(), "JDec_Temporary_Files");
     }
   }
 
