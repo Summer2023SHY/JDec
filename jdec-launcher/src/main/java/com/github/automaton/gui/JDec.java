@@ -170,10 +170,10 @@ public class JDec extends JFrame implements ActionListener {
         getResourceURL("tooltips.xml").openStream()
       );
     } catch (ParserConfigurationException | SAXException | IOException e) {
-      logger.error(e);
+      logger.catching(e);
       tooltipDocument = null;
     } catch (FactoryConfigurationError fce) {
-      logger.error(fce);
+      logger.catching(fce);
       tooltipDocument = null;
     }
 
