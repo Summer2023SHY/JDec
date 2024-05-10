@@ -1204,14 +1204,14 @@ public class Automaton implements Cloneable {
   /**
    * Test to see if this system is observable.
    * 
-   * <p>This method may optionally return the ambiguity levels for each control
-   * decision as a list. The returned list is empty if this system is not
-   * observable or the user specified not to store this data.
+   * <p>
+   * This method may optionally return the inferencing level
+   * that makes the system inference observable.
    * 
    * @param storeAmbiguityLevel whether to store and return the calculated
-   *        ambiguity levels for each control decision
-   * @return Whether or not this system is observable and the list of ambiguity
-   *         levels for each control decision
+   *                            ambiguity levels for each control decision
+   * @return Whether or not this system is observable and the inferencing level
+   *         that makes the system inference observable
    * 
    * @since 2.0
    */
