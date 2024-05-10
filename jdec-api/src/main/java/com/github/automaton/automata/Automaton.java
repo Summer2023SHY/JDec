@@ -1101,6 +1101,148 @@ public class Automaton implements Cloneable {
   }
 
   /**
+   * Calculates the ambiguity levels for each control configuration.
+   * 
+   * @return the ambiguity levels for each control configuration, if the system is
+   *         inference observable
+   * 
+   * @throws SystemNotObservableException if system is not inference observable
+   * 
+   * @since 2.1.0
+   */
+  @SuppressWarnings("unchecked")
+  public Object calculateAmbiguityLevels() {
+
+    StopWatch sw = StopWatch.createStarted();
+
+    Pair<Boolean, OptionalInt> obsResult = testObservability(true);
+
+    if (!obsResult.getLeft())
+      throw new SystemNotObservableException("System is not inference observable");
+
+    // Take the U-Structure, then relabel states as needed
+    UStructure uStructure = synchronizedComposition().relabelConfigurationStates();
+
+    Automaton[] determinizations = new Automaton[nControllers];
+    List<List<State>>[] indistinguishableStatesArr = new List[nControllers];
+
+    IntStream.range(0, nControllers).parallel().forEach(i -> {
+      determinizations[i] = uStructure.subsetConstruction(i + 1);
+      indistinguishableStatesArr[i] = new ArrayList<>();
+      for (State indistinguishableStates : determinizations[i].states.values()) {
+        indistinguishableStatesArr[i].add(uStructure.getStatesFromLabel(new LabelVector(indistinguishableStates.getLabel())));
+      }
+    });
+
+    // Setup global ambiguity level storage
+    Map<Event, ListValuedMap<State, Integer>> ambLevels = new LinkedHashMap<>();
+
+    for (Event e : IterableUtils.filteredIterable(
+      events, event -> BooleanUtils.or(event.isControllable()))
+    ) {
+
+      ListValuedMap<State, Set<State>> neighborMap = new ArrayListValuedHashMap<>();
+
+      Set<State> disablementStates = Collections.unmodifiableSet(uStructure.getDisablementStates(e.getLabel()));
+      Set<State> enablementStates = Collections.unmodifiableSet(uStructure.getEnablementStates(e.getLabel()));
+      Set<State> controlStates = SetUtils.union(enablementStates, disablementStates);
+
+      // Setup ambiguity level store for current event
+      for (State s : controlStates) {
+        ambLevels.put(e, new ArrayListValuedHashMap<>());
+      }
+
+      /*
+       * Initialize set of adjacent vertices and ambiguity levels
+       */
+      for (int i = 0; i < nControllers; i++) {
+        for (State controlState : controlStates) {
+          neighborMap.put(controlState, e.isControllable(i) ? new LinkedHashSet<>() : Collections.emptySet());
+          ambLevels.get(e).put(controlState, e.isControllable(i) ? Integer.MAX_VALUE : -1);
+        }
+      }
+
+      /* Build edges of bipartite graph */
+      IntStream.range(0, nControllers).parallel().forEach(i -> {
+        List<List<State>> indistinguishableStateLists = indistinguishableStatesArr[i];
+        for (List<State> indistinguishableStateList : indistinguishableStateLists) {
+          for (State disablementState : disablementStates) {
+            for (State enablementState : enablementStates) {
+              if (indistinguishableStateList.contains(disablementState) && indistinguishableStateList.contains(enablementState)) {
+                neighborMap.get(disablementState).get(i).add(enablementState);
+                neighborMap.get(enablementState).get(i).add(disablementState);
+              }
+            }
+          }
+        }
+      });
+
+      // vDist is the collection of set of vertices that can be distinguished by i
+      List<Set<State>> vDist = new ArrayList<>(nControllers);
+      for (int i = 0; i < nControllers; i++) {
+        vDist.add(e.isControllable(i) ? new LinkedHashSet<>() : Collections.emptySet());
+      }
+
+      int infLevel = 0;
+
+      for (State v : neighborMap.keySet()) {
+        for (int i = 0; i < nControllers; i++) {
+          if (e.isControllable(i) && neighborMap.get(v).get(i).isEmpty()) {
+            vDist.get(i).add(v);
+            ambLevels.get(e).get(v).set(i, infLevel);
+          }
+        }
+      }
+
+      Set<State> prevDist = new LinkedHashSet<>();
+      for (Set<State> vDistI : vDist) {
+        prevDist.addAll(vDistI);
+      }
+
+      while (!prevDist.isEmpty()) {
+        Set<State> currDist = new LinkedHashSet<>();
+        infLevel += 1;
+        logger.printf(Level.DEBUG, "infLevel = %d", infLevel);
+        for (State v : prevDist) {
+          logger.printf(Level.TRACE, "\tv = (%s)", v.getLabel());
+          for (int i = 0; i < nControllers; i++) {
+            logger.printf(Level.TRACE, "\t\tController %d", i);
+            logger.printf(Level.TRACE, "\t\tNeighbors = %s", neighborMap.get(v).get(i).toString());
+            if (e.isControllable(i)) {
+              if (neighborMap.get(v).get(i).isEmpty() && !vDist.get(i).contains(v)) {
+                vDist.get(i).add(v);
+                currDist.add(v);
+                ambLevels.get(e).get(v).set(i, infLevel);
+              } else {
+                for (State vPrime : neighborMap.get(v).get(i)) {
+                  neighborMap.get(vPrime).get(i).remove(v);
+                  if (neighborMap.get(vPrime).get(i).isEmpty() && !vDist.get(i).contains(vPrime)) {
+                    vDist.get(i).add(vPrime);
+                    currDist.add(vPrime);
+                    ambLevels.get(e).get(vPrime).set(i, infLevel);
+                  }
+                }
+              }
+            }
+          }
+        }
+        prevDist = currDist;
+      }
+      if (vDist.size() < neighborMap.keySet().size()) {
+        long timeTaken = sw.getTime(TimeUnit.MILLISECONDS);
+        logger.info("Time taken: " + timeTaken + " ms");
+        return Pair.of(false, OptionalInt.empty());
+      }
+    }
+    long timeTaken = sw.getTime(TimeUnit.MILLISECONDS);
+
+    logger.info("Time taken: " + timeTaken + " ms");
+
+    return null;
+
+  }
+
+  /**
    * Test to see if this system is controllable.
    * @implNote This is a cheap test.
    * @return  Whether or not this system is controllable
