@@ -1208,15 +1208,15 @@ public class Automaton implements Cloneable {
    * This method may optionally return the inferencing level
    * that makes the system inference observable.
    * 
-   * @param storeAmbiguityLevel whether to store and return the calculated
-   *                            ambiguity levels for each control decision
+   * @param showInferenceLevel whether to store and return the calculated
+   *                           inferencing level for each control decision
    * @return Whether or not this system is observable and the inferencing level
    *         that makes the system inference observable
    * 
    * @since 2.0
    */
   @SuppressWarnings("unchecked")
-  public Pair<Boolean, OptionalInt> testObservability(boolean storeAmbiguityLevel) {
+  public Pair<Boolean, OptionalInt> testObservability(boolean showInferenceLevel) {
 
     StopWatch sw = StopWatch.createStarted();
 
@@ -1321,7 +1321,7 @@ public class Automaton implements Cloneable {
         return Pair.of(false, OptionalInt.empty());
       }
     }
-    OptionalInt n = nValues.values().stream().mapToInt(MutableInt::intValue).max();
+    OptionalInt n = showInferenceLevel ? nValues.values().stream().mapToInt(MutableInt::intValue).max() : OptionalInt.empty();
 
     long timeTaken = sw.getTime(TimeUnit.MILLISECONDS);
     logger.info("Time taken: " + timeTaken + " ms");
