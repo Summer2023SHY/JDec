@@ -1111,7 +1111,7 @@ public class Automaton implements Cloneable {
    * @since 2.1.0
    */
   @SuppressWarnings("unchecked")
-  public Object calculateAmbiguityLevels() {
+  public List<AmbiguityData> calculateAmbiguityLevels() {
 
     StopWatch sw = StopWatch.createStarted();
 
@@ -1137,6 +1137,8 @@ public class Automaton implements Cloneable {
     // Setup global ambiguity level storage
     Map<Event, ListValuedMap<State, Integer>> ambLevels = new LinkedHashMap<>();
 
+    List<AmbiguityData> retList = Collections.synchronizedList(new ArrayList<>());
+
     for (Event e : IterableUtils.filteredIterable(
       events, event -> BooleanUtils.or(event.isControllable()))
     ) {
@@ -1148,9 +1150,7 @@ public class Automaton implements Cloneable {
       Set<State> controlStates = SetUtils.union(enablementStates, disablementStates);
 
       // Setup ambiguity level store for current event
-      for (State s : controlStates) {
-        ambLevels.put(e, new ArrayListValuedHashMap<>());
-      }
+      ambLevels.put(e, new ArrayListValuedHashMap<>());
 
       /*
        * Initialize set of adjacent vertices and ambiguity levels
@@ -1199,7 +1199,7 @@ public class Automaton implements Cloneable {
         prevDist.addAll(vDistI);
       }
 
-      while (!prevDist.isEmpty()) {
+      while (infLevel <= obsResult.getRight().getAsInt()) {
         Set<State> currDist = new LinkedHashSet<>();
         infLevel += 1;
         logger.printf(Level.DEBUG, "infLevel = %d", infLevel);
@@ -1228,17 +1228,21 @@ public class Automaton implements Cloneable {
         }
         prevDist = currDist;
       }
-      if (vDist.size() < neighborMap.keySet().size()) {
-        long timeTaken = sw.getTime(TimeUnit.MILLISECONDS);
-        logger.info("Time taken: " + timeTaken + " ms");
-        return Pair.of(false, OptionalInt.empty());
-      }
+      
+      ambLevels.get(e).keySet().stream().parallel().forEach(state -> {
+        List<Integer> ambLevelList = ambLevels.get(e).get(state);
+        for (int i = 0; i < nControllers; i++) {
+          if (e.isControllable(i))
+            retList.add(new AmbiguityData(state, e, i, enablementStates.contains(state), ambLevelList.get(i)));
+        }
+      });
     }
+
     long timeTaken = sw.getTime(TimeUnit.MILLISECONDS);
 
     logger.info("Time taken: " + timeTaken + " ms");
 
-    return null;
+    return retList;
 
   }
 
