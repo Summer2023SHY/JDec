@@ -21,7 +21,7 @@ import com.github.automaton.gui.util.*;
  * 
  * @author Sung Ho Yoon
  * 
- * @since 2.0
+ * @since 2.1.0
  * 
  * @see Automaton#testObservability()
  */

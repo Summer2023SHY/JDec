@@ -13,7 +13,7 @@ import javax.swing.table.*;
  * A {@link TableRowSorter} implementation for {@link AmbiguityLevelTable}s.
  * 
  * @author Sung Ho Yoon
- * @since 2.0
+ * @since 2.1.0
  */
 public class AmbiguityLevelTableRowSorter extends TableRowSorter<AmbiguityLevelTable> {
 
