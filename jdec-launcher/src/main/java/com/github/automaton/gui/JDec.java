@@ -302,11 +302,7 @@ public class JDec extends JFrame implements ActionListener {
 
     tabbedPane = new JTabbedPane();
     tabbedPane.setFocusable(false);
-    tabbedPane.addChangeListener(new ChangeListener() {
-      public void stateChanged(ChangeEvent e) {
-        updateComponentsWhichRequireAutomaton();  
-      }
-    });
+    tabbedPane.addChangeListener(e -> updateComponentsWhichRequireAutomaton());
     createTab(true, Automaton.Type.AUTOMATON);
     add(tabbedPane);
 
