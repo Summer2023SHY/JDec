@@ -57,6 +57,16 @@ public class AmbiguityLevelTable extends AbstractTableModel {
     /**
      * Constructs a new {@code AmbiguityLevelTable}.
      * 
+     * @param data an array of {@link AmbiguityData}
+     * @throws NullPointerException if argument is {@code null}
+     */
+    public AmbiguityLevelTable(AmbiguityData[] data) {
+        this.dataList = Objects.requireNonNull(Arrays.asList(data));
+    }
+
+    /**
+     * Constructs a new {@code AmbiguityLevelTable}.
+     * 
      * @param data a list of {@link AmbiguityData}
      * @throws NullPointerException if argument is {@code null}
      */

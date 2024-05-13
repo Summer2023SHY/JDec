@@ -379,6 +379,7 @@ public class JDec extends JFrame implements ActionListener {
     // Properties menu
     menuBar.add(createMenu("Properties",
       "Test Inference Observability[BASIC_AUTOMATON]",
+      "Calculate Ambiguity Levels[BASIC_AUTOMATON]",
       "Test Controllability[BASIC_AUTOMATON]",
       null
     ));
@@ -1132,6 +1133,27 @@ public class JDec extends JFrame implements ActionListener {
                   displayMessage("Passed Test", "The system is inference observable.", JOptionPane.INFORMATION_MESSAGE);
               else
                 displayMessage("Failed Test", "The system is not inference observable.", JOptionPane.INFORMATION_MESSAGE);
+            },
+            FilenameUtils.removeExtension(currTab.ioAdapter.getFile().getName()) + " - Observability Test");
+          observabilityThread.start();
+        }
+        break;
+      
+      case "Calculate Ambiguity Levels":
+        {
+          AutomatonTab currTab = tab;
+          Thread observabilityThread = new Thread(
+            () -> {
+              JLabel label = new JLabel("Running observability test", SwingConstants.CENTER);
+              currTab.add(label, BorderLayout.SOUTH);
+              setBusyCursor(true);
+              currTab.nUsingThreads.incrementAndGet();
+              var ambList = currTab.automaton.calculateAmbiguityLevels();
+              currTab.nUsingThreads.decrementAndGet();
+              tabbedPane.setSelectedComponent(currTab);
+              setBusyCursor(false);
+              currTab.remove(label);
+              new AmbiguityLevelOutput(JDec.this, "Ambiguity Levels", ambList);
             },
             FilenameUtils.removeExtension(currTab.ioAdapter.getFile().getName()) + " - Observability Test");
           observabilityThread.start();

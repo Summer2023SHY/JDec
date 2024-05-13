@@ -11,7 +11,6 @@ import java.util.*;
 import javax.swing.*;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 import com.github.automaton.automata.*;
 import com.github.automaton.gui.util.*;
@@ -29,7 +28,6 @@ public class AmbiguityLevelOutput extends JDialog {
 
     /** Reference to the {@link JDec} instance that owns this popup */
     private JDec gui;
-    private boolean result;
     private List<AmbiguityData> data;
     private JTable dataTable;
 
@@ -40,12 +38,13 @@ public class AmbiguityLevelOutput extends JDialog {
      * this popup
      * @param title the title for this popup
      * @param data the result from {@link Automaton#testObservability(boolean)}
+     * 
+     * @throws NullPointerException if {@code data} is {@code null}
      */
-    public AmbiguityLevelOutput(JDec gui, String title, Pair<Boolean, List<AmbiguityData>> data) {
+    public AmbiguityLevelOutput(JDec gui, String title, List<AmbiguityData> data) {
         super(gui, true);
         this.gui = gui;
-        this.result = data.getLeft();
-        this.data = data.getRight();
+        this.data = Objects.requireNonNull(data);
         setResizable(false);
         buildComponents();
         setPreferredSize(new Dimension(JDec.PREFERRED_DIALOG_WIDTH, JDec.PREFERRED_DIALOG_HEIGHT));
@@ -60,17 +59,7 @@ public class AmbiguityLevelOutput extends JDialog {
         AmbiguityLevelTable ambLevelTable = new AmbiguityLevelTable(data);
         dataTable = new JTable(ambLevelTable);
         dataTable.setRowSorter(new AmbiguityLevelTableRowSorter(ambLevelTable));
-        JOptionPane resultPane = new JOptionPane("The system is " + (this.result ? StringUtils.EMPTY : " not ") + "observable.",
-                JOptionPane.INFORMATION_MESSAGE);
-        resultPane.addPropertyChangeListener(e -> {
-            if (AmbiguityLevelOutput.this.isVisible() && e.getSource() == resultPane
-                    && Objects.equals(e.getPropertyName(), JOptionPane.VALUE_PROPERTY)) {
-                AmbiguityLevelOutput.this.setVisible(false);
-            }
-        });
         Box box = Box.createVerticalBox();
-        box.add(resultPane);
-        box.add(Box.createVerticalStrut(10));
         box.add(new JScrollPane(dataTable));
         add(box);
 

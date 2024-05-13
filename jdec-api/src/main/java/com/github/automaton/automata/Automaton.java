@@ -1233,7 +1233,7 @@ public class Automaton implements Cloneable {
         List<Integer> ambLevelList = ambLevels.get(e).get(state);
         for (int i = 0; i < nControllers; i++) {
           if (e.isControllable(i))
-            retList.add(new AmbiguityData(state, e, i, enablementStates.contains(state), ambLevelList.get(i)));
+            retList.add(new AmbiguityData(state, e, i + 1, enablementStates.contains(state), ambLevelList.get(i)));
         }
       });
     }
