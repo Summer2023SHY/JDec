@@ -1126,6 +1126,7 @@ public class Automaton implements Cloneable {
     Automaton[] determinizations = new Automaton[nControllers];
     List<List<State>>[] indistinguishableStatesArr = new List[nControllers];
 
+    // Build list of indistinguishable states
     IntStream.range(0, nControllers).parallel().forEach(i -> {
       determinizations[i] = uStructure.subsetConstruction(i + 1);
       indistinguishableStatesArr[i] = new ArrayList<>();
