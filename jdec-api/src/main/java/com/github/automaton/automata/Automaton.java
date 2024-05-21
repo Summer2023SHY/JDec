@@ -1204,6 +1204,17 @@ public class Automaton implements Cloneable {
         Set<State> currDist = new LinkedHashSet<>();
         infLevel += 1;
         logger.printf(Level.DEBUG, "infLevel = %d", infLevel);
+        logger.printf(Level.DEBUG, "prevDist = %s", prevDist.toString());
+        if (logger.isDebugEnabled()) {
+          logger.debug("neighborMap");
+          for (State s : neighborMap.keySet()) {
+            logger.debug("\tState " + s);
+            List<Set<State>> neighborsList = neighborMap.get(s);
+            for (int i = 0; i < neighborsList.size(); i++) {
+              logger.printf(Level.DEBUG, "\t\t%d: %s", i + 1, neighborsList.get(i));
+            }
+          }
+        }
         for (State v : prevDist) {
           logger.printf(Level.TRACE, "\tv = (%s)", v.getLabel());
           for (int i = 0; i < nControllers; i++) {
