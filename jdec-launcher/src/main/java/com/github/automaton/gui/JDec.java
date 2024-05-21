@@ -898,7 +898,7 @@ public class JDec extends JFrame implements ActionListener {
 
         try {
           // Create new tab with the intersection
-          createTab(Automaton.intersection(tab.automaton, otherAutomaton));
+          createTab(AutomataOperations.intersection(tab.automaton, otherAutomaton));
         } catch(IncompatibleAutomataException e) {
           logger.catching(e);
           temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it
@@ -917,7 +917,7 @@ public class JDec extends JFrame implements ActionListener {
 
         try {
           // Create new tab with the union
-          createTab(Automaton.union(tab.automaton, otherAutomaton));
+          createTab(AutomataOperations.union(tab.automaton, otherAutomaton));
         } catch(IncompatibleAutomataException e) {
           logger.catching(e);
           temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it

@@ -403,7 +403,7 @@ public class TestAutomata {
       logger.debug("Taking the intersection of Figure 2.1 and Figure 2.2 (and comparing the result to the first automaton in Figure 2.15)...");
 
       try {
-        result = Automaton.intersection(fig2_1, fig2_2);
+        result = AutomataOperations.intersection(fig2_1, fig2_2);
         result.generateInputForGUI();
         logger.debug("Ensuring the events are correct");
         assertMultiLineEquals("a,T,T\nb,T,T", result.getEventInput());
@@ -426,7 +426,7 @@ public class TestAutomata {
       logger.debug("Taking the intersection of Figure 2.2 and Figure 2.13(b) (and comparing the result to the second automaton in Figure 2.15)...");
 
       try {
-        result = Automaton.intersection(fig2_2, fig2_13b);
+        result = AutomataOperations.intersection(fig2_2, fig2_13b);
         result.generateInputForGUI();
         logger.debug("Ensuring the events are correct");
         assertMultiLineEquals("a,T,T\nb,T,T", result.getEventInput());
@@ -456,7 +456,7 @@ public class TestAutomata {
 
       logger.debug("Taking the intersection of the first two automata in Figure 2.20 (and comparing the result to the third automaton in Figure 2.20)...");
       try {
-        result = Automaton.intersection(fig2_20a, fig2_20b);
+        result = AutomataOperations.intersection(fig2_20a, fig2_20b);
         result.generateInputForGUI();
         logger.debug("Ensuring the events are correct");
         assertMultiLineEquals("a1,T,T\na2,T,T\nb,T,T\nr,T,T", result.getEventInput());
@@ -497,7 +497,7 @@ public class TestAutomata {
       Automaton result;
 
       try {
-        result = Automaton.union(fig2_1, fig2_2);
+        result = AutomataOperations.union(fig2_1, fig2_2);
         result.generateInputForGUI();
         logger.debug("Ensuring the events are correct");
         assertMultiLineEquals("a,T,T\nb,T,T\ng,T,T", result.getEventInput());
@@ -536,7 +536,7 @@ public class TestAutomata {
       logger.debug("Taking the union of the three automata in Figure 2.17 (and comparing the result to the automaton described in Example 2.17)...");
       
       try {
-        result = Automaton.union(Automaton.union(fig2_17a, fig2_17b), fig2_17c);
+        result = AutomataOperations.union(AutomataOperations.union(fig2_17a, fig2_17b), fig2_17c);
         result.generateInputForGUI();
         logger.debug("Ensuring the events are correct");
         assertMultiLineEquals("a,T,T\nb,T,T\nc,T,T\nd,T,T", result.getEventInput());
@@ -898,7 +898,7 @@ public class TestAutomata {
 
       assertThrows(IncompatibleAutomataException.class, () -> {
         logger.debug("Taking the union of the two instantiated automata...");
-        Automaton.union(automaton1, automaton2);
+        AutomataOperations.union(automaton1, automaton2);
       }, "IncompatibleAutomataException not raised");
 
     }
@@ -925,7 +925,7 @@ public class TestAutomata {
 
       assertThrows(IncompatibleAutomataException.class, () -> {
         logger.debug("Taking the union of the first and third instantiated automata...");
-        Automaton.union(automaton1, automaton3);
+        AutomataOperations.union(automaton1, automaton3);
       }, "IncompatibleAutomataException not raised");
     }
   }

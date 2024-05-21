@@ -7,7 +7,7 @@ package com.github.automaton.automata;
 
 import java.util.*;
 
-import org.apache.commons.lang3.ObjectUtils;
+import com.github.automaton.automata.util.IDUtil;
 
 /**
  * Represents a vector of {@link State}s. A {@code StateVector} is
@@ -56,7 +56,7 @@ public class StateVector extends State implements Iterable<State> {
         }
         combinedLabelBuilder.deleteCharAt(0);
         setLabel(combinedLabelBuilder.toString());
-        setID(Automaton.combineBigIDs(stateIDs, maxID).longValue());
+        setID(IDUtil.combineBigIDs(stateIDs, maxID).longValue());
     }
 
     /**

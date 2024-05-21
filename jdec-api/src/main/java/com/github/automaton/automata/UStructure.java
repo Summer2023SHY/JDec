@@ -1368,26 +1368,6 @@ public class UStructure extends Automaton {
 
   }
 
-
-
-  /**
-   * Given a set of states, create a unique combined ID.
-   * @param setOfStates The set of states which are being combined
-   * @return            The combined ID
-   **/
-  private BigInteger combineStateIDs(Set<Long> setOfStates) {
-
-    List<Long> listOfIDs = new ArrayList<Long>();
-
-    for (long s : setOfStates)
-      listOfIDs.add(s);
-
-    Collections.sort(listOfIDs);
-
-    return combineBigIDs(listOfIDs, nStates);
-
-  }
-
   /**
    * Starting at the specified state, find all indistinguishable states with respect to a particular controller.
    * @param uStructure          The relevant U-Structure
