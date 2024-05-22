@@ -28,9 +28,12 @@ import java.io.*;
 import java.math.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
-import org.apache.commons.collections4.*;
+import org.apache.commons.collections4.IterableUtils;
+import org.apache.commons.collections4.ListValuedMap;
+import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.RandomAccessFileMode;
@@ -2571,12 +2574,12 @@ public class Automaton implements Cloneable {
 
   /**
    * Check to see whether or not this automaton has any unmarked states.
-   * @implNote This can be an expensive method.
+   * 
    * @return  Whether or not this automaton has at least one unmarked state
    **/
   public boolean hasUnmarkedState() {
 
-    return IterableUtils.matchesAny(getStates(), s -> !s.isMarked());
+    return getStates().stream().anyMatch(Predicate.not(State::isMarked));
 
   }
 
@@ -2751,7 +2754,7 @@ public class Automaton implements Cloneable {
    **/
   public boolean hasSelfLoop(List<? extends TransitionData> list) {
 
-    return IterableUtils.matchesAny(list, data -> data.initialStateID == data.targetStateID);
+    return list.stream().anyMatch(data -> data.initialStateID == data.targetStateID);
 
   }
 
