@@ -1876,11 +1876,47 @@ public class UStructure extends Automaton {
   }
 
   /**
+   * Returns the list of unconditional violations. The returned list is
+   * {@link Collections#unmodifiableList(List) unmodifiable}.
+   * 
+   * @return the list of unconditional violations
+   * 
+   * @since 2.1.0
+   */
+  public List<TransitionData> getUnconditionalViolations() {
+    return Collections.unmodifiableList(unconditionalViolations);
+  }
+
+  /**
+   * Returns the list of conditional violations. The returned list is
+   * {@link Collections#unmodifiableList(List) unmodifiable}.
+   * 
+   * @return the list of conditional violations
+   * 
+   * @since 2.1.0
+   */
+  public List<TransitionData> getConditionalViolations() {
+    return Collections.unmodifiableList(conditionalViolations);
+  }
+
+  /**
    * Get the list of potential communications.
    * @return  The potential communications
    **/
   public List<CommunicationData> getPotentialCommunications() {
     return potentialCommunications;
+  }
+
+  /**
+   * Returns the list of invalid communications. The returned list is
+   * {@link Collections#unmodifiableList(List) unmodifiable}.
+   * 
+   * @return the list of invalid communications
+   * 
+   * @since 2.1.0
+   */
+  public List<TransitionData> getInvalidCommunications() {
+    return Collections.unmodifiableList(invalidCommunications);
   }
 
   /**
