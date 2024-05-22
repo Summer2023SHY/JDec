@@ -52,11 +52,7 @@ public class GenerateFeasibleProtocolsPrompt extends ChooseSendersAndReceiversPr
     } else {
     
       // Hide this screen, since we will not need to go back to it
-      SwingUtilities.invokeLater(new Runnable() {
-        public void run() {
-          setVisible(false);
-        }
-      });
+      SwingUtilities.invokeLater(() -> setVisible(false));
 
       // Display results in another window
       new FeasibleProtocolOutput(gui, uStructure, feasibleProtocols, "Feasible Protocols", " Here is the list of all feasible protocols: ");

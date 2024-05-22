@@ -263,12 +263,7 @@ public class UStructure extends Automaton {
 
       /* Sort sets by size (so that protocols with fewer communications appear first) */
 
-    Collections.sort(feasibleProtocols, new Comparator<Set<?>>() {
-        @Override public int compare(Set<?> set1, Set<?> set2) {
-          return Integer.compare(set1.size(), set2.size());
-        }
-      }
-    );
+    Collections.sort(feasibleProtocols, (set1, set2) -> Integer.compare(set1.size(), set2.size()));
 
     return feasibleProtocols;
 
@@ -288,12 +283,7 @@ public class UStructure extends Automaton {
 
       /* Sort sets by size (so that protocols with fewer communications appear first) */
 
-    Collections.sort(protocols, new Comparator<Set<?>>() {
-        @Override public int compare(Set<?> set1, Set<?> set2) {
-          return Integer.compare(set1.size(), set2.size());
-        }
-      }
-    );
+    Collections.sort(protocols, (set1, set2) -> Integer.compare(set1.size(), set2.size()));
 
       /* Generate list of feasible protocols */
 
@@ -397,12 +387,7 @@ public class UStructure extends Automaton {
 
       /* Sort sets by size (so that protocols with fewer communications appear first) */
 
-    Collections.sort(feasibleProtocols, new Comparator<Set<?>>() {
-        @Override public int compare(Set<?> set1, Set<?> set2) {
-          return Integer.compare(set1.size(), set2.size());
-        }
-      }
-    );
+    Collections.sort(feasibleProtocols, (set1, set2) -> Integer.compare(set1.size(), set2.size()));
 
     return feasibleProtocols;
 

@@ -256,12 +256,11 @@ public class RandomAutomatonGenerator {
     
     if (progressIndicator != null) {
       
-      EventQueue.invokeLater(new Runnable() {
-        @Override public void run() {
+      EventQueue.invokeLater(() -> {
           progressIndicator.setText("Attempt #" + nAttempts  + ": " + text);
           progressIndicator.repaint();
         }
-      });
+      );
       
     }
 
