@@ -1041,7 +1041,7 @@ public class JDec extends JFrame implements ActionListener {
 
         // Display warning message, and abort the operation if requested
         if (uStructure.getSizeOfPotentialAndNashCommunications() > 0)
-          if (!askForConfirmation("Communications Already Exist", "This U-Structure appears to already have had communications added. Are you sure you want to proceed?\nWARNING: This may result in duplicate communications."))  
+          if (!askForConfirmation("Communications Already Exist", "This U-Structure appears to already have had communications added. Are you sure you want to proceed?" + System.lineSeparator() + "WARNING: This may result in duplicate communications."))  
             break;
 
         setBusyCursor(true);

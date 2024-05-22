@@ -965,7 +965,7 @@ public class TestAutomata {
   }
 
   private static void assertMultiLineEquals(String expected, String actual) {
-    assertStringArrayEqualsIgnoreOrder(expected.split(StringUtils.LF), actual.split(StringUtils.LF));
+    assertStringArrayEqualsIgnoreOrder(expected.split("\r?\n"), actual.split("\r?\n"));
   }
 
   private static void assertStringArrayEqualsIgnoreOrder(String[] expected, String[] actual) {

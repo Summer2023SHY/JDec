@@ -8,7 +8,6 @@ package com.github.automaton.io.input;
 import java.util.Objects;
 
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.*;
 
 import com.github.automaton.automata.*;
@@ -79,7 +78,7 @@ abstract class AbstractAutomatonGuiInputGenerator<T extends Automaton> implement
 
             // End of line character
             if (++counter < automaton.getEvents().size())
-                eventInputBuilder.append(StringUtils.LF);
+                eventInputBuilder.append(System.lineSeparator());
 
         }
 
@@ -115,7 +114,7 @@ abstract class AbstractAutomatonGuiInputGenerator<T extends Automaton> implement
 
             // Add line separator after unless this is the last state
             if (s < automaton.getNumberOfStates())
-                stateInputBuilder.append(StringUtils.LF);
+                stateInputBuilder.append(System.lineSeparator());
 
             // Append all transitions
             for (Transition t : state.getTransitions()) {
@@ -124,7 +123,7 @@ abstract class AbstractAutomatonGuiInputGenerator<T extends Automaton> implement
                 if (firstTransitionInStringBuilder)
                     firstTransitionInStringBuilder = false;
                 else
-                    transitionInputBuilder.append(StringUtils.LF);
+                    transitionInputBuilder.append(System.lineSeparator());
 
                 // Append transition
                 transitionInputBuilder.append(

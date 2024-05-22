@@ -12,7 +12,6 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.text.*;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.*;
 
@@ -29,6 +28,13 @@ import com.github.automaton.io.legacy.AutomatonBinaryFileAdapter;
 public final class AutomatonGenerator {
 
   private static Logger logger = LogManager.getLogger();
+
+  /**
+   * RegEx for separating both LF and CRLF line endings.
+   * 
+   * @since 2.1.0
+   */
+  private static final String LINE_SEPARATOR_REGEX = "\r?\n";
 
   /** Private constructor */
   private AutomatonGenerator() {}
@@ -117,7 +123,7 @@ public final class AutomatonGenerator {
       /* States */
     
     int endIndex = 0;
-    for (String line : stateInputText.split(StringUtils.LF)) {
+    for (String line : stateInputText.split(LINE_SEPARATOR_REGEX)) {
 
       int startIndex = endIndex;
       endIndex += line.length() + 1;
@@ -201,7 +207,7 @@ public final class AutomatonGenerator {
       /* Events */
 
     endIndex = 0;
-    for (String line : eventInputText.split(StringUtils.LF)) {
+    for (String line : eventInputText.split(LINE_SEPARATOR_REGEX)) {
 
       int startIndex = endIndex;
       endIndex += line.length() + 1;
@@ -296,7 +302,7 @@ public final class AutomatonGenerator {
       /* Transitions */
 
     endIndex = 0;
-    for (String line : transitionInputText.split(StringUtils.LF)) {
+    for (String line : transitionInputText.split(LINE_SEPARATOR_REGEX)) {
 
       int startIndex = endIndex;
       endIndex += line.length() + 1;
@@ -361,7 +367,7 @@ public final class AutomatonGenerator {
       /* Display message if there were any errors */
 
     if (hasErrors && gui != null) {
-      displayErrorMessage("Error", "There were one or more lines of input code that were unable to be parsed.\nPlease fix all lines marked in red and then try re-generating it.", gui);
+      displayErrorMessage("Error", "There were one or more lines of input code that were unable to be parsed." + System.lineSeparator() + "Please fix all lines marked in red and then try re-generating it.", gui);
       return null;
     }
 
