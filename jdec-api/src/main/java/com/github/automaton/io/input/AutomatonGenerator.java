@@ -556,7 +556,7 @@ public final class AutomatonGenerator {
 
     list.add(str.substring(start, str.length()));
 
-    return list.toArray(new String[list.size()]);
+    return list.toArray(String[]::new);
 
   }
 

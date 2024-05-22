@@ -67,7 +67,7 @@ public class ProtocolVector {
 
       totalValue += value[i];
 
-			communications[i] = list.toArray(new NashCommunicationData[list.size()]);
+			communications[i] = list.toArray(NashCommunicationData[]::new);
 
 		}
 
