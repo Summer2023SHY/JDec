@@ -1653,53 +1653,6 @@ public class UStructure extends Automaton {
     }
   }
 
-    /* GUI INPUT CODE GENERATION */
-
-  @Override protected String getInputCodeForSpecialTransitions(TransitionData transitionData) {
-
-    StringBuilder strBuilder = new StringBuilder();
-
-    if (unconditionalViolations.contains(transitionData))
-      strBuilder.append(",UNCONDITIONAL_VIOLATION");
-    
-    if (conditionalViolations.contains(transitionData))
-      strBuilder.append(",CONDITIONAL_VIOLATION");
-    
-    // Search entire list since there may be more than one potential communication
-    String identifier = (type == Type.U_STRUCTURE ? ",POTENTIAL_COMMUNICATION-" : ",COMMUNICATION-");
-    for (CommunicationData communicationData : potentialCommunications)
-      if (transitionData.equals(communicationData)) {
-        strBuilder.append(identifier);
-        for (CommunicationRole role : communicationData.roles)
-          strBuilder.append(role.getCharacter());
-      }
-
-    if (invalidCommunications.contains(transitionData))
-      strBuilder.append(",INVALID_COMMUNICATION");
-
-    // Search entire list since there may be more than one Nash communication
-    for (NashCommunicationData communicationData : nashCommunications)
-      if (transitionData.equals(communicationData)) {
-        strBuilder.append(",NASH_COMMUNICATION-");
-        for (CommunicationRole role : communicationData.roles)
-          strBuilder.append(role.getCharacter());
-        strBuilder.append("-" + communicationData.cost);
-        strBuilder.append("-" + communicationData.probability);
-      }
-
-    // There is only supposed to be one piece of disablement data per transition
-    for (DisablementData disablementData : disablementDecisions)
-      if (transitionData.equals(disablementData)) {
-        strBuilder.append(",DISABLEMENT_DECISION-");
-        for (boolean b : disablementData.controllers)
-          strBuilder.append(BooleanUtils.toString(b, "T", "F"));
-        break;
-      }
-    
-    return strBuilder.toString();
-
-  }
-
   @Override
   public UStructure clone() {
     return new UStructure(toJsonObject());

@@ -218,7 +218,6 @@ public class TestAutomata {
         "e,T\nf,F", // States  
         "e,a,f\nf,b,e" // Transitions
       );
-      automaton.generateInputForGUI();
       logger.debug("Ensuring the event input was saved and loaded correctly");
       assertMultiLineEquals("a,T,T\nb,T,F\nc,F,T\nd,F,F", automaton.getEventInput());
       logger.debug("Ensuring the state input was saved and loaded correctly");
@@ -236,7 +235,6 @@ public class TestAutomata {
         "@c\nc,F", // States  
         StringUtils.EMPTY // Transitions
       );
-      automaton.generateInputForGUI();
       logger.debug("Ensuring the event input was saved and loaded correctly");
       assertMultiLineEquals("a,T,T\nb,F,F", automaton.getEventInput());
       logger.debug("Ensuring the state input was saved and loaded correctly");
@@ -274,7 +272,6 @@ public class TestAutomata {
       logger.debug("Taking the co-accessible part of Figure 2.12 (and comparing the result to the automaton in Figure 2.13a)...");
       Automaton result = fig2_12.coaccessible();
 
-      result.generateInputForGUI();
       logger.debug("Ensuring the events are correct");
       assertMultiLineEquals("a,T,T\nb,T,T\ng,T,T", result.getEventInput());
       logger.debug("Ensuring the states are correct");
@@ -294,7 +291,6 @@ public class TestAutomata {
       logger.debug("Trimming the automaton in Figure 2.12 (and comparing the result to the automaton in Figure 2.13b)...");
       Automaton result = fig2_12.trim();
 
-      result.generateInputForGUI();
       logger.debug("Ensuring the events are correct");
       assertMultiLineEquals("a,T,T\nb,T,T\ng,T,T", result.getEventInput());
       logger.debug("Ensuring the states are correct");
@@ -328,7 +324,6 @@ public class TestAutomata {
         try {
         
           result = complementExample.complement();
-          result.generateInputForGUI();
           logger.debug("Ensuring the events are correct");
           assertMultiLineEquals("a1,TFF,FFF\na2,TFF,FFF\nb1,FTF,FFF\nb2,FTF,FFF\nc1,FFT,FFF\nc2,FFT,FFF\no,FFF,TTT", result.getEventInput());
           logger.debug("Ensuring the states are correct");
@@ -360,7 +355,6 @@ public class TestAutomata {
         try {
         
           result = complementExample2.complement();
-          result.generateInputForGUI();
           logger.debug("Ensuring the events are correct");
           assertMultiLineEquals("a,T,F\nb,T,T", result.getEventInput());
           logger.debug("Ensuring the states are correct");
@@ -404,7 +398,6 @@ public class TestAutomata {
 
       try {
         result = AutomataOperations.intersection(fig2_1, fig2_2);
-        result.generateInputForGUI();
         logger.debug("Ensuring the events are correct");
         assertMultiLineEquals("a,T,T\nb,T,T", result.getEventInput());
         logger.debug("Ensuring the states are correct");
@@ -427,7 +420,6 @@ public class TestAutomata {
 
       try {
         result = AutomataOperations.intersection(fig2_2, fig2_13b);
-        result.generateInputForGUI();
         logger.debug("Ensuring the events are correct");
         assertMultiLineEquals("a,T,T\nb,T,T", result.getEventInput());
         logger.debug("Ensuring the states are correct");
@@ -457,7 +449,6 @@ public class TestAutomata {
       logger.debug("Taking the intersection of the first two automata in Figure 2.20 (and comparing the result to the third automaton in Figure 2.20)...");
       try {
         result = AutomataOperations.intersection(fig2_20a, fig2_20b);
-        result.generateInputForGUI();
         logger.debug("Ensuring the events are correct");
         assertMultiLineEquals("a1,T,T\na2,T,T\nb,T,T\nr,T,T", result.getEventInput());
         logger.debug("Ensuring the states are correct");
@@ -498,7 +489,6 @@ public class TestAutomata {
 
       try {
         result = AutomataOperations.union(fig2_1, fig2_2);
-        result.generateInputForGUI();
         logger.debug("Ensuring the events are correct");
         assertMultiLineEquals("a,T,T\nb,T,T\ng,T,T", result.getEventInput());
         logger.debug("Ensuring the states are correct");
@@ -537,7 +527,6 @@ public class TestAutomata {
       
       try {
         result = AutomataOperations.union(AutomataOperations.union(fig2_17a, fig2_17b), fig2_17c);
-        result.generateInputForGUI();
         logger.debug("Ensuring the events are correct");
         assertMultiLineEquals("a,T,T\nb,T,T\nc,T,T\nd,T,T", result.getEventInput());
         logger.debug("Ensuring the states are correct");
@@ -567,7 +556,6 @@ public class TestAutomata {
     @BeforeEach
     void setupCounter() {
       uStructure = synchronizedCompositionExample.synchronizedComposition();
-      uStructure.generateInputForGUI();
 
     }
 
@@ -587,7 +575,6 @@ public class TestAutomata {
 
     logger.debug("Taking the U-Structure (expecting no conditional violations)...");
     UStructure uStructure = synchronizedCompositionExample.synchronizedComposition();
-    uStructure.generateInputForGUI();
     logger.debug("Ensuring the events are correct");
     assertMultiLineEquals("<a,a,*>,TF,TF\n<b,*,b>,FT,FT\n<*,b,*>,FF,FF\n<*,*,a>,FF,FF\n<o,o,o>,TT,TF", uStructure.getEventInput());
     logger.debug("Ensuring the states are correct");
@@ -613,7 +600,6 @@ public class TestAutomata {
 
     logger.debug("Taking the U-Structure of the automaton...");
     uStructure = synchronizedCompositionExample.synchronizedComposition();
-    uStructure.generateInputForGUI();
     logger.debug("Ensuring the events are correct");
     assertMultiLineEquals("<a,a,*>,TF,TF\n<b,*,b>,FT,FT\n<*,b,*>,FF,FF\n<*,*,a>,FF,FF\n<o,o,o>,TT,TT", uStructure.getEventInput());
     logger.debug("Ensuring the states are correct");
@@ -641,7 +627,6 @@ public class TestAutomata {
 
     logger.debug("Taking the synchronized composition of the automaton...");
     UStructure uStructureSelfLoopExtended = automatonSelfLoopExtended.synchronizedComposition();
-    uStructureSelfLoopExtended.generateInputForGUI();
     logger.debug("Ensuring the events are correct");
     assertMultiLineEquals("<a,a,*>,TF,TF\n<*,*,a>,FF,FT\n<*,b,*>,FF,FF\n<b,*,b>,FT,FT", uStructureSelfLoopExtended.getEventInput());
     logger.debug("Ensuring the states are correct");
@@ -659,7 +644,6 @@ public class TestAutomata {
 
     logger.debug("Taking the synchronized composition of the automaton...");
     UStructure uStructure2 = automaton.synchronizedComposition();
-    uStructure2.generateInputForGUI();
     logger.debug("Ensuring the events are correct");
     assertMultiLineEquals("<a,a>,T,F\n<b,*>,F,F\n<*,b>,F,F\n<o,*>,F,F\n<*,o>,F,T", uStructure2.getEventInput());
     logger.debug("Ensuring the states are correct");
@@ -681,7 +665,6 @@ public class TestAutomata {
       try {
 
         addCommunications = uStructure.addCommunications();
-        addCommunications.generateInputForGUI();
         logger.debug("Ensuring the events are correct");
         assertMultiLineEquals("<a,a,*>,TF,TF\n<b,*,b>,FT,FT\n<*,b,*>,FF,FF\n<*,*,a>,FF,FF\n<o,o,o>,TT,TT\n<*,b,a>,FF,FF\n<b,b,b>,FT,FT\n<a,a,a>,TF,TF", addCommunications.getEventInput());
         logger.debug("Ensuring the states are correct");
@@ -704,7 +687,6 @@ public class TestAutomata {
         "1_1_1,<a,a,*>,2_2_1\n1_1_1,<b,*,b>,3_1_3\n1_1_1,<*,b,*>,1_3_1\n1_1_1,<*,*,a>,1_1_2\n1_1_2,<a,a,*>,2_2_2\n1_1_2,<b,*,b>,3_1_4\n1_1_2,<*,b,*>,1_3_2\n1_3_1,<a,a,*>,2_5_1\n1_3_1,<b,*,b>,3_3_3\n1_3_1,<*,*,a>,1_3_2\n1_3_2,<a,a,*>,2_5_2\n1_3_2,<b,*,b>,3_3_4\n2_2_1,<b,*,b>,4_2_3\n2_2_1,<*,b,*>,2_4_1\n2_2_1,<*,*,a>,2_2_2\n2_2_2,<b,*,b>,4_2_4\n2_2_2,<*,b,*>,2_4_2\n2_4_1,<b,*,b>,4_4_3\n2_4_1,<*,*,a>,2_4_2\n2_4_2,<b,*,b>,4_4_4\n2_5_1,<b,*,b>,4_5_3\n2_5_1,<*,*,a>,2_5_2\n2_5_2,<b,*,b>,4_5_4\n3_1_3,<a,a,*>,5_2_3\n3_1_3,<*,b,*>,3_3_3\n3_1_3,<*,*,a>,3_1_5\n3_1_4,<a,a,*>,5_2_4\n3_1_4,<*,b,*>,3_3_4\n3_1_5,<a,a,*>,5_2_5\n3_1_5,<*,b,*>,3_3_5\n3_3_3,<a,a,*>,5_5_3\n3_3_3,<*,*,a>,3_3_5\n3_3_4,<a,a,*>,5_5_4\n3_3_5,<a,a,*>,5_5_5\n4_2_3,<*,b,*>,4_4_3\n4_2_3,<*,*,a>,4_2_5\n4_2_4,<*,b,*>,4_4_4\n4_2_5,<*,b,*>,4_4_5\n4_4_3,<*,*,a>,4_4_5\n4_4_4,<o,o,o>,6_6_6\n4_4_5,<o,o,o>,6_6_7\n4_5_3,<*,*,a>,4_5_5\n4_5_4,<o,o,o>,6_7_6\n4_5_5,<o,o,o>,6_7_7:CONDITIONAL_VIOLATION\n5_2_3,<*,b,*>,5_4_3\n5_2_3,<*,*,a>,5_2_5\n5_2_4,<*,b,*>,5_4_4\n5_2_5,<*,b,*>,5_4_5\n5_4_3,<*,*,a>,5_4_5\n5_4_4,<o,o,o>,7_6_6:UNCONDITIONAL_VIOLATION\n5_4_5,<o,o,o>,7_6_7:DISABLEMENT_DECISION-FT\n5_5_3,<*,*,a>,5_5_5\n5_5_4,<o,o,o>,7_7_6:DISABLEMENT_DECISION-TF\n5_5_5,<o,o,o>,7_7_7:DISABLEMENT_DECISION-TT" // Transitions
       );
       addCommunications = synchronizedComposition.addCommunications();
-      addCommunications.generateInputForGUI();
       logger.debug("Ensuring the events are correct");
       assertMultiLineEquals("<a,a,*>,TF,TF\n<b,*,b>,FT,FT\n<*,b,*>,FF,FF\n<*,*,a>,FF,FF\n<o,o,o>,TT,TT\n<*,b,a>,FF,FF\n<b,b,b>,FT,FT\n<a,a,a>,TF,TF", addCommunications.getEventInput());
       logger.debug("Ensuring the states are correct");
@@ -763,7 +745,6 @@ public class TestAutomata {
       
       logger.debug("Generating the pruned automaton for the feasible protocol with 2 communications...");
       uStructure = addCommunications.applyProtocol(smallestFeasibleProtocols.get(0), true);
-      uStructure.generateInputForGUI();
       logger.debug("Ensuring the events are correct");
       assertMultiLineEquals("<a,a,*>,TF,TF\n<b,*,b>,FT,FT\n<*,b,*>,FF,FF\n<*,*,a>,FF,FF\n<o,o,o>,TT,TT\n<b,b,b>,FT,FT\n<a,a,a>,TF,TF", uStructure.getEventInput());
       logger.debug("Ensuring the states are correct");
@@ -825,7 +806,6 @@ public class TestAutomata {
     @Order(1)
     public void testSynchronizedCompositionOperation() {
       uStructure = automaton.synchronizedComposition();
-      uStructure.generateInputForGUI();
       logger.debug("Ensuring the events are correct");
       assertMultiLineEquals("<a,a,*>,TF,FF\n<b,*,b>,FT,FF\n<*,b,*>,FF,FF\n<*,*,a>,FF,FF\n<c,c,c>,TT,FT", uStructure.getEventInput());
       logger.debug("Ensuring the states are correct");

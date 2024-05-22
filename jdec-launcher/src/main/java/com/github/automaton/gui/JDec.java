@@ -40,7 +40,7 @@ import com.github.automaton.automata.*;
 import com.github.automaton.gui.util.*;
 import com.github.automaton.gui.util.graphviz.GraphvizEngineInitializer;
 import com.github.automaton.io.AutomatonIOAdapter;
-import com.github.automaton.io.input.AutomatonGenerator;
+import com.github.automaton.io.input.*;
 import com.github.automaton.io.json.AutomatonJsonFileAdapter;
 import com.github.automaton.io.legacy.*;
 import com.jthemedetecor.OsThemeDetector;
@@ -2771,11 +2771,11 @@ public class JDec extends JFrame implements ActionListener {
       final boolean prevSavedStatus = isSaved();
 
       SwingUtilities.invokeLater(() -> {
-        automaton.generateInputForGUI();
+        AutomatonGuiInputGenerator<?> generator = automaton.getGuiInputGenerator();
         controllerInput.setValue(automaton.getNumberOfControllers());
-        eventInput.setText(automaton.getEventInput());
-        stateInput.setText(automaton.getStateInput());
-        transitionInput.setText(automaton.getTransitionInput());
+        eventInput.setText(generator.getEventInput());
+        stateInput.setText(generator.getStateInput());
+        transitionInput.setText(generator.getTransitionInput());
         if (prevSavedStatus)
           setSaved(prevSavedStatus);
         logger.debug("Finished in " + stopWatch.getTime() + "ms.");
