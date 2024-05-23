@@ -34,14 +34,11 @@ public class StateSet extends State {
      */
     public StateSet(Set<State> set, long maxID) {
         this.maxID = maxID;
-        this.set = new TreeSet<State>(new Comparator<State>() {
-            @Override
-            public int compare(State o1, State o2) {
-                if (Objects.equals(o1, o2)) {
-                    return 0;
-                } else {
-                    return Long.compare(o1.getID(), o2.getID());
-                }
+        this.set = new TreeSet<State>((o1, o2) -> {
+            if (Objects.equals(o1, o2)) {
+                return 0;
+            } else {
+                return Long.compare(o1.getID(), o2.getID());
             }
         });
         this.set.addAll(set);

@@ -46,13 +46,11 @@ public class ProgressBarPopup extends JDialog {
       nTotalTasks = 1;
 
 
-    EventQueue.invokeLater(new Runnable() {
-      @Override
-      public void run() {
+    EventQueue.invokeLater(() -> {
         add(progressBar);
         setGUIproperties(title);
       }
-    });
+    );
 
   }
 
@@ -71,13 +69,12 @@ public class ProgressBarPopup extends JDialog {
     final int newValue = (int) (((double) nCompletedTasks * 100.0) / (double) nTotalTasks);
 
     if (newValue != progressBar.getValue())
-      EventQueue.invokeLater(new Runnable() {
-        @Override public void run() {
+      EventQueue.invokeLater(() -> {
           progressBar.setString(newValue + "%");
           progressBar.setValue(newValue);
           progressBar.repaint();
         }
-      });
+      );
       
   }
 

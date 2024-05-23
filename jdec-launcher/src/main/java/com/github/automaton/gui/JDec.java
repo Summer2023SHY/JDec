@@ -40,7 +40,7 @@ import com.github.automaton.automata.*;
 import com.github.automaton.gui.util.*;
 import com.github.automaton.gui.util.graphviz.GraphvizEngineInitializer;
 import com.github.automaton.io.AutomatonIOAdapter;
-import com.github.automaton.io.input.AutomatonGenerator;
+import com.github.automaton.io.input.*;
 import com.github.automaton.io.json.AutomatonJsonFileAdapter;
 import com.github.automaton.io.legacy.*;
 import com.jthemedetecor.OsThemeDetector;
@@ -898,7 +898,7 @@ public class JDec extends JFrame implements ActionListener {
 
         try {
           // Create new tab with the intersection
-          createTab(Automaton.intersection(tab.automaton, otherAutomaton));
+          createTab(AutomataOperations.intersection(tab.automaton, otherAutomaton));
         } catch(IncompatibleAutomataException e) {
           logger.catching(e);
           temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it
@@ -917,7 +917,7 @@ public class JDec extends JFrame implements ActionListener {
 
         try {
           // Create new tab with the union
-          createTab(Automaton.union(tab.automaton, otherAutomaton));
+          createTab(AutomataOperations.union(tab.automaton, otherAutomaton));
         } catch(IncompatibleAutomataException e) {
           logger.catching(e);
           temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can re-use it
@@ -1041,7 +1041,7 @@ public class JDec extends JFrame implements ActionListener {
 
         // Display warning message, and abort the operation if requested
         if (uStructure.getSizeOfPotentialAndNashCommunications() > 0)
-          if (!askForConfirmation("Communications Already Exist", "This U-Structure appears to already have had communications added. Are you sure you want to proceed?\nWARNING: This may result in duplicate communications."))  
+          if (!askForConfirmation("Communications Already Exist", "This U-Structure appears to already have had communications added. Are you sure you want to proceed?" + System.lineSeparator() + "WARNING: This may result in duplicate communications."))  
             break;
 
         setBusyCursor(true);
@@ -2771,11 +2771,11 @@ public class JDec extends JFrame implements ActionListener {
       final boolean prevSavedStatus = isSaved();
 
       SwingUtilities.invokeLater(() -> {
-        automaton.generateInputForGUI();
+        AutomatonGuiInputGenerator<?> generator = automaton.getGuiInputGenerator();
         controllerInput.setValue(automaton.getNumberOfControllers());
-        eventInput.setText(automaton.getEventInput());
-        stateInput.setText(automaton.getStateInput());
-        transitionInput.setText(automaton.getTransitionInput());
+        eventInput.setText(generator.getEventInput());
+        stateInput.setText(generator.getStateInput());
+        transitionInput.setText(generator.getTransitionInput());
         if (prevSavedStatus)
           setSaved(prevSavedStatus);
         logger.debug("Finished in " + stopWatch.getTime() + "ms.");

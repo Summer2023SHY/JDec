@@ -795,15 +795,15 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
         byte[] buffer = new byte[28];
         // Unconditional violations
         ByteManipulator.writeLongAsBytes(buffer, 0,
-                readUStructureData(uStructure, "unconditionalViolations", TransitionData.class).size(), Integer.BYTES);
+                uStructure.getUnconditionalViolations().size(), Integer.BYTES);
         // Conditional violations
         ByteManipulator.writeLongAsBytes(buffer, 4,
-                readUStructureData(uStructure, "conditionalViolations", TransitionData.class).size(), Integer.BYTES);
+                uStructure.getConditionalViolations().size(), Integer.BYTES);
         // Potential communications
         ByteManipulator.writeLongAsBytes(buffer, 8, uStructure.getPotentialCommunications().size(), Integer.BYTES);
         // Invalid communications
         ByteManipulator.writeLongAsBytes(buffer, 12,
-                readUStructureData(uStructure, "invalidCommunications", TransitionData.class).size(), Integer.BYTES);
+                uStructure.getInvalidCommunications().size(), Integer.BYTES);
         // Nash communications
         ByteManipulator.writeLongAsBytes(buffer, 16, uStructure.getNashCommunications().size(), Integer.BYTES);
         // Disablement decisions
@@ -812,32 +812,12 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
 
         /* Write special transitions to the .hdr file */
 
-        writeTransitionDataToHeader(readUStructureData(uStructure, "unconditionalViolations", TransitionData.class));
-        writeTransitionDataToHeader(readUStructureData(uStructure, "conditionalViolations", TransitionData.class));
+        writeTransitionDataToHeader(uStructure.getUnconditionalViolations());
+        writeTransitionDataToHeader(uStructure.getConditionalViolations());
         writeCommunicationDataToHeader(uStructure.getPotentialCommunications());
-        writeTransitionDataToHeader(readUStructureData(uStructure, "invalidCommunications", TransitionData.class));
+        writeTransitionDataToHeader(uStructure.getInvalidCommunications());
         writeNashCommunicationDataToHeader(uStructure.getNashCommunications());
         writeDisablementDataToHeader(uStructure.getDisablementDecisions());
-    }
-
-    /**
-     * Retrieves field data of type {@link List} in a U-Structure by its name.
-     * 
-     * @param <T>        type of data stored in the list
-     * @param uStructure a U-Structure
-     * @param name       name of the field
-     * @param dataType   type of data stored in the list
-     * @return the data stored in the specified field, or {@code null} if something
-     *         went wrong
-     */
-    @SuppressWarnings("unchecked")
-    private <T> List<T> readUStructureData(UStructure uStructure, String name, Class<T> dataType) {
-        try {
-            return (List<T>) FieldUtils.readDeclaredField(uStructure, name, true);
-        } catch (IllegalAccessException e) {
-            haf.getLogger().catching(e);
-            return null;
-        }
     }
 
     /**

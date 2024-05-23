@@ -28,9 +28,12 @@ import java.io.*;
 import java.math.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
-import org.apache.commons.collections4.*;
+import org.apache.commons.collections4.IterableUtils;
+import org.apache.commons.collections4.ListValuedMap;
+import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.RandomAccessFileMode;
@@ -43,7 +46,9 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.*;
 
+import com.github.automaton.automata.util.IDUtil;
 import com.github.automaton.io.StateNotFoundException;
+import com.github.automaton.io.input.AutomatonGuiInputGenerator;
 import com.github.automaton.io.json.*;
 import com.google.gson.*;
 import com.google.gson.reflect.*;
@@ -112,25 +117,12 @@ public class Automaton implements Cloneable {
   /** Number of controllers */
   protected int nControllers;
 
-  // GUI input
   /**
-   * Input builder for events
+   * GUI input generator.
    * 
-   * @see #getEventInput()
+   * @since 2.1.0
    */
-  protected transient StringBuilder eventInputBuilder;
-  /**
-   * Input builder for states
-   * 
-   * @see #getStateInput()
-   */
-  protected transient StringBuilder stateInputBuilder;
-  /**
-   * Input builder for transitions
-   * 
-   * @see #getTransitionInput()
-   */
-  protected transient StringBuilder transitionInputBuilder;
+  private transient AutomatonGuiInputGenerator<?> generator;
 
   /**
    * Internally used {@link Gson} object.
@@ -694,104 +686,12 @@ public class Automaton implements Cloneable {
    * @throws IncompatibleAutomataException  If the number of controllers do not match, or the automata have incompatible events
    * 
    * @since 2.0
+   * 
+   * @deprecated Use {@link AutomataOperations#intersection(Automaton, Automaton)}.
    **/
+  @Deprecated(since = "2.1.0", forRemoval = true)
   public static Automaton intersection(Automaton first, Automaton second) throws IncompatibleAutomataException {
-
-      /* Error checking */
-
-    if (first.getNumberOfControllers() != second.getNumberOfControllers())
-      throw new IncompatibleAutomataException();
-
-      /* Setup */
-
-    Automaton automaton = new Automaton(first.getNumberOfControllers());
-
-    // These two stacks should always have the same size
-    Deque<Long> stack1 = new ArrayDeque<Long>();
-    Deque<Long> stack2 = new ArrayDeque<Long>();
-
-    // Add the initial states to the stack
-    stack1.push(first.getInitialStateID());
-    stack2.push(second.getInitialStateID());
-
-      /* Build product */
-
-    // Create event set (intersection of both event sets)
-    for (Event e1 : first.getEvents())
-      for (Event e2 : second.getEvents())
-        if (e1.equals(e2)) {
-
-          // Ensure that these automata are compatible (meaning that no events have the same name, but with different properties)
-          if (!Arrays.equals(e1.isObservable(), e2.isObservable()) || !Arrays.equals(e1.isControllable(), e2.isControllable())) {
-            throw new IncompatibleAutomataException();
-          }
-          automaton.addEvent(e1.getLabel(), e1.isObservable(), e1.isControllable());
-
-        }
-
-    // Add states and transition
-    while (stack1.size() > 0) {
-
-      // Get next IDs
-      long id1 = stack1.pop();
-      long id2 = stack2.pop();
-
-      // Error checking
-      if (id1 == 0 || id2 == 0) {
-        logger.error("Bad state ID.");
-        continue;
-      }
-
-      // Create combined ID
-      long newStateID = combineTwoIDs(id1, first, id2, second);
-
-      // This state has already been created, so it does not need to be created again
-      if (automaton.stateExists(newStateID))
-        continue;
-
-      // Get states and transitions
-      State state1 = first.getState(id1);
-      State state2 = second.getState(id2);
-      List<Transition> transitions1 = state1.getTransitions();
-      List<Transition> transitions2 = state2.getTransitions();
-
-      // Add new state
-      automaton.addStateAt(state1.getLabel() + "_" + state2.getLabel(),
-        state1.isMarked() && state2.isMarked(),
-        new ArrayList<Transition>(),
-        id1 == first.getInitialStateID() && id2 == second.getInitialStateID(),
-        newStateID
-      );
-
-      // Find every pair of transitions that have the same events
-      for (Transition t1 : transitions1)
-        for (Transition t2 : transitions2)
-          if (t1.getEvent().equals(t2.getEvent())) {
-
-            // Add this pair to the stack
-            stack1.add(t1.getTargetStateID());
-            stack2.add(t2.getTargetStateID());
-
-            // Add transition to the new automaton
-            long targetID = combineTwoIDs(t1.getTargetStateID(), first, t2.getTargetStateID(), second);
-            int eventID   = automaton.addTransition(newStateID, t1.getEvent().getLabel(), targetID);
-
-            // Mark as bad transition if both of them are bad
-            if (first.isBadTransition(id1, t1.getEvent().getID(), t1.getTargetStateID()) && second.isBadTransition(id2, t2.getEvent().getID(), t2.getTargetStateID()))
-              automaton.markTransitionAsBad(newStateID, eventID, targetID);
-
-          }
-
-    }
-
-      /* Re-number states (by removing empty ones) */
-
-    automaton.renumberStates();
-
-
-      /* Return produced automaton */
-
-    return automaton;
+    return AutomataOperations.intersection(first, second);
   }
 
   /**
@@ -802,142 +702,12 @@ public class Automaton implements Cloneable {
    * @throws IncompatibleAutomataException  If the number of controllers do not match, or the automata have incompatible events
    * 
    * @since 2.0
+   * 
+   * @deprecated Use {@link AutomataOperations#union(Automaton, Automaton)}.
    **/
+  @Deprecated(since = "2.1.0", forRemoval = true)
   public static Automaton union(Automaton first, Automaton second) throws IncompatibleAutomataException {
-
-      /* Error checking */
-
-    if (first.getNumberOfControllers() != second.getNumberOfControllers())
-      throw new IncompatibleAutomataException();
-
-      /* Setup */
-
-    Automaton automaton = new Automaton(first.getNumberOfControllers());
-
-    // These two stacks should always have the same size
-    Deque<Long> stack1 = new ArrayDeque<Long>();
-    Deque<Long> stack2 = new ArrayDeque<Long>();
-
-    // Add the initial states to the stack
-    stack1.push(first.getInitialStateID());
-    stack2.push(second.getInitialStateID());
-
-      /* Build automata by parallel composition */
-
-    // Create two sets containing each automata's private events
-    List<Event> privateEvents1 = new ArrayList<Event>();
-    privateEvents1.addAll(first.getEvents());
-    for (Event e : second.getEvents())
-      privateEvents1.remove(e);
-    List<Event> privateEvents2 = new ArrayList<Event>();
-    privateEvents2.addAll(second.getEvents());
-    for (Event e : first.getEvents())
-      privateEvents2.remove(e);
-
-    // Create event set (union of both event sets)
-    automaton.addAllEvents(first.getEvents());
-    automaton.addEventsWithErrorChecking(second.getEvents());
-
-    // Add states and transition
-    while (stack1.size() > 0) {
-
-      // Get next IDs
-      long id1 = stack1.pop();
-      long id2 = stack2.pop();
-
-      // Error checking
-      if (id1 == 0 || id2 == 0) {
-        logger.error("Bad state ID.");
-        continue;
-      }
-
-      // Create combined ID
-      long newStateID = combineTwoIDs(id1, first, id2, second);
-
-      // This state has already been created, so it does not need to be created again
-      if (automaton.stateExists(newStateID))
-        continue;
-
-      // Get states and transitions
-      State state1 = first.getState(id1);
-      State state2 = second.getState(id2);
-      List<Transition> transitions1 = state1.getTransitions();
-      List<Transition> transitions2 = state2.getTransitions();
-
-      // Add new state
-      automaton.addStateAt(
-        state1.getLabel() + "_" + state2.getLabel(),
-        state1.isMarked() && state2.isMarked(),
-        new ArrayList<Transition>(),
-        id1 == first.getInitialStateID() && id2 == second.getInitialStateID(),
-        newStateID
-      );
-
-      // Find every pair of transitions that have the same events (this accounts for public events)
-      for (Transition t1 : transitions1)
-        for (Transition t2 : transitions2)
-          if (t1.getEvent().equals(t2.getEvent())) {
-
-            // Add this pair to the stack
-            stack1.add(t1.getTargetStateID());
-            stack2.add(t2.getTargetStateID());
-
-            // Add transition to the new automaton
-            long targetID = combineTwoIDs(t1.getTargetStateID(), first, t2.getTargetStateID(), second);
-            int eventID   = automaton.addTransition(newStateID, t1.getEvent().getLabel(), targetID);
-
-            // Mark as bad transition if either of them are bad
-            if (first.isBadTransition(id1, t1.getEvent().getID(), t1.getTargetStateID()) || second.isBadTransition(id2, t2.getEvent().getID(), t2.getTargetStateID()))
-              automaton.markTransitionAsBad(newStateID, eventID, targetID);
-
-          }
-
-      // Take care of the first automaton's private events
-      for (Transition t : transitions1)
-        if (privateEvents1.contains(t.getEvent())) {
-        
-          // Add the pair of states to the stack
-          stack1.add(t.getTargetStateID());
-          stack2.add(id2);
-
-          // Add transition to the new automaton
-          long targetID = combineTwoIDs(t.getTargetStateID(), first, id2, second);
-          int eventID = automaton.addTransition(newStateID, t.getEvent().getLabel(), targetID);
-
-          // Mark as bad transition if it is bad
-          if (first.isBadTransition(id1, t.getEvent().getID(), t.getTargetStateID()))
-            automaton.markTransitionAsBad(newStateID, eventID, targetID);
-
-        }
-
-      // Take care of the second automaton's private events
-      for (Transition t : transitions2)
-        if (privateEvents2.contains(t.getEvent())) {
-        
-          // Add the pair of states to the stack
-          stack1.add(id1);
-          stack2.add(t.getTargetStateID());
-
-          // Add transition to the new automaton
-          long targetID = combineTwoIDs(id1, first, t.getTargetStateID(), second);
-          int eventID = automaton.addTransition(newStateID, t.getEvent().getLabel(), targetID);
-
-          // Mark as bad transition if it is bad
-          if (second.isBadTransition(id2, t.getEvent().getID(), t.getTargetStateID()))
-            automaton.markTransitionAsBad(newStateID, eventID, targetID);
-
-        }
-
-    }
-
-      /* Re-number states (by removing empty ones) */
-
-    automaton.renumberStates();
-
-      /* Return generated automaton */
-
-    return automaton;
-
+    return AutomataOperations.union(first, second);
   }
 
   /**
@@ -1606,46 +1376,18 @@ public class Automaton implements Cloneable {
   }
 
   /**
-   * Given two state IDs (the order matters) and their respective automatons, create a unique combined ID.
-   * @implNote The reasoning behind this formula is analogous to the following: if you have a table with N rows and M columns,
-   * every cell is guaranteed to have a different combination of row and column indexes.
-   * @param id1     The state ID from the first automaton
-   * @param first   The first automaton
-   * @param id2     The state ID from the second automaton
-   * @param second  The second automaton
-   * @return        The combined ID
-   * @throws ArithmeticException if the ID combination result overflows a {@code long}
-   **/ 
-  private static long combineTwoIDs(long id1, Automaton first, long id2, Automaton second) {
-
-    return Math.addExact((id2 - 1) * first.getNumberOfStates(), id1);
-
-  }
-
-  /**
    * Given a list of IDs and a maximum possible ID, create a unique combined ID.
    * @implNote The order of the list matters. This method does not sort the list internally.
    * @param list  The list of IDs
    * @param maxID The largest possible value that could appear in the list (usually {@link #nStates})
    * @return      The unique combined ID
    * @throws ArithmeticException if the ID combination result overflows a {@code long}
+   * 
+   * @deprecated Use {@link IDUtil#combineIDs(List, long)}.
    **/
+  @Deprecated(since = "2.1.0", forRemoval = true)
   public static long combineIDs(List<Long> list, long maxID) {
-    
-    long combinedID = 0;
-
-    for (long id : list) {
-      
-      combinedID *= maxID + 1;
-      combinedID += id;
-
-      // Check for overflow
-      if (combinedID < 0)
-        throw new ArithmeticException("Overflow in Automaton.combineIDs() method. Consider using Automaton.combineBigIDs() method instead.");
-
-    }
-
-    return combinedID;
+    return IDUtil.combineIDs(list, maxID);
 
   }
 
@@ -1656,19 +1398,12 @@ public class Automaton implements Cloneable {
    * @param list  The list of IDs
    * @param maxID The largest possible value that could appear in the list (usually {@link #nStates})
    * @return      The unique combined ID
+   * 
+   * @deprecated Use {@link IDUtil#combineBigIDs(List, long)}.
    **/
+  @Deprecated(since = "2.1.0", forRemoval = true)
   public static BigInteger combineBigIDs(List<Long> list, long maxID) {
-    
-    BigInteger bigMaxID = BigInteger.valueOf(maxID);
-    BigInteger maxIDPlusOne = bigMaxID.add(BigInteger.ONE);
-
-    BigInteger combinedID = BigInteger.ZERO;
-
-    for (long id : list)
-      combinedID = combinedID.multiply(maxIDPlusOne).add(BigInteger.valueOf(id));
-
-    return combinedID;
-
+    return IDUtil.combineBigIDs(list, maxID);
   }
 
   /**
@@ -1676,19 +1411,13 @@ public class Automaton implements Cloneable {
    * @param combinedID  The combined ID
    * @param maxID       The largest possible value to be used as an ID
    * @return            The original list of IDs
+   * 
+   * @deprecated Use {@link IDUtil#separateIDs(long, long)}.
    **/
+  @Deprecated(since = "2.1.0", forRemoval = true)
   public static List<Long> separateIDs(long combinedID, long maxID) {
 
-    List<Long> list = new ArrayList<Long>();
-
-    while (combinedID > 0) {
-
-      list.add(0, combinedID % (maxID + 1));
-      combinedID /= (maxID + 1);
-
-    }
-
-    return list;
+    return IDUtil.separateIDs(combinedID, maxID);
 
   }
 
@@ -1998,166 +1727,61 @@ public class Automaton implements Cloneable {
       map.put(key, value); 
   }
 
-    /* GUI INPUT CODE GENERATION */
-
   /**
-   * Generates all GUI input code (which is useful when loading automaton from file in the GUI).
-   * @apiNote Further calls to {@link #getEventInput()}, {@link #getStateInput()}, and/or {@link #getTransitionInput()}
-   *          are needed to actually get the generated input code.
-   **/
-  public void generateInputForGUI() {
-
-    generateEventInputForGUI();
-    generateStateAndTransitionInputForGUI();
-
-  }
-
-  /**
-   * Generates the GUI input code for the events.
-   **/
-  private void generateEventInputForGUI() {
-
-    eventInputBuilder = new StringBuilder();
-
-    int counter = 0;
-
-    for (Event e : events) {
-
-      // Label
-      eventInputBuilder.append(e.getLabel());
-
-      // Observability properties
-      eventInputBuilder.append(",");
-      for (int i = 0; i < nControllers; i++)
-        eventInputBuilder.append(BooleanUtils.toString(e.isObservable(i), "T", "F"));
-
-      // Controllability properties
-      eventInputBuilder.append(",");
-      for (int i = 0; i < nControllers; i++)
-        eventInputBuilder.append(BooleanUtils.toString(e.isControllable(i), "T", "F"));
-
-      // End of line character
-      if (++counter < events.size())
-        eventInputBuilder.append(StringUtils.LF);
-
-    }
-
-  }
-
-  /**
-   * Generates the GUI input code for the events.
-   **/
-  private void generateStateAndTransitionInputForGUI() {
-
-    stateInputBuilder = new StringBuilder();
-    transitionInputBuilder = new StringBuilder();
-    
-    boolean firstTransitionInStringBuilder = true;
-
-    for (long s = 1; s <= nStates; s++) {
-
-      State state = getState(s);
-
-      if (state == null) {
-        logger.error("State could not be loaded.");
-        continue;
-      }
-
-      // Place '@' before label if this is the initial state
-      if (s == initialState)
-        stateInputBuilder.append("@");
-
-      // Append label and properties
-      stateInputBuilder.append(state.getLabel());
-      if (type == Type.AUTOMATON)
-        stateInputBuilder.append(BooleanUtils.toString(state.isMarked(), ",T", ",F"));
-      
-      // Add line separator after unless this is the last state
-      if (s < nStates)
-        stateInputBuilder.append(StringUtils.LF);
-
-      // Append all transitions
-      for (Transition t : state.getTransitions()) {
-
-        // Add line separator before unless this is the very first transition
-        if (firstTransitionInStringBuilder)
-          firstTransitionInStringBuilder = false;
-        else
-          transitionInputBuilder.append(StringUtils.LF);
-
-        // Append transition
-        transitionInputBuilder.append(
-            state.getLabel()
-            + "," + t.getEvent().getLabel()
-            + "," + getState(t.getTargetStateID()).getLabel()
-          );
-
-          /* Append special transition information */
-
-        TransitionData transitionData = new TransitionData(s, t.getEvent().getID(), t.getTargetStateID());
-        String specialTransitionInfo = getInputCodeForSpecialTransitions(transitionData);
-        
-        if (!specialTransitionInfo.isEmpty())
-          transitionInputBuilder.append(":" + specialTransitionInfo.substring(1));
-
-      }
-
-    }
-
-  }
-
-  /**
-   * Get the GUI input code correlating with the special transition data for the specified transition.
-   * @param data transition data
-   * @return input code for the special transition
-   * @apiNote This method is intended to be overridden when subclassing
+   * Generates all GUI input code.
+   * 
+   * @deprecated Use {@link AutomatonGuiInputGenerator} instead.
    */
-  protected String getInputCodeForSpecialTransitions(TransitionData data) {
-
-    return (badTransitions.contains(data)) ? ",BAD" : StringUtils.EMPTY;
-
+  @Deprecated(since = "2.1.0", forRemoval = true)
+  public void generateInputForGUI() {
+    getGuiInputGenerator().refresh();
   }
 
   /**
-   * Get the event GUI input code.
-   * @apiNote Must call {@link #generateInputForGUI()} prior to use.
-   * @return  GUI input code in the form of a string
-   **/
+   * Returns the GUI input generator for this automaton.
+   * 
+   * @return the GUI input generator for this automaton
+   * 
+   * @since 2.1.0
+   */
+  public final AutomatonGuiInputGenerator<? extends Automaton> getGuiInputGenerator() {
+    if (this.generator == null)
+      this.generator = AutomatonGuiInputGenerator.createGuiInputGenerator(this);
+    return this.generator;
+  }
+
+  
+  /**
+   * Returns the event GUI input code.
+   * @return the event GUI input code
+   * 
+   * @deprecated Use {@link AutomatonGuiInputGenerator#getEventInput()} instead.
+   */
+  @Deprecated(since = "2.1.0", forRemoval = true)
   public final String getEventInput() {
-
-    if (eventInputBuilder == null)
-      return null;
-
-    return eventInputBuilder.toString();
-
+    return getGuiInputGenerator().getEventInput();
   }
 
   /**
-   * Get the state GUI input code.
-   * @apiNote Must call {@link #generateInputForGUI()} prior to use.
-   * @return  GUI input code in the form of a string
-   **/
+   * Returns the state GUI input code.
+   * @return the state GUI input code
+   * 
+   * @deprecated Use {@link AutomatonGuiInputGenerator#getStateInput()} instead.
+   */
+  @Deprecated(since = "2.1.0", forRemoval = true)
   public final String getStateInput() {
-
-    if (stateInputBuilder == null)
-      return null;
-
-    return stateInputBuilder.toString();
-
+    return getGuiInputGenerator().getStateInput();
   }
 
   /**
-   * Get the transition GUI input code.
-   * @apiNote Must call {@link #generateInputForGUI()} prior to use.
-   * @return  GUI input code in the form of a String
-   **/
+   * Returns the transition GUI input code.
+   * @return the transition GUI input code
+   * 
+   * @deprecated Use {@link AutomatonGuiInputGenerator#getTransitionInput()} instead.
+   */
+  @Deprecated(since = "2.1.0", forRemoval = true)
   public final String getTransitionInput() {
-
-    if (transitionInputBuilder == null)
-      return null;
-
-    return transitionInputBuilder.toString();
-
+    return getGuiInputGenerator().getTransitionInput();
   }
 
   /**
@@ -2833,12 +2457,12 @@ public class Automaton implements Cloneable {
 
   /**
    * Check to see whether or not this automaton has any unmarked states.
-   * @implNote This can be an expensive method.
+   * 
    * @return  Whether or not this automaton has at least one unmarked state
    **/
   public boolean hasUnmarkedState() {
 
-    return IterableUtils.matchesAny(getStates(), s -> !s.isMarked());
+    return getStates().stream().anyMatch(Predicate.not(State::isMarked));
 
   }
 
@@ -3013,7 +2637,7 @@ public class Automaton implements Cloneable {
    **/
   public boolean hasSelfLoop(List<? extends TransitionData> list) {
 
-    return IterableUtils.matchesAny(list, data -> data.initialStateID == data.targetStateID);
+    return list.stream().anyMatch(data -> data.initialStateID == data.targetStateID);
 
   }
 

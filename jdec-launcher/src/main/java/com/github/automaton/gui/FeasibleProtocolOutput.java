@@ -135,7 +135,7 @@ public class FeasibleProtocolOutput extends JDialog {
       // Add text to a text pane and make it so that the user cannot edit it
       StringBuilder protocolText = new StringBuilder();
       for (CommunicationData data : protocol)
-        protocolText.append(data.toString(uStructure) + StringUtils.LF);
+        protocolText.append(data.toString(uStructure) + System.lineSeparator());
       detailedProtocolText[i] = new JTextPane();
       detailedProtocolText[i].setText(protocolText.toString());
       detailedProtocolText[i].setEditable(false);

@@ -97,7 +97,7 @@ public class NashEquilibriaOutput extends JDialog {
       // Add text to a text pane and make it so that the user cannot edit it
       StringBuilder text = new StringBuilder();
       for (CommunicationData data : equilibrium)
-        text.append(data.toString(uStructure) + StringUtils.LF);
+        text.append(data.toString(uStructure) + System.lineSeparator());
       detailedText[i] = new JTextPane();
       detailedText[i].setText(text.toString());
       detailedText[i].setEditable(false);

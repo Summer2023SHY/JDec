@@ -65,21 +65,7 @@ class HelperMethodTest {
         assertEquals(11, automaton.acceptsCounterExample(labelSequences));
     }
 
-    @Test
-    @DisplayName("createCombinedIDWithOrderedSet() Tests")
-    public void testCreateCombinedIDWithOrderedSet() {
-        /* createCombinedIDWithOrderedSet() Tests */
-
-        logger.debug("Combining IDs - combineIDs()");
-
-        List<Long> list = List.of(4L, 2L, 7L);
-        logger.debug("Ensuring that {4,2,7} with a max ID of 7 maps to 279");
-        assertEquals(279, Automaton.combineIDs(list, 7));
-
-        logger.debug("Separating IDs - separateIDs()");
-        logger.debug("Ensuring that 279 with a max ID of 7 maps back to {4,2,7}");
-        assertIterableEquals(list, Automaton.separateIDs(279, 7));
-    }
+    
 
     @Test
     @DisplayName("Splitting Strings that contain Vectors - splitStringWithVectors()")

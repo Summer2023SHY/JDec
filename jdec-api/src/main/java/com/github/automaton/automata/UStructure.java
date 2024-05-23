@@ -263,12 +263,7 @@ public class UStructure extends Automaton {
 
       /* Sort sets by size (so that protocols with fewer communications appear first) */
 
-    Collections.sort(feasibleProtocols, new Comparator<Set<?>>() {
-        @Override public int compare(Set<?> set1, Set<?> set2) {
-          return Integer.compare(set1.size(), set2.size());
-        }
-      }
-    );
+    Collections.sort(feasibleProtocols, (set1, set2) -> Integer.compare(set1.size(), set2.size()));
 
     return feasibleProtocols;
 
@@ -288,12 +283,7 @@ public class UStructure extends Automaton {
 
       /* Sort sets by size (so that protocols with fewer communications appear first) */
 
-    Collections.sort(protocols, new Comparator<Set<?>>() {
-        @Override public int compare(Set<?> set1, Set<?> set2) {
-          return Integer.compare(set1.size(), set2.size());
-        }
-      }
-    );
+    Collections.sort(protocols, (set1, set2) -> Integer.compare(set1.size(), set2.size()));
 
       /* Generate list of feasible protocols */
 
@@ -397,12 +387,7 @@ public class UStructure extends Automaton {
 
       /* Sort sets by size (so that protocols with fewer communications appear first) */
 
-    Collections.sort(feasibleProtocols, new Comparator<Set<?>>() {
-        @Override public int compare(Set<?> set1, Set<?> set2) {
-          return Integer.compare(set1.size(), set2.size());
-        }
-      }
-    );
+    Collections.sort(feasibleProtocols, (set1, set2) -> Integer.compare(set1.size(), set2.size()));
 
     return feasibleProtocols;
 
@@ -1368,26 +1353,6 @@ public class UStructure extends Automaton {
 
   }
 
-
-
-  /**
-   * Given a set of states, create a unique combined ID.
-   * @param setOfStates The set of states which are being combined
-   * @return            The combined ID
-   **/
-  private BigInteger combineStateIDs(Set<Long> setOfStates) {
-
-    List<Long> listOfIDs = new ArrayList<Long>();
-
-    for (long s : setOfStates)
-      listOfIDs.add(s);
-
-    Collections.sort(listOfIDs);
-
-    return combineBigIDs(listOfIDs, nStates);
-
-  }
-
   /**
    * Starting at the specified state, find all indistinguishable states with respect to a particular controller.
    * @param uStructure          The relevant U-Structure
@@ -1688,53 +1653,6 @@ public class UStructure extends Automaton {
     }
   }
 
-    /* GUI INPUT CODE GENERATION */
-
-  @Override protected String getInputCodeForSpecialTransitions(TransitionData transitionData) {
-
-    StringBuilder strBuilder = new StringBuilder();
-
-    if (unconditionalViolations.contains(transitionData))
-      strBuilder.append(",UNCONDITIONAL_VIOLATION");
-    
-    if (conditionalViolations.contains(transitionData))
-      strBuilder.append(",CONDITIONAL_VIOLATION");
-    
-    // Search entire list since there may be more than one potential communication
-    String identifier = (type == Type.U_STRUCTURE ? ",POTENTIAL_COMMUNICATION-" : ",COMMUNICATION-");
-    for (CommunicationData communicationData : potentialCommunications)
-      if (transitionData.equals(communicationData)) {
-        strBuilder.append(identifier);
-        for (CommunicationRole role : communicationData.roles)
-          strBuilder.append(role.getCharacter());
-      }
-
-    if (invalidCommunications.contains(transitionData))
-      strBuilder.append(",INVALID_COMMUNICATION");
-
-    // Search entire list since there may be more than one Nash communication
-    for (NashCommunicationData communicationData : nashCommunications)
-      if (transitionData.equals(communicationData)) {
-        strBuilder.append(",NASH_COMMUNICATION-");
-        for (CommunicationRole role : communicationData.roles)
-          strBuilder.append(role.getCharacter());
-        strBuilder.append("-" + communicationData.cost);
-        strBuilder.append("-" + communicationData.probability);
-      }
-
-    // There is only supposed to be one piece of disablement data per transition
-    for (DisablementData disablementData : disablementDecisions)
-      if (transitionData.equals(disablementData)) {
-        strBuilder.append(",DISABLEMENT_DECISION-");
-        for (boolean b : disablementData.controllers)
-          strBuilder.append(BooleanUtils.toString(b, "T", "F"));
-        break;
-      }
-    
-    return strBuilder.toString();
-
-  }
-
   @Override
   public UStructure clone() {
     return new UStructure(toJsonObject());
@@ -1911,11 +1829,47 @@ public class UStructure extends Automaton {
   }
 
   /**
+   * Returns the list of unconditional violations. The returned list is
+   * {@link Collections#unmodifiableList(List) unmodifiable}.
+   * 
+   * @return the list of unconditional violations
+   * 
+   * @since 2.1.0
+   */
+  public List<TransitionData> getUnconditionalViolations() {
+    return Collections.unmodifiableList(unconditionalViolations);
+  }
+
+  /**
+   * Returns the list of conditional violations. The returned list is
+   * {@link Collections#unmodifiableList(List) unmodifiable}.
+   * 
+   * @return the list of conditional violations
+   * 
+   * @since 2.1.0
+   */
+  public List<TransitionData> getConditionalViolations() {
+    return Collections.unmodifiableList(conditionalViolations);
+  }
+
+  /**
    * Get the list of potential communications.
    * @return  The potential communications
    **/
   public List<CommunicationData> getPotentialCommunications() {
     return potentialCommunications;
+  }
+
+  /**
+   * Returns the list of invalid communications. The returned list is
+   * {@link Collections#unmodifiableList(List) unmodifiable}.
+   * 
+   * @return the list of invalid communications
+   * 
+   * @since 2.1.0
+   */
+  public List<TransitionData> getInvalidCommunications() {
+    return Collections.unmodifiableList(invalidCommunications);
   }
 
   /**
