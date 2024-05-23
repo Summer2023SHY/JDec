@@ -1221,10 +1221,12 @@ public class Automaton implements Cloneable {
             logger.printf(Level.TRACE, "\t\tController %d", i);
             logger.printf(Level.TRACE, "\t\tNeighbors = %s", neighborMap.get(v).get(i).toString());
             if (e.isControllable(i)) {
-              if (neighborMap.get(v).get(i).isEmpty() && !vDist.get(i).contains(v)) {
-                vDist.get(i).add(v);
-                currDist.add(v);
-                ambLevels.get(e).get(v).set(i, infLevel);
+              if (neighborMap.get(v).get(i).isEmpty()) {
+                if (!vDist.get(i).contains(v)) {
+                  vDist.get(i).add(v);
+                  currDist.add(v);
+                  ambLevels.get(e).get(v).set(i, infLevel);
+                }
               } else {
                 for (State vPrime : neighborMap.get(v).get(i)) {
                   neighborMap.get(vPrime).get(i).remove(v);
@@ -1234,6 +1236,9 @@ public class Automaton implements Cloneable {
                     ambLevels.get(e).get(vPrime).set(i, infLevel);
                   }
                 }
+                neighborMap.get(v).get(i).clear();
+                vDist.get(i).add(v);
+                ambLevels.get(e).get(v).set(i, /*Math.min(ambLevels.get(e).get(v).get(i),*/ infLevel/*)*/);
               }
             }
           }
