@@ -608,136 +608,96 @@ public class UStructure extends Automaton {
   public UStructure relabelConfigurationStates() {
 
     Automaton subsetConstruction = this.subsetConstruction();
-    long nIndistinguishableStates = subsetConstruction.getNumberOfStates();
 
+    /* Collection of counters for occurrences of original states */
     MultiSet<Long> stateIDMultiSet = new HashMultiSet<>();
-    MultiSet<Long> combinedStateIDMultiSet = new HashMultiSet<>();
-    SetValuedMap<Long, Long> relabelMapping = new HashSetValuedHashMap<>();
+    /* Mapping of state set IDs to their member state IDs */
+    final Map<Long, Map<Long, Long>> relabelMapping = new LinkedHashMap<>();
 
     Queue<Pair<Long, Sequence>> combinedStateQueue = new ArrayDeque<>();
-    Set<Long> processedCombinedStateIDs = new HashSet<>();
     combinedStateQueue.add(Pair.of(subsetConstruction.initialState, new Sequence(subsetConstruction.initialState)));
-    processedCombinedStateIDs.add(subsetConstruction.initialState);
+
+    UStructure relabeled = new UStructure(nControllers);
+    relabeled.addAllEvents(this.events);
 
     while (!combinedStateQueue.isEmpty()) {
-      Pair<Long, Sequence> combinedStateID = combinedStateQueue.remove();
+      Pair<Long, Sequence> currSequence = combinedStateQueue.remove();
       
-      Mutable<StateSet> ss = new MutableObject<>((StateSet) subsetConstruction.getState(combinedStateID.getLeft()));
-      if (combinedStateIDMultiSet.getCount(combinedStateID.getLeft()) > 1) {
-        ss.setValue(ObjectUtils.clone(ss.getValue()));
-        ss.getValue().setID(ss.getValue().getID() + nIndistinguishableStates * combinedStateIDMultiSet.getCount(combinedStateID.getLeft()));
-        subsetConstruction.addStateAt(ss.getValue(), false);
-        long prevStateID = combinedStateID.getRight().getState(combinedStateID.getRight().length() - 1);
-        State prevState = subsetConstruction.getState(prevStateID);
-        for (Transition t : prevState.getTransitions()) {
-          if (t.getTargetStateID() == combinedStateID.getLeft()) {
-            t.setTargetStateID(ss.getValue().getID());
-          }
-        }
-      }
+      Mutable<StateSet> ss = new MutableObject<>((StateSet) subsetConstruction.getState(currSequence.getLeft()));
+      Map<Long, Long> currStateSetIDMap = new LinkedHashMap<>();
+      relabelMapping.put(ss.getValue().getID(), currStateSetIDMap);
+      /* Calculate new state IDs for relabeling */
       for (State s : ss.getValue().getSet()) {
         long origID = s.getID();
         long modID = origID + nStates * stateIDMultiSet.getCount(origID);
-        relabelMapping.put(ss.getValue().getID(), modID);
+        currStateSetIDMap.put(s.getID(), modID);
+        relabeled.addStateAt(new State(s.getLabel() + (stateIDMultiSet.getCount(origID) == 0 ? StringUtils.EMPTY : "-" + Integer.toString(stateIDMultiSet.getCount(origID))), modID, false), false);
         stateIDMultiSet.add(origID);
       }
+      /* Add transitions to states in the same state set */
+      for (State origS : ss.getValue().getSet()) {
+        State modS = relabeled.getState(currStateSetIDMap.get(origS.getID()));
+        for (Transition t : origS.getTransitions()) {
+          if (currStateSetIDMap.containsKey(t.getTargetStateID())) {
+            relabeled.addTransition(modS.getID(), t.getEvent().getLabel(), currStateSetIDMap.get(t.getTargetStateID()));
+          }
+        }
+      }
+      /* Handle transitions from preceding state set */
+      if (currSequence.getRight().getEventArray().length > 0) {
+        long prevStateSetID = currSequence.getRight().getState(currSequence.getRight().length() - 2);
+        StateSet prevStateSet = (StateSet) subsetConstruction.getState(prevStateSetID);
+        Map<Long, Long> prevStateSetIDMap = relabelMapping.get(prevStateSetID);
+        for (State prevS : prevStateSet.getSet()) {
+          for (Transition prevT : prevS.getTransitions()) {
+            if (currStateSetIDMap.containsKey(prevT.getTargetStateID())) {
+              relabeled.addTransition(prevStateSetIDMap.get(prevS.getID()), prevT.getEvent().getLabel(), currStateSetIDMap.get(prevT.getTargetStateID()));
+            }
+          }
+        }
+      }
+
       for (Transition t : IterableUtils.filteredIterable(
         ss.getValue().getTransitions(), t -> t.getTargetStateID() != ss.getValue().getID()
       )) {
-        if (!combinedStateID.getRight().containsState(t.getTargetStateID())) {
-          combinedStateQueue.add(Pair.of(t.getTargetStateID(), combinedStateID.getRight().append(t.getEvent().getID(), t.getTargetStateID())));
-          processedCombinedStateIDs.add(t.getTargetStateID());
+        if (!currSequence.getRight().containsState(t.getTargetStateID())) {
+          combinedStateQueue.add(Pair.of(t.getTargetStateID(), currSequence.getRight().append(t.getEvent().getID(), t.getTargetStateID())));
         }
       }
-      combinedStateIDMultiSet.add(combinedStateID.getLeft());
+
     }
 
-    UStructure relabeled = new UStructure(nControllers);
-    relabeled.addAllEvents(events);
-
-    for (long id : stateIDMultiSet.uniqueSet()) {
-      State orig = getState(id);
-      relabeled.addStateAt(
-        orig.getLabel(), orig.isMarked(), null,
-        false, id, orig.isEnablementState(), orig.isDisablementState()
-      );
-      for (int i = 1; i < stateIDMultiSet.getCount(id); i++) {
-        relabeled.addStateAt(
-          String.format("%s-%d", orig.getLabel(), i), orig.isMarked(), null,
-          false, id + nStates * i, orig.isEnablementState(), orig.isDisablementState()
-        );
+    /* Restore violation states in relabeled U-Structure */
+    copyOverSpecialTransitions(relabeled);
+    for (TransitionData unconditionalTd : unconditionalViolations) {
+      long initStateID = unconditionalTd.initialStateID;
+      long targetStateID = unconditionalTd.targetStateID;
+      for (int i = 1; i < stateIDMultiSet.getCount(unconditionalTd.initialStateID); i++) {
+        long relabeledInitStateID = initStateID + nStates * i;
+        for (int j = 1; j < stateIDMultiSet.getCount(targetStateID); j++) {
+          long relabeledTargetStateID = targetStateID + nStates * j;
+          if (relabeled.transitionExists(relabeledInitStateID, unconditionalTd.eventID, relabeledTargetStateID)) {
+            relabeled.addUnconditionalViolation(relabeledInitStateID, unconditionalTd.eventID, relabeledTargetStateID);
+          }
+        }
       }
     }
-
-    List<TransitionData> origTransitions = getAllTransitions();
-
-    MapIterator<Long, Collection<Long>> mappingIterator = new EntrySetMapIterator<>(relabelMapping.asMap());
-
-    while (mappingIterator.hasNext()) {
-      mappingIterator.next();
-      List<Long> stateIDs = new ArrayList<>(mappingIterator.getValue());
-      for (int i = 0; i < stateIDs.size(); i++) {
-        int initialStateIndex = i;
-        for (int j = 0; j < stateIDs.size(); j++) {
-          int targetStateIndex = j;
-          for (TransitionData td : IterableUtils.filteredIterable(
-            origTransitions, transition -> {
-              return transition.initialStateID % nStates == stateIDs.get(initialStateIndex) % nStates
-                  && transition.targetStateID % nStates == stateIDs.get(targetStateIndex) % nStates;
-            }
-          )) {
-            relabeled.addTransition(stateIDs.get(i), td.eventID, stateIDs.get(j));
-            if (conditionalViolations.contains(td)) {
-              relabeled.addConditionalViolation(stateIDs.get(i), td.eventID, stateIDs.get(j));
-            }
-            if (unconditionalViolations.contains(td)) {
-              relabeled.addUnconditionalViolation(stateIDs.get(i), td.eventID, stateIDs.get(j));
-            }
+    for (TransitionData conditionalTd : conditionalViolations) {
+      long initStateID = conditionalTd.initialStateID;
+      long targetStateID = conditionalTd.targetStateID;
+      for (int i = 1; i < stateIDMultiSet.getCount(conditionalTd.initialStateID); i++) {
+        long relabeledInitStateID = initStateID + nStates * i;
+        for (int j = 1; j < stateIDMultiSet.getCount(targetStateID); j++) {
+          long relabeledTargetStateID = targetStateID + nStates * j;
+          if (relabeled.transitionExists(relabeledInitStateID, conditionalTd.eventID, relabeledTargetStateID)) {
+            relabeled.addConditionalViolation(relabeledInitStateID, conditionalTd.eventID, relabeledTargetStateID);
           }
         }
       }
     }
 
-    processedCombinedStateIDs.clear();
-    processedCombinedStateIDs.add(subsetConstruction.initialState);
-    Queue<Long> combinedStateIDQueue = new ArrayDeque<>();
-    combinedStateIDQueue.add(subsetConstruction.initialState);
-    while (!combinedStateIDQueue.isEmpty()) {
-      StateSet ss = (StateSet) subsetConstruction.getState(combinedStateIDQueue.remove());
-      for (Transition t : ss.getTransitions()) {
-        if (t.getTargetStateID() != ss.getID()) {
-          for (long initialStateID : relabelMapping.get(ss.getID())) {
-            long modInitialStateID = initialStateID % nStates;
-            if (modInitialStateID == 0)
-              modInitialStateID = nStates;
-            for (long targetStateID : relabelMapping.get(t.getTargetStateID())) {
-              long modTargetStateID = targetStateID % nStates;
-              if (modTargetStateID == 0)
-                modTargetStateID = nStates;
-              for (Transition origTransition : getState(modInitialStateID).getTransitions()) {
-                if (origTransition.getTargetStateID() == modTargetStateID) {
-                  relabeled.addTransition(initialStateID, origTransition.getEvent().getID(), targetStateID);
-                  if (conditionalViolations.contains(new TransitionData(modInitialStateID, origTransition.getEvent().getID(), modTargetStateID))) {
-                    relabeled.addConditionalViolation(initialStateID, origTransition.getEvent().getID(), targetStateID);
-                  }
-                  if (unconditionalViolations.contains(new TransitionData(modInitialStateID, origTransition.getEvent().getID(), modTargetStateID))) {
-                    relabeled.addUnconditionalViolation(initialStateID, origTransition.getEvent().getID(), targetStateID);
-                  }
-                }
-              }
-            }
-          }
-          if (!processedCombinedStateIDs.contains(t.getTargetStateID())) {
-            processedCombinedStateIDs.add(t.getTargetStateID());
-            combinedStateIDQueue.add(t.getTargetStateID());
-          }
-        }
-      }
-    }
+    relabeled.setInitialStateID(this.initialState);
 
-    logger.debug(stateIDMultiSet);
-    relabeled.setInitialStateID(initialState);
-    
     relabeled.renumberStates();
     return relabeled;
   }
