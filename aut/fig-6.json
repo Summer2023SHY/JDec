@@ -1,5 +1,5 @@
 {
-  "nStates": 12,
+  "nStates": 11,
   "initialState": 1,
   "nControllers": 3,
   "type": 0,
@@ -484,7 +484,7 @@
       "disablement": false,
       "transitions": [
         {
-          "targetStateID": 12,
+          "targetStateID": 11,
           "event": {
             "label": "d",
             "id": 8,
@@ -553,32 +553,6 @@
           }
         }
       ]
-    },
-    {
-      "label": "11",
-      "id": 12,
-      "marked": false,
-      "enablement": false,
-      "disablement": false,
-      "transitions": [
-        {
-          "targetStateID": 12,
-          "event": {
-            "label": "sigma",
-            "id": 9,
-            "observable": [
-              false,
-              false,
-              false
-            ],
-            "controllable": [
-              true,
-              true,
-              true
-            ]
-          }
-        }
-      ]
     }
   ],
   "badTransitions": [
@@ -586,11 +560,6 @@
       "initialStateID": 11,
       "eventID": 9,
       "targetStateID": 11
-    },
-    {
-      "initialStateID": 12,
-      "eventID": 9,
-      "targetStateID": 12
     }
   ]
 }
