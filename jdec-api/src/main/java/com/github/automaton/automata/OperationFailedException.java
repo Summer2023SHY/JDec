@@ -24,6 +24,7 @@ public class OperationFailedException extends AutomatonException {
     /**
      * Constructs a {@code OperationFailedException} with the
      * specified detail message.
+     * 
      * @param message the detail message
      * @since 1.2
      */
@@ -34,8 +35,9 @@ public class OperationFailedException extends AutomatonException {
     /**
      * Constructs a {@code OperationFailedException} with the
      * specified detail message and cause.
+     * 
      * @param message the detail message
-     * @param cause the cause
+     * @param cause   the cause
      * @since 1.2
      */
     public OperationFailedException(String message, Throwable cause) {
@@ -45,6 +47,7 @@ public class OperationFailedException extends AutomatonException {
     /**
      * Constructs a {@code OperationFailedException} with the
      * specified cause.
+     * 
      * @param cause the cause
      * @since 1.2
      */

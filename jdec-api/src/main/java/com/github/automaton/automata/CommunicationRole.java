@@ -19,130 +19,144 @@ public enum CommunicationRole {
 
     /* ENUMERATION VALUES */
 
-  /** This role is associated with a controller who is neither the sender nor the receiver. */
-  @SerializedName("*")
-  NONE((byte) 0, '*'),
+    /**
+     * This role is associated with a controller who is neither the sender nor the
+     * receiver.
+     */
+    @SerializedName("*")
+    NONE((byte) 0, '*'),
 
-  /** This role is associated with a controller who is the sender. */
-  @SerializedName("S")
-  SENDER((byte) 1, 'S'),
+    /** This role is associated with a controller who is the sender. */
+    @SerializedName("S")
+    SENDER((byte) 1, 'S'),
 
-  /** This role is associated with a controller who is a receiver. */
-  @SerializedName("R")
-  RECEIVER((byte) 2, 'R');
+    /** This role is associated with a controller who is a receiver. */
+    @SerializedName("R")
+    RECEIVER((byte) 2, 'R');
 
     /* INSTANCE VARIABLES */
 
-  private final byte numericValue;
-  private final char character;
+    private final byte numericValue;
+    private final char character;
 
     /* CONSTRUCTOR */
 
-  /**
-   * Each role is associated with a numeric value (stored as a byte). This is used when reading from
-   * and writing to the binary file.
-   * @param numericValue  The value of the CommunicationRole
-   * @param character     The character associated with the CommunicationRole
-   **/
-  CommunicationRole(byte numericValue, char character) {
-    this.numericValue = numericValue;
-    this.character = character;
-  }
+    /**
+     * Each role is associated with a numeric value (stored as a byte). This is used
+     * when reading from
+     * and writing to the binary file.
+     * 
+     * @param numericValue The value of the CommunicationRole
+     * @param character    The character associated with the CommunicationRole
+     **/
+    CommunicationRole(byte numericValue, char character) {
+        this.numericValue = numericValue;
+        this.character = character;
+    }
 
     /* ACCESSOR METHODS */
 
-  /**
-   * Get the numeric value associated with this enumeration value.
-   * @return  The numeric value
-   **/
-  public byte getNumericValue() {
-    return numericValue;
-  }
-
-  /**
-   * Get the character associated with this enumeration value.
-   * @return  The associated character
-   **/
-  public char getCharacter() {
-    return character;
-  }
-
-  /**
-   * Given a numeric value, get the associated communication role.
-   * @param value The numeric value
-   * @return      The communication role (or {@code null}, if it could not be found)
-   * 
-   * @deprecated Use {@link #valueOf(byte)} instead.
-   **/
-  @Deprecated(since = "2.0")
-  public static CommunicationRole getRole(byte value) {
-
-    for (CommunicationRole role : CommunicationRole.values()) {
-      if (role.getNumericValue() == value)
-        return role;
+    /**
+     * Get the numeric value associated with this enumeration value.
+     * 
+     * @return The numeric value
+     **/
+    public byte getNumericValue() {
+        return numericValue;
     }
 
-    return null;
-
-  }
-
-  /**
-   * Returns the {@code CommunicationRole} with the specified numeric value.
-   * @param value the numeric value
-   * @return      the {@code CommunicationRole} with the specified numeric value
-   * 
-   * @throws IllegalArgumentException if there is no {@code CommunicationRole} with the specified numeric value
-   * 
-   * @since 2.0
-   */
-  public static CommunicationRole valueOf(byte value) {
-
-    for (CommunicationRole role : CommunicationRole.values()) {
-      if (role.getNumericValue() == value)
-        return role;
+    /**
+     * Get the character associated with this enumeration value.
+     * 
+     * @return The associated character
+     **/
+    public char getCharacter() {
+        return character;
     }
 
-    throw new IllegalArgumentException("No CommunicationRole with " + value + " as the numeric value.");
+    /**
+     * Given a numeric value, get the associated communication role.
+     * 
+     * @param value The numeric value
+     * @return The communication role (or {@code null}, if it could not be found)
+     * 
+     * @deprecated Use {@link #valueOf(byte)} instead.
+     **/
+    @Deprecated(since = "2.0")
+    public static CommunicationRole getRole(byte value) {
 
-  }
+        for (CommunicationRole role : CommunicationRole.values()) {
+            if (role.getNumericValue() == value)
+                return role;
+        }
 
-  /**
-   * Given a character, get the associated communication role.
-   * @param ch The character
-   * @return communication role (or {@code null}, if it could not be found)
-   * 
-   * @deprecated Use {@link #valueOf(char)} instead.
-   **/
-  @Deprecated(since = "2.0")
-  public static CommunicationRole getRole(char ch) {
+        return null;
 
-    for (CommunicationRole role : CommunicationRole.values()) {
-      if (role.getCharacter() == ch)
-        return role;
     }
 
-    return null;
+    /**
+     * Returns the {@code CommunicationRole} with the specified numeric value.
+     * 
+     * @param value the numeric value
+     * @return the {@code CommunicationRole} with the specified numeric value
+     * 
+     * @throws IllegalArgumentException if there is no {@code CommunicationRole}
+     *                                  with the specified numeric value
+     * 
+     * @since 2.0
+     */
+    public static CommunicationRole valueOf(byte value) {
 
-  }
+        for (CommunicationRole role : CommunicationRole.values()) {
+            if (role.getNumericValue() == value)
+                return role;
+        }
 
-  /**
-   * Returns the {@code CommunicationRole} with the specified char representation.
-   * @param ch    the char representation of the {@code CommunicationRole} to be returned
-   * @return      the {@code CommunicationRole} with the specified numeric value
-   * 
-   * @throws IllegalArgumentException if there is no {@code CommunicationRole} with the specified char representation
-   * 
-   * @since 2.0
-   */
-  public static CommunicationRole valueOf(char ch) {
+        throw new IllegalArgumentException("No CommunicationRole with " + value + " as the numeric value.");
 
-    for (CommunicationRole role : CommunicationRole.values()) {
-      if (role.getCharacter() == ch)
-        return role;
     }
 
-    throw new IllegalArgumentException("No CommunicationRole with '" + ch + "' as the char representation.");
+    /**
+     * Given a character, get the associated communication role.
+     * 
+     * @param ch The character
+     * @return communication role (or {@code null}, if it could not be found)
+     * 
+     * @deprecated Use {@link #valueOf(char)} instead.
+     **/
+    @Deprecated(since = "2.0")
+    public static CommunicationRole getRole(char ch) {
 
-  }
+        for (CommunicationRole role : CommunicationRole.values()) {
+            if (role.getCharacter() == ch)
+                return role;
+        }
 
-} 
+        return null;
+
+    }
+
+    /**
+     * Returns the {@code CommunicationRole} with the specified char representation.
+     * 
+     * @param ch the char representation of the {@code CommunicationRole} to be
+     *           returned
+     * @return the {@code CommunicationRole} with the specified numeric value
+     * 
+     * @throws IllegalArgumentException if there is no {@code CommunicationRole}
+     *                                  with the specified char representation
+     * 
+     * @since 2.0
+     */
+    public static CommunicationRole valueOf(char ch) {
+
+        for (CommunicationRole role : CommunicationRole.values()) {
+            if (role.getCharacter() == ch)
+                return role;
+        }
+
+        throw new IllegalArgumentException("No CommunicationRole with '" + ch + "' as the char representation.");
+
+    }
+
+}

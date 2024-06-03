@@ -26,6 +26,7 @@ public class DoesNotSatisfyObservabilityException extends OperationFailedExcepti
     /**
      * Constructs a {@code DoesNotSatisfyObservabilityException} with the
      * specified detail message.
+     * 
      * @param message the detail message
      * @since 1.1
      */
@@ -36,8 +37,9 @@ public class DoesNotSatisfyObservabilityException extends OperationFailedExcepti
     /**
      * Constructs a {@code DoesNotSatisfyObservabilityException} with the
      * specified detail message and cause.
+     * 
      * @param message the detail message
-     * @param cause the cause
+     * @param cause   the cause
      * @since 1.1
      */
     public DoesNotSatisfyObservabilityException(String message, Throwable cause) {
@@ -47,6 +49,7 @@ public class DoesNotSatisfyObservabilityException extends OperationFailedExcepti
     /**
      * Constructs a {@code DoesNotSatisfyObservabilityException} with the
      * specified cause.
+     * 
      * @param cause the cause
      * @since 1.1
      */

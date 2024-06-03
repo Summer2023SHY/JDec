@@ -24,6 +24,7 @@ public class NoInitialStateException extends AutomatonException {
     /**
      * Constructs a {@code NoInitialStateException} with the
      * specified detail message.
+     * 
      * @param message the detail message
      */
     public NoInitialStateException(String message) {
@@ -33,8 +34,9 @@ public class NoInitialStateException extends AutomatonException {
     /**
      * Constructs a {@code NoInitialStateException} with the
      * specified detail message and cause.
+     * 
      * @param message the detail message
-     * @param cause the cause
+     * @param cause   the cause
      */
     public NoInitialStateException(String message, Throwable cause) {
         super(message, cause);
@@ -43,6 +45,7 @@ public class NoInitialStateException extends AutomatonException {
     /**
      * Constructs a {@code NoInitialStateException} with the
      * specified cause.
+     * 
      * @param cause the cause
      */
     public NoInitialStateException(Throwable cause) {
