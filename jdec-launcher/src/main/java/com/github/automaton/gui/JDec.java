@@ -41,6 +41,7 @@ import com.github.automaton.gui.util.*;
 import com.github.automaton.gui.util.graphviz.GraphvizEngineInitializer;
 import com.github.automaton.io.AutomatonIOAdapter;
 import com.github.automaton.io.input.*;
+import com.github.automaton.io.graphviz.AutomatonDotConverter;
 import com.github.automaton.io.json.AutomatonJsonFileAdapter;
 import com.github.automaton.io.legacy.*;
 import com.jthemedetecor.OsThemeDetector;
@@ -782,7 +783,7 @@ public class JDec extends JFrame implements ActionListener {
           }
 
           try {
-            tab.automaton.export(fileChooser.getSelectedFile());
+            tab.automaton.getDotConverter().export(fileChooser.getSelectedFile());
           } catch (IOException ioe) {
             logger.catching(ioe);
           }
@@ -1548,7 +1549,7 @@ public class JDec extends JFrame implements ActionListener {
    * Generates a graph representation of the automaton as an SVG file and
    * displays it on the screen.
    * 
-   * @see Automaton#generateImage(String)
+   * @see AutomatonDotConverter#generateImage(String)
    * 
    * @revised 2.0
    **/
@@ -1578,7 +1579,7 @@ public class JDec extends JFrame implements ActionListener {
           tab.canvas.loadSVGDocument(null);
 
         // Try to create graph image, displaying it on the screen
-        else if (tab.automaton.generateImage(destinationFileName)) {
+        else if (tab.automaton.getDotConverter().generateImage(destinationFileName)) {
           tab.svgFile = new File(destinationFileName + ".svg");
           tab.canvas.setSVGDocument(ImageLoader.loadSVGFromFile((tab.svgFile)));
         }

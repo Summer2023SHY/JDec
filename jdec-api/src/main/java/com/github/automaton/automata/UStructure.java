@@ -22,9 +22,6 @@ import org.apache.logging.log4j.*;
 import com.github.automaton.io.json.JsonUtils;
 import com.google.gson.*;
 
-import guru.nidi.graphviz.attribute.*;
-import guru.nidi.graphviz.model.MutableNode;
-
 /**
  * Represents an un-pruned U-Structure.
  *
@@ -1566,51 +1563,6 @@ public class UStructure extends Automaton {
 
     return sequences;
 
-  }
-
-    /* IMAGE GENERATION */
-
-  /**
-   * {@inheritDoc}
-   * 
-   * @since 1.3
-   */
-  @Override
-  protected void addAdditionalNodeProperties(State state, MutableNode node) {
-    if (state.isEnablementState()) {
-      node.add(Color.GREEN3);
-    } else if (state.isDisablementState()) {
-      node.add(Color.RED);
-    }
-  }
-
-  /**
-   * {@inheritDoc}
-   * 
-   * @since 1.3
-   */
-  @Override
-  protected void addAdditionalLinkProperties(Map<String, Attributes<? extends ForLink>> map) {
-
-    for (TransitionData data : unconditionalViolations) {
-      combineAttributesInMap(map, createKey(data), Attributes.attrs(Color.RED, Color.RED.font()));
-    }
-
-    for (TransitionData data : conditionalViolations) {
-      combineAttributesInMap(map, createKey(data), Attributes.attrs(Color.GREEN3, Color.GREEN3.font()));
-    }
-
-    for (TransitionData data : getPotentialCommunications()) {
-      combineAttributesInMap(map, createKey(data), Attributes.attrs(Color.BLUE, Color.BLUE.font()));
-    }
-
-    for (TransitionData data : getNashCommunications()) {
-      combineAttributesInMap(map, createKey(data), Attributes.attrs(Color.BLUE, Color.BLUE.font()));
-    }
-
-    for (TransitionData data : getNashCommunications()) {
-      combineAttributesInMap(map, createKey(data), Style.DOTTED);
-    }
   }
 
   @Override
