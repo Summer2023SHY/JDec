@@ -86,6 +86,12 @@ public class State implements Cloneable {
      * @since 2.1.0
      */
     private Set<String> disablementEvents;
+    /**
+     * Indicates whether this state represents an illegal configuration.
+     * 
+     * @since 2.1.0
+     */
+    private boolean illegalConfig;
 
     /* CONSTRUCTORS */
 
@@ -307,6 +313,17 @@ public class State implements Cloneable {
     }
 
     /**
+     * Changes whether this state represents an illegal configuration.
+     * 
+     * @param illegalConfig whether this state represents an illegal configuration
+     * 
+     * @since 2.1.0
+     */
+    void setIllegalConfig(boolean illegalConfig) {
+        this.illegalConfig = illegalConfig;
+    }
+
+    /**
      * Add a transition to the list.
      * 
      * @param transition The new transition
@@ -402,6 +419,17 @@ public class State implements Cloneable {
      */
     public boolean isDisablementStateOf(String event) {
         return disablementEvents.contains(event);
+    }
+
+    /**
+     * Checks whether this state represents an illegal configuration.
+     * 
+     * @return whether or not this state represents an illegal configuration
+     * 
+     * @since 2.1.0
+     */
+    public boolean isIllegalConfiguration() {
+        return illegalConfig;
     }
 
     /**

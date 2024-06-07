@@ -33,6 +33,9 @@ class UStructureDotConverterImpl extends AbstractAutomatonDotConverter<UStructur
         } else if (state.isDisablementState()) {
             node.add(Color.RED);
         }
+        if (state.isIllegalConfiguration()) {
+            node.add(Shape.DOUBLE_CIRCLE);
+        }
     }
 
     @Override
