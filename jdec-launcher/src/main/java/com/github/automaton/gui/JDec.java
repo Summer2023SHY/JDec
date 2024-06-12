@@ -368,7 +368,7 @@ public class JDec extends JFrame {
         menuBar.add(createMenu("Standard Operations",
                 "Accessible[ANY_AUTOMATON]",
                 "Co-Accessible[BASIC_AUTOMATON]",
-                "Trim[BASIC_AUTOMATON]",
+                "Trim[ANY_AUTOMATON]",
                 "Complement[BASIC_AUTOMATON]",
                 "Generate Twin Plant[BASIC_AUTOMATON]",
                 null,

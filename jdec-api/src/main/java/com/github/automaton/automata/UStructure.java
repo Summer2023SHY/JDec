@@ -102,6 +102,11 @@ public class UStructure extends Automaton {
     }
 
     @Override
+    public UStructure coaccessible() {
+        return AutomataOperations.coaccessible(this, UStructure::new);
+    }
+
+    @Override
     public UStructure complement() {
 
         return AutomataOperations.complement(this, UStructure::new);
