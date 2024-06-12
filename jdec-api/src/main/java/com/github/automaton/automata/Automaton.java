@@ -731,14 +731,14 @@ public class Automaton implements Cloneable {
                 if (isUnconditionalViolation) {
                     uStructure.addUnconditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
                     stateVector.setDisablementOf(combinedEvent.get(0));
-                    boolean allValid = true;
-                    for (int i = 1; allValid && i < stateVector.getStates().size(); i++) {
+                    boolean validConfig = false;
+                    for (int i = 1; !validConfig && i < stateVector.getStates().size(); i++) {
                         State init = stateVector.getStateFor(i);
                         if (badTransitions.parallelStream().anyMatch(td -> td.initialStateID == init.getID() && td.eventID == getEvent(eventLabelVector.getLabelAtIndex(0)).getID())) {
-                            allValid = false;
+                            validConfig = true;
                         }
                     }
-                    if (allValid) {
+                    if (!validConfig) {
                         stateVector.setIllegalConfig(true);
                     }
                 }
@@ -746,14 +746,14 @@ public class Automaton implements Cloneable {
 
                     uStructure.addConditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
                     stateVector.setEnablementOf(combinedEvent.get(0));
-                    boolean allValid = true;
-                    for (int i = 1; allValid && i < stateVector.getStates().size(); i++) {
+                    boolean validConfig = false;
+                    for (int i = 1; !validConfig && i < stateVector.getStates().size(); i++) {
                         State init = stateVector.getStateFor(i);
                         if (badTransitions.parallelStream().noneMatch(td -> td.initialStateID == init.getID() && td.eventID == getEvent(eventLabelVector.getLabelAtIndex(0)).getID())) {
-                            allValid = false;
+                            validConfig = true;
                         }
                     }
-                    if (allValid) {
+                    if (!validConfig) {
                         stateVector.setIllegalConfig(true);
                     }
                 }
