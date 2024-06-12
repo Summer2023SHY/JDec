@@ -6,6 +6,7 @@
 package com.github.automaton.automata;
 
 import java.util.*;
+import java.util.function.IntFunction;
 
 import com.github.automaton.automata.util.*;
 
@@ -25,6 +26,323 @@ public class AutomataOperations {
 
     /** Private constructor. */
     private AutomataOperations() {
+    }
+
+    /**
+     * Generates the accessible portion of the specified automaton.
+     * 
+     * @param <T>      the type of automaton
+     * @param source   an automaton
+     * @param supplier a function that creates a new automaton of the same type
+     * @return the accessible portion of {@code source}
+     * 
+     * @throws NullPointerException if either one of the arguments is {@code null}
+     * 
+     * @see Automaton#accessible()
+     */
+    public static <T extends Automaton> T accessible(final T source, final IntFunction<T> supplier) {
+
+        /* Setup */
+
+        Objects.requireNonNull(source);
+        Objects.requireNonNull(supplier);
+
+        T automaton = supplier.apply(source.nControllers);
+
+        // Add events
+        automaton.addAllEvents(source.events);
+
+        // If there is no initial state, return null, so that the GUI knows to alert the
+        // user
+        if (source.getInitialStateID() == 0)
+            return null;
+
+        // Add the initial state to the stack
+        Deque<Long> stack = new ArrayDeque<Long>();
+        stack.push(source.getInitialStateID());
+
+        /* Build automaton from the accessible part of this automaton */
+
+        // Add states and transition
+        while (stack.size() > 0) {
+
+            // Get next ID
+            long id = stack.pop();
+
+            // This state has already been created in the new automaton, so it does not need
+            // to be created again
+            if (automaton.stateExists(id))
+                continue;
+
+            // Get state and transitions
+            State state = source.getState(id);
+            List<Transition> transitions = state.getTransitions();
+
+            // Add new state
+            automaton.addStateAt(
+                    state.getLabel(),
+                    state.isMarked(),
+                    new ArrayList<Transition>(),
+                    id == source.getInitialStateID(),
+                    id,
+                    state.isEnablementState(),
+                    state.isDisablementState());
+
+            // Traverse each transition
+            for (Transition t : transitions) {
+
+                // Add the target state to the stack
+                stack.push(t.getTargetStateID());
+
+                // Add transition to the new automaton
+                automaton.addTransition(id, t.getEvent().getID(), t.getTargetStateID());
+
+            }
+
+        }
+
+        /* Add special transitions if they still appear in the accessible part */
+
+        source.copyOverSpecialTransitions(automaton);
+
+        /* Re-number states (by removing empty ones) */
+
+        automaton.renumberStates();
+
+        /* Return accessible automaton */
+
+        return automaton;
+    }
+
+    /**
+     * Generates the co-accessible portion of the specified automaton.
+     * 
+     * @param <T>      The type of automaton
+     * @param source   an automaton
+     * @param supplier a function that creates a new automaton of the same type
+     * @return the co-accessible portion of {@code source}
+     * 
+     * @throws NullPointerException if either one of the arguments is {@code null}
+     * 
+     * @see Automaton#coaccessible()
+     */
+    public static <T extends Automaton> T coaccessible(final T source, final IntFunction<T> supplier) {
+
+        Objects.requireNonNull(source);
+        Objects.requireNonNull(supplier);
+
+        T invertedAutomaton = invert(source, supplier);
+        T automaton = supplier.apply(source.nControllers);
+
+        /*
+         * Build co-accessible automaton by seeing which states are accessible from the
+         * marked states in the inverted automaton
+         */
+
+        // Add events
+        automaton.addAllEvents(source.events);
+
+        // Add all marked states to the stack (NOTE: This may have complications if
+        // there are more than Integer.MAX_VALUE marked states)
+        Deque<Long> stack = new ArrayDeque<Long>();
+        for (long s = 1; s <= source.nStates; s++) {
+
+            State state = invertedAutomaton.getState(s);
+
+            if (state.isMarked())
+                stack.push(s);
+
+        }
+
+        // Add all reachable states to the co-accessible automaton
+        while (stack.size() > 0) {
+
+            long s = stack.pop();
+
+            // Skip this state is it has already been taken care of
+            if (automaton.stateExists(s))
+                continue;
+
+            State state = source.getState(s);
+            State stateWithInvertedTransitions = invertedAutomaton.getState(s);
+
+            // Add this state (and its transitions) to the co-accessible automaton
+            automaton.addStateAt(state.getLabel(), state.isMarked(), new ArrayList<Transition>(),
+                    s == source.initialState, s);
+
+            // Add all directly reachable states from this one to the stack
+            for (Transition t : stateWithInvertedTransitions.getTransitions()) {
+
+                // Add transition if both states already exist in the co-accessible automaton
+                if (automaton.stateExists(t.getTargetStateID()))
+                    automaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), s);
+
+                // Otherwise add this to the stack since it is not yet in the co-accessible
+                // automaton
+                else
+                    stack.push(t.getTargetStateID());
+
+            }
+
+            // Required to catch transitions if we didn't add them the first time around
+            // (since this state was not yet in the co-accessible automaton)
+            for (Transition t : state.getTransitions()) {
+
+                // Add transition if both states already exist in the co-accessible automaton
+                if (automaton.stateExists(t.getTargetStateID()))
+                    // We don't want to add self-loops twice
+                    if (s != t.getTargetStateID())
+                        automaton.addTransition(s, t.getEvent().getID(), t.getTargetStateID());
+
+            }
+
+        }
+
+        /* Add special transitions if they still appear in the accessible part */
+
+        source.copyOverSpecialTransitions(automaton);
+
+        /* Re-number states (by removing empty ones) */
+
+        automaton.renumberStates();
+
+        /* Return co-accessible automaton */
+
+        return automaton;
+    }
+
+    /**
+     * Generates the complement of the specified automaton.
+     * 
+     * @param <T>      The type of automaton
+     * @param source   an automaton
+     * @param supplier a function that creates a new automaton of the same type
+     * 
+     * @return the complement of {@code source}
+     * 
+     * @throws NullPointerException     if either one of the arguments is
+     *                                  {@code null}
+     * @throws OperationFailedException if {@code source} is already a complement of
+     *                                  another automaton
+     * 
+     * @see Automaton#complement()
+     */
+    public static <T extends Automaton> T complement(final T source, final IntFunction<T> supplier) {
+
+        Objects.requireNonNull(source);
+        Objects.requireNonNull(supplier);
+
+        T automaton = supplier.apply(source.nControllers);
+
+        /* Add events */
+
+        automaton.addAllEvents(source.events);
+
+        /* Build complement of this automaton */
+
+        final long dumpStateID = source.nStates + 1;
+        boolean needToAddDumpState = false;
+
+        // Add each state to the new automaton
+        for (long s = 1; s <= source.nStates; s++) {
+
+            State state = source.getState(s);
+
+            // Indicate that a dump state already exists, and the complement shouldn't be
+            // taken again
+            if (state.getLabel().equals(Automaton.DUMP_STATE_LABEL))
+                throw new OperationFailedException();
+
+            long id = automaton.addState(state.getLabel(), !state.isMarked(), s == source.initialState);
+
+            // Add transitions for each event (even if they were previously undefined, these
+            // transitions will lead to the dump state)
+            for (Event e : source.events) {
+
+                boolean foundMatch = false;
+
+                // Search through each transition for the event
+                for (Transition t : state.getTransitions())
+                    if (t.getEvent().equals(e)) {
+                        automaton.addTransition(id, e.getID(), t.getTargetStateID());
+                        foundMatch = true;
+                    }
+
+                // Add new transition leading to dump state if this event if undefined at this
+                // state
+                if (!foundMatch) {
+                    automaton.addTransition(id, e.getID(), dumpStateID);
+                    needToAddDumpState = true;
+                }
+
+            }
+
+        }
+
+        /* Create dump state if it needs to be made */
+
+        if (needToAddDumpState) {
+
+            long id = automaton.addState(Automaton.DUMP_STATE_LABEL, false, false);
+
+            if (id != dumpStateID)
+                logger.error("Dump state ID did not match expected ID.");
+
+        }
+
+        /* Add special transitions */
+
+        source.copyOverSpecialTransitions(automaton);
+
+        /* Return complement automaton */
+
+        return automaton;
+    }
+
+    /**
+     * Generates the inverse of the specified automaton.
+     * The state IDs of the inverted automaton are the same as the original
+     * automaton. Special transition information are not maintained in the
+     * inverse.
+     * 
+     * @param <T>      the type of automaton
+     * @param source   an automaton
+     * @param supplier a function that creates a new automaton of the same type
+     * @return the inverse of {@code source}
+     * 
+     * @throws NullPointerException if either one of the arguments is {@code null}
+     * 
+     * @see Automaton#invert()
+     **/
+    public static <T extends Automaton> T invert(final T source, final IntFunction<T> supplier) {
+
+        Objects.requireNonNull(source);
+        Objects.requireNonNull(supplier);
+
+        T automaton = supplier.apply(source.nControllers);
+
+        /*
+         * Create a new automaton that has each of the transitions going the opposite
+         * direction
+         */
+
+        // Add events
+        automaton.addAllEvents(source.events);
+
+        // Add states
+        for (State state : source.getStates()) {
+            automaton.addStateAt(state.getLabel(), state.isMarked(), new ArrayList<>(),
+                    state.getID() == source.getInitialStateID(),
+                    state.getID());
+        }
+
+        // Add transitions
+        for (State state : source.getStates())
+            for (Transition t : state.getTransitions())
+                automaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), state.getID());
+
+        return automaton;
+
     }
 
     /**
@@ -118,7 +436,8 @@ public class AutomataOperations {
                         stack2.add(t2.getTargetStateID());
 
                         // Add transition to the new automaton
-                        long targetID = IDUtil.combineTwoIDs(t1.getTargetStateID(), first, t2.getTargetStateID(), second);
+                        long targetID = IDUtil.combineTwoIDs(t1.getTargetStateID(), first, t2.getTargetStateID(),
+                                second);
                         int eventID = automaton.addTransition(newStateID, t1.getEvent().getLabel(), targetID);
 
                         // Mark as bad transition if both of them are bad
@@ -238,7 +557,8 @@ public class AutomataOperations {
                         stack2.add(t2.getTargetStateID());
 
                         // Add transition to the new automaton
-                        long targetID = IDUtil.combineTwoIDs(t1.getTargetStateID(), first, t2.getTargetStateID(), second);
+                        long targetID = IDUtil.combineTwoIDs(t1.getTargetStateID(), first, t2.getTargetStateID(),
+                                second);
                         int eventID = automaton.addTransition(newStateID, t1.getEvent().getLabel(), targetID);
 
                         // Mark as bad transition if either of them are bad
@@ -296,5 +616,4 @@ public class AutomataOperations {
 
     }
 
-    
 }

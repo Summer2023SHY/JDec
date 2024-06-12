@@ -101,32 +101,19 @@ public class UStructure extends Automaton {
 
     @Override
     public UStructure accessible() {
-        return accessibleHelper(new UStructure(nControllers));
+        return AutomataOperations.accessible(this, UStructure::new);
     }
 
-    // NOTE: This method works, but it is simply unnecessary, so I commented it out.
-    // @Override public UStructure complement(File newHeaderFile, File newBodyFile)
-    // throws OperationFailedException {
+    @Override
+    public UStructure complement() {
 
-    // UStructure uStructure = new UStructure(
-    // newHeaderFile,
-    // newBodyFile,
-    // eventCapacity,
-    // stateCapacity,
-    // events.size(), // This is the new number of transitions that will be required
-    // for each state
-    // labelLength,
-    // nControllers,
-    // true
-    // );
+        return AutomataOperations.complement(this, UStructure::new);
 
-    // return complementHelper(uStructure);
-
-    // }
+    }
 
     @Override
     public UStructure invert() {
-        return invertHelper(new UStructure(nControllers));
+        return AutomataOperations.invert(this, UStructure::new);
     }
 
     /**

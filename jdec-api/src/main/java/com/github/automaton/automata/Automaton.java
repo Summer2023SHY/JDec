@@ -26,7 +26,7 @@ import java.io.*;
 import java.math.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
+import java.util.function.*;
 import java.util.stream.IntStream;
 
 import org.apache.commons.collections4.IterableUtils;
@@ -386,9 +386,11 @@ public class Automaton implements Cloneable {
      * @return The accessible automaton
      * 
      * @since 2.0
+     * 
+     * @see AutomataOperations#accessible(Automaton, IntFunction)
      **/
     public Automaton accessible() {
-        return accessibleHelper(new Automaton(nControllers));
+        return AutomataOperations.accessible(this, Automaton::new);
     }
 
     /**
@@ -398,83 +400,23 @@ public class Automaton implements Cloneable {
      * @param automaton The generic automaton object
      * @return The same automaton that was passed into the method, now containing
      *         the accessible part of this automaton
-     **/
+     * 
+     * @throws UnsupportedOperationException always
+     * 
+     * @deprecated Use {@link AutomataOperations#accessible(Automaton, IntFunction)} instead.
+     */
+    @Deprecated(since = "2.1.0", forRemoval = true)
     protected final <T extends Automaton> T accessibleHelper(T automaton) {
-
-        /* Setup */
-
-        // Add events
-        automaton.addAllEvents(events);
-
-        // If there is no initial state, return null, so that the GUI knows to alert the
-        // user
-        if (initialState == 0)
-            return null;
-
-        // Add the initial state to the stack
-        Deque<Long> stack = new ArrayDeque<Long>();
-        stack.push(initialState);
-
-        /* Build automaton from the accessible part of this automaton */
-
-        // Add states and transition
-        while (stack.size() > 0) {
-
-            // Get next ID
-            long id = stack.pop();
-
-            // This state has already been created in the new automaton, so it does not need
-            // to be created again
-            if (automaton.stateExists(id))
-                continue;
-
-            // Get state and transitions
-            State state = getState(id);
-            List<Transition> transitions = state.getTransitions();
-
-            // Add new state
-            automaton.addStateAt(
-                    state.getLabel(),
-                    state.isMarked(),
-                    new ArrayList<Transition>(),
-                    id == getInitialStateID(),
-                    id,
-                    state.isEnablementState(),
-                    state.isDisablementState());
-
-            // Traverse each transition
-            for (Transition t : transitions) {
-
-                // Add the target state to the stack
-                stack.push(t.getTargetStateID());
-
-                // Add transition to the new automaton
-                automaton.addTransition(id, t.getEvent().getID(), t.getTargetStateID());
-
-            }
-
-        }
-
-        /* Add special transitions if they still appear in the accessible part */
-
-        copyOverSpecialTransitions(automaton);
-
-        /* Re-number states (by removing empty ones) */
-
-        automaton.renumberStates();
-
-        /* Return accessible automaton */
-
-        return automaton;
+        throw new UnsupportedOperationException();
     }
 
     /**
      * Create a new copy of this automaton that has all states removed which are
      * unable to reach a marked state.
      * 
-     * @implNote This method should be overridden by subclasses, using the
-     *           {@link #coaccessibleHelper(Automaton,Automaton)} method.
      * @return The co-accessible automaton
+     * 
+     * @see AutomataOperations#coaccessible(Automaton, IntFunction)
      * 
      * @since 2.0
      **/
@@ -491,83 +433,14 @@ public class Automaton implements Cloneable {
      * @return The same automaton that was passed into the method, now containing
      *         the co-accessible
      *         part of this automaton
+     * 
+     * @throws UnsupportedOperationException always
+     * 
+     * @deprecated Use {@link AutomataOperations#coaccessible(Automaton, IntFunction)} instead.
      **/
+    @Deprecated(since = "2.1.0", forRemoval = true)
     protected final <T extends Automaton> T coaccessibleHelper(T automaton, T invertedAutomaton) {
-
-        /*
-         * Build co-accessible automaton by seeing which states are accessible from the
-         * marked states in the inverted automaton
-         */
-
-        // Add events
-        automaton.addAllEvents(events);
-
-        // Add all marked states to the stack (NOTE: This may have complications if
-        // there are more than Integer.MAX_VALUE marked states)
-        Deque<Long> stack = new ArrayDeque<Long>();
-        for (long s = 1; s <= nStates; s++) {
-
-            State state = invertedAutomaton.getState(s);
-
-            if (state.isMarked())
-                stack.push(s);
-
-        }
-
-        // Add all reachable states to the co-accessible automaton
-        while (stack.size() > 0) {
-
-            long s = stack.pop();
-
-            // Skip this state is it has already been taken care of
-            if (automaton.stateExists(s))
-                continue;
-
-            State state = getState(s);
-            State stateWithInvertedTransitions = invertedAutomaton.getState(s);
-
-            // Add this state (and its transitions) to the co-accessible automaton
-            automaton.addStateAt(state.getLabel(), state.isMarked(), new ArrayList<Transition>(), s == initialState, s);
-
-            // Add all directly reachable states from this one to the stack
-            for (Transition t : stateWithInvertedTransitions.getTransitions()) {
-
-                // Add transition if both states already exist in the co-accessible automaton
-                if (automaton.stateExists(t.getTargetStateID()))
-                    automaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), s);
-
-                // Otherwise add this to the stack since it is not yet in the co-accessible
-                // automaton
-                else
-                    stack.push(t.getTargetStateID());
-
-            }
-
-            // Required to catch transitions if we didn't add them the first time around
-            // (since this state was not yet in the co-accessible automaton)
-            for (Transition t : state.getTransitions()) {
-
-                // Add transition if both states already exist in the co-accessible automaton
-                if (automaton.stateExists(t.getTargetStateID()))
-                    // We don't want to add self-loops twice
-                    if (s != t.getTargetStateID())
-                        automaton.addTransition(s, t.getEvent().getID(), t.getTargetStateID());
-
-            }
-
-        }
-
-        /* Add special transitions if they still appear in the accessible part */
-
-        copyOverSpecialTransitions(automaton);
-
-        /* Re-number states (by removing empty ones) */
-
-        automaton.renumberStates();
-
-        /* Return co-accessible automaton */
-
-        return automaton;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -587,9 +460,7 @@ public class Automaton implements Cloneable {
      **/
     public Automaton complement() throws OperationFailedException {
 
-        Automaton automaton = new Automaton(nControllers);
-
-        return complementHelper(automaton);
+        return AutomataOperations.complement(this, Automaton::new);
     }
 
     /**
@@ -599,92 +470,30 @@ public class Automaton implements Cloneable {
      * @param automaton The generic automaton object
      * @return The same automaton that was passed into the method, now containing
      *         the complement of this automaton
-     * @throws OperationFailedException When there already exists a dump state,
-     *                                  indicating that this
-     *                                  operation has already been performed on this
-     *                                  automaton
+     * @throws UnsupportedOperationException always
+     * 
+     * @deprecated Use {@link AutomataOperations#complement(Automaton, IntFunction)} instead.
      **/
-    protected final <T extends Automaton> T complementHelper(T automaton) throws OperationFailedException {
-
-        /* Add events */
-
-        automaton.addAllEvents(events);
-
-        /* Build complement of this automaton */
-
-        long dumpStateID = nStates + 1;
-        boolean needToAddDumpState = false;
-
-        // Add each state to the new automaton
-        for (long s = 1; s <= nStates; s++) {
-
-            State state = getState(s);
-
-            // Indicate that a dump state already exists, and the complement shouldn't be
-            // taken again
-            if (state.getLabel().equals(DUMP_STATE_LABEL))
-                throw new OperationFailedException();
-
-            long id = automaton.addState(state.getLabel(), !state.isMarked(), s == initialState);
-
-            // Add transitions for each event (even if they were previously undefined, these
-            // transitions will lead to the dump state)
-            for (Event e : events) {
-
-                boolean foundMatch = false;
-
-                // Search through each transition for the event
-                for (Transition t : state.getTransitions())
-                    if (t.getEvent().equals(e)) {
-                        automaton.addTransition(id, e.getID(), t.getTargetStateID());
-                        foundMatch = true;
-                    }
-
-                // Add new transition leading to dump state if this event if undefined at this
-                // state
-                if (!foundMatch) {
-                    automaton.addTransition(id, e.getID(), dumpStateID);
-                    needToAddDumpState = true;
-                }
-
-            }
-
-        }
-
-        /* Create dump state if it needs to be made */
-
-        if (needToAddDumpState) {
-
-            long id = automaton.addState(DUMP_STATE_LABEL, false, false);
-
-            if (id != dumpStateID)
-                logger.error("Dump state ID did not match expected ID.");
-
-        }
-
-        /* Add special transitions */
-
-        copyOverSpecialTransitions(automaton);
-
-        /* Return complement automaton */
-
-        return automaton;
+    @Deprecated(since = "2.1.0", forRemoval = true)
+    protected final <T extends Automaton> T complementHelper(T automaton) {
+        throw new UnsupportedOperationException();
     }
 
     /**
      * Creates a new copy of this automaton that is trim (both accessible and
      * co-accessible).
      * 
-     * @implNote I am taking the accessible part of the automaton before the
-     *           co-accessible part of the automaton
-     *           because the {@link #accessible()} method has less overhead than the
-     *           {@link #coaccessible()} method.
-     * @return The trim automaton, or {@code null} if there was no initial state
-     *         specified
+     * @return The trim automaton
+     * 
+     * @throws NoInitialStateException if the initial state is not specified
      * 
      * @since 2.0
      **/
     public Automaton trim() {
+        // Error checking
+        if (getState(initialState) == null) {
+            throw new NoInitialStateException("No starting state");
+        }
         return accessible().coaccessible();
     }
 
@@ -692,59 +501,31 @@ public class Automaton implements Cloneable {
      * Create a new version of this automaton which has all of the transitions going
      * the opposite direction.
      * 
-     * @implNote An inverted automaton is needed when you want to efficiently
-     *           determine which transitions lead to a particular state.
-     * @implNote This is just a shallow copy of the automaton (no special transition
-     *           data is retained), which makes it slightly more efficient.
-     * @implNote This method should be overridden by subclasses, using the
-     *           {@link #invertHelper(Automaton)} method.
      * @return The inverted automaton
      * 
-     * @see #invertHelper(Automaton)
+     * @see AutomataOperations#invert(Automaton, IntFunction)
      * 
      * @revised 2.0
      **/
     public Automaton invert() {
-        return invertHelper(new Automaton(nControllers));
+        return AutomataOperations.invert(this, Automaton::new);
     }
 
     /**
      * A helper method used to generate the inverse of this automaton.
      * 
-     * @implNote The states in the inverted automaton should still have the same
-     *           IDs.
-     * @implNote This automaton is lightweight, meaning it has no special transition
-     *           information, only the
-     *           states, events, and transitions.
-     * 
      * @param <T>       The type of automaton
      * @param automaton The generic automaton object
      * @return The same automaton that was passed into the method, now containing
      *         the inverse of this automaton
+     * 
+     * @throws UnsupportedOperationException always
+     * 
+     * @deprecated Use {@link AutomataOperations#invert(Automaton, IntFunction)} instead.
      **/
+    @Deprecated(since = "2.1.0", forRemoval = true)
     protected final <T extends Automaton> T invertHelper(T automaton) {
-
-        /*
-         * Create a new automaton that has each of the transitions going the opposite
-         * direction
-         */
-
-        // Add events
-        automaton.addAllEvents(events);
-
-        // Add states
-        for (State state : getStates()) {
-            automaton.addStateAt(state.getLabel(), state.isMarked(), new ArrayList<>(), state.getID() == initialState,
-                    state.getID());
-        }
-
-        // Add transitions
-        for (State state : getStates())
-            for (Transition t : state.getTransitions())
-                automaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), state.getID());
-
-        return automaton;
-
+        throw new UnsupportedOperationException();
     }
 
     /**
