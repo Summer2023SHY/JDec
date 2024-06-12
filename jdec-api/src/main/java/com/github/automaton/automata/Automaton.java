@@ -420,7 +420,7 @@ public class Automaton implements Cloneable {
      * @since 2.0
      **/
     public Automaton coaccessible() {
-        return coaccessibleHelper(new Automaton(nControllers), invert());
+        return AutomataOperations.coaccessible(this, Automaton::new);
     }
 
     /**
