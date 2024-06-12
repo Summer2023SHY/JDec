@@ -1117,7 +1117,7 @@ public class Automaton implements Cloneable {
         }
 
         /* Update initial state */
-        setInitialStateID(mappingHashMap.get(initialState));
+        setInitialStateID(Objects.requireNonNullElse(mappingHashMap.get(initialState), 0L));
 
         /* Update the special transitions */
 
