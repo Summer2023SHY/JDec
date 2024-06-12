@@ -212,6 +212,94 @@ public class AutomataOperations {
     }
 
     /**
+     * Generates the complement of the specified automaton.
+     * 
+     * @param <T>      The type of automaton
+     * @param source   an automaton
+     * @param supplier a function that creates a new automaton of the same type
+     * 
+     * @return the complement of {@code source}
+     * 
+     * @throws NullPointerException     if either one of the arguments is
+     *                                  {@code null}
+     * @throws OperationFailedException if {@code source} is already a complement of
+     *                                  another automaton
+     * 
+     * @see Automaton#complement()
+     */
+    public static <T extends Automaton> T complement(final T source, final IntFunction<T> supplier) {
+
+        Objects.requireNonNull(source);
+        Objects.requireNonNull(supplier);
+
+        T automaton = supplier.apply(source.nControllers);
+
+        /* Add events */
+
+        automaton.addAllEvents(source.events);
+
+        /* Build complement of this automaton */
+
+        final long dumpStateID = source.nStates + 1;
+        boolean needToAddDumpState = false;
+
+        // Add each state to the new automaton
+        for (long s = 1; s <= source.nStates; s++) {
+
+            State state = source.getState(s);
+
+            // Indicate that a dump state already exists, and the complement shouldn't be
+            // taken again
+            if (state.getLabel().equals(Automaton.DUMP_STATE_LABEL))
+                throw new OperationFailedException();
+
+            long id = automaton.addState(state.getLabel(), !state.isMarked(), s == source.initialState);
+
+            // Add transitions for each event (even if they were previously undefined, these
+            // transitions will lead to the dump state)
+            for (Event e : source.events) {
+
+                boolean foundMatch = false;
+
+                // Search through each transition for the event
+                for (Transition t : state.getTransitions())
+                    if (t.getEvent().equals(e)) {
+                        automaton.addTransition(id, e.getID(), t.getTargetStateID());
+                        foundMatch = true;
+                    }
+
+                // Add new transition leading to dump state if this event if undefined at this
+                // state
+                if (!foundMatch) {
+                    automaton.addTransition(id, e.getID(), dumpStateID);
+                    needToAddDumpState = true;
+                }
+
+            }
+
+        }
+
+        /* Create dump state if it needs to be made */
+
+        if (needToAddDumpState) {
+
+            long id = automaton.addState(Automaton.DUMP_STATE_LABEL, false, false);
+
+            if (id != dumpStateID)
+                logger.error("Dump state ID did not match expected ID.");
+
+        }
+
+        /* Add special transitions */
+
+        source.copyOverSpecialTransitions(automaton);
+
+        /* Return complement automaton */
+
+        return automaton;
+    }
+
+    /**
      * Generates the inverse of the specified automaton.
      * The state IDs of the inverted automaton are the same as the original
      * automaton. Special transition information are not maintained in the

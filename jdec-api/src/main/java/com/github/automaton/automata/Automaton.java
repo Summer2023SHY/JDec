@@ -460,9 +460,7 @@ public class Automaton implements Cloneable {
      **/
     public Automaton complement() throws OperationFailedException {
 
-        Automaton automaton = new Automaton(nControllers);
-
-        return complementHelper(automaton);
+        return AutomataOperations.complement(this, Automaton::new);
     }
 
     /**
@@ -472,76 +470,13 @@ public class Automaton implements Cloneable {
      * @param automaton The generic automaton object
      * @return The same automaton that was passed into the method, now containing
      *         the complement of this automaton
-     * @throws OperationFailedException When there already exists a dump state,
-     *                                  indicating that this
-     *                                  operation has already been performed on this
-     *                                  automaton
+     * @throws UnsupportedOperationException always
+     * 
+     * @deprecated Use {@link AutomataOperations#complement(Automaton, IntFunction)} instead.
      **/
-    protected final <T extends Automaton> T complementHelper(T automaton) throws OperationFailedException {
-
-        /* Add events */
-
-        automaton.addAllEvents(events);
-
-        /* Build complement of this automaton */
-
-        long dumpStateID = nStates + 1;
-        boolean needToAddDumpState = false;
-
-        // Add each state to the new automaton
-        for (long s = 1; s <= nStates; s++) {
-
-            State state = getState(s);
-
-            // Indicate that a dump state already exists, and the complement shouldn't be
-            // taken again
-            if (state.getLabel().equals(DUMP_STATE_LABEL))
-                throw new OperationFailedException();
-
-            long id = automaton.addState(state.getLabel(), !state.isMarked(), s == initialState);
-
-            // Add transitions for each event (even if they were previously undefined, these
-            // transitions will lead to the dump state)
-            for (Event e : events) {
-
-                boolean foundMatch = false;
-
-                // Search through each transition for the event
-                for (Transition t : state.getTransitions())
-                    if (t.getEvent().equals(e)) {
-                        automaton.addTransition(id, e.getID(), t.getTargetStateID());
-                        foundMatch = true;
-                    }
-
-                // Add new transition leading to dump state if this event if undefined at this
-                // state
-                if (!foundMatch) {
-                    automaton.addTransition(id, e.getID(), dumpStateID);
-                    needToAddDumpState = true;
-                }
-
-            }
-
-        }
-
-        /* Create dump state if it needs to be made */
-
-        if (needToAddDumpState) {
-
-            long id = automaton.addState(DUMP_STATE_LABEL, false, false);
-
-            if (id != dumpStateID)
-                logger.error("Dump state ID did not match expected ID.");
-
-        }
-
-        /* Add special transitions */
-
-        copyOverSpecialTransitions(automaton);
-
-        /* Return complement automaton */
-
-        return automaton;
+    @Deprecated(since = "2.1.0", forRemoval = true)
+    protected final <T extends Automaton> T complementHelper(T automaton) {
+        throw new UnsupportedOperationException();
     }
 
     /**
