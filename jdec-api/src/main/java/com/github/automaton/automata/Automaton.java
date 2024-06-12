@@ -483,16 +483,17 @@ public class Automaton implements Cloneable {
      * Creates a new copy of this automaton that is trim (both accessible and
      * co-accessible).
      * 
-     * @implNote I am taking the accessible part of the automaton before the
-     *           co-accessible part of the automaton
-     *           because the {@link #accessible()} method has less overhead than the
-     *           {@link #coaccessible()} method.
-     * @return The trim automaton, or {@code null} if there was no initial state
-     *         specified
+     * @return The trim automaton
+     * 
+     * @throws NoInitialStateException if the initial state is not specified
      * 
      * @since 2.0
      **/
     public Automaton trim() {
+        // Error checking
+        if (getState(initialState) == null) {
+            throw new NoInitialStateException("No starting state");
+        }
         return accessible().coaccessible();
     }
 
