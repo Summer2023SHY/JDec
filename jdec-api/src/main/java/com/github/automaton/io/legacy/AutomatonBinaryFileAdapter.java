@@ -11,7 +11,6 @@ import java.io.*;
 import java.util.*;
 
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.TypeUtils;
 
 import com.github.automaton.automata.*;

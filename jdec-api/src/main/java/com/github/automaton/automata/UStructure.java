@@ -5,12 +5,9 @@
 
 package com.github.automaton.automata;
 
-import java.math.*;
 import java.util.*;
 
 import org.apache.commons.collections4.*;
-import org.apache.commons.collections4.iterators.EntrySetMapIterator;
-import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.apache.commons.collections4.multiset.HashMultiSet;
 import org.apache.commons.lang3.*;
 import org.apache.commons.lang3.ArrayUtils;

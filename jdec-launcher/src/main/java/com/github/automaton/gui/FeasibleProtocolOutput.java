@@ -6,15 +6,10 @@
 package com.github.automaton.gui;
 
 import java.awt.*;
-// import java.io.*;
 import java.util.*;
 import javax.swing.*;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.github.automaton.automata.Automaton;
-import com.github.automaton.automata.CommunicationData;
-import com.github.automaton.automata.UStructure;
+import com.github.automaton.automata.*;
 
 /**
  * Used to display a pop-up which contains a list of feasible protocols.

@@ -10,8 +10,6 @@ import java.util.*;
 
 import javax.swing.*;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.github.automaton.automata.*;
 import com.github.automaton.gui.util.*;
 

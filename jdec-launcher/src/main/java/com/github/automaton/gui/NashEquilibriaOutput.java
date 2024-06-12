@@ -9,11 +9,7 @@ import java.awt.*;
 import java.util.*;
 import javax.swing.*;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.github.automaton.automata.CommunicationData;
-import com.github.automaton.automata.NashCommunicationData;
-import com.github.automaton.automata.UStructure;
+import com.github.automaton.automata.*;
 
 /**
  * Used to display a pop-up which contains a list of Nash equilibria.

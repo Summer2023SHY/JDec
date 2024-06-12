@@ -8,7 +8,6 @@ package com.github.automaton.automata;
 import java.util.*;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Used to vectorize a communication protocol into multiple components, based on
