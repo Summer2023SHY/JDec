@@ -414,9 +414,9 @@ public class Automaton implements Cloneable {
      * Create a new copy of this automaton that has all states removed which are
      * unable to reach a marked state.
      * 
-     * @implNote This method should be overridden by subclasses, using the
-     *           {@link #coaccessibleHelper(Automaton,Automaton)} method.
      * @return The co-accessible automaton
+     * 
+     * @see AutomataOperations#coaccessible(Automaton, IntFunction)
      * 
      * @since 2.0
      **/
@@ -433,83 +433,14 @@ public class Automaton implements Cloneable {
      * @return The same automaton that was passed into the method, now containing
      *         the co-accessible
      *         part of this automaton
+     * 
+     * @throws UnsupportedOperationException always
+     * 
+     * @deprecated Use {@link AutomataOperations#coaccessible(Automaton, IntFunction)} instead.
      **/
+    @Deprecated(since = "2.1.0", forRemoval = true)
     protected final <T extends Automaton> T coaccessibleHelper(T automaton, T invertedAutomaton) {
-
-        /*
-         * Build co-accessible automaton by seeing which states are accessible from the
-         * marked states in the inverted automaton
-         */
-
-        // Add events
-        automaton.addAllEvents(events);
-
-        // Add all marked states to the stack (NOTE: This may have complications if
-        // there are more than Integer.MAX_VALUE marked states)
-        Deque<Long> stack = new ArrayDeque<Long>();
-        for (long s = 1; s <= nStates; s++) {
-
-            State state = invertedAutomaton.getState(s);
-
-            if (state.isMarked())
-                stack.push(s);
-
-        }
-
-        // Add all reachable states to the co-accessible automaton
-        while (stack.size() > 0) {
-
-            long s = stack.pop();
-
-            // Skip this state is it has already been taken care of
-            if (automaton.stateExists(s))
-                continue;
-
-            State state = getState(s);
-            State stateWithInvertedTransitions = invertedAutomaton.getState(s);
-
-            // Add this state (and its transitions) to the co-accessible automaton
-            automaton.addStateAt(state.getLabel(), state.isMarked(), new ArrayList<Transition>(), s == initialState, s);
-
-            // Add all directly reachable states from this one to the stack
-            for (Transition t : stateWithInvertedTransitions.getTransitions()) {
-
-                // Add transition if both states already exist in the co-accessible automaton
-                if (automaton.stateExists(t.getTargetStateID()))
-                    automaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), s);
-
-                // Otherwise add this to the stack since it is not yet in the co-accessible
-                // automaton
-                else
-                    stack.push(t.getTargetStateID());
-
-            }
-
-            // Required to catch transitions if we didn't add them the first time around
-            // (since this state was not yet in the co-accessible automaton)
-            for (Transition t : state.getTransitions()) {
-
-                // Add transition if both states already exist in the co-accessible automaton
-                if (automaton.stateExists(t.getTargetStateID()))
-                    // We don't want to add self-loops twice
-                    if (s != t.getTargetStateID())
-                        automaton.addTransition(s, t.getEvent().getID(), t.getTargetStateID());
-
-            }
-
-        }
-
-        /* Add special transitions if they still appear in the accessible part */
-
-        copyOverSpecialTransitions(automaton);
-
-        /* Re-number states (by removing empty ones) */
-
-        automaton.renumberStates();
-
-        /* Return co-accessible automaton */
-
-        return automaton;
+        throw new UnsupportedOperationException();
     }
 
     /**
