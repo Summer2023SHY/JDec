@@ -15,6 +15,7 @@ import org.junit.jupiter.api.*;
 
 import com.github.automaton.io.input.AutomatonGenerator;
 
+@SuppressWarnings("removal")
 public class TestAutomata {
 
     private static Logger logger = LogManager.getLogger();

@@ -16,6 +16,7 @@ import com.github.automaton.automata.*;
 import com.github.automaton.io.AutomatonIOAdapter;
 
 @DisplayName("JSON I/O")
+@SuppressWarnings("removal")
 public class TestAutomataJsonIO {
 
     Automaton automaton;
