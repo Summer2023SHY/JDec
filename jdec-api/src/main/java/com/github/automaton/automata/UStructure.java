@@ -101,7 +101,7 @@ public class UStructure extends Automaton {
 
     @Override
     public UStructure accessible() {
-        return accessibleHelper(new UStructure(nControllers));
+        return AutomataOperations.accessible(this, UStructure::new);
     }
 
     // NOTE: This method works, but it is simply unnecessary, so I commented it out.

@@ -6,6 +6,7 @@
 package com.github.automaton.automata;
 
 import java.util.*;
+import java.util.function.IntFunction;
 
 import com.github.automaton.automata.util.*;
 
@@ -25,6 +26,92 @@ public class AutomataOperations {
 
     /** Private constructor. */
     private AutomataOperations() {
+    }
+
+    /**
+     * Generates the accessible portion of the specified automaton.
+     * 
+     * @param <T>      the type of automaton
+     * @param source   an automaton
+     * @param supplier a function that creates a new automaton of the same type
+     * @return the accessible portion of {@code source}
+     * 
+     * @throws NullPointerException if either one of the arguments is {@code null}
+     * 
+     * @see Automaton#accessible()
+     */
+    public static <T extends Automaton> T accessible(final T source, final IntFunction<T> supplier) {
+
+        /* Setup */
+
+        Objects.requireNonNull(source);
+        Objects.requireNonNull(supplier);
+
+        T automaton = supplier.apply(source.nControllers);
+
+        // Add events
+        automaton.addAllEvents(source.events);
+
+        // If there is no initial state, return null, so that the GUI knows to alert the
+        // user
+        if (source.getInitialStateID() == 0)
+            return null;
+
+        // Add the initial state to the stack
+        Deque<Long> stack = new ArrayDeque<Long>();
+        stack.push(source.getInitialStateID());
+
+        /* Build automaton from the accessible part of this automaton */
+
+        // Add states and transition
+        while (stack.size() > 0) {
+
+            // Get next ID
+            long id = stack.pop();
+
+            // This state has already been created in the new automaton, so it does not need
+            // to be created again
+            if (automaton.stateExists(id))
+                continue;
+
+            // Get state and transitions
+            State state = source.getState(id);
+            List<Transition> transitions = state.getTransitions();
+
+            // Add new state
+            automaton.addStateAt(
+                    state.getLabel(),
+                    state.isMarked(),
+                    new ArrayList<Transition>(),
+                    id == source.getInitialStateID(),
+                    id,
+                    state.isEnablementState(),
+                    state.isDisablementState());
+
+            // Traverse each transition
+            for (Transition t : transitions) {
+
+                // Add the target state to the stack
+                stack.push(t.getTargetStateID());
+
+                // Add transition to the new automaton
+                automaton.addTransition(id, t.getEvent().getID(), t.getTargetStateID());
+
+            }
+
+        }
+
+        /* Add special transitions if they still appear in the accessible part */
+
+        source.copyOverSpecialTransitions(automaton);
+
+        /* Re-number states (by removing empty ones) */
+
+        automaton.renumberStates();
+
+        /* Return accessible automaton */
+
+        return automaton;
     }
 
     /**

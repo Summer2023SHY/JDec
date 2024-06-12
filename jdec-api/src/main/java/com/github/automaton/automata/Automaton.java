@@ -26,7 +26,7 @@ import java.io.*;
 import java.math.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
+import java.util.function.*;
 import java.util.stream.IntStream;
 
 import org.apache.commons.collections4.IterableUtils;
@@ -386,9 +386,11 @@ public class Automaton implements Cloneable {
      * @return The accessible automaton
      * 
      * @since 2.0
+     * 
+     * @see AutomataOperations#accessible(Automaton, IntFunction)
      **/
     public Automaton accessible() {
-        return accessibleHelper(new Automaton(nControllers));
+        return AutomataOperations.accessible(this, Automaton::new);
     }
 
     /**
@@ -398,74 +400,14 @@ public class Automaton implements Cloneable {
      * @param automaton The generic automaton object
      * @return The same automaton that was passed into the method, now containing
      *         the accessible part of this automaton
-     **/
+     * 
+     * @throws UnsupportedOperationException always
+     * 
+     * @deprecated Use {@link AutomataOperations#accessible(Automaton, IntFunction)} instead.
+     */
+    @Deprecated(since = "2.1.0", forRemoval = true)
     protected final <T extends Automaton> T accessibleHelper(T automaton) {
-
-        /* Setup */
-
-        // Add events
-        automaton.addAllEvents(events);
-
-        // If there is no initial state, return null, so that the GUI knows to alert the
-        // user
-        if (initialState == 0)
-            return null;
-
-        // Add the initial state to the stack
-        Deque<Long> stack = new ArrayDeque<Long>();
-        stack.push(initialState);
-
-        /* Build automaton from the accessible part of this automaton */
-
-        // Add states and transition
-        while (stack.size() > 0) {
-
-            // Get next ID
-            long id = stack.pop();
-
-            // This state has already been created in the new automaton, so it does not need
-            // to be created again
-            if (automaton.stateExists(id))
-                continue;
-
-            // Get state and transitions
-            State state = getState(id);
-            List<Transition> transitions = state.getTransitions();
-
-            // Add new state
-            automaton.addStateAt(
-                    state.getLabel(),
-                    state.isMarked(),
-                    new ArrayList<Transition>(),
-                    id == getInitialStateID(),
-                    id,
-                    state.isEnablementState(),
-                    state.isDisablementState());
-
-            // Traverse each transition
-            for (Transition t : transitions) {
-
-                // Add the target state to the stack
-                stack.push(t.getTargetStateID());
-
-                // Add transition to the new automaton
-                automaton.addTransition(id, t.getEvent().getID(), t.getTargetStateID());
-
-            }
-
-        }
-
-        /* Add special transitions if they still appear in the accessible part */
-
-        copyOverSpecialTransitions(automaton);
-
-        /* Re-number states (by removing empty ones) */
-
-        automaton.renumberStates();
-
-        /* Return accessible automaton */
-
-        return automaton;
+        throw new UnsupportedOperationException();
     }
 
     /**

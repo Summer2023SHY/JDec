@@ -57,7 +57,7 @@ public class PrunedUStructure extends UStructure {
 
     @Override
     public PrunedUStructure accessible() {
-        return accessibleHelper(new PrunedUStructure(nControllers));
+        return AutomataOperations.accessible(this, PrunedUStructure::new);
     }
 
     /**
