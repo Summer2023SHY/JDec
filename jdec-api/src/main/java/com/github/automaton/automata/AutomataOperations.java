@@ -115,6 +115,52 @@ public class AutomataOperations {
     }
 
     /**
+     * Generates the inverse of the specified automaton.
+     * The state IDs of the inverted automaton are the same as the original
+     * automaton. Special transition information are not maintained in the
+     * inverse.
+     * 
+     * @param <T>      the type of automaton
+     * @param source   an automaton
+     * @param supplier a function that creates a new automaton of the same type
+     * @return the inverse of {@code source}
+     * 
+     * @throws NullPointerException if either one of the arguments is {@code null}
+     * 
+     * @see Automaton#invert()
+     **/
+    public static <T extends Automaton> T invert(final T source, final IntFunction<T> supplier) {
+
+        Objects.requireNonNull(source);
+        Objects.requireNonNull(supplier);
+
+        T automaton = supplier.apply(source.nControllers);
+
+        /*
+         * Create a new automaton that has each of the transitions going the opposite
+         * direction
+         */
+
+        // Add events
+        automaton.addAllEvents(source.events);
+
+        // Add states
+        for (State state : source.getStates()) {
+            automaton.addStateAt(state.getLabel(), state.isMarked(), new ArrayList<>(),
+                    state.getID() == source.getInitialStateID(),
+                    state.getID());
+        }
+
+        // Add transitions
+        for (State state : source.getStates())
+            for (Transition t : state.getTransitions())
+                automaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), state.getID());
+
+        return automaton;
+
+    }
+
+    /**
      * Generate the intersection of the two specified automata.
      * 
      * @param first  The first automaton

@@ -126,7 +126,7 @@ public class UStructure extends Automaton {
 
     @Override
     public UStructure invert() {
-        return invertHelper(new UStructure(nControllers));
+        return AutomataOperations.invert(this, UStructure::new);
     }
 
     /**

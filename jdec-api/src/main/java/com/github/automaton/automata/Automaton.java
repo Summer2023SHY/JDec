@@ -634,59 +634,31 @@ public class Automaton implements Cloneable {
      * Create a new version of this automaton which has all of the transitions going
      * the opposite direction.
      * 
-     * @implNote An inverted automaton is needed when you want to efficiently
-     *           determine which transitions lead to a particular state.
-     * @implNote This is just a shallow copy of the automaton (no special transition
-     *           data is retained), which makes it slightly more efficient.
-     * @implNote This method should be overridden by subclasses, using the
-     *           {@link #invertHelper(Automaton)} method.
      * @return The inverted automaton
      * 
-     * @see #invertHelper(Automaton)
+     * @see AutomataOperations#invert(Automaton, IntFunction)
      * 
      * @revised 2.0
      **/
     public Automaton invert() {
-        return invertHelper(new Automaton(nControllers));
+        return AutomataOperations.invert(this, Automaton::new);
     }
 
     /**
      * A helper method used to generate the inverse of this automaton.
      * 
-     * @implNote The states in the inverted automaton should still have the same
-     *           IDs.
-     * @implNote This automaton is lightweight, meaning it has no special transition
-     *           information, only the
-     *           states, events, and transitions.
-     * 
      * @param <T>       The type of automaton
      * @param automaton The generic automaton object
      * @return The same automaton that was passed into the method, now containing
      *         the inverse of this automaton
+     * 
+     * @throws UnsupportedOperationException always
+     * 
+     * @deprecated Use {@link AutomataOperations#invert(Automaton, IntFunction)} instead.
      **/
+    @Deprecated(since = "2.1.0", forRemoval = true)
     protected final <T extends Automaton> T invertHelper(T automaton) {
-
-        /*
-         * Create a new automaton that has each of the transitions going the opposite
-         * direction
-         */
-
-        // Add events
-        automaton.addAllEvents(events);
-
-        // Add states
-        for (State state : getStates()) {
-            automaton.addStateAt(state.getLabel(), state.isMarked(), new ArrayList<>(), state.getID() == initialState,
-                    state.getID());
-        }
-
-        // Add transitions
-        for (State state : getStates())
-            for (Transition t : state.getTransitions())
-                automaton.addTransition(t.getTargetStateID(), t.getEvent().getID(), state.getID());
-
-        return automaton;
-
+        throw new UnsupportedOperationException();
     }
 
     /**
