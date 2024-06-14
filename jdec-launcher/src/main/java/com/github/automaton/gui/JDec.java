@@ -2126,6 +2126,9 @@ public class JDec extends JFrame {
                     return new Dimension(200, 200);
                 }
             };
+            if (type == Automaton.Type.SUBSET_CONSTRUCTION) {
+                eventInput.setEditable(false);
+            }
             watchForChanges(eventInput);
             c.ipady = 100;
             c.weightx = 0.5;
@@ -2152,6 +2155,9 @@ public class JDec extends JFrame {
                     return new Dimension(200, 200);
                 }
             };
+            if (type == Automaton.Type.SUBSET_CONSTRUCTION) {
+                stateInput.setEditable(false);
+            }
             watchForChanges(stateInput);
             c.ipady = 100;
             c.weightx = 0.5;
@@ -2182,6 +2188,9 @@ public class JDec extends JFrame {
                     return new Dimension(200, 200);
                 }
             };
+            if (type == Automaton.Type.SUBSET_CONSTRUCTION) {
+                transitionInput.setEditable(false);
+            }
             watchForChanges(transitionInput);
             c.ipady = 200;
             c.weightx = 0.5;
