@@ -551,10 +551,14 @@ public class UStructure extends Automaton {
                 long origID = s.getID();
                 long modID = origID + nStates * stateIDMultiSet.getCount(origID);
                 currStateSetIDMap.put(s.getID(), modID);
-                relabeled.addStateAt(new State(
+                State modState = new State(
                         s.getLabel() + (stateIDMultiSet.getCount(origID) == 0 ? StringUtils.EMPTY
                                 : "-" + Integer.toString(stateIDMultiSet.getCount(origID))),
-                        modID, false, s.getEnablementEvents(), s.getDisablementEvents()), false);
+                        modID, false, s.getEnablementEvents(), s.getDisablementEvents());
+                if (s.isIllegalConfiguration()) {
+                    modState.setIllegalConfig(true);
+                }
+                relabeled.addStateAt(modState, false);
                 stateIDMultiSet.add(origID);
             }
             /* Add transitions to states in the same state set */
