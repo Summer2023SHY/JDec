@@ -31,6 +31,7 @@ public interface AutomatonGuiInputGenerator<T extends Automaton> {
         Objects.requireNonNull(automaton);
         switch (automaton.getType()) {
             case AUTOMATON:
+            case SUBSET_CONSTRUCTION:
                 return new AutomatonGuiInputGeneratorImpl(automaton);
             case U_STRUCTURE:
             case PRUNED_U_STRUCTURE:
