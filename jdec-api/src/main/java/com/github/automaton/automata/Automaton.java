@@ -151,7 +151,14 @@ public class Automaton implements Cloneable {
         U_STRUCTURE((byte) 1, UStructure.class),
 
         /** The pruned U-Structure */
-        PRUNED_U_STRUCTURE((byte) 2, PrunedUStructure.class);
+        PRUNED_U_STRUCTURE((byte) 2, PrunedUStructure.class),
+
+        /**
+         * The subset construction.
+         * 
+         * @since 2.1.0
+         */
+        SUBSET_CONSTRUCTION((byte) 4, SubsetConstruction.class);
 
         // Private variables
         private final byte numericValue;
@@ -249,6 +256,9 @@ public class Automaton implements Cloneable {
 
                 case PRUNED_U_STRUCTURE:
                     return "Pruned U-Structure";
+
+                case SUBSET_CONSTRUCTION:
+                    return "Subset Construction";
 
             }
 
