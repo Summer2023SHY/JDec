@@ -58,7 +58,7 @@ import guru.nidi.graphviz.engine.Format;
  * 
  * @since 1.0
  */
-public class JDec extends JFrame implements ActionListener {
+public class JDec extends JFrame {
 
     /* CLASS CONSTANTS */
 
@@ -145,6 +145,12 @@ public class JDec extends JFrame implements ActionListener {
     private AtomicInteger temporaryFileIndex = new AtomicInteger(1);
     /** Special message to display when no tabs are open */
     private JLabel noTabsMessage;
+    /**
+     * Action handler for JDec.
+     * 
+     * @since 2.1.0
+     */
+    private final JDecActionHandler handler = new JDecActionHandler();
 
     // Synchronization
     /**
@@ -427,7 +433,7 @@ public class JDec extends JFrame implements ActionListener {
                 for (String str2 : parts[1].split(","))
                     addMenuItem(subMenu, str2);
 
-                subMenu.addActionListener(this);
+                subMenu.addActionListener(handler);
                 menu.add(subMenu);
 
                 // Add menu item
@@ -490,7 +496,7 @@ public class JDec extends JFrame implements ActionListener {
 
         // Create menu item object
         JMenuItem menuItem = new JMenuItem(str);
-        menuItem.addActionListener(this);
+        menuItem.addActionListener(handler);
 
         int shortcutKey = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
 
@@ -665,605 +671,636 @@ public class JDec extends JFrame implements ActionListener {
     /* ACTIONS */
 
     /**
-     * This method handles all of the actions triggered when the user interacts with
-     * the main menu.
+     * Action handler for components of JDec.
      * 
-     * @param event The triggered event
-     **/
-    public void actionPerformed(ActionEvent event) {
+     * @since 2.1.0
+     */
+    private class JDecActionHandler implements ActionListener {
+        /**
+         * This method handles all of the actions triggered when the user interacts with
+         * the main menu.
+         * 
+         * @param event The triggered event
+         **/
+        @Override
+        public void actionPerformed(ActionEvent event) {
 
-        int index = tabbedPane.getSelectedIndex();
-        AutomatonTab tab = null;
+            int index = tabbedPane.getSelectedIndex();
+            // Only get the tab if it actually exists
+            if (index < 0)
+                return;
+            AutomatonTab tab = tabs.get(index);
 
-        // Only get the tab if it actually exists
-        if (index > -1)
-            tab = tabs.get(index);
+            // Execute the appropriate command
+            switch (event.getActionCommand()) {
 
-        // Execute the appropriate command
-        switch (event.getActionCommand()) {
+                /* FILE STUFF */
 
-            /* FILE STUFF */
+                case "Clear":
 
-            case "Clear":
+                    // Clear input fields
+                    tab.eventInput.setText(StringUtils.EMPTY);
+                    tab.stateInput.setText(StringUtils.EMPTY);
+                    tab.transitionInput.setText(StringUtils.EMPTY);
 
-                // Clear input fields
-                tab.eventInput.setText(StringUtils.EMPTY);
-                tab.stateInput.setText(StringUtils.EMPTY);
-                tab.transitionInput.setText(StringUtils.EMPTY);
+                    // Set blank image
+                    tab.canvas.setURI(null);
 
-                // Set blank image
-                tab.canvas.setURI(null);
-
-                break;
-
-            case "New Automaton":
-
-                createTab(true, Automaton.Type.AUTOMATON);
-                break;
-
-            case "New U-Structure":
-
-                createTab(true, Automaton.Type.U_STRUCTURE);
-                break;
-
-            case "New Pruned U-Structure":
-
-                createTab(true, Automaton.Type.PRUNED_U_STRUCTURE);
-                break;
-
-            case "Save":
-                if (!tab.usingTemporaryFiles()) {
-                    try {
-                        generateAutomatonButtonPressed();
-                        tab.ioAdapter.setAutomaton(tab.automaton);
-                        tab.ioAdapter.save();
-                        tab.setSaved(true);
-                    } catch (IOException ioe) {
-                        displayException(ioe);
-                    } catch (RuntimeException re) {
-                        displayException(re);
-                    }
                     break;
-                }
-            case "Save As...":
 
-                // Prompt user to save Automaton to the specified file
-                if (saveFile("Choose file") != null) {
-                    tab.updateTabTitle();
-                    if (tab.automaton != null)
-                        tab.automaton = tab.ioAdapter.getAutomaton();
-                    tab.setSaved(true);
-                }
+                case "New Automaton":
 
-                break;
+                    createTab(true, Automaton.Type.AUTOMATON);
+                    break;
 
-            case "Export...":
+                case "New U-Structure":
 
-            {
-                JFileChooser fileChooser = new JFileChooser() {
-                    @Override
-                    protected JDialog createDialog(Component parent) {
-                        JDialog dialog = super.createDialog(JDec.this);
-                        dialog.setModal(true);
-                        return dialog;
-                    }
+                    createTab(true, Automaton.Type.U_STRUCTURE);
+                    break;
 
-                    @Override
-                    public void approveSelection() {
-                        // Overwrite protection
-                        // Adapted from https://stackoverflow.com/a/3729157
-                        if (getSelectedFile().exists() && getDialogType() == SAVE_DIALOG) {
-                            int result = JOptionPane.showConfirmDialog(this, "Selected file exists, overwrite?",
-                                    "Existing file", JOptionPane.YES_NO_OPTION);
-                            switch (result) {
-                                case JOptionPane.YES_OPTION:
-                                    break;
-                                case JOptionPane.CANCEL_OPTION:
-                                    cancelSelection();
-                                case JOptionPane.NO_OPTION:
-                                case JOptionPane.CLOSED_OPTION:
-                                    return;
-                            }
+                case "New Pruned U-Structure":
+
+                    createTab(true, Automaton.Type.PRUNED_U_STRUCTURE);
+                    break;
+
+                case "Save":
+                    if (!tab.usingTemporaryFiles()) {
+                        try {
+                            generateAutomatonButtonPressed();
+                            tab.ioAdapter.setAutomaton(tab.automaton);
+                            tab.ioAdapter.save();
+                            tab.setSaved(true);
+                        } catch (IOException ioe) {
+                            displayException(ioe);
+                        } catch (RuntimeException re) {
+                            displayException(re);
                         }
-                        super.approveSelection();
+                        break;
                     }
-                };
-                fileChooser.setAcceptAllFileFilterUsed(false);
-                fileChooser.setDialogTitle("Export");
-                final java.util.List<Format> supportedFormats = java.util.List.of(Format.PNG, Format.SVG, Format.DOT);
-                for (Format f : supportedFormats) {
-                    fileChooser
-                            .addChoosableFileFilter(new FileNameExtensionFilter(f.name() + " file", f.fileExtension));
-                }
-                if (currentDirectory != null)
-                    fileChooser.setCurrentDirectory(currentDirectory);
+                case "Save As...":
 
-                /* Prompt user to select a filename */
+                    // Prompt user to save Automaton to the specified file
+                    if (saveFile("Choose file") != null) {
+                        tab.updateTabTitle();
+                        if (tab.automaton != null)
+                            tab.automaton = tab.ioAdapter.getAutomaton();
+                        tab.setSaved(true);
+                    }
 
-                int result = fileChooser.showSaveDialog(null);
-
-                /* No file was selected */
-
-                if (result != JFileChooser.APPROVE_OPTION || fileChooser.getSelectedFile() == null)
-                    return;
-
-                FileNameExtensionFilter usedFilter = (FileNameExtensionFilter) fileChooser.getFileFilter();
-
-                if (!FilenameUtils.isExtension(fileChooser.getSelectedFile().getName(), usedFilter.getExtensions())) {
-                    fileChooser.setSelectedFile(new File(
-                            fileChooser.getSelectedFile().getAbsolutePath()
-                                    + FilenameUtils.EXTENSION_SEPARATOR
-                                    + usedFilter.getExtensions()[0]));
-                }
-
-                try {
-                    tab.automaton.getDotConverter().export(fileChooser.getSelectedFile());
-                } catch (IOException ioe) {
-                    logger.catching(ioe);
-                }
-            }
-
-                break;
-
-            case "Open":
-
-                // Prompt user to select Automaton from file (stop if they did not pick a file),
-                // placing it in a new tab
-                if (selectFile("Select Automaton", -1) == null)
                     break;
 
-                index = tabbedPane.getSelectedIndex(); // Index has changed since a new tab was created
-                tab = tabs.get(index);
-                tab.setSaved(true);
-                tab.updateTabTitle();
+                case "Export...":
 
-            case "Refresh Tab":
+                {
+                    JFileChooser fileChooser = new JFileChooser() {
+                        @Override
+                        protected JDialog createDialog(Component parent) {
+                            JDialog dialog = super.createDialog(JDec.this);
+                            dialog.setModal(true);
+                            return dialog;
+                        }
 
-                refresh(index);
-                break;
-
-            case "Close Tab":
-
-                closeCurrentTab();
-                break;
-
-            case "Quit":
-
-                dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
-                break;
-
-            /* VIEW */
-
-            case "Previous Tab":
-
-                if (--index < 0)
-                    index += tabbedPane.getTabCount();
-
-                tabbedPane.setSelectedIndex(index);
-                break;
-
-            case "Next Tab":
-
-                if (++index == tabbedPane.getTabCount())
-                    index = 0;
-
-                tabbedPane.setSelectedIndex(index);
-                break;
-
-            case "View in Browser":
-
-                viewInBrowser();
-                break;
-
-            /* AUTOMATA OPERATIONS */
-
-            case "Accessible":
-
-                Automaton automaton = tab.automaton.accessible();
-
-                // Create new tab for the accessible automaton
-                if (automaton == null) {
-                    temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can
-                                                          // re-use it
-                    displayErrorMessage("Operation Failed", "Please specify a starting state.");
-                } else
-                    createTab(automaton);
-                break;
-
-            case "Co-Accessible":
-
-                // Create new tab for the co-accessible automaton
-                createTab(tab.automaton.coaccessible());
-                break;
-
-            case "Trim":
-
-                automaton = tab.automaton.trim();
-
-                // Create new tab for the trim automaton
-                if (automaton == null) {
-                    temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can
-                                                          // re-use it
-                    displayErrorMessage("Operation Failed", "Please specify a starting state.");
-                } else
-                    createTab(automaton);
-                break;
-
-            case "Complement":
-
-                try {
-                    // Create new tab with the complement
-                    createTab(tab.automaton.complement());
-                } catch (OperationFailedException e) {
-                    logger.catching(e);
-                    temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can
-                                                          // re-use it
-                    displayErrorMessage("Operation Failed",
-                            "There already exists a dump state, so the complement could not be taken again.");
-                }
-                break;
-
-            case "Generate Twin Plant":
-
-                // Create new tab with the twin plant
-                createTab(tab.automaton.generateTwinPlant2());
-                break;
-
-            case "Intersection":
-
-                // Allow user to pick other automaton
-                int otherIndex = pickAutomaton("Which automaton would you like to take the intersection with?", index);
-                if (otherIndex == -1)
-                    break;
-                Automaton otherAutomaton = tabs.get(otherIndex).automaton;
-
-                try {
-                    // Create new tab with the intersection
-                    createTab(AutomataOperations.intersection(tab.automaton, otherAutomaton));
-                } catch (IncompatibleAutomataException e) {
-                    logger.catching(e);
-                    temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can
-                                                          // re-use it
-                    displayErrorMessage("Operation Failed",
-                            "Please ensure that both automata have the same number of controllers and that there are no incompatible events (meaning that events share the same name but have different properties).");
-                }
-
-                break;
-
-            case "Union":
-
-                // Allow user to pick other automaton
-                otherIndex = pickAutomaton("Which automaton would you like to take the union with?", index);
-                if (otherIndex == -1)
-                    break;
-                otherAutomaton = tabs.get(otherIndex).automaton;
-
-                try {
-                    // Create new tab with the union
-                    createTab(AutomataOperations.union(tab.automaton, otherAutomaton));
-                } catch (IncompatibleAutomataException e) {
-                    logger.catching(e);
-                    temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can
-                                                          // re-use it
-                    displayErrorMessage("Operation Failed",
-                            "Please ensure that both automata have the same number of controllers and that there are no incompatible events (meaning that events share the same name but have different properties).");
-                }
-
-                break;
-
-            case "Synchronized Composition":
-
-                // Check for unmarked states and display warning.
-                if (tab.automaton.hasUnmarkedState())
-                    displayMessage("Unmarked States",
-                            "There are 1 or more states that are unmarked. Since it is assumed that the system is prefix-closed, those states will be considered marked.",
-                            JOptionPane.WARNING_MESSAGE);
-
-            {
-                final AutomatonTab currTab = tab;
-                // Create new tab with the U-structure generated by synchronized composition
-                setBusyCursor(true);
-
-                Thread synchronizedCompositionThread = new Thread(
-                        () -> {
-                            currTab.nUsingThreads.incrementAndGet();
-                            syncCompositionLock.lock();
-                            try {
-                                UStructure uStructure = currTab.automaton.synchronizedComposition();
-                                createTab(uStructure);
-                                setBusyCursor(false);
-                            } catch (NoInitialStateException e) {
-                                logger.catching(e);
-                                temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all,
-                                                                      // so we can re-use it
-                                setBusyCursor(false);
-                                displayErrorMessage("Operation Failed",
-                                        "Please ensure that you have specified a starting state (using an '@' symbol).");
-                            } catch (OperationFailedException e) {
-                                logger.catching(e);
-                                temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all,
-                                                                      // so we can re-use it
-                                setBusyCursor(false);
-                                displayErrorMessage("Operation Failed", "Failed to add state.");
+                        @Override
+                        public void approveSelection() {
+                            // Overwrite protection
+                            // Adapted from https://stackoverflow.com/a/3729157
+                            if (getSelectedFile().exists() && getDialogType() == SAVE_DIALOG) {
+                                int result = JOptionPane.showConfirmDialog(this, "Selected file exists, overwrite?",
+                                        "Existing file", JOptionPane.YES_NO_OPTION);
+                                switch (result) {
+                                    case JOptionPane.YES_OPTION:
+                                        break;
+                                    case JOptionPane.CANCEL_OPTION:
+                                        cancelSelection();
+                                    case JOptionPane.NO_OPTION:
+                                    case JOptionPane.CLOSED_OPTION:
+                                        return;
+                                }
                             }
-                            currTab.nUsingThreads.decrementAndGet();
-                            syncCompositionLock.unlock();
-                            updateComponentsWhichRequireAutomaton();
-                        },
-                        FilenameUtils.removeExtension(tab.ioAdapter.getFile().getName())
-                                + " - Synchronized composition");
-                synchronizedCompositionThread.start();
-            }
-
-                break;
-
-            case "Subset Construction":
-
-                UStructure uStructure = ((UStructure) tab.automaton);
-
-                // Create new tab with the U-structure generated by synchronized composition
-                setBusyCursor(true);
-                try {
-                    int controller = pickController("Select the controller to execute subset construction with.", true);
-                    if (controller == -1) {
-                        temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we
-                                                              // can re-use it
-                        setBusyCursor(false);
-                        return;
+                            super.approveSelection();
+                        }
+                    };
+                    fileChooser.setAcceptAllFileFilterUsed(false);
+                    fileChooser.setDialogTitle("Export");
+                    final java.util.List<Format> supportedFormats = java.util.List.of(Format.PNG, Format.SVG,
+                            Format.DOT);
+                    for (Format f : supportedFormats) {
+                        fileChooser
+                                .addChoosableFileFilter(
+                                        new FileNameExtensionFilter(f.name() + " file", f.fileExtension));
                     }
-                    automaton = uStructure.relabelConfigurationStates().subsetConstruction(controller);
-                    createTab(automaton);
-                    setBusyCursor(false);
-                } catch (RuntimeException e) {
-                    temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we can
-                                                          // re-use it
-                    setBusyCursor(false);
-                    displayException(e);
-                } /*
-                   * catch (OperationFailedException e) {
-                   * temporaryFileIndex.decrementAndGet(); // We did not need this temporary file
-                   * after all, so we can re-use it
-                   * setBusyCursor(false);
-                   * displayErrorMessage("Operation Failed", "Failed to add state.");
-                   * }
-                   */
+                    if (currentDirectory != null)
+                        fileChooser.setCurrentDirectory(currentDirectory);
 
-                break;
+                    /* Prompt user to select a filename */
 
-            case "Relabel States":
+                    int result = fileChooser.showSaveDialog(null);
 
-            {
+                    /* No file was selected */
 
-                final AutomatonTab currTab = tab;
+                    if (result != JFileChooser.APPROVE_OPTION || fileChooser.getSelectedFile() == null)
+                        return;
 
-                uStructure = ((UStructure) tab.automaton);
+                    FileNameExtensionFilter usedFilter = (FileNameExtensionFilter) fileChooser.getFileFilter();
 
-                // Create new tab with the U-structure generated by synchronized composition
-                setBusyCursor(true);
-                new Thread(
-                        () -> {
-                            currTab.nUsingThreads.incrementAndGet();
-                            try {
-                                createTab(uStructure.relabelConfigurationStates());
-                                setBusyCursor(false);
-                            } catch (RuntimeException e) {
-                                temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all,
-                                                                      // so we can re-use it
-                                setBusyCursor(false);
-                                displayException(e);
-                            } /*
-                               * catch (OperationFailedException e) {
-                               * temporaryFileIndex.decrementAndGet(); // We did not need this temporary file
-                               * after all, so we can re-use it
-                               * setBusyCursor(false);
-                               * displayErrorMessage("Operation Failed", "Failed to add state.");
-                               * }
-                               */
-                            currTab.nUsingThreads.decrementAndGet();
-                            updateComponentsWhichRequireAutomaton();
-                        },
-                        FilenameUtils.removeExtension(tab.ioAdapter.getFile().getName()) + " - State relabeling")
-                        .start();
-            }
+                    if (!FilenameUtils.isExtension(fileChooser.getSelectedFile().getName(),
+                            usedFilter.getExtensions())) {
+                        fileChooser.setSelectedFile(new File(
+                                fileChooser.getSelectedFile().getAbsolutePath()
+                                        + FilenameUtils.EXTENSION_SEPARATOR
+                                        + usedFilter.getExtensions()[0]));
+                    }
 
-                break;
-
-            case "Add Communications":
-
-                uStructure = ((UStructure) tab.automaton);
-
-                // Display error message if there was not enough controllers
-                if (uStructure.getNumberOfControllers() == 1) {
-                    displayErrorMessage("Not Enough Controllers",
-                            "There must be more than 1 controller in order for a communication to take place.");
-                    break;
+                    try {
+                        tab.automaton.getDotConverter().export(fileChooser.getSelectedFile());
+                    } catch (IOException ioe) {
+                        logger.catching(ioe);
+                    }
                 }
 
-                // Display warning message, and abort the operation if requested
-                if (uStructure.getSizeOfPotentialAndNashCommunications() > 0)
-                    if (!askForConfirmation("Communications Already Exist",
-                            "This U-Structure appears to already have had communications added. Are you sure you want to proceed?"
-                                    + System.lineSeparator() + "WARNING: This may result in duplicate communications."))
+                    break;
+
+                case "Open":
+
+                    // Prompt user to select Automaton from file (stop if they did not pick a file),
+                    // placing it in a new tab
+                    if (selectFile("Select Automaton", -1) == null)
                         break;
 
-                setBusyCursor(true);
+                    index = tabbedPane.getSelectedIndex(); // Index has changed since a new tab was created
+                    tab = tabs.get(index);
+                    tab.setSaved(true);
+                    tab.updateTabTitle();
 
-                // Create a copy of the current automaton with all communications added and
-                // potential communications marked
-                UStructure uStructureWithCommunications = uStructure.addCommunications();
-                createTab(uStructureWithCommunications);
+                case "Refresh Tab":
 
-                setBusyCursor(false);
+                    refresh(index);
+                    break;
 
-                if (uStructureWithCommunications.hasSelfLoop(uStructureWithCommunications.getPotentialCommunications()))
-                    displayMessage("Communication Self-Loop",
-                            "Please be advised that at least one of the communications added is a self-loop.",
-                            JOptionPane.WARNING_MESSAGE);
+                case "Close Tab":
 
-                break;
+                    closeCurrentTab();
+                    break;
 
-            case "Generate All":
+                case "Quit":
 
-                uStructure = ((UStructure) tab.automaton);
+                    dispatchEvent(new WindowEvent(JDec.this, WindowEvent.WINDOW_CLOSING));
+                    break;
 
-                if (uStructure.getSizeOfPotentialAndNashCommunications() == 0)
-                    displayErrorMessage("Operation Failed",
-                            "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.");
-                else
-                    new GenerateFeasibleProtocolsPrompt(this, uStructure, "Generate All Feasible Protocols",
-                            " Specify whether or not a controller is allowed to send to or receive from a certain controller: ");
-                break;
+                /* VIEW */
 
-            case "Make Protocol Feasible":
+                case "Previous Tab":
 
-                uStructure = ((UStructure) tab.automaton);
+                    if (--index < 0)
+                        index += tabbedPane.getTabCount();
 
-                if (uStructure.getSizeOfPotentialAndNashCommunications() == 0)
-                    displayErrorMessage("Operation Failed",
-                            "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.");
-                else
-                    new MakeProtocolFeasiblePrompt(this, uStructure);
-                break;
+                    tabbedPane.setSelectedIndex(index);
+                    break;
 
-            case "Find Smallest":
+                case "Next Tab":
 
-                uStructure = ((UStructure) tab.automaton);
+                    if (++index == tabbedPane.getTabCount())
+                        index = 0;
 
-                if (uStructure.getSizeOfPotentialAndNashCommunications() == 0)
-                    displayErrorMessage("Operation Aborted",
-                            "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.");
-                else {
+                    tabbedPane.setSelectedIndex(index);
+                    break;
+
+                case "View in Browser":
+
+                    viewInBrowser();
+                    break;
+
+                /* AUTOMATA OPERATIONS */
+
+                case "Accessible":
+
+                    Automaton automaton = tab.automaton.accessible();
+
+                    // Create new tab for the accessible automaton
+                    if (automaton == null) {
+                        temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we
+                                                              // can
+                                                              // re-use it
+                        displayErrorMessage("Operation Failed", "Please specify a starting state.");
+                    } else
+                        createTab(automaton);
+                    break;
+
+                case "Co-Accessible":
+
+                    // Create new tab for the co-accessible automaton
+                    createTab(tab.automaton.coaccessible());
+                    break;
+
+                case "Trim":
+
+                    automaton = tab.automaton.trim();
+
+                    // Create new tab for the trim automaton
+                    if (automaton == null) {
+                        temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we
+                                                              // can
+                                                              // re-use it
+                        displayErrorMessage("Operation Failed", "Please specify a starting state.");
+                    } else
+                        createTab(automaton);
+                    break;
+
+                case "Complement":
+
+                    try {
+                        // Create new tab with the complement
+                        createTab(tab.automaton.complement());
+                    } catch (OperationFailedException e) {
+                        logger.catching(e);
+                        temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we
+                                                              // can
+                                                              // re-use it
+                        displayErrorMessage("Operation Failed",
+                                "There already exists a dump state, so the complement could not be taken again.");
+                    }
+                    break;
+
+                case "Generate Twin Plant":
+
+                    // Create new tab with the twin plant
+                    createTab(tab.automaton.generateTwinPlant2());
+                    break;
+
+                case "Intersection":
+
+                    // Allow user to pick other automaton
+                    int otherIndex = pickAutomaton("Which automaton would you like to take the intersection with?",
+                            index);
+                    if (otherIndex == -1)
+                        break;
+                    Automaton otherAutomaton = tabs.get(otherIndex).automaton;
+
+                    try {
+                        // Create new tab with the intersection
+                        createTab(AutomataOperations.intersection(tab.automaton, otherAutomaton));
+                    } catch (IncompatibleAutomataException e) {
+                        logger.catching(e);
+                        temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we
+                                                              // can
+                                                              // re-use it
+                        displayErrorMessage("Operation Failed",
+                                "Please ensure that both automata have the same number of controllers and that there are no incompatible events (meaning that events share the same name but have different properties).");
+                    }
+
+                    break;
+
+                case "Union":
+
+                    // Allow user to pick other automaton
+                    otherIndex = pickAutomaton("Which automaton would you like to take the union with?", index);
+                    if (otherIndex == -1)
+                        break;
+                    otherAutomaton = tabs.get(otherIndex).automaton;
+
+                    try {
+                        // Create new tab with the union
+                        createTab(AutomataOperations.union(tab.automaton, otherAutomaton));
+                    } catch (IncompatibleAutomataException e) {
+                        logger.catching(e);
+                        temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we
+                                                              // can
+                                                              // re-use it
+                        displayErrorMessage("Operation Failed",
+                                "Please ensure that both automata have the same number of controllers and that there are no incompatible events (meaning that events share the same name but have different properties).");
+                    }
+
+                    break;
+
+                case "Synchronized Composition":
+
+                    // Check for unmarked states and display warning.
+                    if (tab.automaton.hasUnmarkedState())
+                        displayMessage("Unmarked States",
+                                "There are 1 or more states that are unmarked. Since it is assumed that the system is prefix-closed, those states will be considered marked.",
+                                JOptionPane.WARNING_MESSAGE);
+
+                {
+                    final AutomatonTab currTab = tab;
+                    // Create new tab with the U-structure generated by synchronized composition
                     setBusyCursor(true);
-                    java.util.List<Set<CommunicationData>> smallestFeasibleProtocols = uStructure
-                            .generateSmallestFeasibleProtocols(uStructure.getPotentialAndNashCommunications());
-                    setBusyCursor(false);
-                    new FeasibleProtocolOutput(this, uStructure, smallestFeasibleProtocols,
-                            "Smallest Feasible Protocols", " Protocol(s) with the fewest number of communications: ");
+
+                    Thread synchronizedCompositionThread = new Thread(
+                            () -> {
+                                currTab.nUsingThreads.incrementAndGet();
+                                syncCompositionLock.lock();
+                                try {
+                                    UStructure uStructure = currTab.automaton.synchronizedComposition();
+                                    createTab(uStructure);
+                                    setBusyCursor(false);
+                                } catch (NoInitialStateException e) {
+                                    logger.catching(e);
+                                    temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after
+                                                                          // all,
+                                                                          // so we can re-use it
+                                    setBusyCursor(false);
+                                    displayErrorMessage("Operation Failed",
+                                            "Please ensure that you have specified a starting state (using an '@' symbol).");
+                                } catch (OperationFailedException e) {
+                                    logger.catching(e);
+                                    temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after
+                                                                          // all,
+                                                                          // so we can re-use it
+                                    setBusyCursor(false);
+                                    displayErrorMessage("Operation Failed", "Failed to add state.");
+                                }
+                                currTab.nUsingThreads.decrementAndGet();
+                                syncCompositionLock.unlock();
+                                updateComponentsWhichRequireAutomaton();
+                            },
+                            FilenameUtils.removeExtension(tab.ioAdapter.getFile().getName())
+                                    + " - Synchronized composition");
+                    synchronizedCompositionThread.start();
                 }
-                break;
 
-            case "Find First":
+                    break;
 
-                uStructure = ((UStructure) tab.automaton);
+                case "Subset Construction":
 
-                if (uStructure.getSizeOfPotentialAndNashCommunications() == 0)
-                    displayErrorMessage("Operation Aborted",
-                            "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.");
-                else {
+                    UStructure uStructure = ((UStructure) tab.automaton);
+
+                    // Create new tab with the U-structure generated by synchronized composition
                     setBusyCursor(true);
-                    Set<CommunicationData> feasibleProtocol = uStructure
-                            .generateFeasibleProtocol(uStructure.getPotentialAndNashCommunications());
+                    try {
+                        int controller = pickController("Select the controller to execute subset construction with.",
+                                true);
+                        if (controller == -1) {
+                            temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so
+                                                                  // we
+                                                                  // can re-use it
+                            setBusyCursor(false);
+                            return;
+                        }
+                        automaton = uStructure.relabelConfigurationStates().subsetConstruction(controller);
+                        createTab(automaton);
+                        setBusyCursor(false);
+                    } catch (RuntimeException e) {
+                        temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we
+                                                              // can
+                                                              // re-use it
+                        setBusyCursor(false);
+                        displayException(e);
+                    } /*
+                       * catch (OperationFailedException e) {
+                       * temporaryFileIndex.decrementAndGet(); // We did not need this temporary file
+                       * after all, so we can re-use it
+                       * setBusyCursor(false);
+                       * displayErrorMessage("Operation Failed", "Failed to add state.");
+                       * }
+                       */
+
+                    break;
+
+                case "Relabel States":
+
+                {
+
+                    final AutomatonTab currTab = tab;
+
+                    uStructure = ((UStructure) tab.automaton);
+
+                    // Create new tab with the U-structure generated by synchronized composition
+                    setBusyCursor(true);
+                    new Thread(
+                            () -> {
+                                currTab.nUsingThreads.incrementAndGet();
+                                try {
+                                    createTab(uStructure.relabelConfigurationStates());
+                                    setBusyCursor(false);
+                                } catch (RuntimeException e) {
+                                    temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after
+                                                                          // all,
+                                                                          // so we can re-use it
+                                    setBusyCursor(false);
+                                    displayException(e);
+                                } /*
+                                   * catch (OperationFailedException e) {
+                                   * temporaryFileIndex.decrementAndGet(); // We did not need this temporary file
+                                   * after all, so we can re-use it
+                                   * setBusyCursor(false);
+                                   * displayErrorMessage("Operation Failed", "Failed to add state.");
+                                   * }
+                                   */
+                                currTab.nUsingThreads.decrementAndGet();
+                                updateComponentsWhichRequireAutomaton();
+                            },
+                            FilenameUtils.removeExtension(tab.ioAdapter.getFile().getName()) + " - State relabeling")
+                            .start();
+                }
+
+                    break;
+
+                case "Add Communications":
+
+                    uStructure = ((UStructure) tab.automaton);
+
+                    // Display error message if there was not enough controllers
+                    if (uStructure.getNumberOfControllers() == 1) {
+                        displayErrorMessage("Not Enough Controllers",
+                                "There must be more than 1 controller in order for a communication to take place.");
+                        break;
+                    }
+
+                    // Display warning message, and abort the operation if requested
+                    if (uStructure.getSizeOfPotentialAndNashCommunications() > 0)
+                        if (!askForConfirmation("Communications Already Exist",
+                                "This U-Structure appears to already have had communications added. Are you sure you want to proceed?"
+                                        + System.lineSeparator()
+                                        + "WARNING: This may result in duplicate communications."))
+                            break;
+
+                    setBusyCursor(true);
+
+                    // Create a copy of the current automaton with all communications added and
+                    // potential communications marked
+                    UStructure uStructureWithCommunications = uStructure.addCommunications();
+                    createTab(uStructureWithCommunications);
+
                     setBusyCursor(false);
-                    new FeasibleProtocolOutput(this, uStructure, Collections.singletonList(feasibleProtocol),
-                            "Feasible Protocol", " The first protocol found: ");
-                }
-                break;
 
-            case "Test Inference Observability": {
-                final int ambLevelDisplayResponse = JOptionPane.showConfirmDialog(this,
-                        "Do you want the calculated inference level displayed?", "Display inference level?",
-                        JOptionPane.YES_NO_OPTION);
-                if (ambLevelDisplayResponse == JOptionPane.CLOSED_OPTION) {
-                    return;
-                }
-                AutomatonTab currTab = tab;
-                Thread observabilityThread = new Thread(
-                        () -> {
-                            final boolean displayAmbLevel = ambLevelDisplayResponse == JOptionPane.YES_OPTION;
-                            JLabel label = new JLabel("Running observability test", SwingConstants.CENTER);
-                            currTab.add(label, BorderLayout.SOUTH);
-                            setBusyCursor(true);
-                            currTab.nUsingThreads.incrementAndGet();
-                            Pair<Boolean, OptionalInt> observability = currTab.automaton
-                                    .testObservability(displayAmbLevel);
-                            currTab.nUsingThreads.decrementAndGet();
-                            tabbedPane.setSelectedComponent(currTab);
-                            setBusyCursor(false);
-                            currTab.remove(label);
-                            if (observability.getLeft())
-                                if (displayAmbLevel) {
-                                    // new AmbiguityLevelOutput(JDec.this, "Passed Test", observability);
-                                    displayMessage("Passed Test",
-                                            "The system is inference observable with "
-                                                    + observability.getRight().getAsInt()
-                                                    + (observability.getRight().getAsInt() == 1 ? " level" : " levels")
-                                                    + " of inferencing",
+                    if (uStructureWithCommunications
+                            .hasSelfLoop(uStructureWithCommunications.getPotentialCommunications()))
+                        displayMessage("Communication Self-Loop",
+                                "Please be advised that at least one of the communications added is a self-loop.",
+                                JOptionPane.WARNING_MESSAGE);
+
+                    break;
+
+                case "Generate All":
+
+                    uStructure = ((UStructure) tab.automaton);
+
+                    if (uStructure.getSizeOfPotentialAndNashCommunications() == 0)
+                        displayErrorMessage("Operation Failed",
+                                "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.");
+                    else
+                        new GenerateFeasibleProtocolsPrompt(JDec.this, uStructure, "Generate All Feasible Protocols",
+                                " Specify whether or not a controller is allowed to send to or receive from a certain controller: ");
+                    break;
+
+                case "Make Protocol Feasible":
+
+                    uStructure = ((UStructure) tab.automaton);
+
+                    if (uStructure.getSizeOfPotentialAndNashCommunications() == 0)
+                        displayErrorMessage("Operation Failed",
+                                "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.");
+                    else
+                        new MakeProtocolFeasiblePrompt(JDec.this, uStructure);
+                    break;
+
+                case "Find Smallest":
+
+                    uStructure = ((UStructure) tab.automaton);
+
+                    if (uStructure.getSizeOfPotentialAndNashCommunications() == 0)
+                        displayErrorMessage("Operation Aborted",
+                                "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.");
+                    else {
+                        setBusyCursor(true);
+                        java.util.List<Set<CommunicationData>> smallestFeasibleProtocols = uStructure
+                                .generateSmallestFeasibleProtocols(uStructure.getPotentialAndNashCommunications());
+                        setBusyCursor(false);
+                        new FeasibleProtocolOutput(JDec.this, uStructure, smallestFeasibleProtocols,
+                                "Smallest Feasible Protocols",
+                                " Protocol(s) with the fewest number of communications: ");
+                    }
+                    break;
+
+                case "Find First":
+
+                    uStructure = ((UStructure) tab.automaton);
+
+                    if (uStructure.getSizeOfPotentialAndNashCommunications() == 0)
+                        displayErrorMessage("Operation Aborted",
+                                "The U-Structure needs to have at least 1 potential communication. Please ensure that you have added communications to it.");
+                    else {
+                        setBusyCursor(true);
+                        Set<CommunicationData> feasibleProtocol = uStructure
+                                .generateFeasibleProtocol(uStructure.getPotentialAndNashCommunications());
+                        setBusyCursor(false);
+                        new FeasibleProtocolOutput(JDec.this, uStructure, Collections.singletonList(feasibleProtocol),
+                                "Feasible Protocol", " The first protocol found: ");
+                    }
+                    break;
+
+                case "Test Inference Observability": {
+                    final int ambLevelDisplayResponse = JOptionPane.showConfirmDialog(JDec.this,
+                            "Do you want the calculated inference level displayed?", "Display inference level?",
+                            JOptionPane.YES_NO_OPTION);
+                    if (ambLevelDisplayResponse == JOptionPane.CLOSED_OPTION) {
+                        return;
+                    }
+                    AutomatonTab currTab = tab;
+                    Thread observabilityThread = new Thread(
+                            () -> {
+                                final boolean displayAmbLevel = ambLevelDisplayResponse == JOptionPane.YES_OPTION;
+                                JLabel label = new JLabel("Running observability test", SwingConstants.CENTER);
+                                currTab.add(label, BorderLayout.SOUTH);
+                                setBusyCursor(true);
+                                currTab.nUsingThreads.incrementAndGet();
+                                Pair<Boolean, OptionalInt> observability = currTab.automaton
+                                        .testObservability(displayAmbLevel);
+                                currTab.nUsingThreads.decrementAndGet();
+                                tabbedPane.setSelectedComponent(currTab);
+                                setBusyCursor(false);
+                                currTab.remove(label);
+                                if (observability.getLeft())
+                                    if (displayAmbLevel) {
+                                        // new AmbiguityLevelOutput(JDec.this, "Passed Test", observability);
+                                        displayMessage("Passed Test",
+                                                "The system is inference observable with "
+                                                        + observability.getRight().getAsInt()
+                                                        + (observability.getRight().getAsInt() == 1 ? " level"
+                                                                : " levels")
+                                                        + " of inferencing",
+                                                JOptionPane.INFORMATION_MESSAGE);
+                                    } else
+                                        displayMessage("Passed Test", "The system is inference observable.",
+                                                JOptionPane.INFORMATION_MESSAGE);
+                                else
+                                    displayMessage("Failed Test", "The system is not inference observable.",
                                             JOptionPane.INFORMATION_MESSAGE);
-                                } else
-                                    displayMessage("Passed Test", "The system is inference observable.",
-                                            JOptionPane.INFORMATION_MESSAGE);
-                            else
-                                displayMessage("Failed Test", "The system is not inference observable.",
-                                        JOptionPane.INFORMATION_MESSAGE);
-                        },
-                        FilenameUtils.removeExtension(currTab.ioAdapter.getFile().getName()) + " - Observability Test");
-                observabilityThread.start();
+                            },
+                            FilenameUtils.removeExtension(currTab.ioAdapter.getFile().getName())
+                                    + " - Observability Test");
+                    observabilityThread.start();
+                }
+                    break;
+
+                case "Calculate Ambiguity Levels": {
+                    AutomatonTab currTab = tab;
+                    Thread observabilityThread = new Thread(
+                            () -> {
+                                JLabel label = new JLabel("Running observability test", SwingConstants.CENTER);
+                                currTab.add(label, BorderLayout.SOUTH);
+                                setBusyCursor(true);
+                                currTab.nUsingThreads.incrementAndGet();
+                                var ambList = currTab.automaton.calculateAmbiguityLevels();
+                                currTab.nUsingThreads.decrementAndGet();
+                                tabbedPane.setSelectedComponent(currTab);
+                                setBusyCursor(false);
+                                currTab.remove(label);
+                                new AmbiguityLevelOutput(JDec.this, "Ambiguity Levels", ambList);
+                            },
+                            FilenameUtils.removeExtension(currTab.ioAdapter.getFile().getName())
+                                    + " - Observability Test");
+                    observabilityThread.start();
+                }
+                    break;
+
+                case "Test Controllability":
+
+                    if (tab.automaton.testControllability())
+                        displayMessage("Passed Test", "The system is controllable.", JOptionPane.INFORMATION_MESSAGE);
+                    else
+                        displayMessage("Failed Test", "The system is not controllable.",
+                                JOptionPane.INFORMATION_MESSAGE);
+                    break;
+
+                case "Random Automaton":
+
+                    new RandomAutomatonPrompt(JDec.this);
+                    break;
+
+                case "Third-party License":
+                    try {
+                        InputStream thirdPartyInfo = getResourceURL("META-INF/jdec-assembly-THIRD-PARTY.txt")
+                                .openStream();
+                        TextPopup popup = new TextPopup(JDec.this, "Third-party License Notice");
+                        thirdPartyInfo.transferTo(popup.getOutputStream());
+                    } catch (UncheckedIOException ioe) {
+                        displayMessage("Third-party License Notice", "Third-party license information not found!",
+                                JOptionPane.WARNING_MESSAGE);
+                    } catch (IOException ioe) {
+                        displayException(ioe);
+                    }
+                    break;
+                case "Open GitHub Repository":
+                    try {
+                        Desktop.getDesktop().browse(new URI("https://github.com/Summer2023SHY/Automata"));
+                    } catch (IOException | URISyntaxException e) {
+                        displayException(e);
+                    }
+                    break;
+                case "View License":
+                    try {
+                        Desktop.getDesktop()
+                                .browse(new URI("https://github.com/Summer2023SHY/Automata/blob/main/LICENSE"));
+                    } catch (IOException | URISyntaxException e) {
+                        displayException(e);
+                    }
+                    break;
             }
-                break;
 
-            case "Calculate Ambiguity Levels": {
-                AutomatonTab currTab = tab;
-                Thread observabilityThread = new Thread(
-                        () -> {
-                            JLabel label = new JLabel("Running observability test", SwingConstants.CENTER);
-                            currTab.add(label, BorderLayout.SOUTH);
-                            setBusyCursor(true);
-                            currTab.nUsingThreads.incrementAndGet();
-                            var ambList = currTab.automaton.calculateAmbiguityLevels();
-                            currTab.nUsingThreads.decrementAndGet();
-                            tabbedPane.setSelectedComponent(currTab);
-                            setBusyCursor(false);
-                            currTab.remove(label);
-                            new AmbiguityLevelOutput(JDec.this, "Ambiguity Levels", ambList);
-                        },
-                        FilenameUtils.removeExtension(currTab.ioAdapter.getFile().getName()) + " - Observability Test");
-                observabilityThread.start();
-            }
-                break;
+            updateComponentsWhichRequireAutomaton();
 
-            case "Test Controllability":
-
-                if (tab.automaton.testControllability())
-                    displayMessage("Passed Test", "The system is controllable.", JOptionPane.INFORMATION_MESSAGE);
-                else
-                    displayMessage("Failed Test", "The system is not controllable.", JOptionPane.INFORMATION_MESSAGE);
-                break;
-
-            case "Random Automaton":
-
-                new RandomAutomatonPrompt(this);
-                break;
-
-            case "Third-party License":
-                try {
-                    InputStream thirdPartyInfo = getResourceURL("META-INF/jdec-assembly-THIRD-PARTY.txt").openStream();
-                    TextPopup popup = new TextPopup(this, "Third-party License Notice");
-                    thirdPartyInfo.transferTo(popup.getOutputStream());
-                } catch (UncheckedIOException ioe) {
-                    displayMessage("Third-party License Notice", "Third-party license information not found!",
-                            JOptionPane.WARNING_MESSAGE);
-                } catch (IOException ioe) {
-                    displayException(ioe);
-                }
-                break;
-            case "Open GitHub Repository":
-                try {
-                    Desktop.getDesktop().browse(new URI("https://github.com/Summer2023SHY/Automata"));
-                } catch (IOException | URISyntaxException e) {
-                    displayException(e);
-                }
-                break;
-            case "View License":
-                try {
-                    Desktop.getDesktop().browse(new URI("https://github.com/Summer2023SHY/Automata/blob/main/LICENSE"));
-                } catch (IOException | URISyntaxException e) {
-                    displayException(e);
-                }
-                break;
         }
-
-        updateComponentsWhichRequireAutomaton();
-
     }
 
     /**
