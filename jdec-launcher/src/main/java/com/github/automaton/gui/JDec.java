@@ -137,6 +137,13 @@ public class JDec extends JFrame {
     /** Components of JDec that require any U structure */
     private java.util.List<Component> componentsWhichRequireAnyUStructure = Collections
             .synchronizedList(new ArrayList<>());
+    /**
+     * Components of JDec that require a {@link SubsetConstruction}.
+     * 
+     * @since 2.1.0
+     */
+    private java.util.List<Component> componentsWhichRequireSubsetConstruction = Collections
+            .synchronizedList(new ArrayList<>());
 
     // Miscellaneous
     /** The current directory */
@@ -381,6 +388,7 @@ public class JDec extends JFrame {
                 null,
                 "Subset Construction[U_STRUCTURE]",
                 "Relabel States[U_STRUCTURE]",
+                "Build Automaton Representation[SUBSET_CONSTRUCTION]",
                 "Add Communications[U_STRUCTURE]",
                 "Feasible Protocols->Generate All[U_STRUCTURE],Make Protocol Feasible[U_STRUCTURE],Find Smallest[U_STRUCTURE],Find First[U_STRUCTURE]",
                 null));
@@ -487,6 +495,11 @@ public class JDec extends JFrame {
         if (requiresAnyUStructure)
             str = str.replace("[ANY_U_STRUCTURE]", StringUtils.EMPTY);
 
+        // Check to see if this menu item requires a U-Structure or a pruned U-Structure
+        boolean requiresSubsetConstruction = str.contains("[SUBSET_CONSTRUCTION]");
+        if (requiresSubsetConstruction)
+            str = str.replace("[SUBSET_CONSTRUCTION]", StringUtils.EMPTY);
+
         // Check to see if this menu item is not displayed in macOS
         boolean requiresNotMacOS = str.contains("[NOT_MACOS]");
         if (requiresNotMacOS && SystemUtils.IS_OS_MAC)
@@ -573,6 +586,8 @@ public class JDec extends JFrame {
             componentsWhichRequireUStructure.add(menuItem);
         if (requiresPrunedUStructure)
             componentsWhichRequirePrunedUStructure.add(menuItem);
+        if (requiresAnyUStructure)
+            componentsWhichRequireAnyUStructure.add(menuItem);
         if (requiresAnyUStructure)
             componentsWhichRequireAnyUStructure.add(menuItem);
 
@@ -1232,6 +1247,7 @@ public class JDec extends JFrame {
         updateComponentsWhichRequireUStructure();
         updateComponentsWhichRequirePrunedUStructure();
         updateComponentsWhichRequireAnyUStructure();
+        updateComponentsWhichRequireSubsetConstruction();
     }
 
     /**
@@ -1330,6 +1346,28 @@ public class JDec extends JFrame {
         // Enabled/disable all components in the list
         synchronized (componentsWhichRequireAnyUStructure) {
             for (Component component : componentsWhichRequireAnyUStructure)
+                component.setEnabled(enabled);
+        }
+
+    }
+
+    /**
+     * Enable/disable components that require a subset construction.
+     * 
+     * @since 2.1.0
+     **/
+    private void updateComponentsWhichRequireSubsetConstruction() {
+
+        int index = tabbedPane.getSelectedIndex();
+
+        // Determine whether the components should be enabled or disabled
+        boolean enabled = (index >= 0
+                && tabs.get(index).type == Automaton.Type.SUBSET_CONSTRUCTION
+                && tabs.get(index).automaton != null);
+
+        // Enabled/disable all components in the list
+        synchronized (componentsWhichRequireSubsetConstruction) {
+            for (Component component : componentsWhichRequireSubsetConstruction)
                 component.setEnabled(enabled);
         }
 
@@ -1749,12 +1787,10 @@ public class JDec extends JFrame {
      **/
     public int pickController(String str, boolean include0thComponent) {
 
-        UStructure uStructure = (UStructure) getCurrentTab().automaton;
-
         /* Create list of options */
 
         java.util.List<Integer> optionsList = new ArrayList<>();
-        for (int i = (include0thComponent ? 0 : 1); i <= uStructure.getNumberOfControllers(); i++)
+        for (int i = (include0thComponent ? 0 : 1); i <= getCurrentTab().automaton.getNumberOfControllers(); i++)
             optionsList.add(i);
         Integer[] options = optionsList.toArray(Integer[]::new);
 
@@ -2775,6 +2811,35 @@ public class JDec extends JFrame {
                     relabelStates(tab);
                     break;
 
+                case "Build Automaton Representation": {
+                    SubsetConstruction subsetConstruction = (SubsetConstruction) tab.automaton;
+                    int controller = pickController("Select the controller to build automaton representation with.",
+                            true);
+                    if (controller < 0)
+                        return;
+                    tab.nUsingThreads.incrementAndGet();
+                    try {
+                        createTab(subsetConstruction.buildAutomatonRepresentationOf(controller));
+                        setBusyCursor(false);
+                    } catch (RuntimeException e) {
+                        temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after
+                                                              // all,
+                                                              // so we can re-use it
+                        setBusyCursor(false);
+                        displayException(e);
+                    } /*
+                       * catch (OperationFailedException e) {
+                       * temporaryFileIndex.decrementAndGet(); // We did not need this temporary file
+                       * after all, so we can re-use it
+                       * setBusyCursor(false);
+                       * displayErrorMessage("Operation Failed", "Failed to add state.");
+                       * }
+                       */
+                    tab.nUsingThreads.decrementAndGet();
+                    updateComponentsWhichRequireAutomaton();
+                }
+                    break;
+
                 case "Add Communications": {
 
                     UStructure uStructure = ((UStructure) tab.automaton);
@@ -3057,7 +3122,8 @@ public class JDec extends JFrame {
         }
 
         /**
-         * Relabels states in the U-structure stored in the specified tab, adding duplicate states as needed.
+         * Relabels states in the U-structure stored in the specified tab, adding
+         * duplicate states as needed.
          * 
          * @param tab a tab
          */
@@ -3096,7 +3162,8 @@ public class JDec extends JFrame {
         }
 
         /**
-         * Tests whether the automaton stored in the specified tab is inference observable.
+         * Tests whether the automaton stored in the specified tab is inference
+         * observable.
          * 
          * @param tab a tab
          * 
