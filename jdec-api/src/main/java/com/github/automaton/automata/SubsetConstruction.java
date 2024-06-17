@@ -202,4 +202,30 @@ public class SubsetConstruction extends Automaton {
         return (StateSet) super.getState(label);
     }
 
+    /**
+     * Builds an automaton representation of this subset construction.
+     * 
+     * @param controller the controller to build automaton representation with
+     * @return an automaton representation of this subset construction
+     * 
+     * @throws IndexOutOfBoundsException if {@code controller} is out of bounds
+     */
+    public Automaton buildAutomatonRepresentationOf(int controller) {
+        if (controller < 0 || controller > nControllers)
+            throw new IndexOutOfBoundsException(controller);
+        Automaton aut = new Automaton(1);
+        for (State s : getStates()) {
+            aut.addStateAt(Long.toString(s.getID()), false, null, s.getID() == getInitialStateID(), s.getID());
+        }
+        for (State s : getStates()) {
+            for (Transition t : s.getTransitions()) {
+                aut.addEventIfNonExisting(t.getEvent().getVector().getLabelAtIndex(controller), new boolean[] { false },
+                        new boolean[] { false });
+                aut.addTransition(s.getID(), t.getEvent().getVector().getLabelAtIndex(controller),
+                        t.getTargetStateID());
+            }
+        }
+        return aut;
+    }
+
 }
