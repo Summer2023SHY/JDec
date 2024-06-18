@@ -31,8 +31,8 @@ import java.util.stream.IntStream;
 
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.collections4.ListValuedMap;
+import org.apache.commons.collections4.MultiMapUtils;
 import org.apache.commons.collections4.SetUtils;
-import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.apache.commons.io.RandomAccessFileMode;
 import org.apache.commons.lang3.*;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -880,7 +880,7 @@ public class Automaton implements Cloneable {
         for (Event e : IterableUtils.filteredIterable(
                 events, event -> BooleanUtils.or(event.isControllable()))) {
 
-            ListValuedMap<State, Set<State>> neighborMap = new ArrayListValuedHashMap<>();
+            ListValuedMap<State, Set<State>> neighborMap = MultiMapUtils.newListValuedHashMap();
             /* Initialize value of N for this event (e) */
             nValues.put(e, new MutableInt(-1));
 
@@ -1017,14 +1017,14 @@ public class Automaton implements Cloneable {
         for (Event e : IterableUtils.filteredIterable(
                 events, event -> BooleanUtils.or(event.isControllable()))) {
 
-            ListValuedMap<State, Set<State>> neighborMap = new ArrayListValuedHashMap<>();
+            ListValuedMap<State, Set<State>> neighborMap = MultiMapUtils.newListValuedHashMap();
 
             Set<State> disablementStates = Collections.unmodifiableSet(uStructure.getDisablementStates(e.getLabel()));
             Set<State> enablementStates = Collections.unmodifiableSet(uStructure.getEnablementStates(e.getLabel()));
             Set<State> controlStates = SetUtils.union(enablementStates, disablementStates);
 
             // Setup ambiguity level store for current event
-            ambLevels.put(e, new ArrayListValuedHashMap<>());
+            ambLevels.put(e, MultiMapUtils.newListValuedHashMap());
 
             /*
              * Initialize set of adjacent vertices and ambiguity levels
