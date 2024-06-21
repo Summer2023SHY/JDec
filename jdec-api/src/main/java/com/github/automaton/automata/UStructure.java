@@ -849,7 +849,7 @@ public class UStructure extends Automaton {
             // violation
             for (CommunicationData communication : getPotentialAndNashCommunications())
                 if (communication.initialStateID == stateID)
-                    if (isStrictSubVector(getEvent(eventID).getVector(), getEvent(communication.eventID).getVector())) {
+                    if (LabelVector.isStrictSubVector(getEvent(eventID).getVector(), getEvent(communication.eventID).getVector())) {
 
                         // Find the associated communication in the original U-Structure (since the IDs
                         // may no longer match after a protocol is applied)
@@ -1356,36 +1356,9 @@ public class UStructure extends Automaton {
             LabelVector eventVector = copy.getEvent(data.eventID).getVector();
             for (Long s : reachableStates)
                 for (Transition t : copy.getState(s).getTransitions())
-                    if (isStrictSubVector(t.getEvent().getVector(), eventVector))
+                    if (LabelVector.isStrictSubVector(t.getEvent().getVector(), eventVector))
                         return false;
 
-        }
-
-        return true;
-
-    }
-
-    /**
-     * Check to see whether the first vector is a strict sub-vector of the second
-     * vector.
-     * 
-     * @param v1 The first vector
-     * @param v2 The second vector
-     * @return Whether or not the first vector is a strict sub-vector of the second
-     **/
-    private boolean isStrictSubVector(LabelVector v1, LabelVector v2) {
-
-        // If the vectors are equal or the sizes are different, then it cannot be a
-        // strict sub-vector
-        if (v1.equals(v2) || v1.getSize() != v2.getSize())
-            return false;
-
-        // Compare each pair of elements, ensuring that it's a strict sub-vector
-        for (int i = 0; i < v1.getSize(); i++) {
-            String label1 = v1.getLabelAtIndex(i);
-            String label2 = v2.getLabelAtIndex(i);
-            if (!label1.equals(label2) && !label1.equals("*"))
-                return false;
         }
 
         return true;
