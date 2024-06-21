@@ -941,7 +941,7 @@ public class UStructure extends Automaton {
      * @param n The number to take the factorial of, must be in the range [0,12]
      * @return The factorial value
      **/
-    private int factorial(int n) {
+    private static int factorial(int n) {
 
         // Error checking
         if (n < 0 || n > 12) {
