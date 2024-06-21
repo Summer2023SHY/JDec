@@ -18,9 +18,20 @@ import org.apache.commons.collections4.*;
  */
 public class SubsetConstruction extends Automaton {
 
+    /** The U-Structure that this subset construction is built from. */
     private transient final UStructure source;
+    /** The controller that the subset construction is built with. */
     private final int controller;
 
+    /**
+     * Builds a new subset construction.
+     * 
+     * @param source     the U-Structure to build this subset construction with
+     * @param controller the controller to build this subset construction with
+     * 
+     * @throws IndexOutOfBoundsException if {@code controller} is out of bounds
+     * @throws NullPointerException      if {@code source} is {@code null}
+     */
     SubsetConstruction(UStructure source, int controller) {
         super(Objects.requireNonNull(source).nControllers);
         this.source = source;
@@ -101,8 +112,6 @@ public class SubsetConstruction extends Automaton {
      * 
      * @param state      state to perform null closure with
      * @param controller the controller to perform subset construction with
-     * 
-     * @since 2.0
      */
     private StateSet nullClosure(State state) {
         Set<State> indistinguishableStates = new HashSet<>();
@@ -115,8 +124,6 @@ public class SubsetConstruction extends Automaton {
      * 
      * @param states     a list of states that share the same triggering event
      * @param controller the controller to perform subset construction with
-     * 
-     * @since 2.0
      */
     private StateSet nullClosure(List<State> states) {
         Set<State> indistinguishableStates = new HashSet<>();
@@ -134,8 +141,6 @@ public class SubsetConstruction extends Automaton {
      * @param stateSet   set of states containing indistinguishable states
      * @param curr       state to process
      * @param controller the controller to perform subset construction with
-     * 
-     * @since 2.0
      */
     private void nullClosure(Set<State> stateSet, State curr) {
         stateSet.add(curr);
