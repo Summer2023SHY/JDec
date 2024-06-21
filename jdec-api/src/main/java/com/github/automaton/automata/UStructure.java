@@ -184,7 +184,7 @@ public class UStructure extends Automaton {
                         boolean[] controllable = new boolean[nControllers];
                         for (int i = 1; i < vector.getSize(); i++) {
                             String label = vector.getLabelAtIndex(i);
-                            if (!label.equals("*")) {
+                            if (!label.equals(Event.EPSILON)) {
                                 observable[i - 1] = observableMapping.get(label + i);
                                 controllable[i - 1] = controllableMapping.get(label + i);
                             }
@@ -617,7 +617,7 @@ public class UStructure extends Automaton {
         Iterator<Transition> nullTransitions = IteratorUtils.<Transition>filteredIterator(
                 curr.getTransitions().iterator(),
                 t -> {
-                    if (t.getEvent().getVector().getLabelAtIndex(controller).equals("*")) {
+                    if (t.getEvent().getVector().getLabelAtIndex(controller).equals(Event.EPSILON)) {
                         return true;
                     } else if (controller == 0) {
                         return false;
@@ -1013,7 +1013,7 @@ public class UStructure extends Automaton {
         // We have found the destination if all vector elements have been found
         boolean finished = true;
         for (int i = 0; i < communication.getSize(); i++)
-            if (!communication.getLabelAtIndex(i).equals("*") && !vectorElementsFound[i]) {
+            if (!communication.getLabelAtIndex(i).equals(Event.EPSILON) && !vectorElementsFound[i]) {
                 finished = false;
                 break;
             }
@@ -1046,7 +1046,7 @@ public class UStructure extends Automaton {
 
                 String element = t.getEvent().getVector().getLabelAtIndex(i);
 
-                if (!element.equals("*")) {
+                if (!element.equals(Event.EPSILON)) {
 
                     // Conflict since we have already found an element for this index (so they
                     // aren't compatible)
@@ -1129,7 +1129,7 @@ public class UStructure extends Automaton {
         Set<LabelVector> unobservableLabels = new HashSet<LabelVector>();
 
         for (LabelVector v : leastUpperBounds) {
-            if (v.getLabelAtIndex(0).equals("*"))
+            if (v.getLabelAtIndex(0).equals(Event.EPSILON))
                 unobservableLabels.add(v);
             else
                 observableLabels.add(v);
@@ -1170,19 +1170,19 @@ public class UStructure extends Automaton {
 
                     // Check to see if they are incompatible or if this potential communication has
                     // already been taken care of
-                    if (!label1.equals("*") && !label2.equals("*")) {
+                    if (!label1.equals(Event.EPSILON) && !label2.equals(Event.EPSILON)) {
                         valid = false;
                         break;
                     }
 
                     // Append vector element
                     String newEventLabel = null;
-                    if (!label1.equals("*")) {
+                    if (!label1.equals(Event.EPSILON)) {
                         potentialCommunicationBuilder.append("," + label1);
                         newEventLabel = label1;
                         if (i > 0)
                             roles[i - 1] = CommunicationRole.SENDER;
-                    } else if (!label2.equals("*")) {
+                    } else if (!label2.equals(Event.EPSILON)) {
                         potentialCommunicationBuilder.append("," + label2);
                         newEventLabel = label2;
                         if (i > 0)
@@ -1276,13 +1276,13 @@ public class UStructure extends Automaton {
                         String label2 = v2.getLabelAtIndex(i);
 
                         // Check for incompatibility
-                        if (!label1.equals("*") && !label2.equals("*") && !label1.equals(label2)) {
+                        if (!label1.equals(Event.EPSILON) && !label2.equals(Event.EPSILON) && !label1.equals(label2)) {
                             valid = false;
                             break;
                         }
 
                         // Append vector element
-                        if (label1.equals("*"))
+                        if (label1.equals(Event.EPSILON))
                             leastUpperBoundBuilder.append("," + label2);
                         else
                             leastUpperBoundBuilder.append("," + label1);
@@ -1569,7 +1569,7 @@ public class UStructure extends Automaton {
                 if (t.getTargetStateID() == nextState.getID()) {
                     eventSequence.add(t.getEvent());
                     String label = t.getEvent().getVector().getLabelAtIndex(0);
-                    if (!label.equals("*"))
+                    if (!label.equals(Event.EPSILON))
                         labelSequence.add(label);
                     break;
                 }
@@ -1581,7 +1581,7 @@ public class UStructure extends Automaton {
         // Add final event
         Event finalEvent = getEvent(violation.eventID);
         String finalEventLabel = finalEvent.getVector().getLabelAtIndex(0);
-        if (!finalEventLabel.equals("*"))
+        if (!finalEventLabel.equals(Event.EPSILON))
             labelSequence.add(finalEventLabel);
         eventSequence.add(finalEvent);
 
@@ -1601,7 +1601,7 @@ public class UStructure extends Automaton {
             List<String> sequence = new ArrayList<String>();
             for (Event e : eventSequence) {
                 String label = e.getVector().getLabelAtIndex(i + 1);
-                if (!label.equals("*"))
+                if (!label.equals(Event.EPSILON))
                     sequence.add(label);
             }
 

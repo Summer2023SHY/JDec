@@ -109,7 +109,7 @@ public class LabelVector implements Iterable<String> {
      *         controller.
      **/
     public boolean isUnobservableToController(int index) {
-        return Objects.equals(getLabelAtIndex(0), "*") || Objects.equals(getLabelAtIndex(index), "*");
+        return Objects.equals(getLabelAtIndex(0), Event.EPSILON) || Objects.equals(getLabelAtIndex(index), Event.EPSILON);
     }
 
     /**
@@ -230,7 +230,7 @@ public class LabelVector implements Iterable<String> {
         for (int i = 0; i < v1.getSize(); i++) {
             String label1 = v1.getLabelAtIndex(i);
             String label2 = v2.getLabelAtIndex(i);
-            if (!label1.equals(label2) && !label1.equals("*"))
+            if (!label1.equals(label2) && !label1.equals(Event.EPSILON))
                 return false;
         }
 
