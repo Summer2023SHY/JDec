@@ -22,6 +22,13 @@ import org.apache.commons.lang3.*;
  */
 public class Event {
 
+    /**
+     * String that represents an &epsilon; transition.
+     * 
+     * @since 2.1.0
+     */
+    public static final String EPSILON = "*";
+
     /* INSTANCE VARIABLES */
 
     private String label;

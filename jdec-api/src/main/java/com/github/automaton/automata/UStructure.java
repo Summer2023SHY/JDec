@@ -17,6 +17,7 @@ import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.*;
 
+import com.github.automaton.automata.util.PowerSetUtils;
 import com.github.automaton.io.json.JsonUtils;
 import com.google.gson.*;
 
@@ -183,7 +184,7 @@ public class UStructure extends Automaton {
                         boolean[] controllable = new boolean[nControllers];
                         for (int i = 1; i < vector.getSize(); i++) {
                             String label = vector.getLabelAtIndex(i);
-                            if (!label.equals("*")) {
+                            if (!label.equals(Event.EPSILON)) {
                                 observable[i - 1] = observableMapping.get(label + i);
                                 controllable[i - 1] = controllableMapping.get(label + i);
                             }
@@ -248,8 +249,7 @@ public class UStructure extends Automaton {
 
         /* Generate powerset of communication protocols */
 
-        List<Set<T>> protocols = new ArrayList<Set<T>>();
-        powerSet(protocols, communications);
+        List<Set<T>> protocols = PowerSetUtils.powerSet(communications);
 
         /* Generate list of feasible protocols */
 
@@ -289,8 +289,7 @@ public class UStructure extends Automaton {
 
         /* Generate powerset of communication protocols */
 
-        List<Set<CommunicationData>> protocols = new ArrayList<Set<CommunicationData>>();
-        powerSet(protocols, communications);
+        List<Set<CommunicationData>> protocols = PowerSetUtils.powerSet(communications);
 
         /*
          * Sort sets by size (so that protocols with fewer communications appear first)
@@ -398,8 +397,7 @@ public class UStructure extends Automaton {
 
         /* Generate powerset of communication protocols */
 
-        List<Set<CommunicationData>> protocols = new ArrayList<Set<CommunicationData>>();
-        powerSetSubset(protocols, getPotentialAndNashCommunications(), requestedProtocol);
+        List<Set<CommunicationData>> protocols = PowerSetUtils.powerSetSubset(getPotentialAndNashCommunications(), requestedProtocol);
 
         /* Generate list of feasible protocols */
 
@@ -619,7 +617,7 @@ public class UStructure extends Automaton {
         Iterator<Transition> nullTransitions = IteratorUtils.<Transition>filteredIterator(
                 curr.getTransitions().iterator(),
                 t -> {
-                    if (t.getEvent().getVector().getLabelAtIndex(controller).equals("*")) {
+                    if (t.getEvent().getVector().getLabelAtIndex(controller).equals(Event.EPSILON)) {
                         return true;
                     } else if (controller == 0) {
                         return false;
@@ -849,7 +847,7 @@ public class UStructure extends Automaton {
             // violation
             for (CommunicationData communication : getPotentialAndNashCommunications())
                 if (communication.initialStateID == stateID)
-                    if (isStrictSubVector(getEvent(eventID).getVector(), getEvent(communication.eventID).getVector())) {
+                    if (LabelVector.isStrictSubVector(getEvent(eventID).getVector(), getEvent(communication.eventID).getVector())) {
 
                         // Find the associated communication in the original U-Structure (since the IDs
                         // may no longer match after a protocol is applied)
@@ -941,7 +939,7 @@ public class UStructure extends Automaton {
      * @param n The number to take the factorial of, must be in the range [0,12]
      * @return The factorial value
      **/
-    private int factorial(int n) {
+    private static int factorial(int n) {
 
         // Error checking
         if (n < 0 || n > 12) {
@@ -1015,7 +1013,7 @@ public class UStructure extends Automaton {
         // We have found the destination if all vector elements have been found
         boolean finished = true;
         for (int i = 0; i < communication.getSize(); i++)
-            if (!communication.getLabelAtIndex(i).equals("*") && !vectorElementsFound[i]) {
+            if (!communication.getLabelAtIndex(i).equals(Event.EPSILON) && !vectorElementsFound[i]) {
                 finished = false;
                 break;
             }
@@ -1048,7 +1046,7 @@ public class UStructure extends Automaton {
 
                 String element = t.getEvent().getVector().getLabelAtIndex(i);
 
-                if (!element.equals("*")) {
+                if (!element.equals(Event.EPSILON)) {
 
                     // Conflict since we have already found an element for this index (so they
                     // aren't compatible)
@@ -1131,7 +1129,7 @@ public class UStructure extends Automaton {
         Set<LabelVector> unobservableLabels = new HashSet<LabelVector>();
 
         for (LabelVector v : leastUpperBounds) {
-            if (v.getLabelAtIndex(0).equals("*"))
+            if (v.getLabelAtIndex(0).equals(Event.EPSILON))
                 unobservableLabels.add(v);
             else
                 observableLabels.add(v);
@@ -1172,19 +1170,19 @@ public class UStructure extends Automaton {
 
                     // Check to see if they are incompatible or if this potential communication has
                     // already been taken care of
-                    if (!label1.equals("*") && !label2.equals("*")) {
+                    if (!label1.equals(Event.EPSILON) && !label2.equals(Event.EPSILON)) {
                         valid = false;
                         break;
                     }
 
                     // Append vector element
                     String newEventLabel = null;
-                    if (!label1.equals("*")) {
+                    if (!label1.equals(Event.EPSILON)) {
                         potentialCommunicationBuilder.append("," + label1);
                         newEventLabel = label1;
                         if (i > 0)
                             roles[i - 1] = CommunicationRole.SENDER;
-                    } else if (!label2.equals("*")) {
+                    } else if (!label2.equals(Event.EPSILON)) {
                         potentialCommunicationBuilder.append("," + label2);
                         newEventLabel = label2;
                         if (i > 0)
@@ -1278,13 +1276,13 @@ public class UStructure extends Automaton {
                         String label2 = v2.getLabelAtIndex(i);
 
                         // Check for incompatibility
-                        if (!label1.equals("*") && !label2.equals("*") && !label1.equals(label2)) {
+                        if (!label1.equals(Event.EPSILON) && !label2.equals(Event.EPSILON) && !label1.equals(label2)) {
                             valid = false;
                             break;
                         }
 
                         // Append vector element
-                        if (label1.equals("*"))
+                        if (label1.equals(Event.EPSILON))
                             leastUpperBoundBuilder.append("," + label2);
                         else
                             leastUpperBoundBuilder.append("," + label1);
@@ -1356,36 +1354,9 @@ public class UStructure extends Automaton {
             LabelVector eventVector = copy.getEvent(data.eventID).getVector();
             for (Long s : reachableStates)
                 for (Transition t : copy.getState(s).getTransitions())
-                    if (isStrictSubVector(t.getEvent().getVector(), eventVector))
+                    if (LabelVector.isStrictSubVector(t.getEvent().getVector(), eventVector))
                         return false;
 
-        }
-
-        return true;
-
-    }
-
-    /**
-     * Check to see whether the first vector is a strict sub-vector of the second
-     * vector.
-     * 
-     * @param v1 The first vector
-     * @param v2 The second vector
-     * @return Whether or not the first vector is a strict sub-vector of the second
-     **/
-    private boolean isStrictSubVector(LabelVector v1, LabelVector v2) {
-
-        // If the vectors are equal or the sizes are different, then it cannot be a
-        // strict sub-vector
-        if (v1.equals(v2) || v1.getSize() != v2.getSize())
-            return false;
-
-        // Compare each pair of elements, ensuring that it's a strict sub-vector
-        for (int i = 0; i < v1.getSize(); i++) {
-            String label1 = v1.getLabelAtIndex(i);
-            String label2 = v2.getLabelAtIndex(i);
-            if (!label1.equals(label2) && !label1.equals("*"))
-                return false;
         }
 
         return true;
@@ -1473,78 +1444,6 @@ public class UStructure extends Automaton {
         for (Transition t : currentInvertedState.getTransitions())
             if (t.getEvent().getVector().isUnobservableToController(indexOfController))
                 findConnectingStates(uStructure, invertedUStructure, set, t.getTargetStateID(), indexOfController);
-
-    }
-
-    /**
-     * Generate a list of all possible sets in the powerset which contain the
-     * required elements.
-     * 
-     * @param results          This is a list of sets where all of the sets in the
-     *                         powerset will be stored
-     * @param masterList       This is the original list of elements in the set
-     * @param requiredElements This is the set of elements which must be included in
-     *                         each generated set
-     **/
-    private static <T> void powerSetSubset(List<Set<T>> results, List<T> masterList, Set<T> requiredElements) {
-
-        List<T> copyOfMasterList = new ArrayList<T>(masterList);
-        copyOfMasterList.removeAll(requiredElements);
-
-        powerSetHelper(results, copyOfMasterList, new HashSet<T>(requiredElements), 0);
-
-    }
-
-    /**
-     * A generic method to generate the powerset of the given list, which are stored
-     * in the list of sets that you give it.
-     * 
-     * @param results    This is a list of sets where all of the sets in the
-     *                   powerset will be stored
-     * @param masterList This is the original list of elements in the set
-     **/
-    private static <T> void powerSet(List<Set<T>> results, List<T> masterList) {
-
-        powerSetHelper(results, masterList, new HashSet<T>(), 0);
-
-    }
-
-    /**
-     * A method used to help generate the powerset.
-     * 
-     * @param results        This is a list of sets where all of the sets in the
-     *                       powerset will be stored
-     * @param masterList     This is the original list of elements in the set
-     * @param elementsChosen This maintains the elements chosen so far
-     * @param index          The current index in the master list
-     **/
-    private static <T> void powerSetHelper(List<Set<T>> results,
-            List<T> masterList,
-            Set<T> elementsChosen,
-            int index) {
-
-        /* Base case */
-
-        if (index == masterList.size()) {
-            results.add(elementsChosen);
-            return;
-        }
-
-        /* Recursive case */
-
-        Set<T> includingElement = new HashSet<T>();
-        Set<T> notIncludingElement = new HashSet<T>();
-
-        for (T e : elementsChosen) {
-            includingElement.add(e);
-            notIncludingElement.add(e);
-        }
-
-        includingElement.add(masterList.get(index));
-
-        // Recursive calls
-        powerSetHelper(results, masterList, includingElement, index + 1);
-        powerSetHelper(results, masterList, notIncludingElement, index + 1);
 
     }
 
@@ -1670,7 +1569,7 @@ public class UStructure extends Automaton {
                 if (t.getTargetStateID() == nextState.getID()) {
                     eventSequence.add(t.getEvent());
                     String label = t.getEvent().getVector().getLabelAtIndex(0);
-                    if (!label.equals("*"))
+                    if (!label.equals(Event.EPSILON))
                         labelSequence.add(label);
                     break;
                 }
@@ -1682,7 +1581,7 @@ public class UStructure extends Automaton {
         // Add final event
         Event finalEvent = getEvent(violation.eventID);
         String finalEventLabel = finalEvent.getVector().getLabelAtIndex(0);
-        if (!finalEventLabel.equals("*"))
+        if (!finalEventLabel.equals(Event.EPSILON))
             labelSequence.add(finalEventLabel);
         eventSequence.add(finalEvent);
 
@@ -1702,7 +1601,7 @@ public class UStructure extends Automaton {
             List<String> sequence = new ArrayList<String>();
             for (Event e : eventSequence) {
                 String label = e.getVector().getLabelAtIndex(i + 1);
-                if (!label.equals("*"))
+                if (!label.equals(Event.EPSILON))
                     sequence.add(label);
             }
 

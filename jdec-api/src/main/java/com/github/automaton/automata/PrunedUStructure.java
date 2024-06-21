@@ -133,7 +133,7 @@ public class PrunedUStructure extends UStructure {
 
                 String element = t.getEvent().getVector().getLabelAtIndex(i);
 
-                if (!element.equals("*")) {
+                if (!element.equals(Event.EPSILON)) {
 
                     // Conflict since we have already found an element for this index (so they
                     // aren't compatible)

@@ -701,7 +701,7 @@ public class Automaton implements Cloneable {
 
                         // Unobservable events by this controller
                     } else {
-                        combinedEvent.add("*");
+                        combinedEvent.add(Event.EPSILON);
                         targetStates.add(listOfStates.get(i + 1));
                     }
 
@@ -779,7 +779,7 @@ public class Automaton implements Cloneable {
                                 combinedEvent.add(t.getEvent().getLabel());
                                 targetStates.add(getState(t.getTargetStateID()));
                             } else {
-                                combinedEvent.add("*");
+                                combinedEvent.add(Event.EPSILON);
                                 targetStates.add(getState(listOfIDs.get(j)));
                             }
 
