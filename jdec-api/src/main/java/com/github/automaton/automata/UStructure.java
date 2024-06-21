@@ -17,6 +17,7 @@ import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.*;
 
+import com.github.automaton.automata.util.PowerSetUtils;
 import com.github.automaton.io.json.JsonUtils;
 import com.google.gson.*;
 
@@ -248,8 +249,7 @@ public class UStructure extends Automaton {
 
         /* Generate powerset of communication protocols */
 
-        List<Set<T>> protocols = new ArrayList<Set<T>>();
-        powerSet(protocols, communications);
+        List<Set<T>> protocols = PowerSetUtils.powerSet(communications);
 
         /* Generate list of feasible protocols */
 
@@ -289,8 +289,7 @@ public class UStructure extends Automaton {
 
         /* Generate powerset of communication protocols */
 
-        List<Set<CommunicationData>> protocols = new ArrayList<Set<CommunicationData>>();
-        powerSet(protocols, communications);
+        List<Set<CommunicationData>> protocols = PowerSetUtils.powerSet(communications);
 
         /*
          * Sort sets by size (so that protocols with fewer communications appear first)
@@ -398,8 +397,7 @@ public class UStructure extends Automaton {
 
         /* Generate powerset of communication protocols */
 
-        List<Set<CommunicationData>> protocols = new ArrayList<Set<CommunicationData>>();
-        powerSetSubset(protocols, getPotentialAndNashCommunications(), requestedProtocol);
+        List<Set<CommunicationData>> protocols = PowerSetUtils.powerSetSubset(getPotentialAndNashCommunications(), requestedProtocol);
 
         /* Generate list of feasible protocols */
 
@@ -1446,78 +1444,6 @@ public class UStructure extends Automaton {
         for (Transition t : currentInvertedState.getTransitions())
             if (t.getEvent().getVector().isUnobservableToController(indexOfController))
                 findConnectingStates(uStructure, invertedUStructure, set, t.getTargetStateID(), indexOfController);
-
-    }
-
-    /**
-     * Generate a list of all possible sets in the powerset which contain the
-     * required elements.
-     * 
-     * @param results          This is a list of sets where all of the sets in the
-     *                         powerset will be stored
-     * @param masterList       This is the original list of elements in the set
-     * @param requiredElements This is the set of elements which must be included in
-     *                         each generated set
-     **/
-    private static <T> void powerSetSubset(List<Set<T>> results, List<T> masterList, Set<T> requiredElements) {
-
-        List<T> copyOfMasterList = new ArrayList<T>(masterList);
-        copyOfMasterList.removeAll(requiredElements);
-
-        powerSetHelper(results, copyOfMasterList, new HashSet<T>(requiredElements), 0);
-
-    }
-
-    /**
-     * A generic method to generate the powerset of the given list, which are stored
-     * in the list of sets that you give it.
-     * 
-     * @param results    This is a list of sets where all of the sets in the
-     *                   powerset will be stored
-     * @param masterList This is the original list of elements in the set
-     **/
-    private static <T> void powerSet(List<Set<T>> results, List<T> masterList) {
-
-        powerSetHelper(results, masterList, new HashSet<T>(), 0);
-
-    }
-
-    /**
-     * A method used to help generate the powerset.
-     * 
-     * @param results        This is a list of sets where all of the sets in the
-     *                       powerset will be stored
-     * @param masterList     This is the original list of elements in the set
-     * @param elementsChosen This maintains the elements chosen so far
-     * @param index          The current index in the master list
-     **/
-    private static <T> void powerSetHelper(List<Set<T>> results,
-            List<T> masterList,
-            Set<T> elementsChosen,
-            int index) {
-
-        /* Base case */
-
-        if (index == masterList.size()) {
-            results.add(elementsChosen);
-            return;
-        }
-
-        /* Recursive case */
-
-        Set<T> includingElement = new HashSet<T>();
-        Set<T> notIncludingElement = new HashSet<T>();
-
-        for (T e : elementsChosen) {
-            includingElement.add(e);
-            notIncludingElement.add(e);
-        }
-
-        includingElement.add(masterList.get(index));
-
-        // Recursive calls
-        powerSetHelper(results, masterList, includingElement, index + 1);
-        powerSetHelper(results, masterList, notIncludingElement, index + 1);
 
     }
 
