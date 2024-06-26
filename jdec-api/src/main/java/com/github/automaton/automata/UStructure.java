@@ -1921,16 +1921,7 @@ public class UStructure extends Automaton {
      * @since 2.0
      */
     public Set<State> getEnablementStates(String eventLabel) {
-        Set<State> enablementStates = getStates().parallelStream().filter(s -> {
-            for (Transition t : s.getTransitions()) {
-                if (t.getEvent().getVector().getLabelAtIndex(0).equals(eventLabel)
-                        && conditionalViolations
-                                .contains(new TransitionData(s.getID(), t.getEvent().getID(), t.getTargetStateID()))) {
-                    return true;
-                }
-            }
-            return false;
-        }).collect(Collectors.toSet());
+        Set<State> enablementStates = getStates().parallelStream().filter(s -> s.isEnablementStateOf(eventLabel)).collect(Collectors.toSet());
         return enablementStates;
     }
 
@@ -1944,16 +1935,7 @@ public class UStructure extends Automaton {
      * @since 2.0
      */
     public Set<State> getDisablementStates(String eventLabel) {
-        Set<State> disablementStates = getStates().parallelStream().filter(s -> {
-            for (Transition t : s.getTransitions()) {
-                if (t.getEvent().getVector().getLabelAtIndex(0).equals(eventLabel)
-                        && unconditionalViolations
-                                .contains(new TransitionData(s.getID(), t.getEvent().getID(), t.getTargetStateID()))) {
-                    return true;
-                }
-            }
-            return false;
-        }).collect(Collectors.toSet());
+        Set<State> disablementStates = getStates().parallelStream().filter(s -> s.isDisablementStateOf(eventLabel)).collect(Collectors.toSet());
         return disablementStates;
     }
 
