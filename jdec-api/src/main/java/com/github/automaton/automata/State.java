@@ -87,11 +87,11 @@ public class State implements Cloneable {
      */
     private Set<String> disablementEvents;
     /**
-     * Indicates whether this state represents an illegal configuration.
+     * The set of events that this state represents an illegal configuration of.
      * 
      * @since 2.1.0
      */
-    private boolean illegalConfig;
+    private Set<String> illegalConfigEvents;
 
     /* CONSTRUCTORS */
 
@@ -105,6 +105,7 @@ public class State implements Cloneable {
         transitions = new ArrayList<Transition>();
         enablementEvents = new LinkedHashSet<String>();
         disablementEvents = new LinkedHashSet<String>();
+        illegalConfigEvents = new LinkedHashSet<String>();
     }
 
     /**
@@ -153,6 +154,34 @@ public class State implements Cloneable {
                     "A state cannot be an enablement and a disablement of the same event simultaneously");
         this.disablementEvents.addAll(disablementEvents);
         this.enablementEvents.addAll(enablementEvents);
+    }
+
+    /**
+     * Constructs a new state with the specified transitions and the control
+     * information.
+     * 
+     * @param label             The state's label
+     * @param id                The state ID
+     * @param marked            Whether or not the state is marked
+     * @param transitions       The list of transitions leading out from this state
+     * @param enablementEvents  the set of events that this state is an enablement
+     *                          configuration of
+     * @param disablementEvents the set of events that this state is a disablement
+     *                          configuration of
+     * @throws IllegalArgumentException if {@code enablement && disablement} is
+     *                                  {@code true}
+     * 
+     * @since 2.1.0
+     */
+    public State(String label, long id, boolean marked, List<Transition> transitions, Set<String> enablementEvents,
+            Set<String> disablementEvents, Set<String> illegalConfigEvents) {
+        this(label, id, marked, transitions);
+        if (!SetUtils.intersection(enablementEvents, disablementEvents).isEmpty())
+            throw new IllegalArgumentException(
+                    "A state cannot be an enablement and a disablement of the same event simultaneously");
+        this.disablementEvents.addAll(disablementEvents);
+        this.enablementEvents.addAll(enablementEvents);
+        this.illegalConfigEvents.addAll(illegalConfigEvents);
     }
 
     /**
@@ -208,6 +237,26 @@ public class State implements Cloneable {
      **/
     public State(String label, long id, boolean marked, Set<String> enablementEvents, Set<String> disablementEvents) {
         this(label, id, marked, new ArrayList<>(), enablementEvents, disablementEvents);
+    }
+
+    /**
+     * Constructs a new state with the specified control information.
+     * 
+     * @param label             The state's label
+     * @param id                The state ID
+     * @param marked            Whether or not the state is marked
+     * @param enablementEvents  the set of events that this state is an enablement
+     *                          configuration of
+     * @param disablementEvents the set of events that this state is a disablement
+     *                          configuration of
+     * @throws IllegalArgumentException if {@code enablement && disablement} is
+     *                                  {@code true}
+     * 
+     * @since 2.1.0
+     **/
+    public State(String label, long id, boolean marked, Set<String> enablementEvents, Set<String> disablementEvents, Set<String> illegalConfigEvents) {
+        this(label, id, marked, enablementEvents, disablementEvents);
+        this.illegalConfigEvents.addAll(illegalConfigEvents);
     }
 
     /**
@@ -315,12 +364,28 @@ public class State implements Cloneable {
     /**
      * Changes whether this state represents an illegal configuration.
      * 
+     * @param event an event
+     * 
+     * @since 2.1.0
+     */
+    boolean setIllegalConfigOf(String event) {
+        if (isEnablementStateOf(event) || isDisablementStateOf(event))
+            return illegalConfigEvents.add(event);
+        return false;
+    }
+
+    /**
+     * Changes whether this state represents an illegal configuration.
+     * 
      * @param illegalConfig whether this state represents an illegal configuration
      * 
      * @since 2.1.0
      */
-    void setIllegalConfig(boolean illegalConfig) {
-        this.illegalConfig = illegalConfig;
+    boolean setIllegalConfigOf(Collection<String> events) {
+        boolean modified = false;
+        for (String event : events)
+            modified |= setIllegalConfigOf(event);
+        return modified;
     }
 
     /**
@@ -409,6 +474,10 @@ public class State implements Cloneable {
         return disablementEvents;
     }
 
+    Set<String> getIllegalConfigEvents() {
+        return illegalConfigEvents;
+    }
+
     /**
      * Checks whether this state is a disablement config of the specified event.
      * 
@@ -429,7 +498,20 @@ public class State implements Cloneable {
      * @since 2.1.0
      */
     public boolean isIllegalConfiguration() {
-        return illegalConfig;
+        return !illegalConfigEvents.isEmpty();
+    }
+
+    /**
+     * Checks whether this state represents an illegal configuration of the specified event.
+     * 
+     * @param event an event
+     * 
+     * @return whether or not this state represents an illegal configuration
+     * 
+     * @since 2.1.0
+     */
+    public boolean isIllegalConfigurationOf(String event) {
+        return illegalConfigEvents.contains(event);
     }
 
     /**
@@ -502,7 +584,7 @@ public class State implements Cloneable {
             clonedTransitions.add(ObjectUtils.clone(orig));
         }
         return new State(label, id, marked, clonedTransitions, new LinkedHashSet<>(enablementEvents),
-                new LinkedHashSet<>(disablementEvents));
+                new LinkedHashSet<>(disablementEvents), new LinkedHashSet<>(illegalConfigEvents));
     }
 
     /**

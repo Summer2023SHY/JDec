@@ -749,7 +749,7 @@ public class Automaton implements Cloneable {
                         }
                     }
                     if (!validConfig) {
-                        stateVector.setIllegalConfig(true);
+                        stateVector.setIllegalConfigOf(combinedEvent.get(0));
                     }
                 }
                 if (isConditionalViolation) {
@@ -764,7 +764,7 @@ public class Automaton implements Cloneable {
                         }
                     }
                     if (!validConfig) {
-                        stateVector.setIllegalConfig(true);
+                        stateVector.setIllegalConfigOf(combinedEvent.get(0));
                     }
                 }
 
