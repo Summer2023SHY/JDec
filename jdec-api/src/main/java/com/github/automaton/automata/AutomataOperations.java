@@ -92,8 +92,8 @@ public class AutomataOperations {
                     new ArrayList<Transition>(),
                     id == source.getInitialStateID(),
                     id,
-                    state.isEnablementState(),
-                    state.isDisablementState());
+                    state.getEnablementEvents(),
+                    state.getDisablementEvents());
 
             // Traverse each transition
             for (Transition t : transitions) {

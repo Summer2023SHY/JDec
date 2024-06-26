@@ -149,7 +149,7 @@ public class StateIO {
         labelLength = labelLength == ArrayUtils.INDEX_NOT_FOUND ? arr.length : labelLength;
 
         // Instantiate the state
-        State state = new State(new String(arr, 0, labelLength, UTF_8), id, marked, enablement, disablement);
+        State state = new State(new String(arr, 0, labelLength, UTF_8), id, marked);
 
         /* Transitions */
 

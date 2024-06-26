@@ -670,7 +670,7 @@ public class UStructure extends Automaton {
                 relabeled.addStateAt(new State(
                         s.getLabel() + (stateIDMultiSet.getCount(origID) == 0 ? StringUtils.EMPTY
                                 : "-" + Integer.toString(stateIDMultiSet.getCount(origID))),
-                        modID, false, s.isEnablementState(), s.isDisablementState()), false);
+                        modID, false, s.getEnablementEvents(), s.getDisablementEvents()), false);
                 stateIDMultiSet.add(origID);
             }
             /* Add transitions to states in the same state set */
