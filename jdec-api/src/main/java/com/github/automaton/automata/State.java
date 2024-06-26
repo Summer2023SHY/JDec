@@ -400,7 +400,7 @@ public class State implements Cloneable {
      * 
      * @since 2.1.0
      */
-    public boolean isDisablemenEventOf(String event) {
+    public boolean isDisablementStateOf(String event) {
         return disablementEvents.contains(event);
     }
 
