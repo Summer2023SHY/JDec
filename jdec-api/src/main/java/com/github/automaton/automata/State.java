@@ -7,6 +7,7 @@ package com.github.automaton.automata;
 
 import java.util.*;
 
+import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.ObjectUtils;
 
 /**
@@ -71,9 +72,20 @@ public class State implements Cloneable {
     private String label;
     private long id;
     private boolean marked;
-    private boolean enablement;
-    private boolean disablement;
     private List<Transition> transitions;
+
+    /**
+     * The set of events that this state is an enablement configuration of.
+     * 
+     * @since 2.1.0
+     */
+    private Set<String> enablementEvents;
+    /**
+     * The set of events that this state is a disablement configuration of.
+     * 
+     * @since 2.1.0
+     */
+    private Set<String> disablementEvents;
 
     /* CONSTRUCTORS */
 
@@ -85,6 +97,8 @@ public class State implements Cloneable {
      */
     State() {
         transitions = new ArrayList<Transition>();
+        enablementEvents = new LinkedHashSet<String>();
+        disablementEvents = new LinkedHashSet<String>();
     }
 
     /**
@@ -96,23 +110,47 @@ public class State implements Cloneable {
      * @param transitions The list of transitions leading out from this state
      * @param enablement  Whether or not the state is an enablement state
      * @param disablement Whether or not the state is an disablement state
-     * @throws IllegalArgumentException if {@code enablement && disablement} is
-     *                                  {@code true}
      * 
+     * @throws UnsupportedOperationException always
+     * 
+     * @deprecated This constructor should no longer be used.
      * @since 1.3
      **/
+    @Deprecated(since = "2.1.0", forRemoval = true)
     public State(String label, long id, boolean marked, List<Transition> transitions, boolean enablement,
             boolean disablement) {
-        this(label, id, marked, transitions);
-        if (enablement && disablement) {
-            throw new IllegalArgumentException("A state cannot be an enablement and a disablement simultaneously");
-        }
-        this.enablement = enablement;
-        this.disablement = disablement;
+        throw new UnsupportedOperationException();
     }
 
     /**
-     * Construct a state (including transitions).
+     * Constructs a new state with the specified transitions and the control
+     * information.
+     * 
+     * @param label             The state's label
+     * @param id                The state ID
+     * @param marked            Whether or not the state is marked
+     * @param transitions       The list of transitions leading out from this state
+     * @param enablementEvents  the set of events that this state is an enablement
+     *                          configuration of
+     * @param disablementEvents the set of events that this state is a disablement
+     *                          configuration of
+     * @throws IllegalArgumentException if {@code enablement && disablement} is
+     *                                  {@code true}
+     * 
+     * @since 2.1.0
+     */
+    public State(String label, long id, boolean marked, List<Transition> transitions, Set<String> enablementEvents,
+            Set<String> disablementEvents) {
+        this(label, id, marked, transitions);
+        if (!SetUtils.intersection(enablementEvents, disablementEvents).isEmpty())
+            throw new IllegalArgumentException(
+                    "A state cannot be an enablement and a disablement of the same event simultaneously");
+        this.disablementEvents.addAll(disablementEvents);
+        this.enablementEvents.addAll(enablementEvents);
+    }
+
+    /**
+     * Constructs a new state with the specified transitions.
      * 
      * @param label       The state's label
      * @param id          The state ID
@@ -123,7 +161,9 @@ public class State implements Cloneable {
         this.label = label;
         this.id = id;
         this.marked = marked;
-        this.transitions = transitions;
+        this.transitions = Objects.requireNonNullElse(transitions, new ArrayList<>());
+        this.disablementEvents = new LinkedHashSet<>();
+        this.enablementEvents = new LinkedHashSet<>();
     }
 
     /**
@@ -137,24 +177,42 @@ public class State implements Cloneable {
      * @throws IllegalArgumentException if {@code enablement && disablement} is
      *                                  {@code true}
      * 
+     * @deprecated This constructor should no longer be used.
      * @since 1.3
      **/
+    @Deprecated(since = "2.1.0", forRemoval = true)
     public State(String label, long id, boolean marked, boolean enablement, boolean disablement) {
-        this(label, id, marked, new ArrayList<Transition>(), enablement, disablement);
+        throw new UnsupportedOperationException();
     }
 
     /**
-     * Construct a state (with 0 transitions).
+     * Constructs a new state with the specified control information.
+     * 
+     * @param label             The state's label
+     * @param id                The state ID
+     * @param marked            Whether or not the state is marked
+     * @param enablementEvents  the set of events that this state is an enablement
+     *                          configuration of
+     * @param disablementEvents the set of events that this state is a disablement
+     *                          configuration of
+     * @throws IllegalArgumentException if {@code enablement && disablement} is
+     *                                  {@code true}
+     * 
+     * @since 2.1.0
+     **/
+    public State(String label, long id, boolean marked, Set<String> enablementEvents, Set<String> disablementEvents) {
+        this(label, id, marked, new ArrayList<>(), enablementEvents, disablementEvents);
+    }
+
+    /**
+     * Constructs a new state.
      * 
      * @param label  The state's label
      * @param id     The state ID
      * @param marked Whether or not the state is marked
      **/
     public State(String label, long id, boolean marked) {
-        this.label = label;
-        this.id = id;
-        this.marked = marked;
-        transitions = new ArrayList<Transition>();
+        this(label, id, marked, new ArrayList<>());
     }
 
     /* MUTATOR METHODS */
@@ -193,10 +251,29 @@ public class State implements Cloneable {
      * 
      * @param enablement Whether or not this state is an enablement state
      * 
+     * @throws UnsupportedOperationException always
+     * 
      * @since 1.3
+     * 
+     * @deprecated This method is no longer used.
      */
+    @Deprecated(since = "2.1.0", forRemoval = true)
     void setEnablement(boolean enablement) {
-        this.enablement = enablement;
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Marks this state as an enablement config of the specified event.
+     * 
+     * @param event an event
+     * @return {@code true} if this state is modified by the call
+     * 
+     * @since 2.1.0
+     */
+    boolean setEnablementOf(String event) {
+        if (disablementEvents.contains(event))
+            return false;
+        return enablementEvents.add(event);
     }
 
     /**
@@ -204,10 +281,29 @@ public class State implements Cloneable {
      * 
      * @param disablement Whether or not this state is an disablement state
      * 
+     * @throws UnsupportedOperationException always
+     * 
      * @since 1.3
+     * 
+     * @deprecated This method is no longer used.
      */
+    @Deprecated(since = "2.1.0", forRemoval = true)
     void setDisablement(boolean disablement) {
-        this.disablement = disablement;
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Marks this state as a disablement config of the specified event.
+     * 
+     * @param event an event
+     * @return {@code true} if this state is modified by the call
+     * 
+     * @since 2.1.0
+     */
+    boolean setDisablementOf(String event) {
+        if (enablementEvents.contains(event))
+            return false;
+        return disablementEvents.add(event);
     }
 
     /**
@@ -262,7 +358,7 @@ public class State implements Cloneable {
      * @since 1.3
      */
     public boolean isEnablementState() {
-        return enablement;
+        return !enablementEvents.isEmpty();
     }
 
     /**
@@ -273,7 +369,39 @@ public class State implements Cloneable {
      * @since 1.3
      */
     public boolean isDisablementState() {
-        return disablement;
+        return !disablementEvents.isEmpty();
+    }
+
+    /**
+     * Checks whether this state is an enablement config of the specified event.
+     * 
+     * @param event an event
+     * @return {@code true} if this state is an enablement config of the specified event
+     * 
+     * @since 2.1.0
+     */
+    public boolean isEnablementStateOf(String event) {
+        return enablementEvents.contains(event);
+    }
+
+    Set<String> getEnablementEvents() {
+        return enablementEvents;
+    }
+
+    Set<String> getDisablementEvents() {
+        return disablementEvents;
+    }
+
+    /**
+     * Checks whether this state is a disablement config of the specified event.
+     * 
+     * @param event an event
+     * @return {@code true} if this state is a disablement config of the specified event
+     * 
+     * @since 2.1.0
+     */
+    public boolean isDisablemenEventOf(String event) {
+        return disablementEvents.contains(event);
     }
 
     /**
@@ -345,7 +473,8 @@ public class State implements Cloneable {
         for (Transition orig : transitions) {
             clonedTransitions.add(ObjectUtils.clone(orig));
         }
-        return new State(label, id, marked, clonedTransitions, enablement, disablement);
+        return new State(label, id, marked, clonedTransitions, new LinkedHashSet<>(enablementEvents),
+                new LinkedHashSet<>(disablementEvents));
     }
 
     /**

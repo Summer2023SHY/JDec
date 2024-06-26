@@ -748,12 +748,12 @@ public class Automaton implements Cloneable {
 
                 if (isUnconditionalViolation) {
                     uStructure.addUnconditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
-                    stateVector.setDisablement(true);
+                    stateVector.setDisablementOf(combinedEvent.get(0));
                 }
                 if (isConditionalViolation) {
 
                     uStructure.addConditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
-                    stateVector.setEnablement(true);
+                    stateVector.setEnablementOf(combinedEvent.get(0));
                 }
                 if (isDisablementDecision)
                     uStructure.addDisablementDecision(stateVector.getID(), eventID, targetStateVector.getID(),
@@ -1768,9 +1768,6 @@ public class Automaton implements Cloneable {
     /**
      * Add the specified state to the automaton.
      * 
-     * @implNote The method {@link #renumberStates()} should be called some time
-     *           after using
-     *           this method to make the state IDs consecutive.
      * @param label          The "name" of the new state
      * @param marked         Whether or not the states is marked
      * @param transitions    The list of transitions (if {@code null}, then a new
@@ -1784,16 +1781,43 @@ public class Automaton implements Cloneable {
      * 
      * @since 2.0
      **/
+    @Deprecated(since = "2.1.0", forRemoval = true)
     public boolean addStateAt(String label, boolean marked, List<Transition> transitions, boolean isInitialState,
             long id,
             boolean enablement, boolean disablement) {
+
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Add the specified state to the automaton.
+     * 
+     * @implNote The method {@link #renumberStates()} should be called some time
+     *           after using
+     *           this method to make the state IDs consecutive.
+     * @param label          The "name" of the new state
+     * @param marked         Whether or not the states is marked
+     * @param transitions    The list of transitions (if {@code null}, then a new
+     *                       list is made)
+     * @param isInitialState Whether or not this is the initial state
+     * @param id             The index where the state should be added at
+     * @param enablementEvents     Whether or not this is an enablement state
+     * @param disablementEvents    Whether or not this is a disablement state
+     * @return Whether or not the addition was successful (returns {@code false} if
+     *         a state already existed there)
+     * 
+     * @since 2.0
+     **/
+    public boolean addStateAt(String label, boolean marked, List<Transition> transitions, boolean isInitialState,
+            long id,
+            Set<String> enablementEvents, Set<String> disablementEvents) {
 
         if (stateExists(id))
             return false;
 
         return addStateAt(
                 new State(label, id, marked, Objects.requireNonNullElse(transitions, new ArrayList<Transition>()),
-                        enablement, disablement),
+                    enablementEvents, disablementEvents),
                 isInitialState);
     }
 
