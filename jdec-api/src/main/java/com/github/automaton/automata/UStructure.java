@@ -554,10 +554,7 @@ public class UStructure extends Automaton {
                 State modState = new State(
                         s.getLabel() + (stateIDMultiSet.getCount(origID) == 0 ? StringUtils.EMPTY
                                 : "-" + Integer.toString(stateIDMultiSet.getCount(origID))),
-                        modID, false, s.getEnablementEvents(), s.getDisablementEvents());
-                if (s.isIllegalConfiguration()) {
-                    modState.setIllegalConfig(true);
-                }
+                        modID, false, s.getEnablementEvents(), s.getDisablementEvents(), s.getIllegalConfigEvents());
                 relabeled.addStateAt(modState, false);
                 stateIDMultiSet.add(origID);
             }
