@@ -2195,9 +2195,12 @@ public class JDec extends JFrame {
             generateAutomatonButton = new JButton("Generate Automaton From Code");
             generateAutomatonButton.setFocusable(false);
             generateAutomatonButton.setToolTipText(
-                    "<html>Create a new automaton from the above input, saving it to file. For small automata, an image of the graph is automatically generated.<br>"
-                            + "<b><u>NOTE</u></b>: The generated automaton is saved to file, not the code itself. "
-                            + "This means that your automaton is not saved until you have generated it.</html>");
+                    """
+                            <html>Create a new automaton from the above input, saving it to file. For small automata, an image of the graph is
+                            automatically generated.<br>
+                            <b><u>NOTE</u></b>: The generated automaton is saved to file, not the code itself.
+                            This means that your automaton is not saved until you have generated it.
+                            </html>""");
             generateAutomatonButton.addActionListener(e -> generateAutomatonButtonPressed());
             c.ipady = 0;
             c.weightx = 0.5;
@@ -2211,8 +2214,10 @@ public class JDec extends JFrame {
             generateImageButton = new JButton("Generate Image");
             generateImageButton.setFocusable(false);
             generateImageButton.setToolTipText(
-                    "<html>Given the generated automaton, produce an image of the graph, displaying it to the right.<br>"
-                            + "<b><u>NOTE</u></b>: This process can take a long time for large automata.</html>");
+                    """
+                            <html>Given the generated automaton, produce an image of the graph, displaying it to the right.<br>
+                            <b><u>NOTE</u></b>: This process can take a long time for large automata.
+                            </html>""");
             generateImageButton.addActionListener(e -> generateImage());
             c.ipady = 0;
             c.weightx = 0.5;
@@ -2775,9 +2780,10 @@ public class JDec extends JFrame {
                     // Display warning message, and abort the operation if requested
                     if (uStructure.getSizeOfPotentialAndNashCommunications() > 0)
                         if (!askForConfirmation("Communications Already Exist",
-                                "This U-Structure appears to already have had communications added. Are you sure you want to proceed?"
-                                        + System.lineSeparator()
-                                        + "WARNING: This may result in duplicate communications."))
+                                """
+                                        This U-Structure appears to already have had communications added. Are you sure you want to proceed?
+                                        WARNING: This may result in duplicate communications."""
+                        ))
                             break;
 
                     setBusyCursor(true);
