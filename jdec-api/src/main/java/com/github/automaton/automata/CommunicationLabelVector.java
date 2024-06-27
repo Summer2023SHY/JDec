@@ -63,8 +63,8 @@ class CommunicationLabelVector extends LabelVector {
             return true;
         else if (!super.equals(other))
             return false;
-        else if (other instanceof CommunicationLabelVector)
-            return Arrays.deepEquals(roles, ((CommunicationLabelVector) other).roles);
+        else if (other instanceof CommunicationLabelVector clv)
+            return Arrays.deepEquals(roles, clv.roles);
         else
             return false;
     }

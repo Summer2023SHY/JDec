@@ -1060,8 +1060,7 @@ public class AutomatonBinaryFileAdapter implements AutomatonIOAdapter, Closeable
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        else if (obj instanceof AutomatonBinaryFileAdapter) {
-            AutomatonBinaryFileAdapter other = (AutomatonBinaryFileAdapter) obj;
+        else if (obj instanceof AutomatonBinaryFileAdapter other) {
             return Objects.equals(this.haf, other.haf) && Objects.equals(this.baf, other.baf);
         } else
             return false;

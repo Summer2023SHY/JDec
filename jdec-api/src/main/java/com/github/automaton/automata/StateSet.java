@@ -263,10 +263,9 @@ public class StateSet extends State {
     public boolean equals(Object other) {
         if (this == other) {
             return true;
-        } else if (!(other instanceof StateSet)) {
+        } else if (!(other instanceof StateSet ss)) {
             return super.equals(other);
         } else {
-            StateSet ss = (StateSet) other;
             return this.set.containsAll(ss.set) && ss.set.containsAll(this.set);
         }
     }

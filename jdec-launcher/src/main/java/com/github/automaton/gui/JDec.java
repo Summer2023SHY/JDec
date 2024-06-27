@@ -868,9 +868,9 @@ public class JDec extends JFrame {
 
         }
 
-        if (tab.ioAdapter instanceof AutomatonBinaryFileAdapter) {
+        if (tab.ioAdapter instanceof AutomatonBinaryFileAdapter adapter) {
             try {
-                ((AutomatonBinaryFileAdapter) tab.ioAdapter).close();
+                adapter.close();
             } catch (IOException ioe) {
                 throw new UncheckedIOException(logger.throwing(ioe));
             }
@@ -1607,8 +1607,8 @@ public class JDec extends JFrame {
         /* Update last file opened and update current directory */
 
         try {
-            if (currentTab.ioAdapter instanceof AutomatonBinaryFileAdapter)
-                ((AutomatonBinaryFileAdapter) currentTab.ioAdapter).close();
+            if (currentTab.ioAdapter instanceof AutomatonBinaryFileAdapter adapter)
+                adapter.close();
             currentTab.ioAdapter = AutomatonBinaryFileAdapter.wrap(currentTab.automaton, headerFile, bodyFile);
         } catch (IOException ioe) {
             throw new UncheckedIOException(logger.throwing(ioe));
@@ -1666,8 +1666,8 @@ public class JDec extends JFrame {
         /* Update last file opened and update current directory */
 
         try {
-            if (currentTab.ioAdapter instanceof AutomatonBinaryFileAdapter)
-                ((AutomatonBinaryFileAdapter) currentTab.ioAdapter).close();
+            if (currentTab.ioAdapter instanceof AutomatonBinaryFileAdapter adapter)
+                adapter.close();
             currentTab.ioAdapter = AutomatonJsonFileAdapter.wrap(currentTab.automaton, jsonFile);
         } catch (IOException ioe) {
             throw new UncheckedIOException(logger.throwing(ioe));

@@ -120,8 +120,8 @@ public abstract class AutomatonAccessFile implements Closeable {
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        else if (obj instanceof AutomatonAccessFile) {
-            return FilesUncheck.isSameFile(this.file.toPath(), ((AutomatonAccessFile) obj).file.toPath());
+        else if (obj instanceof AutomatonAccessFile other) {
+            return FilesUncheck.isSameFile(this.file.toPath(), other.file.toPath());
         }
         else return false;
     }

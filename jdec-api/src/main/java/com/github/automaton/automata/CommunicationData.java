@@ -119,8 +119,8 @@ public class CommunicationData extends TransitionData {
             return true;
         else if (!super.equals(obj))
             return false;
-        else if (obj instanceof CommunicationData) {
-            return Arrays.deepEquals(roles, ((CommunicationData) obj).roles);
+        else if (obj instanceof CommunicationData cd) {
+            return Arrays.deepEquals(roles, cd.roles);
         } else
             return false;
     }

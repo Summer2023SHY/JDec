@@ -83,8 +83,8 @@ public class DisablementData extends TransitionData {
             return true;
         else if (!super.equals(obj)) {
             return false;
-        } else if (obj instanceof DisablementData)
-            return Arrays.equals(controllers, ((DisablementData) obj).controllers);
+        } else if (obj instanceof DisablementData dd)
+            return Arrays.equals(controllers, dd.controllers);
         else
             return false;
     }

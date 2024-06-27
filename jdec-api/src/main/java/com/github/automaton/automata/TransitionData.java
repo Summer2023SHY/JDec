@@ -117,8 +117,7 @@ public class TransitionData implements Cloneable {
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        else if (obj instanceof TransitionData) {
-            TransitionData other = (TransitionData) obj;
+        else if (obj instanceof TransitionData other) {
 
             return initialStateID == other.initialStateID
                     && eventID == other.eventID

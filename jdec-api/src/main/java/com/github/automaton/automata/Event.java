@@ -209,8 +209,7 @@ public class Event {
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        else if (obj instanceof Event) {
-            Event other = (Event) obj;
+        else if (obj instanceof Event other) {
             return this.label.equals(other.label);
         } else
             return false;
