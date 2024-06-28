@@ -921,4 +921,45 @@ public class AutomataOperations {
 
     }
 
+    /**
+     * Generates the language recognized by the specified automaton.
+     * 
+     * @param automaton an automaton
+     * @return the language that the automaton recognizes
+     * 
+     * @throws IllegalArgumentException if argument recognizes an infinite language
+     * @throws NoInitialStateException  if argument has no initial state
+     * @throws NullPointerException     if argument is {@code null}
+     */
+    public static Set<Word> buildLanguage(Automaton automaton) {
+        Objects.requireNonNull(automaton);
+        if (!automaton.stateExists(automaton.getInitialStateID())) {
+            throw new NoInitialStateException();
+        } else if (automaton.hasSelfLoop(automaton.getAllTransitions())) {
+            throw new IllegalArgumentException();
+        }
+        Queue<Sequence> queue = new ArrayDeque<>();
+        Set<Word> language = new LinkedHashSet<>();
+        queue.add(new Sequence(automaton.getInitialStateID()));
+        while (!queue.isEmpty()) {
+            Sequence sequence = queue.remove();
+            State lastState = automaton.getState(sequence.getState(sequence.length() - 1));
+            if (lastState.isMarked()) {
+                int[] eventIDs = sequence.getEventArray();
+                String[] events = new String[eventIDs.length];
+                for (int i = 0; i < events.length; i++) {
+                    events[i] = automaton.getEvent(eventIDs[i]).getLabel();
+                }
+                language.add(new Word(events));
+            }
+            for (Transition t : lastState.getTransitions()) {
+                if (sequence.containsState(t.getTargetStateID()))
+                    throw new IllegalArgumentException();
+                else
+                    queue.add(sequence.append(t.getEvent().getID(), t.getTargetStateID()));
+            }
+        }
+        return language;
+    }
+
 }
