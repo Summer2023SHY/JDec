@@ -631,26 +631,6 @@ public class Automaton implements Cloneable {
                 List<String> combinedEvent = new ArrayList<>();
                 combinedEvent.add(e.getLabel());
 
-                // If this is the system has a bad transition, then it is an unconditional
-                // violation by default until we've found a controller that prevents it
-                boolean isBadTransition = isBadTransition(listOfStates.get(0), e, currTargetState);
-                boolean isUnconditionalViolation = isBadTransition;
-
-                // It is not a disablement decision by default, until we find a controller that
-                // can disable it
-                // NOTE: The system must also have a bad transition in order for it to be a
-                // disablement decision
-                boolean isDisablementDecision = false;
-                boolean[] disablementControllers = new boolean[nControllers];
-
-                // A conditional violation can only occur when an event is controllable by at
-                // least 2 controllers, and the system must have a good transition
-                int counter = 0;
-                for (int i = 0; i < nControllers; i++)
-                    if (e.isControllable(i))
-                        counter++;
-                boolean isConditionalViolation = (counter >= 2 && !isBadTransition);
-
                 // Determine observable and controllable properties for this event vector
                 boolean[] observable = new boolean[nControllers];
                 boolean[] controllable = new boolean[nControllers];
@@ -680,22 +660,6 @@ public class Automaton implements Cloneable {
 
                             controllable[i] = true;
 
-                            TransitionData data = new TransitionData(listOfStates.get(i + 1), e, target);
-
-                            // Check to see if this controller can prevent an unconditional violation
-                            if (isUnconditionalViolation && badTransitions.contains(data))
-                                isUnconditionalViolation = false;
-
-                            // Check to see if this controller can prevent a conditional violation
-                            if (isConditionalViolation && !badTransitions.contains(data))
-                                isConditionalViolation = false;
-
-                            // Check to see if this controller causes a disablement decision
-                            if (isBadTransition && badTransitions.contains(data)) {
-                                isDisablementDecision = true;
-                                disablementControllers[i] = true;
-                            }
-
                         }
 
                         // Unobservable events by this controller
@@ -709,6 +673,24 @@ public class Automaton implements Cloneable {
                 LabelVector eventLabelVector = new LabelVector(combinedEvent);
 
                 StateVector targetStateVector = new StateVector(targetStates, nStates);
+
+                boolean isConditionalViolation = false, isUnconditionalViolation = false;
+
+                /* Check control configurations */
+                if (transitionExists(listOfIDs.get(0), e.getID(), targetStates.get(0).getID()) && BooleanUtils.or(e.isControllable())) {
+                    if (badTransitions.contains(new TransitionData(listOfIDs.get(0), e.getID(), targetStates.get(0).getID())))
+                        isUnconditionalViolation = true;
+                    else
+                        isConditionalViolation = true;
+                }
+                controlCheck: for (int i = 1; i < listOfIDs.size() && (isConditionalViolation || isUnconditionalViolation); i++) {
+                    String eventLabel = eventLabelVector.getLabelAtIndex(i);
+                    if ((listOfIDs.get(i) == targetStates.get(i).getID()) && (Objects.equals(eventLabel, Event.EPSILON)))
+                        continue controlCheck;
+                    else if (!transitionExists(listOfIDs.get(i), getEvent(eventLabel).getID(), targetStates.get(i).getID())) {
+                        isUnconditionalViolation = isConditionalViolation = false;
+                    }
+                }
 
                 // Add event
                 uStructure.addEventIfNonExisting(eventLabelVector, observable, controllable);
@@ -755,9 +737,6 @@ public class Automaton implements Cloneable {
                     uStructure.addConditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
                     stateVector.setEnablementOf(combinedEvent.get(0));
                 }
-                if (isDisablementDecision)
-                    uStructure.addDisablementDecision(stateVector.getID(), eventID, targetStateVector.getID(),
-                            disablementControllers);
 
             } // for
 
@@ -2026,7 +2005,12 @@ public class Automaton implements Cloneable {
      **/
     public boolean transitionExists(long initialStateID, int eventID, long targetStateID) {
 
-        Transition transition = new Transition(getEvent(eventID), targetStateID);
+        Event event = getEvent(eventID);
+
+        if (event == null)
+            return false;
+
+        Transition transition = new Transition(event, targetStateID);
         State s = getState(initialStateID);
 
         for (Transition t : s.getTransitions())
@@ -2046,6 +2030,9 @@ public class Automaton implements Cloneable {
      * @return Whether or not the transition exists
      **/
     public boolean transitionExistsWithEvent(long initialStateID, int eventID) {
+
+        if (getEvent(eventID) == null)
+            return false;
 
         for (Transition t : getState(initialStateID).getTransitions())
             if (t.getEvent().getID() == eventID)
