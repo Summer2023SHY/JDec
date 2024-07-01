@@ -154,6 +154,7 @@ public class State implements Cloneable {
                     "A state cannot be an enablement and a disablement of the same event simultaneously");
         this.disablementEvents.addAll(disablementEvents);
         this.enablementEvents.addAll(enablementEvents);
+        this.illegalConfigEvents = new LinkedHashSet<>();
     }
 
     /**
@@ -256,7 +257,9 @@ public class State implements Cloneable {
      **/
     public State(String label, long id, boolean marked, Set<String> enablementEvents, Set<String> disablementEvents, Set<String> illegalConfigEvents) {
         this(label, id, marked, enablementEvents, disablementEvents);
-        this.illegalConfigEvents.addAll(illegalConfigEvents);
+        if (illegalConfigEvents != null) {
+            this.illegalConfigEvents.addAll(illegalConfigEvents);
+        }
     }
 
     /**
