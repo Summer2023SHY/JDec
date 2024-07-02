@@ -27,7 +27,7 @@ import java.math.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.*;
-import java.util.stream.IntStream;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.collections4.ListValuedMap;
@@ -2127,7 +2127,7 @@ public class Automaton implements Cloneable {
      * @since 2.0
      */
     public State getState(String label) {
-        return getState(getStateID(label));
+        return getStates().parallelStream().filter(s -> Objects.equals(s.getLabel(), label)).findAny().orElse(null);
     }
 
     /**
@@ -2139,14 +2139,8 @@ public class Automaton implements Cloneable {
      * @return The corresponding state ID (or {@code null}, if it was not found)
      **/
     public Long getStateID(String label) {
-
-        for (long s : states.keySet()) {
-            State state = getState(s);
-            if (state.getLabel().equals(label))
-                return s;
-        }
-
-        return null;
+        State s = getState(label);
+        return s == null ? null : s.getID();
     }
 
     /**
@@ -2311,13 +2305,11 @@ public class Automaton implements Cloneable {
      * @since 2.0
      */
     List<TransitionData> getAllTransitions() {
-        List<TransitionData> list = new ArrayList<>();
-        for (State s : getStates()) {
-            for (Transition t : s.getTransitions()) {
-                list.add(new TransitionData(s.getID(), t.getEvent().getID(), t.getTargetStateID()));
+        return getStates().parallelStream().<TransitionData>mapMulti((state, consumer) -> {
+            for (Transition t : state.getTransitions()) {
+                consumer.accept(new TransitionData(state.getID(), t.getEvent().getID(), t.getTargetStateID()));
             }
-        }
-        return list;
+        }).collect(Collectors.toList());
     }
 
     /**
