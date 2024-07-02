@@ -2364,10 +2364,12 @@ public class Automaton implements Cloneable {
      * 
      * @param list The list of transitions
      * @return Whether or not the list contains a self-loop
+     * 
+     * @see TransitionData#containsSelfLoop(List)
      **/
     public boolean hasSelfLoop(List<? extends TransitionData> list) {
 
-        return list.stream().anyMatch(data -> data.initialStateID == data.targetStateID);
+        return TransitionData.containsSelfLoop(list);
 
     }
 

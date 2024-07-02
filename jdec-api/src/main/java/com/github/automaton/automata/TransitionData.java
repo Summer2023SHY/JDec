@@ -5,7 +5,10 @@
 
 package com.github.automaton.automata;
 
+import java.util.List;
 import java.util.Objects;
+
+import org.apache.commons.lang3.Validate;
 
 /**
  * Holds all 3 pieces of information needed to identify a transition.
@@ -144,6 +147,22 @@ public class TransitionData implements Cloneable {
     @Override
     public String toString() {
         return String.format("(%d,%d,%d)", initialStateID, eventID, targetStateID);
+    }
+
+    /**
+     * Checks whether the specified list contains one or more self-loops.
+     * 
+     * @param list a list of transitions
+     * @return {@code true} if the supplied list contains a self loop
+     * 
+     * @throws IllegalArgumentException if argument contains {@code null}
+     * @throws NullPointerException     if argument is {@code null}
+     * 
+     * @since 2.1.0
+     */
+    public static boolean containsSelfLoop(List<? extends TransitionData> list) {
+        Validate.noNullElements(list);
+        return list.stream().anyMatch(data -> data.initialStateID == data.targetStateID);
     }
 
 }

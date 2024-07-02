@@ -2795,8 +2795,8 @@ public class JDec extends JFrame {
 
                     setBusyCursor(false);
 
-                    if (uStructureWithCommunications
-                            .hasSelfLoop(uStructureWithCommunications.getPotentialCommunications()))
+                    if (TransitionData
+                            .containsSelfLoop(uStructureWithCommunications.getPotentialCommunications()))
                         displayMessage("Communication Self-Loop",
                                 "Please be advised that at least one of the communications added is a self-loop.",
                                 JOptionPane.WARNING_MESSAGE);
