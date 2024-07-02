@@ -2010,14 +2010,7 @@ public class Automaton implements Cloneable {
         if (event == null)
             return false;
 
-        Transition transition = new Transition(event, targetStateID);
-        State s = getState(initialStateID);
-
-        for (Transition t : s.getTransitions())
-            if (t.equals(transition))
-                return true;
-
-        return false;
+        return getState(initialStateID).getTransitions().contains(new Transition(event, targetStateID));
 
     }
 
@@ -2051,15 +2044,7 @@ public class Automaton implements Cloneable {
      * @return Whether or not the transition is bad
      **/
     public boolean isBadTransition(long initialStateID, int eventID, long targetStateID) {
-
-        TransitionData transitionData = new TransitionData(initialStateID, eventID, targetStateID);
-
-        for (TransitionData t : badTransitions)
-            if (t.equals(transitionData))
-                return true;
-
-        return false;
-
+        return isBadTransition(new TransitionData(initialStateID, eventID, targetStateID));
     }
 
     /**
@@ -2076,6 +2061,18 @@ public class Automaton implements Cloneable {
 
         return isBadTransition(initialState.getID(), event.getID(), targetState.getID());
 
+    }
+
+    /**
+     * Check to see if a transition is bad.
+     * 
+     * @param transitionData a transition data
+     * @return Whether or not the transition is bad
+     * 
+     * @since 2.1.0
+     */
+    public boolean isBadTransition(TransitionData transitionData) {
+        return badTransitions.contains(transitionData);
     }
 
     /**
@@ -2268,12 +2265,8 @@ public class Automaton implements Cloneable {
      * @return The list of all active events
      **/
     public List<Event> getActiveEvents() {
-
         List<Event> activeEvents = new ArrayList<Event>(events);
-
-        for (Event e : getInactiveEvents())
-            activeEvents.remove(e);
-
+        activeEvents.removeAll(getInactiveEvents());
         return activeEvents;
     }
 
