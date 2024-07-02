@@ -962,4 +962,87 @@ public class AutomataOperations {
         return language;
     }
 
+    /**
+     * Generates the twin plant of the specified automaton.
+     * 
+     * <p>
+     * The technique used here is similar to how the complement works.
+     * This would not work in all cases, but G_{&Sigma;*} is a special case.
+     * 
+     * @param automaton an automaton
+     * 
+     * @return the twin plant of the specified automaton
+     */
+    public static Automaton generateTwinPlant(final Automaton automaton) {
+
+        Objects.requireNonNull(automaton);
+
+        Automaton twinPlant = new Automaton(automaton.getNumberOfControllers());
+
+        /* Add events */
+
+        twinPlant.addAllEvents(automaton.getEvents());
+
+        /* Build twin plant */
+
+        long dumpStateID = automaton.getNumberOfStates() + 1;
+        boolean needToAddDumpState = false;
+
+        List<Event> activeEvents = automaton.getActiveEvents();
+
+        // Add each state to the new automaton
+        for (long s = 1; s <= automaton.getNumberOfStates(); s++) {
+
+            State state = automaton.getState(s);
+
+            long id = twinPlant.addState(state.getLabel(), !state.isMarked(), s == automaton.initialState);
+
+            // Try to add transitions for each event
+            for (Event e : automaton.getEvents()) {
+
+                boolean foundMatch = false;
+
+                // Search through each transition for the event
+                for (Transition t : state.getTransitions())
+                    if (t.getEvent().equals(e)) {
+                        twinPlant.addTransition(id, e.getID(), t.getTargetStateID());
+                        foundMatch = true;
+                    }
+
+                // Check to see if this event is controllable by at least one controller
+                boolean controllable = BooleanUtils.or(e.isControllable());
+
+                // Add new transition leading to dump state if this event if undefined at this
+                // state and is controllable and active
+                if (!foundMatch && controllable && activeEvents.contains(e)) {
+                    twinPlant.addTransition(id, e.getID(), dumpStateID);
+                    twinPlant.markTransitionAsBad(id, e.getID(), dumpStateID);
+                    needToAddDumpState = true;
+                }
+
+            }
+
+        }
+
+        /* Create dump state if it needs to be made */
+
+        if (needToAddDumpState) {
+
+            long id = twinPlant.addState(Automaton.DUMP_STATE_LABEL, false, false);
+
+            if (id != dumpStateID)
+                logger.error("Dump state ID did not match expected ID.");
+
+        }
+
+        /* Add special transitions */
+
+        automaton.copyOverSpecialTransitions(twinPlant);
+
+        /* Return generated automaton */
+
+        return twinPlant;
+
+    }
+
 }

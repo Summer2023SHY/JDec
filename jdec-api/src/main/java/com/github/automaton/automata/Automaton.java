@@ -911,166 +911,29 @@ public class Automaton implements Cloneable {
     }
 
     /**
-     * Generate the twin plant by combining this automaton w.r.t. G_{Sigma*}.
+     * Generates the twin plant by combining this automaton w.r.t. G_{&Sigma;*}.
      * 
-     * @implNote The technique used here is similar to how the complement works.
-     *           This would not work
-     *           in all cases, but G_{Sigma*} is a special case.
-     * @return The twin plant
-     **/
+     * @return the twin plant for this automaton
+     * 
+     * @see AutomataOperations#generateTwinPlant(Automaton)
+     */
     public final Automaton generateTwinPlant() {
 
-        Automaton automaton = new Automaton(getNumberOfControllers());
-
-        /* Add events */
-
-        automaton.addAllEvents(getEvents());
-
-        /* Build twin plant */
-
-        long dumpStateID = getNumberOfStates() + 1;
-        boolean needToAddDumpState = false;
-
-        // Add each state to the new automaton
-        for (long s = 1; s <= getNumberOfStates(); s++) {
-
-            State state = getState(s);
-
-            long id = automaton.addState(state.getLabel(), !state.isMarked(), s == initialState);
-
-            // Try to add transitions for each event
-            for (Event e : events) {
-
-                boolean foundMatch = false;
-
-                // Search through each transition for the event
-                for (Transition t : state.getTransitions())
-                    if (t.getEvent().equals(e)) {
-                        automaton.addTransition(id, e.getID(), t.getTargetStateID());
-                        foundMatch = true;
-                    }
-
-                // Check to see if this event is controllable by at least one controller
-                boolean controllable = false;
-                for (boolean b : e.isControllable())
-                    if (b) {
-                        controllable = true;
-                        break;
-                    }
-
-                // Add new transition leading to dump state if this event if undefined at this
-                // state and is controllable
-                if (!foundMatch && controllable) {
-                    automaton.addTransition(id, e.getID(), dumpStateID);
-                    automaton.markTransitionAsBad(id, e.getID(), dumpStateID);
-                    needToAddDumpState = true;
-                }
-
-            }
-
-        }
-
-        /* Create dump state if it needs to be made */
-
-        if (needToAddDumpState) {
-
-            long id = automaton.addState(DUMP_STATE_LABEL, false, false);
-
-            if (id != dumpStateID)
-                logger.error("Dump state ID did not match expected ID.");
-
-        }
-
-        /* Add special transitions */
-
-        copyOverSpecialTransitions(automaton);
-
-        /* Return generated automaton */
-
-        return automaton;
+        return AutomataOperations.generateTwinPlant(this);
 
     }
 
     /**
-     * Generate the twin plant by combining this automaton w.r.t. G_{Sigma*}.
+     * Generates the twin plant by combining this automaton w.r.t. G_{&Sigma;*}.
      * 
-     * @implNote The technique used here is similar to how the complement works.
-     *           This would not work
-     *           in all cases, but G_{Sigma*} is a special case.
-     * @return The twin plant
-     **/
+     * @deprecated This is a deprecated alias of {@link #generateTwinPlant()}.
+     * 
+     * @return the twin plant for this automaton
+     */
+    @Deprecated(since = "2.1.0", forRemoval = true)
     public final Automaton generateTwinPlant2() {
 
-        Automaton automaton = new Automaton(getNumberOfControllers());
-
-        /* Add events */
-
-        automaton.addAllEvents(getEvents());
-
-        /* Build twin plant */
-
-        long dumpStateID = getNumberOfStates() + 1;
-        boolean needToAddDumpState = false;
-
-        List<Event> activeEvents = getActiveEvents();
-
-        // Add each state to the new automaton
-        for (long s = 1; s <= getNumberOfStates(); s++) {
-
-            State state = getState(s);
-
-            long id = automaton.addState(state.getLabel(), !state.isMarked(), s == initialState);
-
-            // Try to add transitions for each event
-            for (Event e : events) {
-
-                boolean foundMatch = false;
-
-                // Search through each transition for the event
-                for (Transition t : state.getTransitions())
-                    if (t.getEvent().equals(e)) {
-                        automaton.addTransition(id, e.getID(), t.getTargetStateID());
-                        foundMatch = true;
-                    }
-
-                // Check to see if this event is controllable by at least one controller
-                boolean controllable = false;
-                for (boolean b : e.isControllable())
-                    if (b) {
-                        controllable = true;
-                        break;
-                    }
-
-                // Add new transition leading to dump state if this event if undefined at this
-                // state and is controllable and active
-                if (!foundMatch && controllable && activeEvents.contains(e)) {
-                    automaton.addTransition(id, e.getID(), dumpStateID);
-                    automaton.markTransitionAsBad(id, e.getID(), dumpStateID);
-                    needToAddDumpState = true;
-                }
-
-            }
-
-        }
-
-        /* Create dump state if it needs to be made */
-
-        if (needToAddDumpState) {
-
-            long id = automaton.addState(DUMP_STATE_LABEL, false, false);
-
-            if (id != dumpStateID)
-                logger.error("Dump state ID did not match expected ID.");
-
-        }
-
-        /* Add special transitions */
-
-        copyOverSpecialTransitions(automaton);
-
-        /* Return generated automaton */
-
-        return automaton;
+        return AutomataOperations.generateTwinPlant(this);
 
     }
 

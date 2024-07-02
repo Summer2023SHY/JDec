@@ -2748,7 +2748,7 @@ public class JDec extends JFrame {
                 case "Generate Twin Plant":
 
                     // Create new tab with the twin plant
-                    createTab(tab.automaton.generateTwinPlant2());
+                    createTab(AutomataOperations.generateTwinPlant(tab.automaton));
                     break;
 
                 case "Intersection": {
