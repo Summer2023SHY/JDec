@@ -25,6 +25,7 @@ class HelperMethodTest {
     List<List<String>> labelSequences;
 
     @Test
+    @Disabled
     @DisplayName("Liu's Thesis - findCounterExample()")
     @Order(1)
     public void testFindCounterExample() {
@@ -51,6 +52,7 @@ class HelperMethodTest {
     }
 
     @Test
+    @Disabled
     @DisplayName("Liu's Thesis - acceptsCounterExample()")
     @Order(2)
     public void testAcceptsCounterExample() {

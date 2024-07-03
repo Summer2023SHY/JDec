@@ -681,7 +681,8 @@ public class AutomataOperations {
                     for (State disablementState : disablementStates) {
                         for (State enablementState : enablementStates) {
                             if (indistinguishableStateList.contains(disablementState)
-                                    && indistinguishableStateList.contains(enablementState)) {
+                                    && indistinguishableStateList.contains(enablementState)
+                                    && e.isControllable(i)) {
                                 neighborMap.get(disablementState).get(i).add(enablementState);
                                 neighborMap.get(enablementState).get(i).add(disablementState);
                             }

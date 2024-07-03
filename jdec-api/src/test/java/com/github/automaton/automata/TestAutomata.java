@@ -903,7 +903,19 @@ public class TestAutomata {
                     uStructure.getStateInput());
             logger.debug("Ensuring the transitions are correct");
             assertMultiLineEquals(
-                    "0_0_0,<a,a,*>,1_1_0\n0_0_0,<b,*,b>,2_0_2\n0_0_0,<*,b,*>,0_2_0\n0_0_0,<*,*,a>,0_0_1\n0_0_1,<a,a,*>,1_1_1\n0_0_1,<*,b,*>,0_2_1\n0_2_0,<b,*,b>,2_2_2\n0_2_0,<*,*,a>,0_2_1\n1_1_0,<*,*,a>,1_1_1\n1_1_1,<c,c,c>,3_3_3\n2_0_2,<*,b,*>,2_2_2\n2_2_2,<c,c,c>,4_4_4:DISABLEMENT_DECISION-FT",
+                    """
+                        0_0_0,<a,a,*>,1_1_0
+                        0_0_0,<b,*,b>,2_0_2
+                        0_0_0,<*,b,*>,0_2_0
+                        0_0_0,<*,*,a>,0_0_1
+                        1_1_0,<*,*,a>,1_1_1
+                        2_0_2,<*,b,*>,2_2_2
+                        0_2_0,<b,*,b>,2_2_2
+                        0_2_0,<*,*,a>,0_2_1
+                        0_0_1,<a,a,*>,1_1_1
+                        0_0_1,<*,b,*>,0_2_1
+                        1_1_1,<c,c,c>,3_3_3:CONDITIONAL_VIOLATION
+                        2_2_2,<c,c,c>,4_4_4:UNCONDITIONAL_VIOLATION""",
                     uStructure.getTransitionInput());
         }
 
