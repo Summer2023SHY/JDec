@@ -113,6 +113,14 @@ public class UStructure extends Automaton {
 
     }
 
+    /**
+     * @since 2.1.0
+     */
+    @Override
+    public UStructure trim() {
+        return accessible().coaccessible();
+    }
+
     @Override
     public UStructure invert() {
         return AutomataOperations.invert(this, UStructure::new);
@@ -1821,6 +1829,20 @@ public class UStructure extends Automaton {
      */
     public Set<State> getDisablementStates(String eventLabel) {
         Set<State> disablementStates = getStates().parallelStream().filter(s -> s.isDisablementStateOf(eventLabel)).collect(Collectors.toSet());
+        return disablementStates;
+    }
+
+    /**
+     * Returns the set of illegal configurations for a specific event.
+     * 
+     * @param eventLabel the label of an event
+     * 
+     * @return the set of illegal configurations
+     * 
+     * @since 2.1.0
+     */
+    public Set<State> getIllegalConfigStates(String eventLabel) {
+        Set<State> disablementStates = getStates().parallelStream().filter(s -> s.isIllegalConfigurationOf(eventLabel)).collect(Collectors.toSet());
         return disablementStates;
     }
 

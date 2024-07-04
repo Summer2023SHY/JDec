@@ -1529,26 +1529,44 @@ public class Automaton implements Cloneable {
      **/
     public boolean removeTransition(long startingStateID, int eventID, long targetStateID) {
 
+        return removeTransition(new TransitionData(startingStateID, eventID, targetStateID));
+
+    }
+
+    /**
+     * Removes the specified transition.
+     * 
+     * @param td a transition
+     * @return Whether or not the removal was successful
+     * 
+     * @throws NullPointerException if argument is {@code null}
+     * 
+     * @since 2.1.0
+     **/
+    public boolean removeTransition(TransitionData td) {
+
+        Objects.requireNonNull(td);
+
         /* Get starting state from ID */
 
-        State startingState = getState(startingStateID);
+        State startingState = getState(td.initialStateID);
 
         if (startingState == null) {
-            logger.error("Could not remove transition.", new StateNotFoundException(targetStateID));
+            logger.error("Could not remove transition.", new StateNotFoundException(td.targetStateID));
             return false;
         }
 
         /* Remove transition and update the file */
 
-        Event event = getEvent(eventID);
-        startingState.removeTransition(new Transition(event, targetStateID));
+        Event event = getEvent(td.eventID);
+        startingState.removeTransition(new Transition(event, td.targetStateID));
 
         /*
          * Remove transition from list of special transitions (if it appears anywhere in
          * them)
          */
 
-        removeTransitionData(new TransitionData(startingStateID, eventID, targetStateID));
+        removeTransitionData(td);
 
         return true;
 
@@ -1722,6 +1740,26 @@ public class Automaton implements Cloneable {
         if (isInitialState)
             initialState = state.getID();
 
+        return true;
+    }
+
+    /**
+     * Removes the state with the specified ID.
+     * 
+     * @param stateID a state ID
+     * @return {@code true} if this automaton is modified by the call
+     * 
+     * @since 2.1.0
+     */
+    public boolean removeState(final long stateID) {
+        if (!stateExists(stateID))
+            return false;
+        List<TransitionData> tdToRemove = getAllTransitions().parallelStream().filter(td -> td.initialStateID == stateID || td.targetStateID == stateID).collect(Collectors.toList());
+        for (TransitionData td : tdToRemove)
+            removeTransition(td);
+        states.remove(stateID);
+        if (initialState == stateID)
+            initialState = 0;
         return true;
     }
 
@@ -2126,6 +2164,17 @@ public class Automaton implements Cloneable {
     }
 
     /**
+     * Returns the list of all controllable events.
+     * 
+     * @return the list of controllable events
+     * 
+     * @since 2.1.0
+     */
+    public List<Event> getControllableEvents() {
+        return events.parallelStream().filter(e -> BooleanUtils.or(e.isControllable())).collect(Collectors.toList());
+    }
+
+    /**
      * Get the number of events that are currently in this automaton.
      * 
      * @return Number of events
@@ -2319,6 +2368,56 @@ public class Automaton implements Cloneable {
             for (Event e : inactiveEvents)
                 addTransition(s.getID(), e.getID(), s.getID());
 
+    }
+
+    /**
+     * Tests whether this automaton recognizes the specified word.
+     * 
+     * @param word a word
+     * @return {@code true} if this automaton recognizes this word
+     * 
+     * @throws NullPointerException if argument is {@code null}
+     * 
+     * @since 2.1.0
+     */
+    public boolean recognizesWord(Word word) {
+        Objects.requireNonNull(word);
+        if (!stateExists(initialState))
+            return false;
+        State currState = getState(initialState);
+        var it = word.iterator();
+        while (it.hasNext()) {
+            String eventLabel = it.next();
+            boolean nextStateFound = false;
+            for (int i = 0; i < currState.getNumberOfTransitions() && !nextStateFound; i++) {
+                Transition t = currState.getTransition(i);
+                if (!isBadTransition(currState, t.getEvent(), getState(t.getTargetStateID())) &&  t.getEvent().getLabel().equals(eventLabel)) {
+                    currState = getState(t.getTargetStateID());
+                    nextStateFound = true;
+                }
+            }
+            if (!nextStateFound)
+                return false;
+        }
+        return currState.isMarked();
+    }
+
+    /**
+     * Tests whether this automaton recognizes all of the specified words.
+     * 
+     * @param words a set of words
+     * @return {@code true} if this automaton recognizes all of the specified words
+     * 
+     * @throws IllegalArgumentException if argument contains {@code null}
+     * @throws NullPointerException if argument is {@code null}
+     * 
+     * @since 2.1.0
+     */
+    public boolean recognizesWords(Set<Word> words) {
+        Validate.noNullElements(words);
+        if (words.isEmpty())
+            return false;
+        return words.parallelStream().allMatch(this::recognizesWord);
     }
 
 }

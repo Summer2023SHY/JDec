@@ -1045,4 +1045,87 @@ public class AutomataOperations {
 
     }
 
+    public static boolean testIncrementalObservability(Set<Automaton> plants, Set<Automaton> specs) {
+        Objects.requireNonNull(plants);
+        Objects.requireNonNull(specs);
+
+        /* Create copies of the sets to avoid modifying supplied sets */
+        Set<Automaton> G = new LinkedHashSet<>(plants);
+        Set<Automaton> H = new LinkedHashSet<>(specs);
+
+        while (!H.isEmpty()) {
+            Automaton Hj = H.iterator().next();
+            Set<Automaton> Hprime = new LinkedHashSet<>();
+            Set<Automaton> Gprime = new LinkedHashSet<>();
+            Hprime.add(Hj);
+            Automaton combinedSys = generateTwinPlant(Hj);
+            while (!testObservability(combinedSys, false).getLeft()) {
+                UStructure uStructure = combinedSys.synchronizedComposition().relabelConfigurationStates();
+                for (Event controllableEvent : combinedSys.getControllableEvents()) {
+                    var illegalConfigs = uStructure.getIllegalConfigStates(controllableEvent.getLabel());
+                    for (var illegalConfig : illegalConfigs) {
+                        illegalConfig.setMarked(true);
+                        var trim = uStructure.trim();
+                        boolean found = false;
+                        Set<Word> counterExample = Collections.synchronizedSet(new LinkedHashSet<>());
+                        SubsetConstruction subsetConstruction = trim.subsetConstruction(0);
+                        IntStream.range(0, combinedSys.nControllers).parallel().forEach(i -> counterExample
+                                .addAll(buildLanguage(subsetConstruction.buildAutomatonRepresentationOf(i))));
+                        for (Iterator<Automaton> iterator = IteratorUtils.filteredIterator(G.iterator(), aut -> !Gprime.contains(aut)); iterator.hasNext() && !found; ) {
+                            Automaton M = iterator.next();
+                            if (M.recognizesWords(counterExample)) {
+                                found = true;
+                                Gprime.add(M);
+                            }
+                        }
+                        for (Iterator<Automaton> iterator = IteratorUtils.filteredIterator(H.iterator(), aut -> !Hprime.contains(aut)); iterator.hasNext() && !found; ) {
+                            Automaton M = iterator.next();
+                            if (M.recognizesWords(counterExample)) {
+                                found = true;
+                                Hprime.add(M);
+                            }
+                        }
+                        if (!found)
+                            return false;
+                    }
+                }
+                combinedSys = buildCombinedSystem(Gprime, Hprime);
+            }
+            H.removeAll(Hprime);
+            G.removeAll(Gprime);
+        }
+        return true;
+    }
+
+    private static Automaton buildCombinedSystem(Set<Automaton> plants, Set<Automaton> specs) {
+        Automaton compositePlant = buildCompositeAutomaton(plants);
+        Automaton compositeSpec = buildCompositeAutomaton(specs);
+        Automaton combinedSys = intersection(compositePlant.generateTwinPlant(), compositeSpec.generateTwinPlant());
+        // TODO: Clean up combined system
+        Automaton revCombinedSys = invert(combinedSys, Automaton::new);
+        for (State s : combinedSys.getStates()) {
+            String[] stateLabels = s.getLabel().split("_");
+            int dumpCount = 0;
+            for (int i = 0; i < stateLabels.length; i++) {
+                if (Objects.equals(stateLabels[i], Automaton.DUMP_STATE_LABEL))
+                    dumpCount++;
+            }
+            if (dumpCount == stateLabels.length) {
+                combinedSys.removeState(s.getID());
+                revCombinedSys.removeState(s.getID());
+            } else if (dumpCount > 0) {
+                s.setMarked(true);
+            }
+        }
+        return combinedSys;
+    }
+
+    private static Automaton buildCompositeAutomaton(Set<Automaton> automata) {
+        if (automata.size() == 1) {
+            return automata.iterator().next();
+        }
+        return automata.parallelStream().reduce(AutomataOperations::intersection)
+                .orElseThrow(IllegalArgumentException::new);
+    }
+
 }
