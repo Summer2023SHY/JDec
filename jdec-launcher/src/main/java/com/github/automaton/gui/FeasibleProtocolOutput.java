@@ -178,7 +178,7 @@ public class FeasibleProtocolOutput extends JDialog {
          * pack)
          */
 
-        setLocationRelativeTo(null);
+        setLocationRelativeTo(super.getOwner());
 
         /* Update title */
 

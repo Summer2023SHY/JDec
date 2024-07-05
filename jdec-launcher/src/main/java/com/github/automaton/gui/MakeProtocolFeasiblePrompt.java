@@ -139,7 +139,7 @@ public class MakeProtocolFeasiblePrompt extends JDialog {
 
         // Sets screen location in the center of the screen (only works after calling
         // pack)
-        setLocationRelativeTo(null);
+        setLocationRelativeTo(super.getOwner());
 
         // Update title
         setTitle("Make Protocol Feasible");
