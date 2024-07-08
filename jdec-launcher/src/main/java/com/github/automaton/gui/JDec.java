@@ -398,7 +398,8 @@ public class JDec extends JFrame {
                 "Test Inference Observability[BASIC_AUTOMATON]",
                 "Calculate Ambiguity Levels[BASIC_AUTOMATON]",
                 "Test Controllability[BASIC_AUTOMATON]",
-                null));
+                null,
+                "Test Incremental Observability[BASIC_AUTOMATON]"));
 
         // Generate menu
         menuBar.add(createMenu("Generate",
@@ -853,6 +854,17 @@ public class JDec extends JFrame {
         if (tabs.isEmpty())
             throw new NoSuchElementException();
         return tabs.get(tabbedPane.getSelectedIndex());
+    }
+
+    /**
+     * Returns the currently open tabs.
+     * 
+     * @return the currently open tabs
+     * 
+     * @since 2.1.0
+     */
+    synchronized java.util.List<AutomatonTab> getTabs() {
+        return tabs;
     }
 
     /**
@@ -2975,6 +2987,23 @@ public class JDec extends JFrame {
                     else
                         displayMessage("Failed Test", "The system is not controllable.",
                                 JOptionPane.INFORMATION_MESSAGE);
+                    break;
+
+                case "Test Incremental Observability":
+                    {
+                        IncrementalObsAutomataSelectionPrompt prompt = new IncrementalObsAutomataSelectionPrompt(JDec.this);
+                        prompt.setVisible(true);
+                        Set<Automaton> plants = prompt.getPlants(), specs = prompt.getSpecs();
+                        if (plants.isEmpty() || specs.isEmpty())
+                            displayMessage("Invalid selection", "Please try again.",
+                                JOptionPane.WARNING_MESSAGE);
+                        else if (AutomataOperations.testIncrementalObservability(plants, specs))
+                            displayMessage("Passed Test", "The system is inference observable.",
+                                    JOptionPane.INFORMATION_MESSAGE);
+                        else
+                            displayMessage("Failed Test", "The system is not inference observable.",
+                                    JOptionPane.INFORMATION_MESSAGE);
+                    }
                     break;
 
                 case "Random Automaton":
