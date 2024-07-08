@@ -9,6 +9,8 @@ import java.util.*;
 
 import org.apache.commons.collections4.*;
 
+import com.google.gson.JsonObject;
+
 /**
  * The subset construction.
  * 
@@ -22,6 +24,12 @@ public class SubsetConstruction extends Automaton {
     private transient final UStructure source;
     /** The controller that the subset construction is built with. */
     private final int controller;
+
+    SubsetConstruction(JsonObject obj) {
+        super(obj);
+        source = null;
+        controller = -1;
+    }
 
     /**
      * Builds a new subset construction.
@@ -197,13 +205,27 @@ public class SubsetConstruction extends Automaton {
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public StateSet getState(long id) {
+    /**
+     * Gets the state with the specified ID as a state set.
+     * 
+     * @param id a state ID
+     * @return the state with the specified ID
+     * 
+     * @throws ClassCastException if the requested state is not a state set
+     */
+    public StateSet getStateAsStateSet(long id) {
         return (StateSet) super.getState(id);
     }
 
-    @Override
-    public StateSet getState(String label) {
+    /**
+     * Gets the state with the specified label as a state set.
+     * 
+     * @param id a state label
+     * @return the state with the specified label
+     * 
+     * @throws ClassCastException if the requested state is not a state set
+     */
+    public StateSet getStateAsStateSet(String label) {
         return (StateSet) super.getState(label);
     }
 

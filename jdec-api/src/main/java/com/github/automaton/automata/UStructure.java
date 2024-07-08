@@ -551,7 +551,7 @@ public class UStructure extends Automaton {
         while (!combinedStateQueue.isEmpty()) {
             Pair<Long, Sequence> currSequence = combinedStateQueue.remove();
 
-            StateSet ss = subsetConstruction.getState(currSequence.getLeft());
+            StateSet ss = subsetConstruction.getStateAsStateSet(currSequence.getLeft());
             Map<Long, Long> currStateSetIDMap = new LinkedHashMap<>();
             relabelMapping.put(ss.getID(), currStateSetIDMap);
             /* Calculate new state IDs for relabeling */
@@ -579,7 +579,7 @@ public class UStructure extends Automaton {
             /* Handle transitions from preceding state set */
             if (currSequence.getRight().getEventArray().length > 0) {
                 long prevStateSetID = currSequence.getRight().getState(currSequence.getRight().length() - 2);
-                StateSet prevStateSet = subsetConstruction.getState(prevStateSetID);
+                StateSet prevStateSet = subsetConstruction.getStateAsStateSet(prevStateSetID);
                 Map<Long, Long> prevStateSetIDMap = relabelMapping.get(prevStateSetID);
                 for (State prevS : prevStateSet.getSet()) {
                     for (Transition prevT : prevS.getTransitions()) {

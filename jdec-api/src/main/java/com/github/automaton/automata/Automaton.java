@@ -365,6 +365,8 @@ public class Automaton implements Cloneable {
                 return new UStructure(jsonObj);
             case PRUNED_U_STRUCTURE:
                 return new PrunedUStructure(jsonObj);
+            case SUBSET_CONSTRUCTION:
+                return new SubsetConstruction(jsonObj);
             default:
                 throw new AutomatonException("Invalid automaton type: " + Objects.toString(type));
         }
