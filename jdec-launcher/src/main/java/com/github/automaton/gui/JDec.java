@@ -592,7 +592,7 @@ public class JDec extends JFrame {
         if (requiresAnyUStructure)
             componentsWhichRequireAnyUStructure.add(menuItem);
         if (requiresSubsetConstruction)
-            componentsWhichRequireAnyUStructure.add(menuItem);
+            componentsWhichRequireSubsetConstruction.add(menuItem);
 
         // Add the item to the menu
         menu.add(menuItem);
