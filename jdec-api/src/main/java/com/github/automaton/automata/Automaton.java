@@ -594,6 +594,8 @@ public class Automaton implements Cloneable {
 
         /* Setup */
 
+        boolean containsDumpState = getState(DUMP_STATE_LABEL) != null;
+
         Deque<StateVector> stack = new ArrayDeque<StateVector>();
         Set<StateVector> valuesInStack = new HashSet<StateVector>();
         UStructure uStructure = new UStructure(nControllers);
@@ -835,6 +837,18 @@ public class Automaton implements Cloneable {
         /* Re-number states (by removing empty ones) */
 
         uStructure.renumberStates();
+
+        /* Filter dump state */
+        if (containsDumpState) {
+            StringBuilder labelBuilder = new StringBuilder(DUMP_STATE_LABEL);
+            for (int i = 0; i < nControllers; i++) {
+                labelBuilder.append('_');
+                labelBuilder.append(DUMP_STATE_LABEL);
+            }
+            String label = labelBuilder.toString();
+            long dumpID = uStructure.getStateID(label);
+            uStructure.removeState(dumpID);
+        }
 
         /* Return produced U-Structure */
 
