@@ -194,6 +194,7 @@ public class State implements Cloneable {
      * @param transitions The list of transitions leading out from this state
      **/
     public State(String label, long id, boolean marked, List<Transition> transitions) {
+        this();
         this.label = label;
         this.id = id;
         this.marked = marked;
