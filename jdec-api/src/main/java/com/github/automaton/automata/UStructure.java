@@ -12,8 +12,6 @@ import org.apache.commons.collections4.*;
 import org.apache.commons.collections4.multiset.HashMultiSet;
 import org.apache.commons.lang3.*;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.mutable.Mutable;
-import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.*;
 
@@ -659,11 +657,11 @@ public class UStructure extends Automaton {
         while (!combinedStateQueue.isEmpty()) {
             Pair<Long, Sequence> currSequence = combinedStateQueue.remove();
 
-            Mutable<StateSet> ss = new MutableObject<>((StateSet) subsetConstruction.getState(currSequence.getLeft()));
+            StateSet ss = (StateSet) subsetConstruction.getState(currSequence.getLeft());
             Map<Long, Long> currStateSetIDMap = new LinkedHashMap<>();
-            relabelMapping.put(ss.getValue().getID(), currStateSetIDMap);
+            relabelMapping.put(ss.getID(), currStateSetIDMap);
             /* Calculate new state IDs for relabeling */
-            for (State s : ss.getValue().getSet()) {
+            for (State s : ss.getSet()) {
                 long origID = s.getID();
                 long modID = origID + nStates * stateIDMultiSet.getCount(origID);
                 currStateSetIDMap.put(s.getID(), modID);
@@ -674,7 +672,7 @@ public class UStructure extends Automaton {
                 stateIDMultiSet.add(origID);
             }
             /* Add transitions to states in the same state set */
-            for (State origS : ss.getValue().getSet()) {
+            for (State origS : ss.getSet()) {
                 State modS = relabeled.getState(currStateSetIDMap.get(origS.getID()));
                 for (Transition t : origS.getTransitions()) {
                     if (currStateSetIDMap.containsKey(t.getTargetStateID())) {
@@ -699,7 +697,7 @@ public class UStructure extends Automaton {
             }
 
             for (Transition t : IterableUtils.filteredIterable(
-                    ss.getValue().getTransitions(), t -> t.getTargetStateID() != ss.getValue().getID())) {
+                    ss.getTransitions(), t -> t.getTargetStateID() != ss.getID())) {
                 if (!currSequence.getRight().containsState(t.getTargetStateID())) {
                     combinedStateQueue.add(Pair.of(t.getTargetStateID(),
                             currSequence.getRight().append(t.getEvent().getID(), t.getTargetStateID())));
