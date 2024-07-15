@@ -7,7 +7,6 @@ package com.github.automaton.automata;
 
 import java.util.*;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.*;
 
 /**
@@ -40,7 +39,7 @@ public class CommunicationData extends TransitionData {
      */
     private CommunicationData() {
         super(0, -1, 0);
-        this.roles = (CommunicationRole[]) ArrayUtils.EMPTY_OBJECT_ARRAY;
+        this.roles = new CommunicationRole[0];
     }
 
     /**

@@ -111,7 +111,9 @@ public class PrunedUStructure extends UStructure {
         /* Recursive case */
 
         // Try all transitions leading from this state
-        outer: for (Transition t : currentState.getTransitions()) {
+        outer: for (int i = 0; i < currentState.getTransitions().size(); i++) {
+
+            Transition t = currentState.getTransition(i);
 
             // We do not want to prune any of the chosen communications
             if (depth == 0) {
@@ -125,24 +127,24 @@ public class PrunedUStructure extends UStructure {
 
             // System.out.println("\t\tProcessed: " + t);
 
-            boolean[] copy = ArrayUtils.clone(vectorElementsFound);
+            boolean[] copy = vectorElementsFound.clone();
 
             // Check to see if the event vector of this transition is compatible with what
             // we've found so far
-            for (int i = 0; i < t.getEvent().getVector().getSize(); i++) {
+            for (int j = 0; j < t.getEvent().getVector().getSize(); j++) {
 
-                String element = t.getEvent().getVector().getLabelAtIndex(i);
+                String element = t.getEvent().getVector().getLabelAtIndex(j);
 
                 if (!element.equals(Event.EPSILON)) {
 
                     // Conflict since we have already found an element for this index (so they
                     // aren't compatible)
-                    if (copy[i])
+                    if (copy[j])
                         continue outer;
 
                     // Is compatible
-                    else if (element.equals(communication.getLabelAtIndex(i)))
-                        copy[i] = true;
+                    else if (element.equals(communication.getLabelAtIndex(j)))
+                        copy[j] = true;
 
                     // Conflict since the elements do not match (meaning they aren't compatible)
                     else
@@ -155,6 +157,7 @@ public class PrunedUStructure extends UStructure {
 
             // Prune this transition
             removeTransition(currentState.getID(), t.getEvent().getID(), t.getTargetStateID());
+            i--;
 
             // Recursive call to the state where this transition leads
             pruneHelper(protocol, communication, copy, getState(t.getTargetStateID()), depth + 1);
