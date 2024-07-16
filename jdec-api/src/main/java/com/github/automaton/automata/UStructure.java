@@ -12,7 +12,7 @@ import org.apache.commons.collections4.*;
 import org.apache.commons.collections4.multiset.HashMultiSet;
 import org.apache.commons.lang3.*;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.logging.log4j.*;
 
 import com.github.automaton.automata.util.PowerSetUtils;
@@ -542,43 +542,45 @@ public class UStructure extends Automaton {
         /* Mapping of state set IDs to their member state IDs */
         final Map<Long, Map<Long, Long>> relabelMapping = new LinkedHashMap<>();
 
-        Queue<Pair<Long, Sequence>> combinedStateQueue = new ArrayDeque<>();
-        combinedStateQueue.add(Pair.of(subsetConstruction.initialState, new Sequence(subsetConstruction.initialState)));
+        Queue<Triple<Long, Sequence, Boolean>> combinedStateQueue = new ArrayDeque<>();
+        combinedStateQueue.add(Triple.of(subsetConstruction.initialState, new Sequence(subsetConstruction.initialState), true));
 
         UStructure relabeled = new UStructure(nControllers);
         relabeled.addAllEvents(this.events);
 
         while (!combinedStateQueue.isEmpty()) {
-            Pair<Long, Sequence> currSequence = combinedStateQueue.remove();
+            Triple<Long, Sequence, Boolean> currSequence = combinedStateQueue.remove();
 
             StateSet ss = subsetConstruction.getStateAsStateSet(currSequence.getLeft());
-            Map<Long, Long> currStateSetIDMap = new LinkedHashMap<>();
-            relabelMapping.put(ss.getID(), currStateSetIDMap);
-            /* Calculate new state IDs for relabeling */
-            for (State s : ss.getSet()) {
-                long origID = s.getID();
-                long modID = origID + nStates * stateIDMultiSet.getCount(origID);
-                currStateSetIDMap.put(s.getID(), modID);
-                State modState = new State(
-                        s.getLabel() + (stateIDMultiSet.getCount(origID) == 0 ? StringUtils.EMPTY
-                                : "-" + Integer.toString(stateIDMultiSet.getCount(origID))),
-                        modID, false, s.getEnablementEvents(), s.getDisablementEvents(), s.getIllegalConfigEvents());
-                relabeled.addStateAt(modState, false);
-                stateIDMultiSet.add(origID);
-            }
-            /* Add transitions to states in the same state set */
-            for (State origS : ss.getSet()) {
-                State modS = relabeled.getState(currStateSetIDMap.get(origS.getID()));
-                for (Transition t : origS.getTransitions()) {
-                    if (currStateSetIDMap.containsKey(t.getTargetStateID())) {
-                        relabeled.addTransition(modS.getID(), t.getEvent().getLabel(),
-                                currStateSetIDMap.get(t.getTargetStateID()));
+            Map<Long, Long> currStateSetIDMap = currSequence.getRight() ? new LinkedHashMap<>() : relabelMapping.get(currSequence.getLeft());
+            if (currSequence.getRight()) {
+                relabelMapping.put(ss.getID(), currStateSetIDMap);
+                /* Calculate new state IDs for relabeling */
+                for (State s : ss.getSet()) {
+                    long origID = s.getID();
+                    long modID = origID + nStates * stateIDMultiSet.getCount(origID);
+                    currStateSetIDMap.put(s.getID(), modID);
+                    State modState = new State(
+                            s.getLabel() + (stateIDMultiSet.getCount(origID) == 0 ? StringUtils.EMPTY
+                                    : "-" + Integer.toString(stateIDMultiSet.getCount(origID))),
+                            modID, false, s.getEnablementEvents(), s.getDisablementEvents(), s.getIllegalConfigEvents());
+                    relabeled.addStateAt(modState, false);
+                    stateIDMultiSet.add(origID);
+                }
+                /* Add transitions to states in the same state set */
+                for (State origS : ss.getSet()) {
+                    State modS = relabeled.getState(currStateSetIDMap.get(origS.getID()));
+                    for (Transition t : origS.getTransitions()) {
+                        if (currStateSetIDMap.containsKey(t.getTargetStateID())) {
+                            relabeled.addTransition(modS.getID(), t.getEvent().getLabel(),
+                                    currStateSetIDMap.get(t.getTargetStateID()));
+                        }
                     }
                 }
             }
             /* Handle transitions from preceding state set */
-            if (currSequence.getRight().getEventArray().length > 0) {
-                long prevStateSetID = currSequence.getRight().getState(currSequence.getRight().length() - 2);
+            if (currSequence.getMiddle().getEventArray().length > 0) {
+                long prevStateSetID = currSequence.getMiddle().getState(currSequence.getMiddle().length() - 2);
                 StateSet prevStateSet = subsetConstruction.getStateAsStateSet(prevStateSetID);
                 Map<Long, Long> prevStateSetIDMap = relabelMapping.get(prevStateSetID);
                 for (State prevS : prevStateSet.getSet()) {
@@ -593,9 +595,12 @@ public class UStructure extends Automaton {
 
             for (Transition t : IterableUtils.filteredIterable(
                     ss.getTransitions(), t -> t.getTargetStateID() != ss.getID())) {
-                if (!currSequence.getRight().containsState(t.getTargetStateID())) {
-                    combinedStateQueue.add(Pair.of(t.getTargetStateID(),
-                            currSequence.getRight().append(t.getEvent().getID(), t.getTargetStateID())));
+                if (!currSequence.getMiddle().containsState(t.getTargetStateID()) && currSequence.getRight()) {
+                    combinedStateQueue.add(Triple.of(t.getTargetStateID(),
+                            currSequence.getMiddle().append(t.getEvent().getID(), t.getTargetStateID()), true));
+                } else if (!currSequence.getMiddle().isLastState(t.getTargetStateID()) && currSequence.getRight()) {
+                    combinedStateQueue.add(Triple.of(t.getTargetStateID(),
+                            currSequence.getMiddle().append(t.getEvent().getID(), t.getTargetStateID()), false));
                 }
             }
 

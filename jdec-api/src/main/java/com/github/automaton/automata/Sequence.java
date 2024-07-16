@@ -136,6 +136,21 @@ public final class Sequence implements Iterable<Pair<Integer, Long>> {
     }
 
     /**
+     * Checks whether the specified state ID is the last state in this sequence.
+     * 
+     * @param stateID a state
+     * @return {@code true} if the argument is the last state in this {@code Sequence}
+     * 
+     * @since 2.1.0
+     */
+    public boolean isLastState(long stateID) {
+        if (stateIDs.length == 0)
+            return false;
+        else
+            return stateIDs[stateIDs.length - 1] == stateID;
+    }
+
+    /**
      * Returns an iterator over the transitions in this {@code Sequence}.
      * The values returned by this iterator are {@code (event, target state)}
      * pairs, with the exception of the first value (whose event ID is 
