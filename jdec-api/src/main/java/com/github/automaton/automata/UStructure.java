@@ -542,6 +542,14 @@ public class UStructure extends Automaton {
         /* Mapping of state set IDs to their member state IDs */
         final Map<Long, Map<Long, Long>> relabelMapping = new LinkedHashMap<>();
 
+        /*
+         * Build a queue for breadth-first traversal of the UStructure
+         * Each entry of the queue consists of the triple of:
+         * 
+         * - ID of the current state of interest
+         * - the sequence of states and events that led to this state
+         * - whether a cycle has been detected
+         */
         Queue<Triple<Long, Sequence, Boolean>> combinedStateQueue = new ArrayDeque<>();
         combinedStateQueue.add(Triple.of(subsetConstruction.initialState, new Sequence(subsetConstruction.initialState), true));
 
@@ -593,12 +601,15 @@ public class UStructure extends Automaton {
                 }
             }
 
+            /* Detect next entries for breadth-first traversal */
             for (Transition t : IterableUtils.filteredIterable(
                     ss.getTransitions(), t -> t.getTargetStateID() != ss.getID())) {
                 if (!currSequence.getMiddle().containsState(t.getTargetStateID()) && currSequence.getRight()) {
+                    /* Next transition found */
                     combinedStateQueue.add(Triple.of(t.getTargetStateID(),
                             currSequence.getMiddle().append(t.getEvent().getID(), t.getTargetStateID()), true));
                 } else if (!currSequence.getMiddle().isLastState(t.getTargetStateID()) && currSequence.getRight()) {
+                    /* Cycle detected */
                     combinedStateQueue.add(Triple.of(t.getTargetStateID(),
                             currSequence.getMiddle().append(t.getEvent().getID(), t.getTargetStateID()), false));
                 }
