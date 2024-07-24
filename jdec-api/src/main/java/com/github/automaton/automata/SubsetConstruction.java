@@ -242,7 +242,11 @@ public class SubsetConstruction extends Automaton {
             throw new IndexOutOfBoundsException(controller);
         Automaton aut = new Automaton(1);
         for (State s : getStates()) {
-            aut.addStateAt(Long.toString(s.getID()), false, null, s.getID() == getInitialStateID(), s.getID());
+            if (s instanceof StateSet ss) {
+                aut.addStateAt(Long.toString(ss.getID()), ss.getSet().stream().anyMatch(State::isIllegalConfiguration), null, ss.getID() == getInitialStateID(), ss.getID());
+            } else {
+                aut.addStateAt(Long.toString(s.getID()), false, null, s.getID() == getInitialStateID(), s.getID());
+            }
         }
         for (State s : getStates()) {
             for (Transition t : s.getTransitions()) {

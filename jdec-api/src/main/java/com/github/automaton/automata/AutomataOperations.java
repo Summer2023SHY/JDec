@@ -93,7 +93,8 @@ public class AutomataOperations {
                     id == source.getInitialStateID(),
                     id,
                     state.getEnablementEvents(),
-                    state.getDisablementEvents());
+                    state.getDisablementEvents(),
+                    state.getIllegalConfigEvents());
 
             // Traverse each transition
             for (Transition t : transitions) {
@@ -175,7 +176,7 @@ public class AutomataOperations {
 
             // Add this state (and its transitions) to the co-accessible automaton
             automaton.addStateAt(state.getLabel(), state.isMarked(), new ArrayList<Transition>(),
-                    s == source.initialState, s);
+                    s == source.initialState, s, new HashSet<>(state.getEnablementEvents()), new HashSet<>(state.getDisablementEvents()), new HashSet<>(state.getIllegalConfigEvents()));
 
             // Add all directly reachable states from this one to the stack
             for (Transition t : stateWithInvertedTransitions.getTransitions()) {
@@ -1037,7 +1038,7 @@ public class AutomataOperations {
 
         /* Add special transitions */
 
-        automaton.copyOverSpecialTransitions(twinPlant);
+        automaton.copyOverSpecialTransitions(twinPlant);    
 
         /* Return generated automaton */
 
@@ -1071,8 +1072,10 @@ public class AutomataOperations {
                         SubsetConstruction subsetConstruction = trim.subsetConstruction(0);
                         IntStream.range(0, combinedSys.nControllers).parallel().forEach(i -> counterExample
                                 .addAll(buildLanguage(subsetConstruction.buildAutomatonRepresentationOf(i))));
+                        int nCheckedAutomata = 0;
                         for (Iterator<Automaton> iterator = IteratorUtils.filteredIterator(G.iterator(), aut -> !Gprime.contains(aut)); iterator.hasNext() && !found; ) {
                             Automaton M = iterator.next();
+                            nCheckedAutomata++;
                             if (M.recognizesWords(counterExample)) {
                                 found = true;
                                 Gprime.add(M);
@@ -1080,19 +1083,21 @@ public class AutomataOperations {
                         }
                         for (Iterator<Automaton> iterator = IteratorUtils.filteredIterator(H.iterator(), aut -> !Hprime.contains(aut)); iterator.hasNext() && !found; ) {
                             Automaton M = iterator.next();
+                            nCheckedAutomata++;
                             if (M.recognizesWords(counterExample)) {
                                 found = true;
                                 Hprime.add(M);
                             }
                         }
-                        if (!found)
+                        if (nCheckedAutomata > 0 && !found) {
                             return false;
+                        }
                     }
                 }
                 combinedSys = buildCombinedSystem(Gprime, Hprime);
+                H.removeAll(Hprime);
+                G.removeAll(Gprime);
             }
-            H.removeAll(Hprime);
-            G.removeAll(Gprime);
         }
         return true;
     }
@@ -1101,9 +1106,10 @@ public class AutomataOperations {
         Automaton compositePlant = buildCompositeAutomaton(plants);
         Automaton compositeSpec = buildCompositeAutomaton(specs);
         Automaton combinedSys = intersection(compositePlant.generateTwinPlant(), compositeSpec.generateTwinPlant());
-        // TODO: Clean up combined system
-        Automaton revCombinedSys = invert(combinedSys, Automaton::new);
-        for (State s : combinedSys.getStates()) {
+        for (long stateId = 1; stateId <= combinedSys.nStates; stateId++) {
+            if (!combinedSys.stateExists(stateId))
+                continue;
+            State s = combinedSys.getState(stateId);
             String[] stateLabels = s.getLabel().split("_");
             int dumpCount = 0;
             for (int i = 0; i < stateLabels.length; i++) {
@@ -1111,12 +1117,12 @@ public class AutomataOperations {
                     dumpCount++;
             }
             if (dumpCount == stateLabels.length) {
-                combinedSys.removeState(s.getID());
-                revCombinedSys.removeState(s.getID());
+                combinedSys.removeState(stateId);
             } else if (dumpCount > 0) {
                 s.setMarked(true);
             }
         }
+        combinedSys.renumberStates();
         return combinedSys;
     }
 

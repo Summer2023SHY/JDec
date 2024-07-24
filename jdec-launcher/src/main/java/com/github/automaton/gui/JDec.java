@@ -2463,6 +2463,7 @@ public class JDec extends JFrame {
 
             SwingUtilities.invokeLater(() -> {
                 AutomatonGuiInputGenerator<?> generator = automaton.getGuiInputGenerator();
+                generator.refresh();
                 controllerInput.setValue(automaton.getNumberOfControllers());
                 eventInput.setText(generator.getEventInput());
                 stateInput.setText(generator.getStateInput());

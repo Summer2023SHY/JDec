@@ -834,10 +834,6 @@ public class Automaton implements Cloneable {
 
         } // while
 
-        /* Re-number states (by removing empty ones) */
-
-        uStructure.renumberStates();
-
         /* Filter dump state */
         if (containsDumpState) {
             StringBuilder labelBuilder = new StringBuilder(DUMP_STATE_LABEL);
@@ -850,8 +846,10 @@ public class Automaton implements Cloneable {
             uStructure.removeState(dumpID);
         }
 
-        /* Return produced U-Structure */
+        /* Re-number states (by removing empty ones) */
+        uStructure.renumberStates();
 
+        /* Return produced U-Structure */
         return uStructure;
 
     }
@@ -1724,6 +1722,38 @@ public class Automaton implements Cloneable {
         return addStateAt(
                 new State(label, id, marked, Objects.requireNonNullElse(transitions, new ArrayList<Transition>()),
                     enablementEvents, disablementEvents),
+                isInitialState);
+    }
+
+    /**
+     * Add the specified state to the automaton.
+     * 
+     * @implNote The method {@link #renumberStates()} should be called some time
+     *           after using
+     *           this method to make the state IDs consecutive.
+     * @param label          The "name" of the new state
+     * @param marked         Whether or not the states is marked
+     * @param transitions    The list of transitions (if {@code null}, then a new
+     *                       list is made)
+     * @param isInitialState Whether or not this is the initial state
+     * @param id             The index where the state should be added at
+     * @param enablementEvents     Whether or not this is an enablement state
+     * @param disablementEvents    Whether or not this is a disablement state
+     * @return Whether or not the addition was successful (returns {@code false} if
+     *         a state already existed there)
+     * 
+     * @since 2.1.0
+     **/
+    public boolean addStateAt(String label, boolean marked, List<Transition> transitions, boolean isInitialState,
+            long id,
+            Set<String> enablementEvents, Set<String> disablementEvents, Set<String> illegalConfigEvents) {
+
+        if (stateExists(id))
+            return false;
+
+        return addStateAt(
+                new State(label, id, marked, Objects.requireNonNullElse(transitions, new ArrayList<Transition>()),
+                    enablementEvents, disablementEvents, illegalConfigEvents),
                 isInitialState);
     }
 
