@@ -32,11 +32,11 @@ class CommunicationLabelVector extends LabelVector {
      */
     private CommunicationLabelVector() {
         super(StringUtils.EMPTY);
-        this.roles = (CommunicationRole[]) ArrayUtils.EMPTY_OBJECT_ARRAY;
+        this.roles = new CommunicationRole[0];
     }
 
     /**
-     * Construct a CommunicationLabelVector object, given it's label and each
+     * Constructs a new {@code CommunicationVector}, given its label and each
      * controller's communication roles.
      * 
      * @param label The unvectorized label
@@ -47,6 +47,34 @@ class CommunicationLabelVector extends LabelVector {
         super(label);
         this.roles = roles;
 
+    }
+
+    /**
+     * Constructs a new {@code CommunicationVector}, given its labels and each
+     * controller's communication roles.
+     * 
+     * @param label the vector of labels
+     * @param roles the communication roles
+     * 
+     * @since 2.1.0
+     */
+    public CommunicationLabelVector(String[] labels, CommunicationRole[] roles) {
+        super(labels);
+        this.roles = roles;
+    }
+
+    /**
+     * Constructs a new {@code CommunicationVector}, given its labels and each
+     * controller's communication roles.
+     * 
+     * @param label the vector of labels
+     * @param roles the communication roles
+     * 
+     * @since 2.1.0
+     */
+    public CommunicationLabelVector(List<String> labels, CommunicationRole[] roles) {
+        super(labels);
+        this.roles = roles;
     }
 
     /* OVERRIDDEN METHOD */

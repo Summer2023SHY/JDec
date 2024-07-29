@@ -187,7 +187,7 @@ public class UStructure extends Automaton {
 
                     // Add event if it doesn't already exist
                     int id;
-                    Event event = uStructure.getEvent(vector.toString());
+                    Event event = uStructure.getEvent(vector);
                     if (event == null) {
 
                         // Determine observable and controllable properties of the event vector
@@ -1069,7 +1069,7 @@ public class UStructure extends Automaton {
                 /* Build least upper bound */
 
                 boolean valid = true;
-                StringBuilder potentialCommunicationBuilder = new StringBuilder();
+                List<String> potentialCommunicationLabels = new ArrayList<>();
                 String eventLabel = null;
 
                 for (int i = 0; i < v1.getSize(); i++) {
@@ -1087,17 +1087,17 @@ public class UStructure extends Automaton {
                     // Append vector element
                     String newEventLabel = null;
                     if (!label1.equals(Event.EPSILON)) {
-                        potentialCommunicationBuilder.append("," + label1);
+                        potentialCommunicationLabels.add(label1);
                         newEventLabel = label1;
                         if (i > 0)
                             roles[i - 1] = CommunicationRole.SENDER;
                     } else if (!label2.equals(Event.EPSILON)) {
-                        potentialCommunicationBuilder.append("," + label2);
+                        potentialCommunicationLabels.add(label2);
                         newEventLabel = label2;
                         if (i > 0)
                             roles[i - 1] = CommunicationRole.RECEIVER;
                     } else {
-                        potentialCommunicationBuilder.append(",*");
+                        potentialCommunicationLabels.add(Event.EPSILON);
                         if (i > 0)
                             roles[i - 1] = CommunicationRole.NONE;
                     }
@@ -1131,7 +1131,7 @@ public class UStructure extends Automaton {
 
                             // Add potential communication
                             potentialCommunications.add(new CommunicationLabelVector(
-                                    "<" + potentialCommunicationBuilder.substring(1) + ">", copy));
+                                    potentialCommunicationLabels, copy));
 
                         }
 
@@ -1178,7 +1178,7 @@ public class UStructure extends Automaton {
                     /* Build least upper bound */
 
                     boolean valid = true;
-                    StringBuilder leastUpperBoundBuilder = new StringBuilder();
+                    List<String> leastUpperBoundList = new ArrayList<>();
                     for (int i = 0; i < v1.getSize(); i++) {
 
                         String label1 = v1.getLabelAtIndex(i);
@@ -1192,16 +1192,16 @@ public class UStructure extends Automaton {
 
                         // Append vector element
                         if (label1.equals(Event.EPSILON))
-                            leastUpperBoundBuilder.append("," + label2);
+                            leastUpperBoundList.add(label2);
                         else
-                            leastUpperBoundBuilder.append("," + label1);
+                            leastUpperBoundList.add(label1);
 
                     }
 
                     /* Add to the temporary list */
 
                     if (valid)
-                        temporaryList.add(new LabelVector("<" + leastUpperBoundBuilder.substring(1) + ">"));
+                        temporaryList.add(new LabelVector(leastUpperBoundList));
 
                 } // for
             } // for
