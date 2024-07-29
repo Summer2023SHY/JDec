@@ -151,7 +151,7 @@ abstract class AbstractAutomatonDotConverter<T extends Automaton> implements Aut
             addAdditionalNodeProperties(state, sourceNode);
 
             // Draw state
-            g = g.add(sourceNode.add(Attributes.attr("peripheries", state.isMarked() ? 2 : 1), Label.of(stateLabel)));
+            g = g.add(sourceNode.add(Label.of(stateLabel)));
 
             // Find and draw all of the special transitions
             List<Transition> transitionsToSkip = new ArrayList<Transition>();

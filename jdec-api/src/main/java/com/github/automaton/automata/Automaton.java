@@ -151,7 +151,14 @@ public class Automaton implements Cloneable {
         U_STRUCTURE((byte) 1, UStructure.class),
 
         /** The pruned U-Structure */
-        PRUNED_U_STRUCTURE((byte) 2, PrunedUStructure.class);
+        PRUNED_U_STRUCTURE((byte) 2, PrunedUStructure.class),
+
+        /**
+         * The subset construction.
+         * 
+         * @since 2.1.0
+         */
+        SUBSET_CONSTRUCTION((byte) 4, SubsetConstruction.class);
 
         // Private variables
         private final byte numericValue;
@@ -249,6 +256,9 @@ public class Automaton implements Cloneable {
 
                 case PRUNED_U_STRUCTURE:
                     return "Pruned U-Structure";
+
+                case SUBSET_CONSTRUCTION:
+                    return "Subset Construction";
 
             }
 
@@ -355,6 +365,8 @@ public class Automaton implements Cloneable {
                 return new UStructure(jsonObj);
             case PRUNED_U_STRUCTURE:
                 return new PrunedUStructure(jsonObj);
+            case SUBSET_CONSTRUCTION:
+                return new SubsetConstruction(jsonObj);
             default:
                 throw new AutomatonException("Invalid automaton type: " + Objects.toString(type));
         }
@@ -582,6 +594,8 @@ public class Automaton implements Cloneable {
 
         /* Setup */
 
+        boolean containsDumpState = getState(DUMP_STATE_LABEL) != null;
+
         Deque<StateVector> stack = new ArrayDeque<StateVector>();
         Set<StateVector> valuesInStack = new HashSet<StateVector>();
         UStructure uStructure = new UStructure(nControllers);
@@ -731,11 +745,31 @@ public class Automaton implements Cloneable {
                 if (isUnconditionalViolation) {
                     uStructure.addUnconditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
                     stateVector.setDisablementOf(combinedEvent.get(0));
+                    boolean validConfig = false;
+                    for (int i = 1; !validConfig && i < stateVector.getStates().size(); i++) {
+                        State init = stateVector.getStateFor(i);
+                        if (badTransitions.parallelStream().anyMatch(td -> td.initialStateID == init.getID() && td.eventID == getEvent(eventLabelVector.getLabelAtIndex(0)).getID())) {
+                            validConfig = true;
+                        }
+                    }
+                    if (!validConfig) {
+                        stateVector.setIllegalConfigOf(combinedEvent.get(0));
+                    }
                 }
                 if (isConditionalViolation) {
 
                     uStructure.addConditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
                     stateVector.setEnablementOf(combinedEvent.get(0));
+                    boolean validConfig = false;
+                    for (int i = 1; !validConfig && i < stateVector.getStates().size(); i++) {
+                        State init = stateVector.getStateFor(i);
+                        if (badTransitions.parallelStream().noneMatch(td -> td.initialStateID == init.getID() && td.eventID == getEvent(eventLabelVector.getLabelAtIndex(0)).getID())) {
+                            validConfig = true;
+                        }
+                    }
+                    if (!validConfig) {
+                        stateVector.setIllegalConfigOf(combinedEvent.get(0));
+                    }
                 }
 
             } // for
@@ -800,12 +834,22 @@ public class Automaton implements Cloneable {
 
         } // while
 
-        /* Re-number states (by removing empty ones) */
+        /* Filter dump state */
+        if (containsDumpState) {
+            StringBuilder labelBuilder = new StringBuilder(DUMP_STATE_LABEL);
+            for (int i = 0; i < nControllers; i++) {
+                labelBuilder.append('_');
+                labelBuilder.append(DUMP_STATE_LABEL);
+            }
+            String label = labelBuilder.toString();
+            long dumpID = uStructure.getStateID(label);
+            uStructure.removeState(dumpID);
+        }
 
+        /* Re-number states (by removing empty ones) */
         uStructure.renumberStates();
 
         /* Return produced U-Structure */
-
         return uStructure;
 
     }
@@ -881,166 +925,29 @@ public class Automaton implements Cloneable {
     }
 
     /**
-     * Generate the twin plant by combining this automaton w.r.t. G_{Sigma*}.
+     * Generates the twin plant by combining this automaton w.r.t. G_{&Sigma;*}.
      * 
-     * @implNote The technique used here is similar to how the complement works.
-     *           This would not work
-     *           in all cases, but G_{Sigma*} is a special case.
-     * @return The twin plant
-     **/
+     * @return the twin plant for this automaton
+     * 
+     * @see AutomataOperations#generateTwinPlant(Automaton)
+     */
     public final Automaton generateTwinPlant() {
 
-        Automaton automaton = new Automaton(getNumberOfControllers());
-
-        /* Add events */
-
-        automaton.addAllEvents(getEvents());
-
-        /* Build twin plant */
-
-        long dumpStateID = getNumberOfStates() + 1;
-        boolean needToAddDumpState = false;
-
-        // Add each state to the new automaton
-        for (long s = 1; s <= getNumberOfStates(); s++) {
-
-            State state = getState(s);
-
-            long id = automaton.addState(state.getLabel(), !state.isMarked(), s == initialState);
-
-            // Try to add transitions for each event
-            for (Event e : events) {
-
-                boolean foundMatch = false;
-
-                // Search through each transition for the event
-                for (Transition t : state.getTransitions())
-                    if (t.getEvent().equals(e)) {
-                        automaton.addTransition(id, e.getID(), t.getTargetStateID());
-                        foundMatch = true;
-                    }
-
-                // Check to see if this event is controllable by at least one controller
-                boolean controllable = false;
-                for (boolean b : e.isControllable())
-                    if (b) {
-                        controllable = true;
-                        break;
-                    }
-
-                // Add new transition leading to dump state if this event if undefined at this
-                // state and is controllable
-                if (!foundMatch && controllable) {
-                    automaton.addTransition(id, e.getID(), dumpStateID);
-                    automaton.markTransitionAsBad(id, e.getID(), dumpStateID);
-                    needToAddDumpState = true;
-                }
-
-            }
-
-        }
-
-        /* Create dump state if it needs to be made */
-
-        if (needToAddDumpState) {
-
-            long id = automaton.addState(DUMP_STATE_LABEL, false, false);
-
-            if (id != dumpStateID)
-                logger.error("Dump state ID did not match expected ID.");
-
-        }
-
-        /* Add special transitions */
-
-        copyOverSpecialTransitions(automaton);
-
-        /* Return generated automaton */
-
-        return automaton;
+        return AutomataOperations.generateTwinPlant(this);
 
     }
 
     /**
-     * Generate the twin plant by combining this automaton w.r.t. G_{Sigma*}.
+     * Generates the twin plant by combining this automaton w.r.t. G_{&Sigma;*}.
      * 
-     * @implNote The technique used here is similar to how the complement works.
-     *           This would not work
-     *           in all cases, but G_{Sigma*} is a special case.
-     * @return The twin plant
-     **/
+     * @deprecated This is a deprecated alias of {@link #generateTwinPlant()}.
+     * 
+     * @return the twin plant for this automaton
+     */
+    @Deprecated(since = "2.1.0", forRemoval = true)
     public final Automaton generateTwinPlant2() {
 
-        Automaton automaton = new Automaton(getNumberOfControllers());
-
-        /* Add events */
-
-        automaton.addAllEvents(getEvents());
-
-        /* Build twin plant */
-
-        long dumpStateID = getNumberOfStates() + 1;
-        boolean needToAddDumpState = false;
-
-        List<Event> activeEvents = getActiveEvents();
-
-        // Add each state to the new automaton
-        for (long s = 1; s <= getNumberOfStates(); s++) {
-
-            State state = getState(s);
-
-            long id = automaton.addState(state.getLabel(), !state.isMarked(), s == initialState);
-
-            // Try to add transitions for each event
-            for (Event e : events) {
-
-                boolean foundMatch = false;
-
-                // Search through each transition for the event
-                for (Transition t : state.getTransitions())
-                    if (t.getEvent().equals(e)) {
-                        automaton.addTransition(id, e.getID(), t.getTargetStateID());
-                        foundMatch = true;
-                    }
-
-                // Check to see if this event is controllable by at least one controller
-                boolean controllable = false;
-                for (boolean b : e.isControllable())
-                    if (b) {
-                        controllable = true;
-                        break;
-                    }
-
-                // Add new transition leading to dump state if this event if undefined at this
-                // state and is controllable and active
-                if (!foundMatch && controllable && activeEvents.contains(e)) {
-                    automaton.addTransition(id, e.getID(), dumpStateID);
-                    automaton.markTransitionAsBad(id, e.getID(), dumpStateID);
-                    needToAddDumpState = true;
-                }
-
-            }
-
-        }
-
-        /* Create dump state if it needs to be made */
-
-        if (needToAddDumpState) {
-
-            long id = automaton.addState(DUMP_STATE_LABEL, false, false);
-
-            if (id != dumpStateID)
-                logger.error("Dump state ID did not match expected ID.");
-
-        }
-
-        /* Add special transitions */
-
-        copyOverSpecialTransitions(automaton);
-
-        /* Return generated automaton */
-
-        return automaton;
+        return AutomataOperations.generateTwinPlant(this);
 
     }
 
@@ -1097,7 +1004,7 @@ public class Automaton implements Cloneable {
         }
 
         /* Update initial state */
-        setInitialStateID(mappingHashMap.get(initialState));
+        setInitialStateID(Objects.requireNonNullElse(mappingHashMap.get(initialState), 0L));
 
         /* Update the special transitions */
 
@@ -1636,26 +1543,44 @@ public class Automaton implements Cloneable {
      **/
     public boolean removeTransition(long startingStateID, int eventID, long targetStateID) {
 
+        return removeTransition(new TransitionData(startingStateID, eventID, targetStateID));
+
+    }
+
+    /**
+     * Removes the specified transition.
+     * 
+     * @param td a transition
+     * @return Whether or not the removal was successful
+     * 
+     * @throws NullPointerException if argument is {@code null}
+     * 
+     * @since 2.1.0
+     **/
+    public boolean removeTransition(TransitionData td) {
+
+        Objects.requireNonNull(td);
+
         /* Get starting state from ID */
 
-        State startingState = getState(startingStateID);
+        State startingState = getState(td.initialStateID);
 
         if (startingState == null) {
-            logger.error("Could not remove transition.", new StateNotFoundException(targetStateID));
+            logger.error("Could not remove transition.", new StateNotFoundException(td.targetStateID));
             return false;
         }
 
         /* Remove transition and update the file */
 
-        Event event = getEvent(eventID);
-        startingState.removeTransition(new Transition(event, targetStateID));
+        Event event = getEvent(td.eventID);
+        startingState.removeTransition(new Transition(event, td.targetStateID));
 
         /*
          * Remove transition from list of special transitions (if it appears anywhere in
          * them)
          */
 
-        removeTransitionData(new TransitionData(startingStateID, eventID, targetStateID));
+        removeTransitionData(td);
 
         return true;
 
@@ -1801,6 +1726,38 @@ public class Automaton implements Cloneable {
     }
 
     /**
+     * Add the specified state to the automaton.
+     * 
+     * @implNote The method {@link #renumberStates()} should be called some time
+     *           after using
+     *           this method to make the state IDs consecutive.
+     * @param label          The "name" of the new state
+     * @param marked         Whether or not the states is marked
+     * @param transitions    The list of transitions (if {@code null}, then a new
+     *                       list is made)
+     * @param isInitialState Whether or not this is the initial state
+     * @param id             The index where the state should be added at
+     * @param enablementEvents     Whether or not this is an enablement state
+     * @param disablementEvents    Whether or not this is a disablement state
+     * @return Whether or not the addition was successful (returns {@code false} if
+     *         a state already existed there)
+     * 
+     * @since 2.1.0
+     **/
+    public boolean addStateAt(String label, boolean marked, List<Transition> transitions, boolean isInitialState,
+            long id,
+            Set<String> enablementEvents, Set<String> disablementEvents, Set<String> illegalConfigEvents) {
+
+        if (stateExists(id))
+            return false;
+
+        return addStateAt(
+                new State(label, id, marked, Objects.requireNonNullElse(transitions, new ArrayList<Transition>()),
+                    enablementEvents, disablementEvents, illegalConfigEvents),
+                isInitialState);
+    }
+
+    /**
      * Add the specified state to this automaton.
      * 
      * @param state          a state to add to this automaton
@@ -1829,6 +1786,26 @@ public class Automaton implements Cloneable {
         if (isInitialState)
             initialState = state.getID();
 
+        return true;
+    }
+
+    /**
+     * Removes the state with the specified ID.
+     * 
+     * @param stateID a state ID
+     * @return {@code true} if this automaton is modified by the call
+     * 
+     * @since 2.1.0
+     */
+    public boolean removeState(final long stateID) {
+        if (!stateExists(stateID))
+            return false;
+        List<TransitionData> tdToRemove = getAllTransitions().parallelStream().filter(td -> td.initialStateID == stateID || td.targetStateID == stateID).collect(Collectors.toList());
+        for (TransitionData td : tdToRemove)
+            removeTransition(td);
+        states.remove(stateID);
+        if (initialState == stateID)
+            initialState = 0;
         return true;
     }
 
@@ -2233,6 +2210,17 @@ public class Automaton implements Cloneable {
     }
 
     /**
+     * Returns the list of all controllable events.
+     * 
+     * @return the list of controllable events
+     * 
+     * @since 2.1.0
+     */
+    public List<Event> getControllableEvents() {
+        return events.parallelStream().filter(e -> BooleanUtils.or(e.isControllable())).collect(Collectors.toList());
+    }
+
+    /**
      * Get the number of events that are currently in this automaton.
      * 
      * @return Number of events
@@ -2426,6 +2414,56 @@ public class Automaton implements Cloneable {
             for (Event e : inactiveEvents)
                 addTransition(s.getID(), e.getID(), s.getID());
 
+    }
+
+    /**
+     * Tests whether this automaton recognizes the specified word.
+     * 
+     * @param word a word
+     * @return {@code true} if this automaton recognizes this word
+     * 
+     * @throws NullPointerException if argument is {@code null}
+     * 
+     * @since 2.1.0
+     */
+    public boolean recognizesWord(Word word) {
+        Objects.requireNonNull(word);
+        if (!stateExists(initialState))
+            return false;
+        State currState = getState(initialState);
+        var it = word.iterator();
+        while (it.hasNext()) {
+            String eventLabel = it.next();
+            boolean nextStateFound = false;
+            for (int i = 0; i < currState.getNumberOfTransitions() && !nextStateFound; i++) {
+                Transition t = currState.getTransition(i);
+                if (!isBadTransition(currState, t.getEvent(), getState(t.getTargetStateID())) &&  t.getEvent().getLabel().equals(eventLabel)) {
+                    currState = getState(t.getTargetStateID());
+                    nextStateFound = true;
+                }
+            }
+            if (!nextStateFound)
+                return false;
+        }
+        return currState.isMarked();
+    }
+
+    /**
+     * Tests whether this automaton recognizes all of the specified words.
+     * 
+     * @param words a set of words
+     * @return {@code true} if this automaton recognizes all of the specified words
+     * 
+     * @throws IllegalArgumentException if argument contains {@code null}
+     * @throws NullPointerException if argument is {@code null}
+     * 
+     * @since 2.1.0
+     */
+    public boolean recognizesWords(Set<Word> words) {
+        Validate.noNullElements(words);
+        if (words.isEmpty())
+            return false;
+        return words.parallelStream().allMatch(this::recognizesWord);
     }
 
 }

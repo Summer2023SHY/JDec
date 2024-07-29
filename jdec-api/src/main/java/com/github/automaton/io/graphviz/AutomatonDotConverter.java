@@ -36,6 +36,7 @@ public interface AutomatonDotConverter<T extends Automaton> {
         Objects.requireNonNull(automaton);
         switch (automaton.getType()) {
             case AUTOMATON:
+            case SUBSET_CONSTRUCTION:
                 return new AutomatonDotConverterImpl(automaton);
             case U_STRUCTURE:
             case PRUNED_U_STRUCTURE:

@@ -24,7 +24,9 @@ public class StateSet extends State {
     private transient long maxID;
 
     /** Private constructor */
-    private StateSet() {}
+    private StateSet() {
+        super();
+    }
 
     /**
      * Constructs a new {@code StateSet}.
@@ -33,6 +35,7 @@ public class StateSet extends State {
      * @param maxID the maximum value of the IDs in the specified set
      */
     public StateSet(Set<State> set, long maxID) {
+        this();
         this.maxID = maxID;
         this.set = new TreeSet<State>((o1, o2) -> {
             if (Objects.equals(o1, o2)) {

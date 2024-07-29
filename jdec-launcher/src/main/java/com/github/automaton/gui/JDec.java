@@ -137,6 +137,13 @@ public class JDec extends JFrame {
     /** Components of JDec that require any U structure */
     private java.util.List<Component> componentsWhichRequireAnyUStructure = Collections
             .synchronizedList(new ArrayList<>());
+    /**
+     * Components of JDec that require a {@link SubsetConstruction}.
+     * 
+     * @since 2.1.0
+     */
+    private java.util.List<Component> componentsWhichRequireSubsetConstruction = Collections
+            .synchronizedList(new ArrayList<>());
 
     // Miscellaneous
     /** The current directory */
@@ -368,7 +375,7 @@ public class JDec extends JFrame {
         menuBar.add(createMenu("Standard Operations",
                 "Accessible[ANY_AUTOMATON]",
                 "Co-Accessible[BASIC_AUTOMATON]",
-                "Trim[BASIC_AUTOMATON]",
+                "Trim[ANY_AUTOMATON]",
                 "Complement[BASIC_AUTOMATON]",
                 "Generate Twin Plant[BASIC_AUTOMATON]",
                 null,
@@ -381,6 +388,7 @@ public class JDec extends JFrame {
                 null,
                 "Subset Construction[U_STRUCTURE]",
                 "Relabel States[U_STRUCTURE]",
+                "Build Automaton Representation[SUBSET_CONSTRUCTION]",
                 "Add Communications[U_STRUCTURE]",
                 "Feasible Protocols->Generate All[U_STRUCTURE],Make Protocol Feasible[U_STRUCTURE],Find Smallest[U_STRUCTURE],Find First[U_STRUCTURE]",
                 null));
@@ -390,7 +398,8 @@ public class JDec extends JFrame {
                 "Test Inference Observability[BASIC_AUTOMATON]",
                 "Calculate Ambiguity Levels[BASIC_AUTOMATON]",
                 "Test Controllability[BASIC_AUTOMATON]",
-                null));
+                null,
+                "Test Incremental Observability[BASIC_AUTOMATON]"));
 
         // Generate menu
         menuBar.add(createMenu("Generate",
@@ -487,6 +496,11 @@ public class JDec extends JFrame {
         if (requiresAnyUStructure)
             str = str.replace("[ANY_U_STRUCTURE]", StringUtils.EMPTY);
 
+        // Check to see if this menu item requires a U-Structure or a pruned U-Structure
+        boolean requiresSubsetConstruction = str.contains("[SUBSET_CONSTRUCTION]");
+        if (requiresSubsetConstruction)
+            str = str.replace("[SUBSET_CONSTRUCTION]", StringUtils.EMPTY);
+
         // Check to see if this menu item is not displayed in macOS
         boolean requiresNotMacOS = str.contains("[NOT_MACOS]");
         if (requiresNotMacOS && SystemUtils.IS_OS_MAC)
@@ -575,6 +589,10 @@ public class JDec extends JFrame {
             componentsWhichRequirePrunedUStructure.add(menuItem);
         if (requiresAnyUStructure)
             componentsWhichRequireAnyUStructure.add(menuItem);
+        if (requiresAnyUStructure)
+            componentsWhichRequireAnyUStructure.add(menuItem);
+        if (requiresSubsetConstruction)
+            componentsWhichRequireSubsetConstruction.add(menuItem);
 
         // Add the item to the menu
         menu.add(menuItem);
@@ -836,6 +854,17 @@ public class JDec extends JFrame {
         if (tabs.isEmpty())
             throw new NoSuchElementException();
         return tabs.get(tabbedPane.getSelectedIndex());
+    }
+
+    /**
+     * Returns the currently open tabs.
+     * 
+     * @return the currently open tabs
+     * 
+     * @since 2.1.0
+     */
+    synchronized java.util.List<AutomatonTab> getTabs() {
+        return tabs;
     }
 
     /**
@@ -1232,6 +1261,7 @@ public class JDec extends JFrame {
         updateComponentsWhichRequireUStructure();
         updateComponentsWhichRequirePrunedUStructure();
         updateComponentsWhichRequireAnyUStructure();
+        updateComponentsWhichRequireSubsetConstruction();
     }
 
     /**
@@ -1330,6 +1360,28 @@ public class JDec extends JFrame {
         // Enabled/disable all components in the list
         synchronized (componentsWhichRequireAnyUStructure) {
             for (Component component : componentsWhichRequireAnyUStructure)
+                component.setEnabled(enabled);
+        }
+
+    }
+
+    /**
+     * Enable/disable components that require a subset construction.
+     * 
+     * @since 2.1.0
+     **/
+    private void updateComponentsWhichRequireSubsetConstruction() {
+
+        int index = tabbedPane.getSelectedIndex();
+
+        // Determine whether the components should be enabled or disabled
+        boolean enabled = (index >= 0
+                && tabs.get(index).type == Automaton.Type.SUBSET_CONSTRUCTION
+                && tabs.get(index).automaton != null);
+
+        // Enabled/disable all components in the list
+        synchronized (componentsWhichRequireSubsetConstruction) {
+            for (Component component : componentsWhichRequireSubsetConstruction)
                 component.setEnabled(enabled);
         }
 
@@ -1749,12 +1801,10 @@ public class JDec extends JFrame {
      **/
     public int pickController(String str, boolean include0thComponent) {
 
-        UStructure uStructure = (UStructure) getCurrentTab().automaton;
-
         /* Create list of options */
 
         java.util.List<Integer> optionsList = new ArrayList<>();
-        for (int i = (include0thComponent ? 0 : 1); i <= uStructure.getNumberOfControllers(); i++)
+        for (int i = (include0thComponent ? 0 : 1); i <= getCurrentTab().automaton.getNumberOfControllers(); i++)
             optionsList.add(i);
         Integer[] options = optionsList.toArray(Integer[]::new);
 
@@ -2126,6 +2176,9 @@ public class JDec extends JFrame {
                     return new Dimension(200, 200);
                 }
             };
+            if (type == Automaton.Type.SUBSET_CONSTRUCTION) {
+                eventInput.setEditable(false);
+            }
             watchForChanges(eventInput);
             c.ipady = 100;
             c.weightx = 0.5;
@@ -2152,6 +2205,9 @@ public class JDec extends JFrame {
                     return new Dimension(200, 200);
                 }
             };
+            if (type == Automaton.Type.SUBSET_CONSTRUCTION) {
+                stateInput.setEditable(false);
+            }
             watchForChanges(stateInput);
             c.ipady = 100;
             c.weightx = 0.5;
@@ -2182,6 +2238,9 @@ public class JDec extends JFrame {
                     return new Dimension(200, 200);
                 }
             };
+            if (type == Automaton.Type.SUBSET_CONSTRUCTION) {
+                transitionInput.setEditable(false);
+            }
             watchForChanges(transitionInput);
             c.ipady = 200;
             c.weightx = 0.5;
@@ -2404,6 +2463,7 @@ public class JDec extends JFrame {
 
             SwingUtilities.invokeLater(() -> {
                 AutomatonGuiInputGenerator<?> generator = automaton.getGuiInputGenerator();
+                generator.refresh();
                 controllerInput.setValue(automaton.getNumberOfControllers());
                 eventInput.setText(generator.getEventInput());
                 stateInput.setText(generator.getStateInput());
@@ -2703,7 +2763,7 @@ public class JDec extends JFrame {
                 case "Generate Twin Plant":
 
                     // Create new tab with the twin plant
-                    createTab(tab.automaton.generateTwinPlant2());
+                    createTab(AutomataOperations.generateTwinPlant(tab.automaton));
                     break;
 
                 case "Intersection": {
@@ -2764,6 +2824,35 @@ public class JDec extends JFrame {
                 case "Relabel States":
 
                     relabelStates(tab);
+                    break;
+
+                case "Build Automaton Representation": {
+                    SubsetConstruction subsetConstruction = (SubsetConstruction) tab.automaton;
+                    int controller = pickController("Select the controller to build automaton representation with.",
+                            true);
+                    if (controller < 0)
+                        return;
+                    tab.nUsingThreads.incrementAndGet();
+                    try {
+                        createTab(subsetConstruction.buildAutomatonRepresentationOf(controller));
+                        setBusyCursor(false);
+                    } catch (RuntimeException e) {
+                        temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after
+                                                              // all,
+                                                              // so we can re-use it
+                        setBusyCursor(false);
+                        displayException(e);
+                    } /*
+                       * catch (OperationFailedException e) {
+                       * temporaryFileIndex.decrementAndGet(); // We did not need this temporary file
+                       * after all, so we can re-use it
+                       * setBusyCursor(false);
+                       * displayErrorMessage("Operation Failed", "Failed to add state.");
+                       * }
+                       */
+                    tab.nUsingThreads.decrementAndGet();
+                    updateComponentsWhichRequireAutomaton();
+                }
                     break;
 
                 case "Add Communications": {
@@ -2899,6 +2988,23 @@ public class JDec extends JFrame {
                     else
                         displayMessage("Failed Test", "The system is not controllable.",
                                 JOptionPane.INFORMATION_MESSAGE);
+                    break;
+
+                case "Test Incremental Observability":
+                    {
+                        IncrementalObsAutomataSelectionPrompt prompt = new IncrementalObsAutomataSelectionPrompt(JDec.this);
+                        prompt.setVisible(true);
+                        Set<Automaton> plants = prompt.getPlants(), specs = prompt.getSpecs();
+                        if (plants.isEmpty() || specs.isEmpty())
+                            displayMessage("Invalid selection", "Please try again.",
+                                JOptionPane.WARNING_MESSAGE);
+                        else if (AutomataOperations.testIncrementalObservability(plants, specs))
+                            displayMessage("Passed Test", "The system is inference observable.",
+                                    JOptionPane.INFORMATION_MESSAGE);
+                        else
+                            displayMessage("Failed Test", "The system is not inference observable.",
+                                    JOptionPane.INFORMATION_MESSAGE);
+                    }
                     break;
 
                 case "Random Automaton":
@@ -3048,7 +3154,8 @@ public class JDec extends JFrame {
         }
 
         /**
-         * Relabels states in the U-structure stored in the specified tab, adding duplicate states as needed.
+         * Relabels states in the U-structure stored in the specified tab, adding
+         * duplicate states as needed.
          * 
          * @param tab a tab
          */
@@ -3087,7 +3194,8 @@ public class JDec extends JFrame {
         }
 
         /**
-         * Tests whether the automaton stored in the specified tab is inference observable.
+         * Tests whether the automaton stored in the specified tab is inference
+         * observable.
          * 
          * @param tab a tab
          * 

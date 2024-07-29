@@ -28,7 +28,7 @@ class AutomatonDotConverterImpl extends AbstractAutomatonDotConverter<Automaton>
 
     @Override
     protected void addAdditionalNodeProperties(State state, MutableNode node) {
-        return;
+        node.add(Attributes.attr("peripheries", state.isMarked() ? 2 : 1));
     }
 
     @Override

@@ -1,0 +1,131 @@
+/*
+ * Copyright (C) Sung Ho Yoon. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ */
+
+package com.github.automaton.gui;
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import javax.swing.*;
+
+import org.apache.commons.collections4.IteratorUtils;
+import org.apache.commons.io.FilenameUtils;
+
+import com.github.automaton.automata.Automaton;
+
+/**
+ * A prompt for selecting automata to be used in incremental observability test.
+ * 
+ * @author Sung Ho Yoon
+ * @since 2.1.0
+ */
+class IncrementalObsAutomataSelectionPrompt extends JDialog {
+
+    private List<AutomatonEntry> entries;
+
+    public IncrementalObsAutomataSelectionPrompt(Frame owner) {
+        super(owner, true);
+        buildComponents();
+        SwingUtilities.invokeLater(() -> {
+            setResizable(false);
+            revalidate();
+            pack();
+            setLocationRelativeTo(owner);
+        });
+    }
+
+    private void buildComponents() {
+        this.entries = new ArrayList<AutomatonEntry>();
+        Box box = Box.createVerticalBox();
+        Box entryBox = Box.createVerticalBox();
+        for (var tab : JDec.instance().getTabs()) {
+            if (tab.type != Automaton.Type.AUTOMATON)
+                continue;
+            AutomatonEntry entry = new AutomatonEntry(tab);
+            entryBox.add(entry);
+            entries.add(entry);
+        }
+        JScrollPane pane = new JScrollPane(entryBox);
+        setMaximumSize(new Dimension(JDec.PREFERRED_DIALOG_WIDTH, JDec.PREFERRED_DIALOG_HEIGHT));
+        box.add(pane);
+        add(box);
+    }
+
+    public Set<Automaton> getPlants() {
+        return entries.parallelStream().filter(AutomatonEntry::isSelectedAsPlant).map(entry -> entry.tab.automaton)
+                .collect(Collectors.toSet());
+    }
+
+    public Set<Automaton> getSpecs() {
+        return entries.parallelStream().filter(AutomatonEntry::isSelectedAsSpec).map(entry -> entry.tab.automaton)
+                .collect(Collectors.toSet());
+    }
+
+    static class AutomatonEntry extends JPanel {
+
+        static enum SelectionType {
+            DISABLED("Disabled"),
+            PLANT("Plant"),
+            SPECIFICATION("Specification");
+
+            private final String str;
+
+            SelectionType(String str) {
+                this.str = str;
+            }
+
+            @Override
+            public String toString() {
+                return str;
+            }
+        }
+
+        private JDec.AutomatonTab tab;
+
+        private final ButtonGroup group = new ButtonGroup();
+
+        AutomatonEntry(JDec.AutomatonTab tab) {
+            super(new BorderLayout());
+            this.tab = tab;
+            super.add(new JLabel(FilenameUtils.getBaseName(tab.ioAdapter.getFile().getAbsolutePath())),
+                    BorderLayout.LINE_START);
+            JPanel lineEnd = new JPanel();
+            for (final SelectionType type : SelectionType.values()) {
+                var radioButtton = new JRadioButton(type.toString());
+                group.add(radioButtton);
+                lineEnd.add(radioButtton);
+                group.setSelected(radioButtton.getModel(), type == SelectionType.DISABLED);
+            }
+            super.add(lineEnd, BorderLayout.LINE_END);
+        }
+
+        public AbstractButton getSelectedButton() {
+            for (var button : IteratorUtils.asIterable(group.getElements().asIterator())) {
+                if (button.isSelected())
+                    return button;
+            }
+            return null;
+        }
+
+        public JDec.AutomatonTab getTab() {
+            return tab;
+        }
+
+        public boolean isDisabled() {
+            return Objects.equals(getSelectedButton().getText(), SelectionType.DISABLED.toString());
+        }
+
+        public boolean isSelectedAsPlant() {
+            return Objects.equals(getSelectedButton().getText(), SelectionType.PLANT.toString());
+        }
+
+        public boolean isSelectedAsSpec() {
+            return Objects.equals(getSelectedButton().getText(), SelectionType.SPECIFICATION.toString());
+        }
+    }
+}

@@ -12,7 +12,7 @@ import org.apache.commons.collections4.*;
 import org.apache.commons.collections4.multiset.HashMultiSet;
 import org.apache.commons.lang3.*;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.logging.log4j.*;
 
 import com.github.automaton.automata.util.PowerSetUtils;
@@ -102,10 +102,23 @@ public class UStructure extends Automaton {
     }
 
     @Override
+    public UStructure coaccessible() {
+        return AutomataOperations.coaccessible(this, UStructure::new);
+    }
+
+    @Override
     public UStructure complement() {
 
         return AutomataOperations.complement(this, UStructure::new);
 
+    }
+
+    /**
+     * @since 2.1.0
+     */
+    @Override
+    public UStructure trim() {
+        return accessible().coaccessible();
     }
 
     @Override
@@ -491,7 +504,7 @@ public class UStructure extends Automaton {
      * @return subset construction of this U-structure w.r.t. controller 0
      * @since 2.0
      */
-    public Automaton subsetConstruction() {
+    public SubsetConstruction subsetConstruction() {
         return subsetConstruction(0);
     }
 
@@ -508,127 +521,8 @@ public class UStructure extends Automaton {
      * 
      * @since 2.0
      */
-    public Automaton subsetConstruction(int controller) {
-
-        if (controller < 0 || controller > nControllers) {
-            throw new IndexOutOfBoundsException(controller);
-        }
-
-        Automaton subsetConstruction = new Automaton(nControllers);
-
-        subsetConstruction(subsetConstruction, controller);
-
-        return subsetConstruction;
-    }
-
-    /**
-     * Runs subset construction w.r.t. the specified controller
-     * 
-     * @param automaton  automaton to store subset construction data
-     * @param controller the controller to perform subset construction with
-     * 
-     * @since 2.0
-     */
-    private void subsetConstruction(Automaton automaton, int controller) {
-
-        automaton.addAllEvents(events);
-
-        Queue<StateSet> stateQueue = new ArrayDeque<>();
-        Set<StateSet> addedStates = new HashSet<>();
-
-        {
-            StateSet initialState = nullClosure(getState(this.initialState), controller);
-            automaton.addStateAt(initialState, true);
-            stateQueue.add(initialState);
-            addedStates.add(initialState);
-        }
-
-        while (!stateQueue.isEmpty()) {
-            StateSet u = stateQueue.remove();
-            MultiValuedMap<Event, Long> observableTransitions = u.groupAndGetObservableTransitions(controller);
-            for (Event e : observableTransitions.keys()) {
-                List<State> targetStates = new ArrayList<>();
-                for (long targetStateID : observableTransitions.get(e)) {
-                    targetStates.add(getState(targetStateID));
-                }
-                StateSet ss = nullClosure(targetStates, controller);
-                if (!addedStates.contains(ss)) {
-                    automaton.addStateAt(ss, false);
-                    addedStates.add(ss);
-                }
-                if (!automaton.containsTransition(u, e, ss.getID())) {
-                    automaton.addTransition(u, e.getLabel(), ss);
-                    stateQueue.add(ss);
-                }
-            }
-        }
-
-        /* Re-number states (by removing empty ones) */
-
-        automaton.renumberStates();
-
-    }
-
-    /**
-     * Performs null closure w.r.t. the specified controller.
-     * 
-     * @param state      state to perform null closure with
-     * @param controller the controller to perform subset construction with
-     * 
-     * @since 2.0
-     */
-    private StateSet nullClosure(State state, int controller) {
-        Set<State> indistinguishableStates = new HashSet<>();
-        nullClosure(indistinguishableStates, state, controller);
-        return new StateSet(indistinguishableStates, nStates);
-    }
-
-    /**
-     * Performs null closure w.r.t. the specified controller.
-     * 
-     * @param states     a list of states that share the same triggering event
-     * @param controller the controller to perform subset construction with
-     * 
-     * @since 2.0
-     */
-    private StateSet nullClosure(List<State> states, int controller) {
-        Set<State> indistinguishableStates = new HashSet<>();
-        for (State s : states) {
-            Set<State> tempSet = new HashSet<>();
-            nullClosure(tempSet, s, controller);
-            indistinguishableStates.addAll(tempSet);
-        }
-        return new StateSet(indistinguishableStates, nStates);
-    }
-
-    /**
-     * Recursively generate set of indistinguishable state.
-     * 
-     * @param stateSet   set of states containing indistinguishable states
-     * @param curr       state to process
-     * @param controller the controller to perform subset construction with
-     * 
-     * @since 2.0
-     */
-    private void nullClosure(Set<State> stateSet, State curr, int controller) {
-        stateSet.add(curr);
-        Iterator<Transition> nullTransitions = IteratorUtils.<Transition>filteredIterator(
-                curr.getTransitions().iterator(),
-                t -> {
-                    if (t.getEvent().getVector().getLabelAtIndex(controller).equals(Event.EPSILON)) {
-                        return true;
-                    } else if (controller == 0) {
-                        return false;
-                    }
-                    return !t.getEvent().isObservable(controller - 1);
-                });
-        while (nullTransitions.hasNext()) {
-            Transition t = nullTransitions.next();
-            State targetState = getState(t.getTargetStateID());
-            if (!stateSet.contains(targetState)) {
-                nullClosure(stateSet, targetState, controller);
-            }
-        }
+    public SubsetConstruction subsetConstruction(int controller) {
+        return new SubsetConstruction(this, controller);
     }
 
     /**
@@ -641,50 +535,61 @@ public class UStructure extends Automaton {
      */
     public UStructure relabelConfigurationStates() {
 
-        Automaton subsetConstruction = this.subsetConstruction();
+        SubsetConstruction subsetConstruction = this.subsetConstruction();
 
         /* Collection of counters for occurrences of original states */
         MultiSet<Long> stateIDMultiSet = new HashMultiSet<>();
         /* Mapping of state set IDs to their member state IDs */
         final Map<Long, Map<Long, Long>> relabelMapping = new LinkedHashMap<>();
 
-        Queue<Pair<Long, Sequence>> combinedStateQueue = new ArrayDeque<>();
-        combinedStateQueue.add(Pair.of(subsetConstruction.initialState, new Sequence(subsetConstruction.initialState)));
+        /*
+         * Build a queue for breadth-first traversal of the UStructure
+         * Each entry of the queue consists of the triple of:
+         * 
+         * - ID of the current state of interest
+         * - the sequence of states and events that led to this state
+         * - whether a cycle has been detected
+         */
+        Queue<Triple<Long, Sequence, Boolean>> combinedStateQueue = new ArrayDeque<>();
+        combinedStateQueue.add(Triple.of(subsetConstruction.initialState, new Sequence(subsetConstruction.initialState), true));
 
         UStructure relabeled = new UStructure(nControllers);
         relabeled.addAllEvents(this.events);
 
         while (!combinedStateQueue.isEmpty()) {
-            Pair<Long, Sequence> currSequence = combinedStateQueue.remove();
+            Triple<Long, Sequence, Boolean> currSequence = combinedStateQueue.remove();
 
-            StateSet ss = (StateSet) subsetConstruction.getState(currSequence.getLeft());
-            Map<Long, Long> currStateSetIDMap = new LinkedHashMap<>();
-            relabelMapping.put(ss.getID(), currStateSetIDMap);
-            /* Calculate new state IDs for relabeling */
-            for (State s : ss.getSet()) {
-                long origID = s.getID();
-                long modID = origID + nStates * stateIDMultiSet.getCount(origID);
-                currStateSetIDMap.put(s.getID(), modID);
-                relabeled.addStateAt(new State(
-                        s.getLabel() + (stateIDMultiSet.getCount(origID) == 0 ? StringUtils.EMPTY
-                                : "-" + Integer.toString(stateIDMultiSet.getCount(origID))),
-                        modID, false, s.getEnablementEvents(), s.getDisablementEvents()), false);
-                stateIDMultiSet.add(origID);
-            }
-            /* Add transitions to states in the same state set */
-            for (State origS : ss.getSet()) {
-                State modS = relabeled.getState(currStateSetIDMap.get(origS.getID()));
-                for (Transition t : origS.getTransitions()) {
-                    if (currStateSetIDMap.containsKey(t.getTargetStateID())) {
-                        relabeled.addTransition(modS.getID(), t.getEvent().getLabel(),
-                                currStateSetIDMap.get(t.getTargetStateID()));
+            StateSet ss = subsetConstruction.getStateAsStateSet(currSequence.getLeft());
+            Map<Long, Long> currStateSetIDMap = currSequence.getRight() ? new LinkedHashMap<>() : relabelMapping.get(currSequence.getLeft());
+            if (currSequence.getRight()) {
+                relabelMapping.put(ss.getID(), currStateSetIDMap);
+                /* Calculate new state IDs for relabeling */
+                for (State s : ss.getSet()) {
+                    long origID = s.getID();
+                    long modID = origID + nStates * stateIDMultiSet.getCount(origID);
+                    currStateSetIDMap.put(s.getID(), modID);
+                    State modState = new State(
+                            s.getLabel() + (stateIDMultiSet.getCount(origID) == 0 ? StringUtils.EMPTY
+                                    : "-" + Integer.toString(stateIDMultiSet.getCount(origID))),
+                            modID, false, s.getEnablementEvents(), s.getDisablementEvents(), s.getIllegalConfigEvents());
+                    relabeled.addStateAt(modState, false);
+                    stateIDMultiSet.add(origID);
+                }
+                /* Add transitions to states in the same state set */
+                for (State origS : ss.getSet()) {
+                    State modS = relabeled.getState(currStateSetIDMap.get(origS.getID()));
+                    for (Transition t : origS.getTransitions()) {
+                        if (currStateSetIDMap.containsKey(t.getTargetStateID())) {
+                            relabeled.addTransition(modS.getID(), t.getEvent().getLabel(),
+                                    currStateSetIDMap.get(t.getTargetStateID()));
+                        }
                     }
                 }
             }
             /* Handle transitions from preceding state set */
-            if (currSequence.getRight().getEventArray().length > 0) {
-                long prevStateSetID = currSequence.getRight().getState(currSequence.getRight().length() - 2);
-                StateSet prevStateSet = (StateSet) subsetConstruction.getState(prevStateSetID);
+            if (currSequence.getMiddle().getEventArray().length > 0) {
+                long prevStateSetID = currSequence.getMiddle().getState(currSequence.getMiddle().length() - 2);
+                StateSet prevStateSet = subsetConstruction.getStateAsStateSet(prevStateSetID);
                 Map<Long, Long> prevStateSetIDMap = relabelMapping.get(prevStateSetID);
                 for (State prevS : prevStateSet.getSet()) {
                     for (Transition prevT : prevS.getTransitions()) {
@@ -696,11 +601,17 @@ public class UStructure extends Automaton {
                 }
             }
 
+            /* Detect next entries for breadth-first traversal */
             for (Transition t : IterableUtils.filteredIterable(
                     ss.getTransitions(), t -> t.getTargetStateID() != ss.getID())) {
-                if (!currSequence.getRight().containsState(t.getTargetStateID())) {
-                    combinedStateQueue.add(Pair.of(t.getTargetStateID(),
-                            currSequence.getRight().append(t.getEvent().getID(), t.getTargetStateID())));
+                if (!currSequence.getMiddle().containsState(t.getTargetStateID()) && currSequence.getRight()) {
+                    /* Next transition found */
+                    combinedStateQueue.add(Triple.of(t.getTargetStateID(),
+                            currSequence.getMiddle().append(t.getEvent().getID(), t.getTargetStateID()), true));
+                } else if (!currSequence.getMiddle().isLastState(t.getTargetStateID()) && currSequence.getRight()) {
+                    /* Cycle detected */
+                    combinedStateQueue.add(Triple.of(t.getTargetStateID(),
+                            currSequence.getMiddle().append(t.getEvent().getID(), t.getTargetStateID()), false));
                 }
             }
 
@@ -1934,6 +1845,20 @@ public class UStructure extends Automaton {
      */
     public Set<State> getDisablementStates(String eventLabel) {
         Set<State> disablementStates = getStates().parallelStream().filter(s -> s.isDisablementStateOf(eventLabel)).collect(Collectors.toSet());
+        return disablementStates;
+    }
+
+    /**
+     * Returns the set of illegal configurations for a specific event.
+     * 
+     * @param eventLabel the label of an event
+     * 
+     * @return the set of illegal configurations
+     * 
+     * @since 2.1.0
+     */
+    public Set<State> getIllegalConfigStates(String eventLabel) {
+        Set<State> disablementStates = getStates().parallelStream().filter(s -> s.isIllegalConfigurationOf(eventLabel)).collect(Collectors.toSet());
         return disablementStates;
     }
 

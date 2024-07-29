@@ -93,7 +93,8 @@ public class AutomataOperations {
                     id == source.getInitialStateID(),
                     id,
                     state.getEnablementEvents(),
-                    state.getDisablementEvents());
+                    state.getDisablementEvents(),
+                    state.getIllegalConfigEvents());
 
             // Traverse each transition
             for (Transition t : transitions) {
@@ -175,7 +176,7 @@ public class AutomataOperations {
 
             // Add this state (and its transitions) to the co-accessible automaton
             automaton.addStateAt(state.getLabel(), state.isMarked(), new ArrayList<Transition>(),
-                    s == source.initialState, s);
+                    s == source.initialState, s, new HashSet<>(state.getEnablementEvents()), new HashSet<>(state.getDisablementEvents()), new HashSet<>(state.getIllegalConfigEvents()));
 
             // Add all directly reachable states from this one to the stack
             for (Transition t : stateWithInvertedTransitions.getTransitions()) {
@@ -919,6 +920,218 @@ public class AutomataOperations {
 
         return retList;
 
+    }
+
+    /**
+     * Generates the language recognized by the specified automaton.
+     * 
+     * @param automaton an automaton
+     * @return the language that the automaton recognizes
+     * 
+     * @throws IllegalArgumentException if argument recognizes an infinite language
+     * @throws NoInitialStateException  if argument has no initial state
+     * @throws NullPointerException     if argument is {@code null}
+     */
+    public static Set<Word> buildLanguage(Automaton automaton) {
+        Objects.requireNonNull(automaton);
+        if (!automaton.stateExists(automaton.getInitialStateID())) {
+            throw new NoInitialStateException();
+        } else if (automaton.hasSelfLoop(automaton.getAllTransitions())) {
+            throw new IllegalArgumentException();
+        }
+        Queue<Sequence> queue = new ArrayDeque<>();
+        Set<Word> language = new LinkedHashSet<>();
+        queue.add(new Sequence(automaton.getInitialStateID()));
+        while (!queue.isEmpty()) {
+            Sequence sequence = queue.remove();
+            State lastState = automaton.getState(sequence.getState(sequence.length() - 1));
+            if (lastState.isMarked()) {
+                int[] eventIDs = sequence.getEventArray();
+                String[] events = new String[eventIDs.length];
+                for (int i = 0; i < events.length; i++) {
+                    events[i] = automaton.getEvent(eventIDs[i]).getLabel();
+                }
+                language.add(new Word(events));
+            }
+            for (Transition t : lastState.getTransitions()) {
+                if (sequence.containsState(t.getTargetStateID()))
+                    throw new IllegalArgumentException();
+                else
+                    queue.add(sequence.append(t.getEvent().getID(), t.getTargetStateID()));
+            }
+        }
+        return language;
+    }
+
+    /**
+     * Generates the twin plant of the specified automaton.
+     * 
+     * <p>
+     * The technique used here is similar to how the complement works.
+     * This would not work in all cases, but G_{&Sigma;*} is a special case.
+     * 
+     * @param automaton an automaton
+     * 
+     * @return the twin plant of the specified automaton
+     */
+    public static Automaton generateTwinPlant(final Automaton automaton) {
+
+        Objects.requireNonNull(automaton);
+
+        Automaton twinPlant = new Automaton(automaton.getNumberOfControllers());
+
+        /* Add events */
+
+        twinPlant.addAllEvents(automaton.getEvents());
+
+        /* Build twin plant */
+
+        long dumpStateID = automaton.getNumberOfStates() + 1;
+        boolean needToAddDumpState = false;
+
+        List<Event> activeEvents = automaton.getActiveEvents();
+
+        // Add each state to the new automaton
+        for (long s = 1; s <= automaton.getNumberOfStates(); s++) {
+
+            State state = automaton.getState(s);
+
+            long id = twinPlant.addState(state.getLabel(), !state.isMarked(), s == automaton.initialState);
+
+            // Try to add transitions for each event
+            for (Event e : automaton.getEvents()) {
+
+                boolean foundMatch = false;
+
+                // Search through each transition for the event
+                for (Transition t : state.getTransitions())
+                    if (t.getEvent().equals(e)) {
+                        twinPlant.addTransition(id, e.getID(), t.getTargetStateID());
+                        foundMatch = true;
+                    }
+
+                // Check to see if this event is controllable by at least one controller
+                boolean controllable = BooleanUtils.or(e.isControllable());
+
+                // Add new transition leading to dump state if this event if undefined at this
+                // state and is controllable and active
+                if (!foundMatch && controllable && activeEvents.contains(e)) {
+                    twinPlant.addTransition(id, e.getID(), dumpStateID);
+                    twinPlant.markTransitionAsBad(id, e.getID(), dumpStateID);
+                    needToAddDumpState = true;
+                }
+
+            }
+
+        }
+
+        /* Create dump state if it needs to be made */
+
+        if (needToAddDumpState) {
+
+            long id = twinPlant.addState(Automaton.DUMP_STATE_LABEL, false, false);
+
+            if (id != dumpStateID)
+                logger.error("Dump state ID did not match expected ID.");
+
+        }
+
+        /* Add special transitions */
+
+        automaton.copyOverSpecialTransitions(twinPlant);    
+
+        /* Return generated automaton */
+
+        return twinPlant;
+
+    }
+
+    public static boolean testIncrementalObservability(Set<Automaton> plants, Set<Automaton> specs) {
+        Objects.requireNonNull(plants);
+        Objects.requireNonNull(specs);
+
+        /* Create copies of the sets to avoid modifying supplied sets */
+        Set<Automaton> G = new LinkedHashSet<>(plants);
+        Set<Automaton> H = new LinkedHashSet<>(specs);
+
+        while (!H.isEmpty()) {
+            Automaton Hj = H.iterator().next();
+            Set<Automaton> Hprime = new LinkedHashSet<>();
+            Set<Automaton> Gprime = new LinkedHashSet<>();
+            Hprime.add(Hj);
+            Automaton combinedSys = generateTwinPlant(Hj);
+            while (!testObservability(combinedSys, false).getLeft()) {
+                UStructure uStructure = combinedSys.synchronizedComposition().relabelConfigurationStates();
+                for (Event controllableEvent : combinedSys.getControllableEvents()) {
+                    var illegalConfigs = uStructure.getIllegalConfigStates(controllableEvent.getLabel());
+                    for (var illegalConfig : illegalConfigs) {
+                        illegalConfig.setMarked(true);
+                        var trim = uStructure.trim();
+                        boolean found = false;
+                        Set<Word> counterExample = Collections.synchronizedSet(new LinkedHashSet<>());
+                        SubsetConstruction subsetConstruction = trim.subsetConstruction(0);
+                        IntStream.range(0, combinedSys.nControllers).parallel().forEach(i -> counterExample
+                                .addAll(buildLanguage(subsetConstruction.buildAutomatonRepresentationOf(i))));
+                        int nCheckedAutomata = 0;
+                        for (Iterator<Automaton> iterator = IteratorUtils.filteredIterator(G.iterator(), aut -> !Gprime.contains(aut)); iterator.hasNext() && !found; ) {
+                            Automaton M = iterator.next();
+                            nCheckedAutomata++;
+                            if (M.recognizesWords(counterExample)) {
+                                found = true;
+                                Gprime.add(M);
+                            }
+                        }
+                        for (Iterator<Automaton> iterator = IteratorUtils.filteredIterator(H.iterator(), aut -> !Hprime.contains(aut)); iterator.hasNext() && !found; ) {
+                            Automaton M = iterator.next();
+                            nCheckedAutomata++;
+                            if (M.recognizesWords(counterExample)) {
+                                found = true;
+                                Hprime.add(M);
+                            }
+                        }
+                        if (nCheckedAutomata > 0 && !found) {
+                            return false;
+                        }
+                    }
+                }
+                combinedSys = buildCombinedSystem(Gprime, Hprime);
+                H.removeAll(Hprime);
+                G.removeAll(Gprime);
+            }
+        }
+        return true;
+    }
+
+    private static Automaton buildCombinedSystem(Set<Automaton> plants, Set<Automaton> specs) {
+        Automaton compositePlant = buildCompositeAutomaton(plants);
+        Automaton compositeSpec = buildCompositeAutomaton(specs);
+        Automaton combinedSys = intersection(compositePlant.generateTwinPlant(), compositeSpec.generateTwinPlant());
+        for (long stateId = 1; stateId <= combinedSys.nStates; stateId++) {
+            if (!combinedSys.stateExists(stateId))
+                continue;
+            State s = combinedSys.getState(stateId);
+            String[] stateLabels = s.getLabel().split("_");
+            int dumpCount = 0;
+            for (int i = 0; i < stateLabels.length; i++) {
+                if (Objects.equals(stateLabels[i], Automaton.DUMP_STATE_LABEL))
+                    dumpCount++;
+            }
+            if (dumpCount == stateLabels.length) {
+                combinedSys.removeState(stateId);
+            } else if (dumpCount > 0) {
+                s.setMarked(true);
+            }
+        }
+        combinedSys.renumberStates();
+        return combinedSys;
+    }
+
+    private static Automaton buildCompositeAutomaton(Set<Automaton> automata) {
+        if (automata.size() == 1) {
+            return automata.iterator().next();
+        }
+        return automata.parallelStream().reduce(AutomataOperations::intersection)
+                .orElseThrow(IllegalArgumentException::new);
     }
 
 }
