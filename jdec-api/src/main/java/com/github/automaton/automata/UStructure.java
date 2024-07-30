@@ -143,20 +143,20 @@ public class UStructure extends Automaton {
         // NOTE: The controller's index (1-based, in this case) is appended to the
         // event's label since each
         // controller has different properties for each event
-        Map<String, boolean[]> observableMapping = new HashMap<>();
-        Map<String, boolean[]> controllableMapping = new HashMap<>();
+        Map<String, BitSet> observableMapping = new HashMap<>();
+        Map<String, BitSet> controllableMapping = new HashMap<>();
         for (Event e : events) {
             LabelVector vector = e.getVector();
             for (int i = 1; i < vector.getSize(); i++) {
                 String label = vector.getLabelAtIndex(i);
                 if (!observableMapping.containsKey(label)) {
-                    observableMapping.put(label, new boolean[vector.getSize() - 1]);
+                    observableMapping.put(label, new BitSet(vector.getSize() - 1));
                 }
                 if (!controllableMapping.containsKey(label)) {
-                    controllableMapping.put(label, new boolean[vector.getSize() - 1]);
+                    controllableMapping.put(label, new BitSet(vector.getSize() - 1));
                 }
-                observableMapping.get(label)[i - 1] = e.isObservable(i - 1);
-                controllableMapping.get(label)[i - 1] = e.isControllable(i - 1);
+                observableMapping.get(label).set(i - 1, e.isObservable(i - 1));
+                controllableMapping.get(label).set(i - 1, e.isControllable(i - 1));
             }
         }
 
@@ -202,8 +202,8 @@ public class UStructure extends Automaton {
                         for (int i = 1; i < vector.getSize(); i++) {
                             String label = vector.getLabelAtIndex(i);
                             if (!label.equals(Event.EPSILON)) {
-                                observable[i - 1] = BooleanUtils.or(observableMapping.get(label));
-                                controllable[i - 1] = BooleanUtils.or(controllableMapping.get(label));
+                                observable[i - 1] = !observableMapping.get(label).isEmpty();
+                                controllable[i - 1] = !controllableMapping.get(label).isEmpty();
                             }
                         }
 
