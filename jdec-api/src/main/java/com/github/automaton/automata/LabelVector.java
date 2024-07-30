@@ -188,9 +188,11 @@ public class LabelVector implements Iterable<String> {
     public boolean equals(Object other) {
         if (this == other)
             return true;
-        else if (other instanceof LabelVector lv)
+        else if (other instanceof LabelVector lv) {
+            if (!Objects.equals(this.getClass(), lv.getClass()))
+                return false; 
             return label.equals(lv.label);
-        else
+        } else
             return false;
     }
 

@@ -121,7 +121,8 @@ public class TransitionData implements Cloneable {
         if (this == obj)
             return true;
         else if (obj instanceof TransitionData other) {
-
+            if (!Objects.equals(this.getClass(), other.getClass()))
+                return false;
             return initialStateID == other.initialStateID
                     && eventID == other.eventID
                     && targetStateID == other.targetStateID;
