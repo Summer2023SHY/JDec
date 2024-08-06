@@ -203,7 +203,7 @@ public class UStructure extends Automaton {
                             String label = vector.getLabelAtIndex(i);
                             if (!label.equals(Event.EPSILON)) {
                                 observable[i - 1] = !observableMapping.get(label).isEmpty();
-                                controllable[i - 1] = !controllableMapping.get(label).isEmpty();
+                                controllable[i - 1] = controllableMapping.get(label).get(i - 1);
                             }
                         }
 
