@@ -1382,7 +1382,10 @@ public class UStructure extends Automaton {
      *                     will be found, and then the longest one will be returned
      * @return The list of sequences of event labels (or {@code null} if there are
      *         no counter-examples)
+     * 
+     * @deprecated This method is no longer used.
      **/
+    @Deprecated(since = "2.1.0", forRemoval = true)
     public List<List<String>> findCounterExample(boolean findShortest) {
 
         if (!hasViolations())
@@ -1458,7 +1461,10 @@ public class UStructure extends Automaton {
      * @param path      The path of states leading to the counter-example
      * @param violation The relevant violation
      * @return The list of event label sequences
+     * 
+     * @deprecated This method is no longer used.
      **/
+    @Deprecated(since = "2.1.0", forRemoval = true)
     private List<List<String>> generateSequences(List<State> path, TransitionData violation) {
 
         /* Build sequence of events and event labels for this counter-example */
