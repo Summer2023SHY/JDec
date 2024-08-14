@@ -369,7 +369,9 @@ public class JDec extends JFrame {
                 "Previous Tab[TAB]",
                 "Next Tab[TAB]",
                 null,
-                "View in Browser[ANY_AUTOMATON]"));
+                "View in Browser[ANY_AUTOMATON]",
+                null,
+                "Show event-specific view[U_STRUCTURE]"));
 
         // Standard operations menu
         menuBar.add(createMenu("Standard Operations",
@@ -2707,6 +2709,10 @@ public class JDec extends JFrame {
                 case "View in Browser":
 
                     viewInBrowser();
+                    break;
+
+                case "Show event-specific view":
+                    // TODO
                     break;
 
                 /* AUTOMATA OPERATIONS */
