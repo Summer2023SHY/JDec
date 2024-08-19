@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Sung Ho Yoon. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ */
+
 package com.github.automaton.io.graphviz;
 
 import java.util.Objects;
@@ -7,17 +12,22 @@ import com.github.automaton.automata.*;
 import guru.nidi.graphviz.attribute.*;
 import guru.nidi.graphviz.model.MutableNode;
 
+
+/**
+ * The special type of {@link UStructureDotConverterImpl} that only highlights
+ * states related to the specified event.
+ * 
+ * @author Sung Ho Yoon
+ * 
+ * @since 2.1.0
+ */
 class EventSpecificUStructureDotConverter extends UStructureDotConverterImpl {
 
     private String event;
 
     protected EventSpecificUStructureDotConverter(UStructure automaton, String event) {
         super(automaton);
-        Objects.requireNonNull(event);
-        if (automaton.getEvent(event) == null) {
-            throw new IllegalArgumentException("Invalid event: \"" + event + "\"");
-        }
-        this.event = event;
+        this.event = Objects.requireNonNull(event);
     }
 
     @Override

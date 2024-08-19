@@ -2712,7 +2712,7 @@ public class JDec extends JFrame {
                     break;
 
                 case "Show event-specific view":
-                    // TODO
+                    new EventSpecificView((UStructure) tab.automaton);
                     break;
 
                 /* AUTOMATA OPERATIONS */
