@@ -2134,7 +2134,8 @@ public class JDec extends JFrame {
             Container container = new Container();
             container.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
-            c.fill = GridBagConstraints.HORIZONTAL;
+            c.fill = GridBagConstraints.BOTH;
+            c.insets = new Insets(8, 8, 8, 8);
             c.gridwidth = 1;
 
             /* Controller Input */
@@ -2263,7 +2264,7 @@ public class JDec extends JFrame {
             generateAutomatonButton.addActionListener(e -> generateAutomatonButtonPressed());
             c.ipady = 0;
             c.weightx = 0.5;
-            c.weighty = 1.0;
+            c.weighty = 0.1;
             c.gridx = 0;
             c.gridy = 5;
             container.add(generateAutomatonButton, c);
@@ -2280,7 +2281,7 @@ public class JDec extends JFrame {
             generateImageButton.addActionListener(e -> generateImage());
             c.ipady = 0;
             c.weightx = 0.5;
-            c.weighty = 1.0;
+            c.weighty = 0.1;
             c.gridx = 0;
             c.gridy = 6;
             container.add(generateImageButton, c);
@@ -2294,7 +2295,7 @@ public class JDec extends JFrame {
             viewImageInBrowserButton.addActionListener(e -> viewInBrowser());
             c.ipady = 0;
             c.weightx = 0.5;
-            c.weighty = 1.0;
+            c.weighty = 0.1;
             c.gridx = 0;
             c.gridy = 7;
             container.add(viewImageInBrowserButton, c);
@@ -2314,7 +2315,7 @@ public class JDec extends JFrame {
             });
             c.ipady = 0;
             c.weightx = 0.5;
-            c.weighty = 1.0;
+            c.weighty = 0.1;
             c.gridx = 0;
             c.gridy = 8;
             container.add(showAutomatonInfoButton, c);
@@ -2335,7 +2336,7 @@ public class JDec extends JFrame {
             });
             c.ipady = 0;
             c.weightx = 0.5;
-            c.weighty = 1.0;
+            c.weighty = 0.1;
             c.gridx = 0;
             c.gridy = 9;
             container.add(exploreAutomatonButton, c);
