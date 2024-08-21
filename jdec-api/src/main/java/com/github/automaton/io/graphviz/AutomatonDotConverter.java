@@ -47,6 +47,20 @@ public interface AutomatonDotConverter<T extends Automaton> {
     }
 
     /**
+     * Creates and returns a new {@code AutomatonDotConverter} for the specified UStructure
+     * that highlights the configurations related to the specified event.
+     * 
+     * @param uStructure a UStructure
+     * @param eventLabel an event label
+     * @return a new DOT converter for the specified automaton
+     * 
+     * @throws NullPointerException if either one of the arguments is {@code null}
+     */
+    public static AutomatonDotConverter<UStructure> createEventSpecificConverter(UStructure uStructure, String eventLabel) {
+        return new EventSpecificUStructureDotConverter(uStructure, eventLabel);
+    }
+
+    /**
      * Converts the internally stored automaton to its graphical representation.
      * 
      * @param outputFileName the file name for the generated image
