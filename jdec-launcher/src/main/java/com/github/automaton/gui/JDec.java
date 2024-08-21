@@ -2473,7 +2473,7 @@ public class JDec extends JFrame {
                 transitionInput.setText(generator.getTransitionInput());
                 if (prevSavedStatus)
                     setSaved(prevSavedStatus);
-                logger.debug("Finished in " + stopWatch.getTime() + "ms.");
+                logger.debug("Finished in " + stopWatch.getDuration().toMillis() + "ms.");
             });
 
         }
