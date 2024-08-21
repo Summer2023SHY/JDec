@@ -57,9 +57,7 @@ public class AmbiguityLevelOutput extends JDialog {
         AmbiguityLevelTable ambLevelTable = new AmbiguityLevelTable(data);
         dataTable = new JTable(ambLevelTable);
         dataTable.setRowSorter(new AmbiguityLevelTableRowSorter(ambLevelTable));
-        Box box = Box.createVerticalBox();
-        box.add(new JScrollPane(dataTable));
-        add(box);
+        add(new JScrollPane(dataTable));
 
     }
 
