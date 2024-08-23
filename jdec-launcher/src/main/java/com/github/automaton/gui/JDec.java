@@ -3001,6 +3001,8 @@ public class JDec extends JFrame {
                     {
                         IncrementalObsAutomataSelectionPrompt prompt = new IncrementalObsAutomataSelectionPrompt(JDec.this);
                         prompt.setVisible(true);
+                        if (!prompt.userSelected())
+                            break;
                         Set<Automaton> plants = prompt.getPlants(), specs = prompt.getSpecs();
                         if (plants.isEmpty() || specs.isEmpty())
                             displayMessage("Invalid selection", "Please try again.",
