@@ -7,6 +7,7 @@ package com.github.automaton.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.*;
@@ -34,14 +35,15 @@ import guru.nidi.graphviz.engine.Format;
  * 
  * @since 2.1.0
  */
-class EventSpecificView extends JDialog {
+class EventSpecificView extends JFrame {
 
     private JSVGCanvas canvas;
     private UStructure uStructure;
 
     EventSpecificView(UStructure uStructure) {
-        super(JDec.instance(), true);
         this.uStructure = uStructure;
+        setTitle("Event-specific View of UStructure");
+        setMinimumSize(new Dimension(JDec.PREFERRED_DIALOG_WIDTH, JDec.PREFERRED_DIALOG_HEIGHT));
         buildComponents();
     }
 
@@ -83,6 +85,7 @@ class EventSpecificView extends JDialog {
                 File targetTempFile = File.createTempFile("eventview_", FilenameUtils.EXTENSION_SEPARATOR_STR + Format.SVG.fileExtension);
                 converter.export(targetTempFile);
                 canvas.setSVGDocument(ImageLoader.loadSVGFromFile(targetTempFile));
+                setTitle(String.format("Event-specific View of UStructure (Event: %s)", eventLabel));
             } catch (IOException ioe) {
                 throw new UncheckedException(ioe);
             }
