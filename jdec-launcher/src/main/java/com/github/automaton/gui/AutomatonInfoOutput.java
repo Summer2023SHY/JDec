@@ -59,10 +59,7 @@ public class AutomatonInfoOutput extends JDialog {
         infoTable = new AutomatonInfoTable(automaton);
         dataTable = new JTable(infoTable);
         dataTable.setDragEnabled(false);
-        Box box = Box.createVerticalBox();
-        box.add(dataTable);
-        box.add(new JScrollPane(dataTable));
-        add(box);
+        add(new JScrollPane(dataTable));
 
     }
 
