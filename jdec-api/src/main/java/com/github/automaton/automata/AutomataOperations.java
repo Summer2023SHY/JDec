@@ -1046,6 +1046,15 @@ public class AutomataOperations {
 
     }
 
+    /**
+     * Given a set of plants and specifications, test whether the combined system is inference observable.
+     * 
+     * @param plants a set of plants
+     * @param specs a set of specifications
+     * @return {@code true} if the combined system is inference observable
+     * 
+     * @throws NullPointerException if either one of the arguments is {@code null}
+     */
     public static boolean testIncrementalObservability(Set<Automaton> plants, Set<Automaton> specs) {
         Objects.requireNonNull(plants);
         Objects.requireNonNull(specs);
