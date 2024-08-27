@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.IntFunction;
 import java.util.stream.IntStream;
 
+import com.github.automaton.automata.incremental.*;
 import com.github.automaton.automata.util.*;
 
 import org.apache.commons.collections4.*;
@@ -1401,20 +1402,14 @@ public class AutomataOperations {
                         IntStream.range(0, combinedSys.nControllers).parallel().forEach(i -> counterExample
                                 .addAll(buildLanguage(subsetConstruction.buildAutomatonRepresentationOf(i))));
                         int nCheckedAutomata = 0;
-                        for (Iterator<Automaton> iterator = IteratorUtils.filteredIterator(G.iterator(), aut -> !Gprime.contains(aut)); iterator.hasNext() && !found; ) {
-                            Automaton M = iterator.next();
+                        for (Automaton M : new PlantOverSpecComponentIterable(G, H, Gprime, Hprime)) {
                             nCheckedAutomata++;
                             if (M.recognizesWords(counterExample)) {
                                 found = true;
-                                Gprime.add(M);
-                            }
-                        }
-                        for (Iterator<Automaton> iterator = IteratorUtils.filteredIterator(H.iterator(), aut -> !Hprime.contains(aut)); iterator.hasNext() && !found; ) {
-                            Automaton M = iterator.next();
-                            nCheckedAutomata++;
-                            if (M.recognizesWords(counterExample)) {
-                                found = true;
-                                Hprime.add(M);
+                                if (G.contains(M))
+                                    Gprime.add(M);
+                                else
+                                    Hprime.add(M);
                             }
                         }
                         if (nCheckedAutomata > 0 && !found) {
