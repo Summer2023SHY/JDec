@@ -43,6 +43,7 @@ public abstract class HeuristicBasedComponentIterable implements Iterable<Automa
 
     protected final void setOrdering(Comparator<Automaton> ordering) {
         this.ordering = Objects.requireNonNull(ordering);
+        heuristicAppliedComponents = null;
     }
 
     protected final void buildHeuristic() {
