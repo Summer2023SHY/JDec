@@ -22,13 +22,23 @@ public final class HashcodeBasedComparator<T> implements Comparator<T> {
     private HashcodeBasedComparator() {
     }
 
+    /**
+     * Returns the sole instance of {@code HashcodeBasedComparator}.
+     * 
+     * @param <T> the data type
+     * @return the sole instance
+     */
     @SuppressWarnings("unchecked")
     public static <T> HashcodeBasedComparator<T> instance() {
         return (HashcodeBasedComparator<T>) INSTANCE;
     }
 
     /**
-     * Compares and returns the two objects' orders. 
+     * Compares and returns the two objects' orders.
+     * 
+     * @return a negative integer, zero, or a positive integer as the
+     *         first argument is less than, equal to, or greater than the
+     *         second
      */
     @Override
     public int compare(T o1, T o2) {
