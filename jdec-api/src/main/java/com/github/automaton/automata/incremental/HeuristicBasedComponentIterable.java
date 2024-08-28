@@ -65,8 +65,8 @@ public abstract class HeuristicBasedComponentIterable implements Iterable<Automa
     }
 
     public final void setFilters(Set<Automaton> gPrime, Set<Automaton> hPrime) {
-        this.gPrime = gPrime;
-        this.hPrime = hPrime;
+        this.gPrime = Objects.requireNonNull(gPrime);
+        this.hPrime = Objects.requireNonNull(hPrime);
     }
 
     public final Set<Automaton> getPlants() {
