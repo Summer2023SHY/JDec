@@ -8,6 +8,7 @@ package com.github.automaton.automata;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.IntFunction;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 import com.github.automaton.automata.incremental.*;
@@ -1368,6 +1369,7 @@ public class AutomataOperations {
 
     /**
      * Given a set of plants and specifications, test whether the combined system is inference observable.
+     * This method uses random order for querying the system components.
      * 
      * @param plants a set of plants
      * @param specs a set of specifications
@@ -1376,8 +1378,25 @@ public class AutomataOperations {
      * @throws NullPointerException if either one of the arguments is {@code null}
      */
     public static boolean testIncrementalObservability(Set<Automaton> plants, Set<Automaton> specs) {
+        return testIncrementalObservability(plants, specs, RandomOrderComponentIterable::new);
+    }
+
+    /**
+     * Given a set of plants and specifications, test whether the combined system is inference observable.
+     * This method uses the specified heuristic for querying the system components.
+     * 
+     * @param plants a set of plants
+     * @param specs a set of specifications
+     * @param heuristicSupplier a heuristic supplier
+     * 
+     * @return {@code true} if the combined system is inference observable
+     * 
+     * @throws NullPointerException if either one of the arguments is {@code null}
+     */
+    public static boolean testIncrementalObservability(Set<Automaton> plants, Set<Automaton> specs, FilteredComponentIterableGenerator heuristicSupplier) {
         Objects.requireNonNull(plants);
         Objects.requireNonNull(specs);
+        Objects.requireNonNull(heuristicSupplier);
 
         /* Create copies of the sets to avoid modifying supplied sets */
         Set<Automaton> G = new LinkedHashSet<>(plants);
@@ -1402,7 +1421,7 @@ public class AutomataOperations {
                         IntStream.range(0, combinedSys.nControllers).parallel().forEach(i -> counterExample
                                 .addAll(buildLanguage(subsetConstruction.buildAutomatonRepresentationOf(i))));
                         int nCheckedAutomata = 0;
-                        for (Automaton M : new PlantOverSpecComponentIterable(G, H, Gprime, Hprime)) {
+                        for (Automaton M : heuristicSupplier.generate(G, H, Gprime, Hprime)) {
                             nCheckedAutomata++;
                             if (M.recognizesWords(counterExample)) {
                                 found = true;
