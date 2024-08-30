@@ -73,10 +73,11 @@ public class RandomAutomatonPrompt extends JDialog {
         setLayout(new GridBagLayout());
         final GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(0, 8, 4, 8);
 
         /* Number of controllers */
 
-        JLabel nControllersLabel = new JLabel(" # Controllers:");
+        JLabel nControllersLabel = new JLabel("# Controllers:");
         c.gridx = 0;
         c.gridy = 0;
         add(nControllersLabel, c);
@@ -89,7 +90,7 @@ public class RandomAutomatonPrompt extends JDialog {
 
         /* Number of events */
 
-        JLabel nEventsLabel = new JLabel(" # Events:");
+        JLabel nEventsLabel = new JLabel("# Events:");
         c.gridx = 0;
         c.gridy = 1;
         add(nEventsLabel, c);
@@ -102,7 +103,7 @@ public class RandomAutomatonPrompt extends JDialog {
 
         /* Number of states */
 
-        JLabel nStatesLabel = new JLabel(" # States:");
+        JLabel nStatesLabel = new JLabel("# States:");
         c.gridx = 0;
         c.gridy = 2;
         add(nStatesLabel, c);
@@ -117,7 +118,7 @@ public class RandomAutomatonPrompt extends JDialog {
 
         /* Number of transitions */
 
-        JLabel minTransitionsLabel = new JLabel(" Min. # Transitions per State:");
+        JLabel minTransitionsLabel = new JLabel("Min. # Transitions per State:");
         c.gridx = 0;
         c.gridy = 3;
         add(minTransitionsLabel, c);
@@ -128,7 +129,7 @@ public class RandomAutomatonPrompt extends JDialog {
         c.gridy = 3;
         add(minTransitions, c);
 
-        JLabel maxTransitionsLabel = new JLabel(" Max. # Transitions per State:");
+        JLabel maxTransitionsLabel = new JLabel("Max. # Transitions per State:");
         c.gridx = 0;
         c.gridy = 4;
         add(maxTransitionsLabel, c);
@@ -141,7 +142,7 @@ public class RandomAutomatonPrompt extends JDialog {
 
         /* Bad transitions */
 
-        JLabel nBadTransitionsLabel = new JLabel(" # Bad Transitions:");
+        JLabel nBadTransitionsLabel = new JLabel("# Bad Transitions:");
         c.gridx = 0;
         c.gridy = 5;
         add(nBadTransitionsLabel, c);
@@ -158,6 +159,7 @@ public class RandomAutomatonPrompt extends JDialog {
         c.gridx = 0;
         c.gridy = 8;
         c.gridwidth = 2;
+        c.insets = new Insets(8, 0, 0, 0);
         add(progressIndicator, c);
 
         /* Cancel button */
