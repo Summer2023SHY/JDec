@@ -28,6 +28,9 @@ public abstract class HeuristicBasedComponentIterable implements Iterable<Automa
     private Set<Automaton> gPrime;
     private Set<Automaton> hPrime;
 
+    /**
+     * A list of components ordered as specified by the heuristic.
+     */
     private List<Automaton> heuristicAppliedComponents;
 
     /**
@@ -65,8 +68,10 @@ public abstract class HeuristicBasedComponentIterable implements Iterable<Automa
      * @param ordering the comparator that defines heuristic-based ordering
      * 
      * @throws NullPointerException if argument is {@code null}
+     * @throws UnsupportedOperationException if this component iterable does not support
+     *                                       {@link Comparator}-based ordering
      */
-    protected final void setOrdering(Comparator<Automaton> ordering) {
+    protected void setOrdering(Comparator<Automaton> ordering) {
         this.ordering = Objects.requireNonNull(ordering);
         heuristicAppliedComponents = null;
     }
@@ -78,7 +83,7 @@ public abstract class HeuristicBasedComponentIterable implements Iterable<Automa
      * 
      * @throws IllegalStateException if ordering is not yet set
      */
-    protected final void buildHeuristic() {
+    protected void buildHeuristic() {
         if (this.ordering == null) {
             throw new IllegalStateException();
         }
@@ -116,6 +121,16 @@ public abstract class HeuristicBasedComponentIterable implements Iterable<Automa
     public final void setFilters(Set<Automaton> gPrime, Set<Automaton> hPrime) {
         this.gPrime = Objects.requireNonNull(gPrime);
         this.hPrime = Objects.requireNonNull(hPrime);
+    }
+
+    /**
+     * Returns the list of components in the order as specified by the heuristic.
+     * @return the list of components
+     */
+    protected final List<Automaton> getOrderedList(boolean forceInit) {
+        if (forceInit)
+            heuristicAppliedComponents = new ArrayList<>();
+        return heuristicAppliedComponents;
     }
 
     /**
