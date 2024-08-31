@@ -1151,24 +1151,13 @@ public class JDec extends JFrame {
      *                               generation process
      **/
     public void generateRandomAutomaton(RandomAutomatonPrompt prompt,
-            int nEvents,
-            int nStates,
-            int minTransitionsPerState,
-            int maxTransitionsPerState,
-            int nControllers,
-            int nBadTransitions,
-            JLabel progressIndicator) {
+            int nEvents, int nStates, int minTransitionsPerState, int maxTransitionsPerState, int nControllers,
+            int nBadTransitions, JLabel progressIndicator) {
 
         // Generate random automaton
         Automaton automaton = RandomAutomatonGenerator.generateRandom(
-                prompt,
-                nEvents,
-                nStates,
-                minTransitionsPerState,
-                maxTransitionsPerState,
-                nControllers,
-                nBadTransitions,
-                progressIndicator);
+                nEvents, nStates, minTransitionsPerState, maxTransitionsPerState, nControllers, nBadTransitions,
+                prompt.doCheckObservability());
 
         // Place the generated automaton in a new tab as long as the process was not
         // aborted
@@ -2878,8 +2867,7 @@ public class JDec extends JFrame {
                         if (!askForConfirmation("Communications Already Exist",
                                 """
                                         This U-Structure appears to already have had communications added. Are you sure you want to proceed?
-                                        WARNING: This may result in duplicate communications."""
-                        ))
+                                        WARNING: This may result in duplicate communications."""))
                             break;
 
                     setBusyCursor(true);
@@ -2997,23 +2985,22 @@ public class JDec extends JFrame {
                                 JOptionPane.INFORMATION_MESSAGE);
                     break;
 
-                case "Test Incremental Observability":
-                    {
-                        IncrementalObsAutomataSelectionPrompt prompt = new IncrementalObsAutomataSelectionPrompt(JDec.this);
-                        prompt.setVisible(true);
-                        if (!prompt.userSelected())
-                            break;
-                        Set<Automaton> plants = prompt.getPlants(), specs = prompt.getSpecs();
-                        if (plants.isEmpty() || specs.isEmpty())
-                            displayMessage("Invalid selection", "Please try again.",
+                case "Test Incremental Observability": {
+                    IncrementalObsAutomataSelectionPrompt prompt = new IncrementalObsAutomataSelectionPrompt(JDec.this);
+                    prompt.setVisible(true);
+                    if (!prompt.userSelected())
+                        break;
+                    Set<Automaton> plants = prompt.getPlants(), specs = prompt.getSpecs();
+                    if (plants.isEmpty() || specs.isEmpty())
+                        displayMessage("Invalid selection", "Please try again.",
                                 JOptionPane.WARNING_MESSAGE);
-                        else if (AutomataOperations.testIncrementalObservability(plants, specs))
-                            displayMessage("Passed Test", "The system is inference observable.",
-                                    JOptionPane.INFORMATION_MESSAGE);
-                        else
-                            displayMessage("Failed Test", "The system is not inference observable.",
-                                    JOptionPane.INFORMATION_MESSAGE);
-                    }
+                    else if (AutomataOperations.testIncrementalObservability(plants, specs))
+                        displayMessage("Passed Test", "The system is inference observable.",
+                                JOptionPane.INFORMATION_MESSAGE);
+                    else
+                        displayMessage("Failed Test", "The system is not inference observable.",
+                                JOptionPane.INFORMATION_MESSAGE);
+                }
                     break;
 
                 case "Random Automaton":

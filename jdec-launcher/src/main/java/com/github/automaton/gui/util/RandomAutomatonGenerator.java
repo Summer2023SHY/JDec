@@ -10,6 +10,7 @@ import java.util.*;
 import javax.swing.*;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.rng.UniformRandomProvider;
 import org.apache.commons.rng.simple.RandomSource;
 
@@ -67,6 +68,7 @@ public class RandomAutomatonGenerator {
      * 
      * @since 2.0
      **/
+    @Deprecated(since = "2.1.0")
     public static Automaton generateRandom(RandomAutomatonPrompt prompt,
             int nEvents,
             int nStates,
@@ -243,6 +245,99 @@ public class RandomAutomatonGenerator {
 
         return automaton;
 
+    }
+
+    /**
+     * Generates a new random automaton that satisfies the specified
+     * options.
+     * 
+     * @param nEvents                the number of events that the generated
+     *                               automaton has
+     * @param nStates                the number of states that the generated
+     *                               automaton has
+     * @param minTransitionsPerState the minimum number of transitions each state
+     *                               has
+     * @param maxTransitionsPerState the maximum number of transitions each state
+     *                               has
+     * @param nControllers           the number of controllers
+     * @param nBadTransitions        the number of bad transitions
+     * @param checkObservability     whether to check observability of generated
+     *                               automaton
+     * 
+     * @return a random automaton
+     * 
+     * @since 2.1.0
+     */
+    public static Automaton generateRandom(
+            int nEvents,
+            int nStates,
+            int minTransitionsPerState,
+            int maxTransitionsPerState,
+            int nControllers,
+            int nBadTransitions,
+            boolean checkObservability) {
+
+        Automaton aut;
+        boolean isAccessible = false;
+        boolean isControllable = false;
+        boolean isObservable = false;
+
+        do {
+            aut = new Automaton(nControllers);
+
+            for (int i = 1; i <= nStates; i++) {
+                aut.addState(Integer.toString(i), true, false);
+            }
+            aut.setInitialStateID(1L);
+
+            for (int i = 1; i <= nEvents; i++)
+                aut.addEvent(
+                        generateEventLabel(i, nEvents),
+                        generateBooleanArray(nControllers),
+                        generateBooleanArray(nControllers));
+
+            for (int i = 1; i < nStates - 1; i++) {
+                // Choose a random number of transitions
+                int nTransitions = generateInt(minTransitionsPerState, maxTransitionsPerState);
+
+                // Add transitions
+                for (int j = 0; j < nTransitions; j++)
+                    addTransition(aut, i, generateInt(i, nStates));
+            }
+
+            while (aut.getBadTransitions().size() < nBadTransitions) {
+
+                int s = generateInt(1, nStates);
+                List<Transition> transitions = aut.getState(s).getTransitions();
+
+                // Go through the transitions sequentially until we find one to mark as bad
+                for (Transition transition : transitions) {
+
+                    // Mark this one as bad, as long as it isn't already a bad transition
+                    if (!aut.isBadTransition(s, transition.getEvent().getID(),
+                            transition.getTargetStateID()) && BooleanUtils.or(transition.getEvent().isControllable())) {
+                        aut.markTransitionAsBad(s, transition.getEvent().getID(),
+                                transition.getTargetStateID());
+                    }
+
+                }
+
+            }
+
+            Automaton accessibleAutomaton = aut.accessible();
+            if (accessibleAutomaton.getNumberOfStates() == nStates)
+                isAccessible = true;
+
+            aut = accessibleAutomaton;
+
+            isControllable = aut.testControllability();
+            if (checkObservability) {
+                isObservable = aut.testObservability();
+            }
+
+        } while (isAccessible && isControllable && (!checkObservability || isObservable));
+
+        return aut;
     }
 
     /**

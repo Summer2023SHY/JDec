@@ -27,18 +27,19 @@ public class RandomAutomatonPrompt extends JDialog {
     /* CLASS CONSTANTS */
 
     // Default values
-    private static int nControllersDefault = 2;
-    private static int nEventsDefault = 3;
-    private static int nStatesDefault = 7;
-    private static int minTransitionsDefault = 1;
-    private static int maxTransitionsDefault = 3;
-    private static int nBadTransitionsDefault = 2;
+    private int nControllersDefault = 2;
+    private int nEventsDefault = 3;
+    private int nStatesDefault = 7;
+    private int minTransitionsDefault = 1;
+    private int maxTransitionsDefault = 3;
+    private int nBadTransitionsDefault = 2;
 
     /* INSTANCE VARIABLES */
 
     public boolean isDisposed = false;
     private JDec gui;
     private JSpinner nControllers, nEvents, nStates, minTransitions, maxTransitions, nBadTransitions;
+    private JCheckBox checkObservability;
 
     /* CONSTRUCTOR */
 
@@ -152,6 +153,16 @@ public class RandomAutomatonPrompt extends JDialog {
         c.gridy = 5;
         add(nBadTransitions, c);
 
+        JLabel checkObservabilityLabel = new JLabel("Check Observability:");
+        c.gridx = 0;
+        c.gridy = 6;
+        add(checkObservabilityLabel, c);
+
+        checkObservability = new JCheckBox();
+        c.gridx = 1;
+        c.gridy = 6;
+        add(checkObservability, c);
+
         /* Progress indicator */
 
         final JLabel progressIndicator = new JLabel("Starting...", SwingConstants.CENTER);
@@ -227,6 +238,12 @@ public class RandomAutomatonPrompt extends JDialog {
         c.gridy = 8;
         add(generateButton, c);
 
+    }
+
+    public boolean doCheckObservability() {
+        synchronized (checkObservability) {
+            return checkObservability.isSelected();
+        }
     }
 
     /**
