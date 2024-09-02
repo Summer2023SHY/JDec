@@ -10,12 +10,12 @@ import java.util.Set;
 import com.github.automaton.automata.Automaton;
 
 /**
- * A generator interface for {@link HeuristicBasedComponentIterable}s.
+ * A generator interface for {@link ComponentIterable}s.
  * 
  * @author Sung Ho Yoon
  * @since 2.1.0
  */
 @FunctionalInterface
 public interface ComponentIterableGenerator {
-    public HeuristicBasedComponentIterable generate(Set<Automaton> plants, Set<Automaton> specs);
+    public ComponentIterable generate(Set<Automaton> plants, Set<Automaton> specs);
 }

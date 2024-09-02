@@ -15,7 +15,7 @@ import com.github.automaton.automata.Automaton;
  * @author Sung Ho Yoon
  * @since 2.1.0
  */
-public class PlantOverSpecComponentIterable extends HeuristicBasedComponentIterable {
+public class PlantOverSpecComponentIterable extends ComponentIterable {
 
     Comparator<Automaton> ordering = (aut1, aut2) -> {
         if (getPlants().contains(aut1)) {
