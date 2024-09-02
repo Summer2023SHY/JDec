@@ -15,7 +15,7 @@ import com.github.automaton.automata.Automaton;
  * @author Sung Ho Yoon
  * @since 2.1.0
  */
-public class AlternatingComponentIterable extends HeuristicBasedComponentIterable {
+public class AlternatingComponentIterable extends ComponentIterable {
 
     /**
      * Constructs a new {@code AlternatingComponentIterable}.
