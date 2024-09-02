@@ -3054,7 +3054,7 @@ public class JDec extends JFrame {
                     if (plants.isEmpty() || specs.isEmpty())
                         displayMessage("Invalid selection", "Please try again.",
                                 JOptionPane.WARNING_MESSAGE);
-                    else if (AutomataOperations.testIncrementalObservability(plants, specs))
+                    else if (AutomataOperations.testIncrementalObservability(plants, specs, prompt.getSelectedHeuristic()))
                         displayMessage("Passed Test", "The system is inference observable.",
                                 JOptionPane.INFORMATION_MESSAGE);
                     else
