@@ -22,6 +22,8 @@ import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.io.FilenameUtils;
 
 import com.github.automaton.automata.Automaton;
+import com.github.automaton.automata.incremental.*;
+import com.github.automaton.gui.util.StringReprWrapper;
 
 /**
  * A prompt for selecting automata to be used in incremental observability test.
@@ -34,6 +36,8 @@ class IncrementalObsAutomataSelectionPrompt extends JDialog {
     private AtomicBoolean selected = new AtomicBoolean(false);
 
     private List<AutomatonEntry> entries;
+
+    private HeuristicOptionsModel heuristics;
 
     public IncrementalObsAutomataSelectionPrompt(Frame owner) {
         super(owner, true);
@@ -77,6 +81,22 @@ class IncrementalObsAutomataSelectionPrompt extends JDialog {
         c.insets = new Insets(0, 0, 0, 0);
         add(pane, c);
 
+        JLabel heuristicLabel = new JLabel("Heuristic");
+        c.gridy = 1;
+        c.weightx = 0.5d;
+        c.weighty = 0d;
+        c.gridwidth = 1;
+        c.insets = new Insets(0, 8, 0, 8);
+        c.fill = GridBagConstraints.HORIZONTAL;
+        add(heuristicLabel, c);
+
+        heuristics = new HeuristicOptionsModel();
+
+        var heuristicOptions = new JComboBox<>(heuristics);
+
+        c.gridx = 1;
+        add(heuristicOptions, c);
+
         JButton submitButton = new JButton("Submit");
         submitButton.addActionListener(action -> {
             selected.set(true);
@@ -87,9 +107,10 @@ class IncrementalObsAutomataSelectionPrompt extends JDialog {
         cancelButton.addActionListener(action -> IncrementalObsAutomataSelectionPrompt.this.dispose());
 
         c.gridx = 0;
-        c.gridy = 1;
+        c.gridy = 2;
         c.weightx = 0.5d;
         c.weighty = 0d;
+        c.insets = new Insets(0, 0, 0, 0);
         c.gridwidth = 1;
         c.fill = GridBagConstraints.HORIZONTAL;
         add(submitButton, c);
@@ -110,6 +131,10 @@ class IncrementalObsAutomataSelectionPrompt extends JDialog {
 
     boolean userSelected() {
         return selected.get();
+    }
+
+    FilteredComponentIterableGenerator getSelectedHeuristic() {
+        return heuristics.getSelectedItem().getData();
     }
 
     static class AutomatonEntry extends JPanel {
@@ -173,5 +198,42 @@ class IncrementalObsAutomataSelectionPrompt extends JDialog {
         public boolean isSelectedAsSpec() {
             return Objects.equals(getSelectedButton().getText(), SelectionType.SPECIFICATION.toString());
         }
+    }
+
+    static class HeuristicOptionsModel
+            extends AbstractListModel<StringReprWrapper<FilteredComponentIterableGenerator>>
+            implements ComboBoxModel<StringReprWrapper<FilteredComponentIterableGenerator>> {
+
+        private final List<StringReprWrapper<FilteredComponentIterableGenerator>> list = List.of(
+                StringReprWrapper.of(AlternatingComponentIterable::new, "Alternating"),
+                StringReprWrapper.of(PlantOverSpecComponentIterable::new, "Plant over Spec"),
+                StringReprWrapper.of(SpecOverPlantComponentIterable::new, "Spec over Plant"),
+                StringReprWrapper.of(RandomOrderComponentIterable::new, "Random"));
+
+        private int selectedIndex = 0;
+
+        HeuristicOptionsModel() {
+        }
+
+        @Override
+        public int getSize() {
+            return list.size();
+        }
+
+        @Override
+        public StringReprWrapper<FilteredComponentIterableGenerator> getElementAt(int index) {
+            return list.get(index);
+        }
+
+        @Override
+        public void setSelectedItem(Object anItem) {
+            selectedIndex = list.indexOf(anItem);
+        }
+
+        @Override
+        public StringReprWrapper<FilteredComponentIterableGenerator> getSelectedItem() {
+            return list.get(selectedIndex);
+        }
+
     }
 }
