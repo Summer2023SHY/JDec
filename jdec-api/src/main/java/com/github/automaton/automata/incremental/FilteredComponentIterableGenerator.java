@@ -11,7 +11,7 @@ import java.util.Set;
 import com.github.automaton.automata.Automaton;
 
 /**
- * A generator interface for {@link HeuristicBasedComponentIterable}s,
+ * A generator interface for {@link ComponentIterable}s,
  * with an option to specify extra filters.
  * 
  * @author Sung Ho Yoon
@@ -21,10 +21,10 @@ import com.github.automaton.automata.Automaton;
 public interface FilteredComponentIterableGenerator extends ComponentIterableGenerator {
 
     @Override
-    public default HeuristicBasedComponentIterable generate(Set<Automaton> plants, Set<Automaton> specs) {
+    public default ComponentIterable generate(Set<Automaton> plants, Set<Automaton> specs) {
         return generate(plants, specs, Collections.emptySet(), Collections.emptySet());
     }
 
-    public HeuristicBasedComponentIterable generate(Set<Automaton> plants, Set<Automaton> specs, Set<Automaton> gPrime, Set<Automaton> hPrime);
+    public ComponentIterable generate(Set<Automaton> plants, Set<Automaton> specs, Set<Automaton> gPrime, Set<Automaton> hPrime);
 
 }

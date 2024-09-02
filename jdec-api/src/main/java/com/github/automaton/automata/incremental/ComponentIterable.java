@@ -18,7 +18,7 @@ import com.github.automaton.automata.Automaton;
  * @author Sung Ho Yoon
  * @since 2.1.0
  */
-public abstract class HeuristicBasedComponentIterable implements Iterable<Automaton> {
+public abstract class ComponentIterable implements Iterable<Automaton> {
 
     private Set<Automaton> plants;
     private Set<Automaton> specs;
@@ -41,7 +41,7 @@ public abstract class HeuristicBasedComponentIterable implements Iterable<Automa
      * 
      * @throws NullPointerException if either one of the arguments is {@code null}
      */
-    protected HeuristicBasedComponentIterable(Set<Automaton> plants, Set<Automaton> specs) {
+    protected ComponentIterable(Set<Automaton> plants, Set<Automaton> specs) {
         this(plants, specs, Collections.emptySet(), Collections.emptySet());
     }
 
@@ -55,7 +55,7 @@ public abstract class HeuristicBasedComponentIterable implements Iterable<Automa
      * 
      * @throws NullPointerException if any one of the arguments is {@code null}
      */
-    protected HeuristicBasedComponentIterable(Set<Automaton> plants, Set<Automaton> specs, Set<Automaton> gPrime, Set<Automaton> hPrime) {
+    protected ComponentIterable(Set<Automaton> plants, Set<Automaton> specs, Set<Automaton> gPrime, Set<Automaton> hPrime) {
         this.plants = Objects.requireNonNull(plants);
         this.specs = Objects.requireNonNull(specs);
         this.gPrime = Objects.requireNonNull(gPrime);

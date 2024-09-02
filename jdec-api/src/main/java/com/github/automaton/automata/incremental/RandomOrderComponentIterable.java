@@ -17,7 +17,7 @@ import com.github.automaton.automata.Automaton;
  * @author Sung Ho Yoon
  * @since 2.1.0
  */
-public class RandomOrderComponentIterable  extends HeuristicBasedComponentIterable {
+public class RandomOrderComponentIterable  extends ComponentIterable {
 
     /**
      * Constructs a new {@code RandomOrderComponentIterable}.
