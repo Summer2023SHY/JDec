@@ -335,7 +335,7 @@ public class RandomAutomatonGenerator {
                 isObservable = aut.testObservability();
             }
 
-        } while (isAccessible && isControllable && (!checkObservability || isObservable));
+        } while (!(isAccessible && isControllable && (!checkObservability || isObservable)));
 
         return aut;
     }
