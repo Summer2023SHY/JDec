@@ -1129,6 +1129,7 @@ public class AutomataOperations {
         Automaton compositePlant = buildCompositeAutomaton(plants);
         Automaton compositeSpec = buildCompositeAutomaton(specs);
         Automaton combinedSys = intersection(compositePlant.generateTwinPlant(), compositeSpec.generateTwinPlant());
+        BitSet bSet = new BitSet();
         for (long stateId = 1; stateId <= combinedSys.nStates; stateId++) {
             if (!combinedSys.stateExists(stateId))
                 continue;
@@ -1143,7 +1144,12 @@ public class AutomataOperations {
                 combinedSys.removeState(stateId);
             } else if (dumpCount > 0) {
                 s.setMarked(true);
+                bSet.set((int) stateId);
             }
+        }
+        var bad = combinedSys.getAllTransitions().parallelStream().filter(td -> bSet.get((int) td.targetStateID)).toList();
+        for (var badTd : bad) {
+            combinedSys.markTransitionAsBad(badTd.initialStateID, badTd.eventID, badTd.targetStateID);
         }
         combinedSys.renumberStates();
         return combinedSys;
