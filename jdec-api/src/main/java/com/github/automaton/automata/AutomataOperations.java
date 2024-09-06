@@ -8,13 +8,13 @@ package com.github.automaton.automata;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.IntFunction;
-import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 import com.github.automaton.automata.incremental.*;
 import com.github.automaton.automata.util.*;
 
 import org.apache.commons.collections4.*;
+import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.time.StopWatch;
@@ -1387,16 +1387,34 @@ public class AutomataOperations {
      * 
      * @param plants a set of plants
      * @param specs a set of specifications
-     * @param heuristicSupplier a heuristic supplier
+     * @param componentHeuristicSupplier a component heuristic supplier
      * 
      * @return {@code true} if the combined system is inference observable
      * 
      * @throws NullPointerException if either one of the arguments is {@code null}
      */
-    public static boolean testIncrementalObservability(Set<Automaton> plants, Set<Automaton> specs, FilteredComponentIterableGenerator heuristicSupplier) {
+    public static boolean testIncrementalObservability(Set<Automaton> plants, Set<Automaton> specs, FilteredComponentIterableGenerator componentHeuristicSupplier) {
+        return testIncrementalObservability(plants, specs, CounterexampleHeuristics.NONE, RandomOrderComponentIterable::new);
+    }
+
+    /**
+     * Given a set of plants and specifications, test whether the combined system is inference observable.
+     * This method uses the specified heuristic for querying the system components.
+     * 
+     * @param plants a set of plants
+     * @param specs a set of specifications
+     * @param counterexampleHeuristic a counterexample heuristic
+     * @param componentHeuristicSupplier a component heuristic supplier
+     * 
+     * @return {@code true} if the combined system is inference observable
+     * 
+     * @throws NullPointerException if either one of the arguments is {@code null}
+     */
+    public static boolean testIncrementalObservability(Set<Automaton> plants, Set<Automaton> specs, CounterexampleHeuristics counterexampleHeuristic, FilteredComponentIterableGenerator componentHeuristicSupplier) {
         Objects.requireNonNull(plants);
         Objects.requireNonNull(specs);
-        Objects.requireNonNull(heuristicSupplier);
+        Objects.requireNonNull(counterexampleHeuristic);
+        Objects.requireNonNull(componentHeuristicSupplier);
 
         /* Create copies of the sets to avoid modifying supplied sets */
         Set<Automaton> G = new LinkedHashSet<>(plants);
@@ -1412,16 +1430,21 @@ public class AutomataOperations {
                 UStructure uStructure = UStructureOperations.relabelConfigurationStates(synchronizedComposition(combinedSys));
                 for (Event controllableEvent : combinedSys.getControllableEvents()) {
                     var illegalConfigs = uStructure.getIllegalConfigStates(controllableEvent.getLabel());
+                    List<Set<Word>> counterExamples = SetUniqueList.setUniqueList(new ArrayList<>());
                     for (var illegalConfig : illegalConfigs) {
                         illegalConfig.setMarked(true);
                         var trim = uStructure.trim();
-                        boolean found = false;
                         Set<Word> counterExample = Collections.synchronizedSet(new LinkedHashSet<>());
                         SubsetConstruction subsetConstruction = trim.subsetConstruction(0);
-                        IntStream.range(0, combinedSys.nControllers).parallel().forEach(i -> counterExample
-                                .addAll(buildLanguage(subsetConstruction.buildAutomatonRepresentationOf(i))));
+                        for (int i = 0; i < combinedSys.nControllers; i++)
+                            counterExample.addAll(buildLanguage(subsetConstruction.buildAutomatonRepresentationOf(i)));
+                        counterExamples.add(counterExample);
+                    }
+                    counterExamples.sort(counterexampleHeuristic);
+                    for (Set<Word> counterExample : counterExamples) {
+                        boolean found = false;
                         int nCheckedAutomata = 0;
-                        for (Automaton M : heuristicSupplier.generate(G, H, Gprime, Hprime)) {
+                        for (Automaton M : componentHeuristicSupplier.generate(G, H, Gprime, Hprime)) {
                             nCheckedAutomata++;
                             if (M.recognizesWords(counterExample)) {
                                 found = true;
