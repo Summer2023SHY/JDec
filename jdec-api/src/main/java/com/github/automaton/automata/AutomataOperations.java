@@ -1430,7 +1430,8 @@ public class AutomataOperations {
                 UStructure uStructure = UStructureOperations.relabelConfigurationStates(synchronizedComposition(combinedSys));
                 for (Event controllableEvent : combinedSys.getControllableEvents()) {
                     var illegalConfigs = uStructure.getIllegalConfigStates(controllableEvent.getLabel());
-                    List<Set<Word>> counterExamples = SetUniqueList.setUniqueList(new ArrayList<>());
+                    List<Set<Word>> counterExamplesRaw = new ArrayList<>();
+                    List<Set<Word>> counterExamples = SetUniqueList.setUniqueList(counterExamplesRaw);
                     for (var illegalConfig : illegalConfigs) {
                         illegalConfig.setMarked(true);
                         var trim = uStructure.trim();
@@ -1440,8 +1441,8 @@ public class AutomataOperations {
                             counterExample.addAll(buildLanguage(subsetConstruction.buildAutomatonRepresentationOf(i)));
                         counterExamples.add(counterExample);
                     }
-                    counterExamples.sort(counterexampleHeuristic);
-                    for (Set<Word> counterExample : counterExamples) {
+                    counterExamplesRaw.sort(counterexampleHeuristic);
+                    for (Set<Word> counterExample : counterExamplesRaw) {
                         boolean found = false;
                         int nCheckedAutomata = 0;
                         for (Automaton M : componentHeuristicSupplier.generate(G, H, Gprime, Hprime)) {
