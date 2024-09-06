@@ -17,5 +17,16 @@ import com.github.automaton.automata.Automaton;
  */
 @FunctionalInterface
 public interface ComponentIterableGenerator {
+
+    /**
+     * Generates a new component iterable with the specified system components.
+     * 
+     * @param plants the set of plants
+     * @param specs the set of specifications
+     * @return a new component iterable
+     * 
+     * @throws NullPointerException if either one of the arguments is {@code null}
+     */
     public ComponentIterable generate(Set<Automaton> plants, Set<Automaton> specs);
+
 }
