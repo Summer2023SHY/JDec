@@ -220,7 +220,7 @@ public class SubsetConstruction extends Automaton {
     /**
      * Gets the state with the specified label as a state set.
      * 
-     * @param id a state label
+     * @param label a state label
      * @return the state with the specified label
      * 
      * @throws ClassCastException if the requested state is not a state set
