@@ -38,7 +38,7 @@ class IncrementalObsAutomataSelectionPrompt extends JDialog {
     private List<AutomatonEntry> entries;
 
     private AbstractComboBoxModel<CounterexampleHeuristics> counterexampleHeuristics;
-    private ComponentHeuristicOptionsModel componentHeuristics;
+    private AbstractComboBoxModel<ComponentHeuristics> componentHeuristics;
 
     public IncrementalObsAutomataSelectionPrompt(Frame owner) {
         super(owner, true);
@@ -102,7 +102,7 @@ class IncrementalObsAutomataSelectionPrompt extends JDialog {
         c.gridy = 2;
         add(componentHeuristicLabel, c);
 
-        componentHeuristics = new ComponentHeuristicOptionsModel();
+        componentHeuristics = new AbstractComboBoxModel<>(ComponentHeuristics.values()) {};
 
         var componentHeuristicOptions = new JComboBox<>(componentHeuristics);
 
@@ -150,7 +150,7 @@ class IncrementalObsAutomataSelectionPrompt extends JDialog {
     }
 
     FilteredComponentIterableGenerator getSelectedComponentHeuristic() {
-        return componentHeuristics.getSelectedItem().getData();
+        return componentHeuristics.getSelectedItem();
     }
 
     static class AutomatonEntry extends JPanel {
@@ -214,20 +214,5 @@ class IncrementalObsAutomataSelectionPrompt extends JDialog {
         public boolean isSelectedAsSpec() {
             return Objects.equals(getSelectedButton().getText(), SelectionType.SPECIFICATION.toString());
         }
-    }
-
-    static class ComponentHeuristicOptionsModel
-            extends AbstractComboBoxModel<StringReprWrapper<FilteredComponentIterableGenerator>> {
-
-        private static final List<StringReprWrapper<FilteredComponentIterableGenerator>> list = List.of(
-                StringReprWrapper.of(AlternatingComponentIterable::new, "Alternating"),
-                StringReprWrapper.of(PlantOverSpecComponentIterable::new, "Plant over Spec"),
-                StringReprWrapper.of(SpecOverPlantComponentIterable::new, "Spec over Plant"),
-                StringReprWrapper.of(RandomOrderComponentIterable::new, "Random"));
-
-        ComponentHeuristicOptionsModel() {
-            super(list);
-        }
-
     }
 }
