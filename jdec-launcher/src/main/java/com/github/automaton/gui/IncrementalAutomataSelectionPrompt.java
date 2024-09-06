@@ -145,7 +145,11 @@ class IncrementalObsAutomataSelectionPrompt extends JDialog {
         return selected.get();
     }
 
-    FilteredComponentIterableGenerator getSelectedHeuristic() {
+    CounterexampleHeuristics getSelectedCounterexampleHeuristic() {
+        return counterexampleHeuristics.getSelectedItem();
+    }
+
+    FilteredComponentIterableGenerator getSelectedComponentHeuristic() {
         return componentHeuristics.getSelectedItem().getData();
     }
 
