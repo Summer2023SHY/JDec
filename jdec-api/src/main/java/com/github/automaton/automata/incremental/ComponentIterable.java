@@ -113,7 +113,7 @@ public abstract class ComponentIterable implements Iterable<Automaton> {
     /**
      * Sets the filters to be used by this iterable.
      * 
-     * @param the set of "checked" plants
+     * @param gPrime the set of "checked" plants
      * @param hPrime the set of "checked" specifications
      * 
      * @throws NullPointerException if either one of the arguments is {@code null}
@@ -125,6 +125,9 @@ public abstract class ComponentIterable implements Iterable<Automaton> {
 
     /**
      * Returns the list of components in the order as specified by the heuristic.
+     * 
+     * @param forceInit whether to force (re-)initialization of the ordered list
+     * 
      * @return the list of components
      */
     protected final List<Automaton> getOrderedList(boolean forceInit) {

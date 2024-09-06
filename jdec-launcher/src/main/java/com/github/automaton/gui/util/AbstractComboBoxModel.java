@@ -42,7 +42,7 @@ public abstract class AbstractComboBoxModel<T> extends AbstractListModel<T> impl
      * Constructs a new {@code AbstractComboBoxModel} from the
      * specified list.
      * 
-     * @param arr a list of elements
+     * @param list a list of elements
      * 
      * @throws NullPointerException if argument is {@code null}
      */
