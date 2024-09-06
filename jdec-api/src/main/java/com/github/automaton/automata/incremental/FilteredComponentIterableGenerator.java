@@ -25,6 +25,18 @@ public interface FilteredComponentIterableGenerator extends ComponentIterableGen
         return generate(plants, specs, Collections.emptySet(), Collections.emptySet());
     }
 
+    /**
+     * Generates a new component iterable with the specified system components.
+     * 
+     * @param plants the set of plants
+     * @param specs the set of specifications
+     * @param gPrime the set of "checked" plants
+     * @param hPrime the set of "checked" specifications
+     * 
+     * @return a new component iterable
+     * 
+     * @throws NullPointerException if any one of the arguments is {@code null}
+     */
     public ComponentIterable generate(Set<Automaton> plants, Set<Automaton> specs, Set<Automaton> gPrime, Set<Automaton> hPrime);
 
 }
