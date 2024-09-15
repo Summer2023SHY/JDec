@@ -1420,6 +1420,12 @@ public class AutomataOperations {
         Set<Automaton> G = new LinkedHashSet<>(plants);
         Set<Automaton> H = new LinkedHashSet<>(specs);
 
+        logger.info("Starting incremental observability check");
+        logger.info("Counterexample heuristic: " + counterexampleHeuristic.toString());
+        logger.info("Component heuristic: " + componentHeuristicSupplier.toString());
+        StopWatch sw = StopWatch.createStarted();
+        int nComponentChecks = 0;
+
         while (!H.isEmpty()) {
             Automaton Hj = H.iterator().next();
             Set<Automaton> Hprime = new LinkedHashSet<>();
@@ -1447,6 +1453,7 @@ public class AutomataOperations {
                         int nCheckedAutomata = 0;
                         for (Automaton M : componentHeuristicSupplier.generate(G, H, Gprime, Hprime)) {
                             nCheckedAutomata++;
+                            nComponentChecks++;
                             if (M.recognizesWords(counterExample)) {
                                 found = true;
                                 if (G.contains(M))
@@ -1456,6 +1463,8 @@ public class AutomataOperations {
                             }
                         }
                         if (nCheckedAutomata > 0 && !found) {
+                            logger.info("Time taken: " + sw.getTime(TimeUnit.MILLISECONDS) + " ms");
+                            logger.info("Number of component checks: " + nComponentChecks);
                             return false;
                         }
                     }
@@ -1465,6 +1474,8 @@ public class AutomataOperations {
                 G.removeAll(Gprime);
             }
         }
+        logger.info("Time taken: " + sw.getTime(TimeUnit.MILLISECONDS) + " ms");
+        logger.info("Number of component checks: " + nComponentChecks);
         return true;
     }
 
