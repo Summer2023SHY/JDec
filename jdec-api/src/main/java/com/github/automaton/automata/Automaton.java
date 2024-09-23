@@ -113,6 +113,13 @@ public class Automaton implements Cloneable {
     protected int nControllers;
 
     /**
+     * Manually defined string representation of this automaton
+     * 
+     * @since 2.1.0
+     */
+    private transient String repr;
+
+    /**
      * GUI input generator.
      * 
      * @since 2.1.0
@@ -1385,6 +1392,8 @@ public class Automaton implements Cloneable {
 
     @Override
     public String toString() {
+        if (repr != null)
+            return repr;
         return ToStringBuilder.reflectionToString(this);
     }
 
@@ -2464,6 +2473,15 @@ public class Automaton implements Cloneable {
         if (words.isEmpty())
             return false;
         return words.parallelStream().allMatch(this::recognizesWord);
+    }
+
+    /**
+     * Sets the custom string representation of this automaton.
+     * 
+     * @param repr a custom string representation
+     */
+    public void setStrRepr(String repr) {
+        this.repr = repr;
     }
 
 }

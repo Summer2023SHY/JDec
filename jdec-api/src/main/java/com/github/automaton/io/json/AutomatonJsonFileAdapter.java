@@ -72,6 +72,7 @@ public class AutomatonJsonFileAdapter implements AutomatonIOAdapter {
                 }
                 JsonObject jsonObj = jsonElement.getAsJsonObject();
                 this.automaton = Automaton.buildAutomaton(jsonObj);
+                this.automaton.setStrRepr(file.getName());
             } catch (IOException ioe) {
                 throw logger.throwing(ioe);
             }
