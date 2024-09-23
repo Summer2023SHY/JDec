@@ -1449,9 +1449,11 @@ public class AutomataOperations {
                     }
                     counterExamplesRaw.sort(counterexampleHeuristic);
                     for (Set<Word> counterExample : counterExamplesRaw) {
+                        logger.info("Current counterexample: " + counterExample);
                         boolean found = false;
                         int nCheckedAutomata = 0;
                         for (Automaton M : componentHeuristicSupplier.generate(G, H, Gprime, Hprime)) {
+                            logger.info("Current component: " + M);
                             nCheckedAutomata++;
                             nComponentChecks++;
                             if (M.recognizesWords(counterExample)) {
