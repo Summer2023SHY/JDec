@@ -18,7 +18,7 @@ import com.github.automaton.automata.AmbiguityData;
  * @author Sung Ho Yoon
  * @since 2.1.0
  */
-public class AmbiguityLevelTable extends AbstractTableModel {
+public class AmbiguityLevelTable extends ListBasedTableModel<AmbiguityData> {
 
     /**
      * Fixed number of columns that {@code AmbiguityLevelTable}s have.
@@ -51,9 +51,6 @@ public class AmbiguityLevelTable extends AbstractTableModel {
     /** String representation for disablement states */
     static final String DISABLEMENT_STR_REPR = "Disablement";
 
-    /** The underlying ambiguity data list */
-    private List<AmbiguityData> dataList;
-
     /**
      * Constructs a new {@code AmbiguityLevelTable}.
      * 
@@ -61,7 +58,7 @@ public class AmbiguityLevelTable extends AbstractTableModel {
      * @throws NullPointerException if argument is {@code null}
      */
     public AmbiguityLevelTable(AmbiguityData[] data) {
-        this.dataList = Objects.requireNonNull(Arrays.asList(data));
+        super(Arrays.asList(data));
     }
 
     /**
@@ -71,17 +68,7 @@ public class AmbiguityLevelTable extends AbstractTableModel {
      * @throws NullPointerException if argument is {@code null}
      */
     public AmbiguityLevelTable(List<AmbiguityData> data) {
-        this.dataList = Objects.requireNonNull(data);
-    }
-
-    /**
-     * Returns the number of rows in this table.
-     *
-     * @return the number of rows in this table
-     */
-    @Override
-    public int getRowCount() {
-        return dataList.size();
+        super(data);
     }
 
     /**
@@ -183,7 +170,7 @@ public class AmbiguityLevelTable extends AbstractTableModel {
      */
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        AmbiguityData dataEntry = dataList.get(rowIndex);
+        AmbiguityData dataEntry = getEntry(rowIndex);
         switch (columnIndex) {
             case STATE_COLUMN:
                 return dataEntry.state().getLabel();

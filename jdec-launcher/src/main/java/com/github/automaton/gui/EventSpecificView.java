@@ -10,6 +10,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
@@ -61,6 +62,7 @@ class EventSpecificView extends JFrame {
 
         // Controller input label
         JLabel eventInputLabel = new JLabel("Event label:");
+        c.insets = new Insets(0, 8, 0, 0);
         c.ipady = 0;
         c.weightx = 0.5;
         c.weighty = 0.0;
@@ -70,6 +72,7 @@ class EventSpecificView extends JFrame {
 
         // Controller input spinner
         JComboBox<String> comboBox = new JComboBox<>(getControllableEventLabels().toArray(String[]::new));
+        c.insets = new Insets(0, 0, 0, 0);
         c.ipady = 0;
         c.weightx = 0.5;
         c.weighty = 0.0;
@@ -141,9 +144,24 @@ class EventSpecificView extends JFrame {
         setVisible(true);
     }
 
-    private Set<String> getControllableEventLabels() {
+    /**
+     * Generates the set of controllable event labels from the current UStructure.
+     * 
+     * @return the set of controllable event labels
+     */
+    static Set<String> getControllableEventLabels() {
         JDec.AutomatonTab tab = JDec.instance().getCurrentTab();
         UStructure uStructure = (UStructure) tab.automaton;
+        return getControllableEventLabels(uStructure);
+    }
+
+    /**
+     * Generates the set of controllable event labels from the specified UStructure.
+     * 
+     * @param uStructure a UStructure
+     * @return the set of controllable event labels
+     */
+    static Set<String> getControllableEventLabels(UStructure uStructure) {
         List<Event> controllableEvents = uStructure.getControllableEvents();
         Set<String> eventLabels = new HashSet<>();
         for (Event e : controllableEvents) {

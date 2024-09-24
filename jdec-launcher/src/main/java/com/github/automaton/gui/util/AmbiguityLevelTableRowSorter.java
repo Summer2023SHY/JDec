@@ -18,6 +18,47 @@ import javax.swing.table.*;
 public class AmbiguityLevelTableRowSorter extends TableRowSorter<AmbiguityLevelTable> {
 
     /**
+     * A comparator for state labels.
+     */
+    static final Comparator<String> STATE_LABEL_COMPARATOR = (a, b) -> {
+        if (Objects.equals(a, b))
+            return 0;
+        String[] aLabelComponents = a.split("-");
+        String[] bLabelComponents = b.split("-");
+        String[] aStateLabels = aLabelComponents[0].split("_");
+        String[] bStateLabels = bLabelComponents[0].split("_");
+        int aDuplicateCode = aLabelComponents.length == 1 ? 0 : Integer.valueOf(aLabelComponents[1]);
+        int bDuplicateCode = bLabelComponents.length == 1 ? 0 : Integer.valueOf(bLabelComponents[1]);
+        if (aStateLabels.length != aStateLabels.length) {
+            throw new IllegalArgumentException();
+        } else if (Arrays.equals(aStateLabels, bStateLabels)) {
+            return aDuplicateCode - bDuplicateCode;
+        }
+        for (int i = 0; i < aStateLabels.length; i++) {
+            int ai = Integer.valueOf(aStateLabels[i]);
+            int bi = Integer.valueOf(bStateLabels[i]);
+            if (ai != bi) {
+                return ai - bi;
+            }
+        }
+        return 0;
+    };
+
+    /**
+     * A comparator for state types.
+     */
+    static final Comparator<String> STATE_TYPE_COMPARATOR = (a, b) -> {
+        if (Objects.equals(a, b))
+            return 0;
+        else if (a.equals(AmbiguityLevelTable.ENABLEMENT_STR_REPR))
+            return 1;
+        else if (b.equals(AmbiguityLevelTable.ENABLEMENT_STR_REPR))
+            return -1;
+        else
+            throw new IllegalArgumentException();
+    };
+
+    /**
      * Constructs a new {@code AmbiguityLevelTableRowSorter}.
      */
     public AmbiguityLevelTableRowSorter() {
@@ -27,6 +68,7 @@ public class AmbiguityLevelTableRowSorter extends TableRowSorter<AmbiguityLevelT
     /**
      * Constructs a new {@code AmbiguityLevelTableRowSorter} using the
      * specified table as the underlying {@link AmbiguityLevelTable}.
+     * 
      * @param table
      */
     public AmbiguityLevelTableRowSorter(AmbiguityLevelTable table) {
@@ -44,41 +86,9 @@ public class AmbiguityLevelTableRowSorter extends TableRowSorter<AmbiguityLevelT
     public Comparator<?> getComparator(int column) {
         switch (column) {
             case AmbiguityLevelTable.STATE_COLUMN:
-                return new Comparator<String>() {
-                    @Override
-                    public int compare(String a, String b) {
-                        if (Objects.equals(a, b)) return 0;
-                        String[] aLabelComponents = a.split("-");
-                        String[] bLabelComponents = b.split("-");
-                        String[] aStateLabels = aLabelComponents[0].split("_");
-                        String[] bStateLabels = bLabelComponents[0].split("_");
-                        int aDuplicateCode = aLabelComponents.length == 1 ? 0 : Integer.valueOf(aLabelComponents[1]);
-                        int bDuplicateCode = bLabelComponents.length == 1 ? 0 : Integer.valueOf(bLabelComponents[1]);
-                        if (aStateLabels.length != aStateLabels.length) {
-                            throw new IllegalArgumentException();
-                        } else if (Arrays.equals(aStateLabels, bStateLabels)) {
-                            return aDuplicateCode - bDuplicateCode;
-                        }
-                        for (int i = 0; i < aStateLabels.length; i++) {
-                            int ai = Integer.valueOf(aStateLabels[i]);
-                            int bi = Integer.valueOf(bStateLabels[i]);
-                            if (ai != bi) {
-                                return ai - bi;
-                            }
-                        }
-                        return 0;
-                    }
-                };
+                return STATE_LABEL_COMPARATOR;
             case AmbiguityLevelTable.STATE_TYPE_COLUMN:
-                return new Comparator<String>() {
-                    @Override
-                    public int compare(String a, String b) {
-                        if (Objects.equals(a, b)) return 0;
-                        else if (a.equals(AmbiguityLevelTable.ENABLEMENT_STR_REPR)) return 1;
-                        else if (b.equals(AmbiguityLevelTable.ENABLEMENT_STR_REPR)) return -1;
-                        else throw new IllegalArgumentException();
-                    }
-                };
+                return STATE_TYPE_COMPARATOR;
             case AmbiguityLevelTable.EVENT_COLUMN:
                 return Comparator.<String>naturalOrder();
             case AmbiguityLevelTable.CONTROLLER_COLUMN:
