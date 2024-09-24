@@ -141,9 +141,24 @@ class EventSpecificView extends JFrame {
         setVisible(true);
     }
 
-    private Set<String> getControllableEventLabels() {
+    /**
+     * Generates the set of controllable event labels from the current UStructure.
+     * 
+     * @return the set of controllable event labels
+     */
+    static Set<String> getControllableEventLabels() {
         JDec.AutomatonTab tab = JDec.instance().getCurrentTab();
         UStructure uStructure = (UStructure) tab.automaton;
+        return getControllableEventLabels(uStructure);
+    }
+
+    /**
+     * Generates the set of controllable event labels from the specified UStructure.
+     * 
+     * @param uStructure a UStructure
+     * @return the set of controllable event labels
+     */
+    static Set<String> getControllableEventLabels(UStructure uStructure) {
         List<Event> controllableEvents = uStructure.getControllableEvents();
         Set<String> eventLabels = new HashSet<>();
         for (Event e : controllableEvents) {

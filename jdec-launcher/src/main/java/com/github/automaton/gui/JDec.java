@@ -397,6 +397,8 @@ public class JDec extends JFrame {
 
         // Properties menu
         menuBar.add(createMenu("Properties",
+                "Show control configurations[U_STRUCTURE]",
+                null,
                 "Test Inference Observability[BASIC_AUTOMATON]",
                 "Calculate Ambiguity Levels[BASIC_AUTOMATON]",
                 "Test Controllability[BASIC_AUTOMATON]",
@@ -2960,6 +2962,10 @@ public class JDec extends JFrame {
                                 "Feasible Protocol", " The first protocol found: ");
                     }
                 }
+                    break;
+
+                case "Show control configurations":
+                    new ControlConfigDisplay(JDec.this);
                     break;
 
                 case "Test Inference Observability":
