@@ -1277,8 +1277,11 @@ public class AutomataOperations {
             for (Transition t : lastState.getTransitions()) {
                 if (sequence.containsState(t.getTargetStateID()))
                     throw new IllegalArgumentException();
-                else
-                    queue.add(sequence.append(t.getEvent().getID(), t.getTargetStateID()));
+                else {
+                    if (!automaton.getBadTransitions().contains(new TransitionData(lastState.getID(), t.getEvent().getID(), t.getTargetStateID()))) {
+                        queue.add(sequence.append(t.getEvent().getID(), t.getTargetStateID()));
+                    }
+                }
             }
         }
         return language;
