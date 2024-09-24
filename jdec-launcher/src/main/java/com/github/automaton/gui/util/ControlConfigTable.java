@@ -18,7 +18,7 @@ import com.github.automaton.automata.*;
  * @author Sung Ho Yoon
  * @since 2.1.0
  */
-public class ControlConfigTable extends AbstractTableModel {
+public class ControlConfigTable extends ListBasedTableModel<State> {
 
     public static final int NUM_COLUMNS = 3;
 
@@ -37,7 +37,6 @@ public class ControlConfigTable extends AbstractTableModel {
 
     private String event;
     private UStructure uStructure;
-    private List<ControlConfigEntry> list;
 
     /**
      * Constructs a new {@code ControlConfigTable}.
@@ -48,31 +47,19 @@ public class ControlConfigTable extends AbstractTableModel {
     public ControlConfigTable(UStructure uStructure, String event) {
         this.uStructure = Objects.requireNonNull(uStructure);
         this.event = Objects.requireNonNull(event);
-        list = new ArrayList<>();
         buildList();
     }
 
     private void buildList() {
-        var illegalConfigs = uStructure.getIllegalConfigStates(event);
         var enablementStates = uStructure.getEnablementStates(event);
         var disablementStates = uStructure.getDisablementStates(event);
 
         for (var enablementState : enablementStates) {
-            list.add(new ControlConfigEntry(enablementState, true, illegalConfigs.contains(enablementState)));
+            getList().add(enablementState);
         }
         for (var disablementState : disablementStates) {
-            list.add(new ControlConfigEntry(disablementState, false, illegalConfigs.contains(disablementState)));
+            getList().add(disablementState);
         }
-    }
-
-    /**
-     * Returns the number of rows in this table.
-     *
-     * @return the number of rows in this table
-     */
-    @Override
-    public int getRowCount() {
-        return list.size();
     }
 
     /**
@@ -157,19 +144,19 @@ public class ControlConfigTable extends AbstractTableModel {
      */
     @Override
     public String getValueAt(int rowIndex, int columnIndex) {
-        ControlConfigEntry entry = list.get(rowIndex);
+        State entry = getEntry(rowIndex);
         switch (columnIndex) {
             case STATE_COLUMN:
-                return entry.state.getLabel();
+                return entry.getLabel();
             case STATE_TYPE_COLUMN:
-                return entry.isEnablement ? AmbiguityLevelTable.ENABLEMENT_STR_REPR : AmbiguityLevelTable.DISABLEMENT_STR_REPR;
+                return entry.isEnablementStateOf(event) ? AmbiguityLevelTable.ENABLEMENT_STR_REPR : AmbiguityLevelTable.DISABLEMENT_STR_REPR;
             case ILLEGAL_CONFIG_COLUMN:
-                return entry.isIllegalConfig ? "Yes" : "No";
+                return entry.isIllegalConfigurationOf(event) ? "Yes" : "No";
             default:
                 throw new IndexOutOfBoundsException(columnIndex);
         }
     }
 
-    private static record ControlConfigEntry(State state, boolean isEnablement, boolean isIllegalConfig) {
-    }
 }
+
+
