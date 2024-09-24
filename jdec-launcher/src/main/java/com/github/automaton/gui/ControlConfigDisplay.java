@@ -52,7 +52,7 @@ public class ControlConfigDisplay extends JDialog {
 
         // Controller input label
         JLabel eventInputLabel = new JLabel("Event label:");
-        c.ipady = 0;
+        c.insets = new Insets(0, 8, 0, 0);
         c.weightx = 0.5;
         c.weighty = 0.0;
         c.gridx = 0;
@@ -61,6 +61,7 @@ public class ControlConfigDisplay extends JDialog {
 
         // Controller input spinner
         JComboBox<String> comboBox = new JComboBox<>(getControllableEventLabels().toArray(String[]::new));
+        c.insets = new Insets(0, 0, 0, 0);
         c.ipady = 0;
         c.weightx = 0.5;
         c.weighty = 0.0;
