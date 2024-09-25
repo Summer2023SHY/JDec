@@ -47,6 +47,20 @@ public enum CounterexampleHeuristics implements Comparator<Set<Word>> {
         public int compare(Set<Word> o1, Set<Word> o2) {
             return -SHORT_C.compare(o1, o2);
         }
+    },
+    /**
+     * Use lexicographic ordering
+     */
+    LEXICOGRAPHIC("Lexicographic") {
+        @Override
+        public int compare(Set<Word> o1, Set<Word> o2) {
+            Objects.requireNonNull(o1);
+            Objects.requireNonNull(o2);
+            Word o1First = o1.isEmpty() ? Word.EPSILON : o1.iterator().next();
+            Word o2First = o2.isEmpty() ? Word.EPSILON : o2.iterator().next();
+
+            return o1First.compareTo(o2First);
+        }
     };
 
     private final String repr;
