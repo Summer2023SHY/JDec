@@ -20,7 +20,7 @@ import org.apache.commons.lang3.tuple.Pair;
  * @author Sung Ho Yoon
  * @since 2.0
  */
-public final class Sequence implements Iterable<Pair<Integer, Long>> {
+public final class Sequence implements Cloneable, Iterable<Pair<Integer, Long>> {
 
     /** The sequence of state IDs */
     private long[] stateIDs;
@@ -275,6 +275,35 @@ public final class Sequence implements Iterable<Pair<Integer, Long>> {
      */
     public List<Integer> getEventList() {
         return List.of(ArrayUtils.toObject(eventIDs));
+    }
+
+    /**
+     * Creates and returns a copy of this sequence.
+     * 
+     * @return a copy of this sequence
+     * 
+     * @since 2.1.0
+     */
+    @Override
+    public Sequence clone() {
+        Sequence clone = new Sequence();
+        clone.stateIDs = this.stateIDs.clone();
+        clone.eventIDs = this.eventIDs.clone();
+        return clone;
+    }
+
+    /**
+     * Returns a reversed copy of this sequence.
+     * 
+     * @return a reversed copy of this sequence
+     * 
+     * @since 2.1.0
+     */
+    public Sequence reversed() {
+        Sequence reversed = this.clone();
+        ArrayUtils.reverse(reversed.stateIDs);
+        ArrayUtils.reverse(reversed.eventIDs);
+        return reversed;
     }
 
     /**
