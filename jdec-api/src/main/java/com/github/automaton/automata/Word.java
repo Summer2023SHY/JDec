@@ -18,7 +18,7 @@ import org.apache.commons.lang3.Validate;
  * @author Sung Ho Yoon
  * @since 2.1.0
  */
-public final class Word implements Iterable<String> {
+public final class Word implements Comparable<Word>, Iterable<String> {
 
     /**
      * A word representation of {@link Event#EPSILON}.
@@ -223,5 +223,26 @@ public final class Word implements Iterable<String> {
     @Override
     public String toString() {
         return Arrays.toString(events);
+    }
+
+    /**
+     * Lexicographically compares this word to the specified word.
+     * 
+     * @param other the other word
+     * @return a negative integer, zero, or a positive integer as this word
+     *         is lexicographically less than, equal to, or greater than
+     *         the specified word
+     * 
+     * @throws NullPointerException if specified word is {@code null}
+     */
+    @Override
+    public int compareTo(Word other) {
+        Objects.requireNonNull(other);
+        for (int i = 0; i < Math.min(this.length(), other.length()); i++) {
+            if (!Objects.equals(this.getEventAt(i), other.getEventAt(i))) {
+                return this.getEventAt(i).compareTo(other.getEventAt(i));
+            }
+        }
+        return Integer.compare(this.length(), other.length());
     }
 }
