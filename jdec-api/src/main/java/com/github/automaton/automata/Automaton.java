@@ -2194,7 +2194,7 @@ public class Automaton implements Cloneable {
      * 
      * @since 2.1.0
      */
-    public boolean recognizesWords(Set<Word> words) {
+    public boolean recognizesWords(Collection<Word> words) {
         Validate.noNullElements(words);
         if (words.isEmpty())
             return false;
