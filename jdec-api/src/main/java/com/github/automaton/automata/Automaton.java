@@ -760,7 +760,9 @@ public class Automaton implements Cloneable {
                         }
                     }
                     if (!validConfig) {
-                        stateVector.setIllegalConfigOf(combinedEvent.get(0));
+                        // TODO: Add check for dump states
+                        if (!getState(t1.getTargetStateID()).getLabel().contains(DUMP_STATE_LABEL))
+                            stateVector.setIllegalConfigOf(combinedEvent.get(0));
                     }
                 }
                 if (isConditionalViolation) {
@@ -775,7 +777,9 @@ public class Automaton implements Cloneable {
                         }
                     }
                     if (!validConfig) {
-                        stateVector.setIllegalConfigOf(combinedEvent.get(0));
+                        // TODO: Add check for dump states
+                        if (!getState(t1.getTargetStateID()).getLabel().contains(DUMP_STATE_LABEL))
+                            stateVector.setIllegalConfigOf(combinedEvent.get(0));
                     }
                 }
 
