@@ -1338,12 +1338,9 @@ public class AutomataOperations {
                         foundMatch = true;
                     }
 
-                // Check to see if this event is controllable by at least one controller
-                boolean controllable = BooleanUtils.or(e.isControllable());
-
                 // Add new transition leading to dump state if this event if undefined at this
-                // state and is controllable and active
-                if (!foundMatch && controllable && activeEvents.contains(e)) {
+                // state and is active
+                if (!foundMatch && activeEvents.contains(e)) {
                     twinPlant.addTransition(id, e.getID(), dumpStateID);
                     twinPlant.markTransitionAsBad(id, e.getID(), dumpStateID);
                     needToAddDumpState = true;
