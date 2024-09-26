@@ -1455,11 +1455,13 @@ public class AutomataOperations {
                         logger.info("Current counterexample: " + counterExample);
                         boolean found = false;
                         int nCheckedAutomata = 0;
-                        for (Automaton M : componentHeuristicSupplier.generate(G, H, Gprime, Hprime)) {
+                        var componentIterator = componentHeuristicSupplier.generate(G, H, Gprime, Hprime).iterator();
+                        while (!found && componentIterator.hasNext()) {
+                            var M = componentIterator.next();
                             logger.info("Current component: " + M);
                             nCheckedAutomata++;
                             nComponentChecks++;
-                            if (!found && M.recognizesWords(counterExample)) {
+                            if (M.recognizesWords(counterExample)) {
                                 found = true;
                                 if (G.contains(M))
                                     Gprime.add(M);
