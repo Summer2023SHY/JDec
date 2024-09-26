@@ -744,7 +744,7 @@ public class Automaton implements Cloneable {
                     }
                 }
 
-                if (isUnconditionalViolation) {
+                if (isUnconditionalViolation && !getState(t1.getTargetStateID()).getLabel().contains(DUMP_STATE_LABEL)) {
                     uStructure.addUnconditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
                     stateVector.setDisablementOf(combinedEvent.get(0));
                     boolean validConfig = false;
@@ -755,12 +755,10 @@ public class Automaton implements Cloneable {
                         }
                     }
                     if (!validConfig) {
-                        // TODO: Add check for dump states
-                        if (!getState(t1.getTargetStateID()).getLabel().contains(DUMP_STATE_LABEL))
-                            stateVector.setIllegalConfigOf(combinedEvent.get(0));
+                        stateVector.setIllegalConfigOf(combinedEvent.get(0));
                     }
                 }
-                if (isConditionalViolation) {
+                if (isConditionalViolation && !getState(t1.getTargetStateID()).getLabel().contains(DUMP_STATE_LABEL)) {
 
                     uStructure.addConditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
                     stateVector.setEnablementOf(combinedEvent.get(0));
@@ -772,9 +770,7 @@ public class Automaton implements Cloneable {
                         }
                     }
                     if (!validConfig) {
-                        // TODO: Add check for dump states
-                        if (!getState(t1.getTargetStateID()).getLabel().contains(DUMP_STATE_LABEL))
-                            stateVector.setIllegalConfigOf(combinedEvent.get(0));
+                        stateVector.setIllegalConfigOf(combinedEvent.get(0));
                     }
                 }
 
@@ -2473,7 +2469,7 @@ public class Automaton implements Cloneable {
      * 
      * @since 2.1.0
      */
-    public boolean recognizesWords(Set<Word> words) {
+    public boolean recognizesWords(Collection<Word> words) {
         Validate.noNullElements(words);
         if (words.isEmpty())
             return false;
