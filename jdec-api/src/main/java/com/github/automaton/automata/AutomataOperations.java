@@ -1457,7 +1457,7 @@ public class AutomataOperations {
                             logger.info("Current component: " + M);
                             nCheckedAutomata++;
                             nComponentChecks++;
-                            if (M.recognizesWords(counterExample)) {
+                            if (!found && M.recognizesWords(counterExample)) {
                                 found = true;
                                 if (G.contains(M))
                                     Gprime.add(M);
