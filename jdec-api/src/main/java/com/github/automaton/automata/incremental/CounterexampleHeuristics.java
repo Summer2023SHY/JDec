@@ -15,13 +15,13 @@ import com.github.automaton.automata.Word;
  * @author Sung Ho Yoon
  * @since 2.1.0
  */
-public enum CounterexampleHeuristics implements Comparator<Set<Word>> {
+public enum CounterexampleHeuristics implements Comparator<List<Word>> {
     /**
      * Do not use any heuristics.
      */
     NONE("None") {
         @Override
-        public int compare(Set<Word> o1, Set<Word> o2) {
+        public int compare(List<Word> o1, List<Word> o2) {
             return 0;
         }
     },
@@ -30,7 +30,7 @@ public enum CounterexampleHeuristics implements Comparator<Set<Word>> {
      */
     SHORT_C("Short C") {
         @Override
-        public int compare(Set<Word> o1, Set<Word> o2) {
+        public int compare(List<Word> o1, List<Word> o2) {
             Objects.requireNonNull(o1);
             Objects.requireNonNull(o2);
             Word o1First = o1.isEmpty() ? Word.EPSILON : o1.iterator().next();
@@ -44,7 +44,7 @@ public enum CounterexampleHeuristics implements Comparator<Set<Word>> {
      */
     LONG_C("Long C") {
         @Override
-        public int compare(Set<Word> o1, Set<Word> o2) {
+        public int compare(List<Word> o1, List<Word> o2) {
             return -SHORT_C.compare(o1, o2);
         }
     },
@@ -53,7 +53,7 @@ public enum CounterexampleHeuristics implements Comparator<Set<Word>> {
      */
     LEXICOGRAPHIC("Lexicographic") {
         @Override
-        public int compare(Set<Word> o1, Set<Word> o2) {
+        public int compare(List<Word> o1, List<Word> o2) {
             Objects.requireNonNull(o1);
             Objects.requireNonNull(o2);
             Word o1First = o1.isEmpty() ? Word.EPSILON : o1.iterator().next();
@@ -84,7 +84,7 @@ public enum CounterexampleHeuristics implements Comparator<Set<Word>> {
      *                              does not permit {@code null} arguments
      */
     @Override
-    public abstract int compare(Set<Word> o1, Set<Word> o2);
+    public abstract int compare(List<Word> o1, List<Word> o2);
 
     /**
      * Returns the string representation of this heuristic.
