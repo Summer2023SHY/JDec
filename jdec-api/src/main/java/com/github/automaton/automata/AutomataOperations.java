@@ -1128,6 +1128,7 @@ public class AutomataOperations {
                         SubsetConstruction subsetConstruction = trim.subsetConstruction(0);
                         var counterExample = buildCounterexample(subsetConstruction);
                         counterExamples.add(counterExample);
+                        illegalConfig.setMarked(false);
                     }
                     counterExamplesRaw.sort(counterexampleHeuristic);
                     for (Set<Word> counterExample : counterExamplesRaw) {
