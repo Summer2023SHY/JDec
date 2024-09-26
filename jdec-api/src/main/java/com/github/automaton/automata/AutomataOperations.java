@@ -795,7 +795,7 @@ public class AutomataOperations {
                     }
                 }
 
-                if (isUnconditionalViolation) {
+                if (isUnconditionalViolation && !automaton.getState(t1.getTargetStateID()).getLabel().contains(Automaton.DUMP_STATE_LABEL)) {
                     uStructure.addUnconditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
                     stateVector.setDisablementOf(combinedEvent.get(0));
                     boolean validConfig = false;
@@ -806,12 +806,10 @@ public class AutomataOperations {
                         }
                     }
                     if (!validConfig) {
-                        // TODO: Add check for dump states
-                        if (!automaton.getState(t1.getTargetStateID()).getLabel().contains(Automaton.DUMP_STATE_LABEL))
-                            stateVector.setIllegalConfigOf(combinedEvent.get(0));
+                        stateVector.setIllegalConfigOf(combinedEvent.get(0));
                     }
                 }
-                if (isConditionalViolation) {
+                if (isConditionalViolation && !automaton.getState(t1.getTargetStateID()).getLabel().contains(Automaton.DUMP_STATE_LABEL)) {
 
                     uStructure.addConditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
                     stateVector.setEnablementOf(combinedEvent.get(0));
@@ -823,9 +821,7 @@ public class AutomataOperations {
                         }
                     }
                     if (!validConfig) {
-                        // TODO: Add check for dump states
-                        if (!automaton.getState(t1.getTargetStateID()).getLabel().contains(Automaton.DUMP_STATE_LABEL))
-                            stateVector.setIllegalConfigOf(combinedEvent.get(0));
+                        stateVector.setIllegalConfigOf(combinedEvent.get(0));
                     }
                 }
 
