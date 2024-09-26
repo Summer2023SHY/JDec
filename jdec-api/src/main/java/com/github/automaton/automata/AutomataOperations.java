@@ -1436,8 +1436,8 @@ public class AutomataOperations {
                 UStructure uStructure = UStructureOperations.relabelConfigurationStates(synchronizedComposition(combinedSys));
                 for (Event controllableEvent : combinedSys.getControllableEvents()) {
                     var illegalConfigs = uStructure.getIllegalConfigStates(controllableEvent.getLabel());
-                    List<Set<Word>> counterExamplesRaw = new ArrayList<>();
-                    List<Set<Word>> counterExamples = SetUniqueList.setUniqueList(counterExamplesRaw);
+                    List<List<Word>> counterExamplesRaw = new ArrayList<>();
+                    List<List<Word>> counterExamples = SetUniqueList.setUniqueList(counterExamplesRaw);
                     for (var illegalConfig : illegalConfigs) {
                         illegalConfig.setMarked(true);
                         var trim = uStructure.trim();
@@ -1447,7 +1447,7 @@ public class AutomataOperations {
                         illegalConfig.setMarked(false);
                     }
                     counterExamplesRaw.sort(counterexampleHeuristic);
-                    for (Set<Word> counterExample : counterExamplesRaw) {
+                    for (List<Word> counterExample : counterExamplesRaw) {
                         logger.info("Current counterexample: " + counterExample);
                         boolean found = false;
                         int nCheckedAutomata = 0;
@@ -1520,7 +1520,7 @@ public class AutomataOperations {
                 .orElseThrow(IllegalArgumentException::new);
     }
 
-    private static Set<Word> buildCounterexample(final SubsetConstruction subsetConstruction) {
+    private static List<Word> buildCounterexample(final SubsetConstruction subsetConstruction) {
 
         State currState = subsetConstruction.getState(subsetConstruction.initialState);
         Sequence seq = new Sequence(currState.getID());
@@ -1542,7 +1542,7 @@ public class AutomataOperations {
                 temp.get(i).add(lv.getLabelAtIndex(i));
             }
         }
-        Set<Word> words = new LinkedHashSet<>();
+        List<Word> words = new ArrayList<>();
 
         for (int i = 0; i <= subsetConstruction.nControllers; i++) {
             words.add(new Word(temp.get(i)));
