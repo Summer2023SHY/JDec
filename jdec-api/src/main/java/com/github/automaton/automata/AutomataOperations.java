@@ -806,7 +806,9 @@ public class AutomataOperations {
                         }
                     }
                     if (!validConfig) {
-                        stateVector.setIllegalConfigOf(combinedEvent.get(0));
+                        // TODO: Add check for dump states
+                        if (!automaton.getState(t1.getTargetStateID()).getLabel().contains(Automaton.DUMP_STATE_LABEL))
+                            stateVector.setIllegalConfigOf(combinedEvent.get(0));
                     }
                 }
                 if (isConditionalViolation) {
@@ -821,7 +823,9 @@ public class AutomataOperations {
                         }
                     }
                     if (!validConfig) {
-                        stateVector.setIllegalConfigOf(combinedEvent.get(0));
+                        // TODO: Add check for dump states
+                        if (!automaton.getState(t1.getTargetStateID()).getLabel().contains(Automaton.DUMP_STATE_LABEL))
+                            stateVector.setIllegalConfigOf(combinedEvent.get(0));
                     }
                 }
 
