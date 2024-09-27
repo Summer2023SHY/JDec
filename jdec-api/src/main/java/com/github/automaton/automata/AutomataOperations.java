@@ -1434,10 +1434,10 @@ public class AutomataOperations {
             Automaton combinedSys = generateTwinPlant(Hj);
             while (!testObservability(combinedSys, false).getLeft()) {
                 UStructure uStructure = UStructureOperations.relabelConfigurationStates(synchronizedComposition(combinedSys));
+                List<List<Word>> counterExamplesRaw = new ArrayList<>();
+                List<List<Word>> counterExamples = SetUniqueList.setUniqueList(counterExamplesRaw);
                 for (Event controllableEvent : combinedSys.getControllableEvents()) {
                     var illegalConfigs = uStructure.getIllegalConfigStates(controllableEvent.getLabel());
-                    List<List<Word>> counterExamplesRaw = new ArrayList<>();
-                    List<List<Word>> counterExamples = SetUniqueList.setUniqueList(counterExamplesRaw);
                     for (var illegalConfig : illegalConfigs) {
                         illegalConfig.setMarked(true);
                         var trim = uStructure.trim();
@@ -1446,31 +1446,29 @@ public class AutomataOperations {
                         counterExamples.add(counterExample);
                         illegalConfig.setMarked(false);
                     }
-                    counterExamplesRaw.sort(counterexampleHeuristic);
-                    for (List<Word> counterExample : counterExamplesRaw) {
-                        logger.info("Current counterexample: " + counterExample);
-                        boolean found = false;
-                        int nCheckedAutomata = 0;
-                        var componentIterator = componentHeuristicSupplier.generate(G, H, Gprime, Hprime).iterator();
-                        while (!found && componentIterator.hasNext()) {
-                            var M = componentIterator.next();
-                            logger.info("Current component: " + M);
-                            nCheckedAutomata++;
-                            nComponentChecks++;
-                            if (M.recognizesWords(counterExample)) {
-                                found = true;
-                                if (G.contains(M))
-                                    Gprime.add(M);
-                                else
-                                    Hprime.add(M);
-                            }
-                        }
-                        if (nCheckedAutomata > 0 && !found) {
-                            logger.info("Time taken: " + sw.getTime(TimeUnit.MILLISECONDS) + " ms");
-                            logger.info("Number of component checks: " + nComponentChecks);
-                            return false;
+                }
+                counterExamplesRaw.sort(counterexampleHeuristic);
+                boolean found = false;
+                for (List<Word> counterExample : counterExamplesRaw) {
+                    logger.info("Current counterexample: " + counterExample);
+                    var componentIterator = componentHeuristicSupplier.generate(G, H, Gprime, Hprime).iterator();
+                    while (!found && componentIterator.hasNext()) {
+                        var M = componentIterator.next();
+                        logger.info("Current component: " + M);
+                        nComponentChecks++;
+                        if (M.recognizesWords(counterExample)) {
+                            found = true;
+                            if (G.contains(M))
+                                Gprime.add(M);
+                            else
+                                Hprime.add(M);
                         }
                     }
+                }
+                if (!found) {
+                    logger.info("Time taken: " + sw.getTime(TimeUnit.MILLISECONDS) + " ms");
+                    logger.info("Number of component checks: " + nComponentChecks);
+                    return false;
                 }
                 combinedSys = buildCombinedSystem(Gprime, Hprime);
                 H.removeAll(Hprime);
