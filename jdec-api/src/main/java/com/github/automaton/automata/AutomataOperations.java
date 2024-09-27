@@ -1449,7 +1449,7 @@ public class AutomataOperations {
                 }
                 counterExamplesRaw.sort(counterexampleHeuristic);
                 boolean found = false;
-                for (List<Word> counterExample : counterExamplesRaw) {
+                componentSearch: for (List<Word> counterExample : counterExamplesRaw) {
                     logger.info("Current counterexample: " + counterExample);
                     var componentIterator = componentHeuristicSupplier.generate(G, H, Gprime, Hprime).iterator();
                     while (!found && componentIterator.hasNext()) {
@@ -1462,6 +1462,7 @@ public class AutomataOperations {
                                 Gprime.add(M);
                             else
                                 Hprime.add(M);
+                            break componentSearch;
                         }
                     }
                 }
