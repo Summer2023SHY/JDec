@@ -1482,8 +1482,11 @@ public class AutomataOperations {
     }
 
     private static Automaton buildCombinedSystem(Set<Automaton> plants, Set<Automaton> specs) {
-        Automaton compositePlant = buildCompositeAutomaton(plants);
         Automaton compositeSpec = buildCompositeAutomaton(specs);
+        if (plants.isEmpty()) {
+            return compositeSpec.generateTwinPlant();
+        }
+        Automaton compositePlant = buildCompositeAutomaton(plants);
         Automaton combinedSys = intersection(compositePlant.generateTwinPlant(), compositeSpec.generateTwinPlant());
         BitSet bSet = new BitSet();
         for (long stateId = 1; stateId <= combinedSys.getNumberOfStates(); stateId++) {
