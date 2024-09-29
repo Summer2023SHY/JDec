@@ -1494,14 +1494,11 @@ public class AutomataOperations {
                 continue;
             State s = combinedSys.getState(stateId);
             String[] stateLabels = s.getLabel().split("_");
-            int dumpCount = 0;
-            for (int i = 0; i < stateLabels.length; i++) {
-                if (Objects.equals(stateLabels[i], Automaton.DUMP_STATE_LABEL))
-                    dumpCount++;
-            }
-            if (dumpCount == stateLabels.length) {
+            boolean plantStateIsDump = Objects.equals(stateLabels[0], Automaton.DUMP_STATE_LABEL);
+            boolean specStateIsDump = Objects.equals(stateLabels[1], Automaton.DUMP_STATE_LABEL);
+            if (plantStateIsDump && specStateIsDump) {
                 combinedSys.removeState(stateId);
-            } else if (dumpCount > 0) {
+            } else if (specStateIsDump) {
                 s.setMarked(true);
                 bSet.set((int) stateId);
             }
@@ -1511,6 +1508,7 @@ public class AutomataOperations {
             combinedSys.markTransitionAsBad(badTd.initialStateID, badTd.eventID, badTd.targetStateID);
         }
         combinedSys.renumberStates();
+        relabelStates(combinedSys);
         return combinedSys;
     }
 
@@ -1518,8 +1516,15 @@ public class AutomataOperations {
         if (automata.size() == 1) {
             return automata.iterator().next();
         }
-        return automata.parallelStream().reduce(AutomataOperations::intersection)
-                .orElseThrow(IllegalArgumentException::new);
+        return relabelStates(automata.parallelStream().reduce(AutomataOperations::intersection)
+                .orElseThrow(IllegalArgumentException::new));
+    }
+
+    private static <T extends Automaton> T relabelStates(T automaton) {
+        for (State s : automaton.getStates()) {
+            s.setLabel(Long.toString(s.getID()));
+        }
+        return automaton;
     }
 
     private static List<Word> buildCounterexample(final SubsetConstruction subsetConstruction) {
