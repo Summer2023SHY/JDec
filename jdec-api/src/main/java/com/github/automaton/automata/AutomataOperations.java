@@ -1448,24 +1448,24 @@ public class AutomataOperations {
                     }
                 }
                 counterExamplesRaw.sort(counterexampleHeuristic);
+
                 boolean found = false;
-                componentSearch: for (List<Word> counterExample : counterExamplesRaw) {
-                    logger.info("Current counterexample: " + counterExample);
-                    var componentIterator = componentHeuristicSupplier.generate(G, H, Gprime, Hprime).iterator();
-                    while (!found && componentIterator.hasNext()) {
-                        var M = componentIterator.next();
-                        logger.info("Current component: " + M);
-                        nComponentChecks++;
-                        if (M.recognizesWords(counterExample)) {
-                            found = true;
-                            if (G.contains(M))
-                                Gprime.add(M);
-                            else
-                                Hprime.add(M);
-                            break componentSearch;
-                        }
+                List<Word> counterExample = counterExamplesRaw.get(0);
+                logger.info("Current counterexample: " + counterExample);
+                var componentIterator = componentHeuristicSupplier.generate(G, H, Gprime, Hprime).iterator();
+                componentSearch: while (!found && componentIterator.hasNext()) {
+                    var M = componentIterator.next();
+                    logger.info("Current component: " + M);
+                    nComponentChecks++;
+                    if (M.recognizesWords(counterExample)) {
+                        if (G.contains(M))
+                            Gprime.add(M);
+                        else
+                            Hprime.add(M);
+                        break componentSearch;
                     }
                 }
+
                 if (!found) {
                     logger.info("Time taken: " + sw.getTime(TimeUnit.MILLISECONDS) + " ms");
                     logger.info("Number of component checks: " + nComponentChecks);
