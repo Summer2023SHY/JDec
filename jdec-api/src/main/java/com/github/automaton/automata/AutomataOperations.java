@@ -1437,14 +1437,17 @@ public class AutomataOperations {
                 List<List<Word>> counterExamplesRaw = new ArrayList<>();
                 List<List<Word>> counterExamples = SetUniqueList.setUniqueList(counterExamplesRaw);
                 for (Event controllableEvent : combinedSys.getControllableEvents()) {
+                    var enablementStates = uStructure.getEnablementStates(controllableEvent.getLabel());
                     var illegalConfigs = uStructure.getIllegalConfigStates(controllableEvent.getLabel());
                     for (var illegalConfig : illegalConfigs) {
-                        illegalConfig.setMarked(true);
-                        var trim = uStructure.trim();
-                        SubsetConstruction subsetConstruction = trim.subsetConstruction(0);
-                        var counterExample = buildCounterexample(subsetConstruction);
-                        counterExamples.add(counterExample);
-                        illegalConfig.setMarked(false);
+                        if (!enablementStates.contains(illegalConfig)) {
+                            illegalConfig.setMarked(true);
+                            var trim = uStructure.trim();
+                            SubsetConstruction subsetConstruction = trim.subsetConstruction(0);
+                            var counterExample = buildCounterexample(subsetConstruction);
+                            counterExamples.add(counterExample);
+                            illegalConfig.setMarked(false);
+                        }
                     }
                 }
                 counterExamplesRaw.sort(counterexampleHeuristic);
