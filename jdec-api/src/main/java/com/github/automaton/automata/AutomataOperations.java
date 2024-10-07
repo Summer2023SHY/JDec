@@ -1464,7 +1464,7 @@ public class AutomataOperations {
                     nComponentChecks++;
                     for (int i = 0; i <= combinedSys.nControllers; i++) {
                         if (i == 0 || counterExample.getEvent().isControllable(i - 1)) {
-                            if (!M.recognizesWord(counterExample.getWords().get(i))) {
+                            if (!M.recognizesWord(i, counterExample.getWords().get(i))) {
                                 found = true;
                                 if (G.contains(M)) {
                                     Gprime.add(M);

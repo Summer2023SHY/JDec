@@ -2184,6 +2184,47 @@ public class Automaton implements Cloneable {
     }
 
     /**
+     * Tests whether this automaton recognizes the specified word.
+     * 
+     * @param word a word
+     * @return {@code true} if this automaton recognizes this word
+     * 
+     * @throws NullPointerException if argument is {@code null}
+     * 
+     * @since 2.1.0
+     */
+    public boolean recognizesWord(int controller, Word word) {
+        Objects.requireNonNull(word);
+        if (!stateExists(initialState))
+            return false;
+        if (controller < 0 || controller > nControllers) {
+            throw new IllegalArgumentException();
+        }
+        if (controller == 0) {
+            return recognizesWord(word);
+        }
+        State currState = getState(initialState);
+        var it = word.iterator();
+        while (it.hasNext()) {
+            String eventLabel = it.next();
+            boolean nextStateFound = false;
+            for (int i = 0; i < currState.getNumberOfTransitions() && !nextStateFound; i++) {
+                Transition t = currState.getTransition(i);
+                if (!isBadTransition(currState, t.getEvent(), getState(t.getTargetStateID()))
+                    && t.getEvent().getLabel().equals(eventLabel)
+                    && t.getEvent().isObservable(controller - 1)
+                ) {
+                    currState = getState(t.getTargetStateID());
+                    nextStateFound = true;
+                }
+            }
+            if (!nextStateFound)
+                return false;
+        }
+        return currState.isMarked();
+    }
+
+    /**
      * Tests whether this automaton recognizes all of the specified words.
      * 
      * @param words a set of words
