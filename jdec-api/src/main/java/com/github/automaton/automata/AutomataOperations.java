@@ -1428,6 +1428,7 @@ public class AutomataOperations {
 
         while (!H.isEmpty()) {
             Automaton Hj = H.iterator().next();
+            logger.debug(Hj);
             Set<Automaton> Hprime = new LinkedHashSet<>();
             Set<Automaton> Gprime = new LinkedHashSet<>();
             Hprime.add(Hj);
@@ -1450,6 +1451,7 @@ public class AutomataOperations {
                         }
                     }
                 }
+                logger.debug("Counterexamples: "  + counterExamples);
                 counterExamplesRaw.sort(counterexampleHeuristic);
 
                 boolean found = false;
@@ -1480,6 +1482,7 @@ public class AutomataOperations {
                     logger.info("Number of component checks: " + nComponentChecks);
                     return false;
                 }
+                logger.debug("Rebuilding system");
                 combinedSys = buildCombinedSystem(Gprime, Hprime);
                 H.removeAll(Hprime);
                 G.addAll(Hprime);
