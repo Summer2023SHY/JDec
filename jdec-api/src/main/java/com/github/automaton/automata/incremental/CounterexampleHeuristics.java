@@ -15,13 +15,13 @@ import com.github.automaton.automata.Word;
  * @author Sung Ho Yoon
  * @since 2.1.0
  */
-public enum CounterexampleHeuristics implements Comparator<List<Word>> {
+public enum CounterexampleHeuristics implements Comparator<Counterexample> {
     /**
      * Do not use any heuristics.
      */
     NONE("None") {
         @Override
-        public int compare(List<Word> o1, List<Word> o2) {
+        public int compare(Counterexample o1, Counterexample o2) {
             return 0;
         }
     },
@@ -30,11 +30,11 @@ public enum CounterexampleHeuristics implements Comparator<List<Word>> {
      */
     SHORT_C("Short C") {
         @Override
-        public int compare(List<Word> o1, List<Word> o2) {
+        public int compare(Counterexample o1, Counterexample o2) {
             Objects.requireNonNull(o1);
             Objects.requireNonNull(o2);
-            Word o1First = o1.isEmpty() ? Word.EPSILON : o1.iterator().next();
-            Word o2First = o2.isEmpty() ? Word.EPSILON : o2.iterator().next();
+            Word o1First = o1.getWords().isEmpty() ? Word.EPSILON : o1.getWords().iterator().next();
+            Word o2First = o2.getWords().isEmpty() ? Word.EPSILON : o2.getWords().iterator().next();
 
             return Integer.compare(o1First.length(), o2First.length());
         }
@@ -44,7 +44,7 @@ public enum CounterexampleHeuristics implements Comparator<List<Word>> {
      */
     LONG_C("Long C") {
         @Override
-        public int compare(List<Word> o1, List<Word> o2) {
+        public int compare(Counterexample o1, Counterexample o2) {
             return -SHORT_C.compare(o1, o2);
         }
     },
@@ -53,11 +53,11 @@ public enum CounterexampleHeuristics implements Comparator<List<Word>> {
      */
     LEXICOGRAPHIC("Lexicographic") {
         @Override
-        public int compare(List<Word> o1, List<Word> o2) {
+        public int compare(Counterexample o1, Counterexample o2) {
             Objects.requireNonNull(o1);
             Objects.requireNonNull(o2);
-            Word o1First = o1.isEmpty() ? Word.EPSILON : o1.iterator().next();
-            Word o2First = o2.isEmpty() ? Word.EPSILON : o2.iterator().next();
+            Word o1First = o1.getWords().isEmpty() ? Word.EPSILON : o1.getWords().iterator().next();
+            Word o2First = o2.getWords().isEmpty() ? Word.EPSILON : o2.getWords().iterator().next();
 
             return o1First.compareTo(o2First);
         }
@@ -84,7 +84,7 @@ public enum CounterexampleHeuristics implements Comparator<List<Word>> {
      *                              does not permit {@code null} arguments
      */
     @Override
-    public abstract int compare(List<Word> o1, List<Word> o2);
+    public abstract int compare(Counterexample o1, Counterexample o2);
 
     /**
      * Returns the string representation of this heuristic.

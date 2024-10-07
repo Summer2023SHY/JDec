@@ -1434,8 +1434,8 @@ public class AutomataOperations {
             Automaton combinedSys = generateTwinPlant(Hj);
             while (!testObservability(combinedSys, false).getLeft()) {
                 UStructure uStructure = UStructureOperations.relabelConfigurationStates(synchronizedComposition(combinedSys));
-                List<List<Word>> counterExamplesRaw = new ArrayList<>();
-                List<List<Word>> counterExamples = SetUniqueList.setUniqueList(counterExamplesRaw);
+                List<Counterexample> counterExamplesRaw = new ArrayList<>();
+                List<Counterexample> counterExamples = SetUniqueList.setUniqueList(counterExamplesRaw);
                 for (Event controllableEvent : combinedSys.getControllableEvents()) {
                     var enablementStates = uStructure.getEnablementStates(controllableEvent.getLabel());
                     var illegalConfigs = uStructure.getIllegalConfigStates(controllableEvent.getLabel());
@@ -1444,7 +1444,7 @@ public class AutomataOperations {
                             illegalConfig.setMarked(true);
                             var trim = uStructure.trim();
                             SubsetConstruction subsetConstruction = trim.subsetConstruction(0);
-                            var counterExample = buildCounterexample(subsetConstruction);
+                            var counterExample = buildCounterexample(controllableEvent, subsetConstruction);
                             counterExamples.add(counterExample);
                             illegalConfig.setMarked(false);
                         }
@@ -1453,20 +1453,25 @@ public class AutomataOperations {
                 counterExamplesRaw.sort(counterexampleHeuristic);
 
                 boolean found = false;
-                List<Word> counterExample = counterExamplesRaw.get(0);
+                Counterexample counterExample = counterExamplesRaw.get(0);
                 logger.info("Current counterexample: " + counterExample);
                 var componentIterator = componentHeuristicSupplier.generate(G, H, Gprime, Hprime).iterator();
                 componentSearch: while (!found && componentIterator.hasNext()) {
                     var M = componentIterator.next();
                     logger.info("Current component: " + M);
                     nComponentChecks++;
-                    if (M.recognizesWords(counterExample)) {
-                        found = true;
-                        if (G.contains(M))
-                            Gprime.add(M);
-                        else
-                            Hprime.add(M);
-                        break componentSearch;
+                    for (int i = 0; i <= combinedSys.nControllers; i++) {
+                        if (i == 0 || counterExample.getEvent().isControllable(i - 1)) {
+                            if (!M.recognizesWord(counterExample.getWords().get(i))) {
+                                found = true;
+                                if (G.contains(M)) {
+                                    Gprime.add(M);
+                                } else {
+                                    Hprime.add(M);
+                                }
+                                break componentSearch;
+                            }
+                        }
                     }
                 }
 
@@ -1531,7 +1536,7 @@ public class AutomataOperations {
         return automaton;
     }
 
-    private static List<Word> buildCounterexample(final SubsetConstruction subsetConstruction) {
+    private static Counterexample buildCounterexample(final Event event, final SubsetConstruction subsetConstruction) {
 
         State currState = subsetConstruction.getState(subsetConstruction.initialState);
         Sequence seq = new Sequence(currState.getID());
@@ -1558,7 +1563,7 @@ public class AutomataOperations {
         for (int i = 0; i <= subsetConstruction.nControllers; i++) {
             words.add(new Word(temp.get(i)));
         }
-        return words;
+        return new Counterexample(event, words);
     }
 
 }
