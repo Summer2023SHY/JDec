@@ -1477,7 +1477,7 @@ public class AutomataOperations {
                 }
                 combinedSys = buildCombinedSystem(Gprime, Hprime);
                 H.removeAll(Hprime);
-                G.removeAll(Gprime);
+                G.addAll(Hprime);
             }
         }
         logger.info("Time taken: " + sw.getTime(TimeUnit.MILLISECONDS) + " ms");
