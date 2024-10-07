@@ -2203,25 +2203,29 @@ public class Automaton implements Cloneable {
         if (controller == 0) {
             return recognizesWord(word);
         }
-        State currState = getState(initialState);
-        var it = word.iterator();
-        while (it.hasNext()) {
-            String eventLabel = it.next();
-            boolean nextStateFound = false;
-            for (int i = 0; i < currState.getNumberOfTransitions() && !nextStateFound; i++) {
+        Queue<Pair<Long, Integer>> queue = new PriorityQueue<>((a, b) -> Integer.compare(a.getRight(), b.getRight()));
+        queue.add(Pair.of(initialState, 0));
+        while (!queue.isEmpty()) {
+            var curr = queue.poll();
+            State currState = getState(curr.getLeft());
+            if (curr.getRight() == word.length()) {
+                return true;
+            }
+            String eventLabel = word.getEventAt(curr.getRight());
+            for (int i = 0; i < currState.getNumberOfTransitions(); i++) {
                 Transition t = currState.getTransition(i);
-                if (!isBadTransition(currState, t.getEvent(), getState(t.getTargetStateID()))
-                    && t.getEvent().getLabel().equals(eventLabel)
-                    && t.getEvent().isObservable(controller - 1)
-                ) {
-                    currState = getState(t.getTargetStateID());
-                    nextStateFound = true;
+                if (!isBadTransition(currState, t.getEvent(), getState(t.getTargetStateID()))) {
+                    if (t.getEvent().isObservable(controller - 1)) {
+                        if (t.getEvent().getLabel().equals(eventLabel)) {
+                            queue.add(Pair.of(t.getTargetStateID(), curr.getRight() + 1));
+                        }
+                    } else {
+                        queue.add(Pair.of(t.getTargetStateID(), curr.getRight()));
+                    }
                 }
             }
-            if (!nextStateFound)
-                return false;
         }
-        return currState.isMarked();
+        return false;
     }
 
     /**
