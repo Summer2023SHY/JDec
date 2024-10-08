@@ -1484,9 +1484,9 @@ public class AutomataOperations {
                 }
                 logger.debug("Rebuilding system");
                 combinedSys = buildCombinedSystem(Gprime, Hprime);
-                H.removeAll(Hprime);
-                G.addAll(Hprime);
             }
+            H.removeAll(Hprime);
+            G.addAll(Hprime);
         }
         logger.info("Time taken: " + sw.getTime(TimeUnit.MILLISECONDS) + " ms");
         logger.info("Number of component checks: " + nComponentChecks);
