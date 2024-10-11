@@ -1180,6 +1180,8 @@ public class AutomataOperations {
             return compositeSpec.generateTwinPlant();
         }
         Automaton compositePlant = buildCompositeAutomaton(plants);
+        addSelfLoopsToDumpState(compositeSpec);
+        addSelfLoopsToDumpState(compositePlant);
         Automaton combinedSys = intersection(compositePlant.generateTwinPlant(), compositeSpec.generateTwinPlant());
         BitSet bSet = new BitSet();
         for (long stateId = 1; stateId <= combinedSys.nStates; stateId++) {
@@ -1218,6 +1220,15 @@ public class AutomataOperations {
             s.setLabel(Long.toString(s.getID()));
         }
         return automaton;
+    }
+
+    private static void addSelfLoopsToDumpState(Automaton automaton) {
+        if (automaton.stateExists(Automaton.DUMP_STATE_LABEL)) {
+            long dumpStateID = automaton.getStateID(Automaton.DUMP_STATE_LABEL);
+            for (Event e : automaton.getEvents()) {
+                automaton.addTransition(dumpStateID, e.getID(), dumpStateID);
+            }
+        }
     }
 
     private static Counterexample buildCounterexample(final Event event, final SubsetConstruction subsetConstruction) {
