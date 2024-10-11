@@ -1820,6 +1820,18 @@ public class Automaton implements Cloneable {
     }
 
     /**
+     * Check to see if a state with the specified label exists.
+     * 
+     * @param label a state label
+     * @return {@code true} if the state with the specified label
+     * 
+     * @since 2.1.0
+     **/
+    public boolean stateExists(String label) {
+        return getState(label) != null;
+    }
+
+    /**
      * Given the ID number of a state, get the state information.
      * 
      * @param id The unique identifier corresponding to the requested state
