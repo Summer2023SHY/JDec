@@ -1505,13 +1505,15 @@ public class AutomataOperations {
      */
     public static Automaton buildMonolithicSystem(Set<Automaton> plants, Set<Automaton> specs) {
         Automaton compositeSpec = buildCompositeAutomaton(specs);
+        Automaton compositeSpecTwinPlant = compositeSpec.generateTwinPlant();
         if (plants.isEmpty()) {
-            return compositeSpec.generateTwinPlant();
+            return compositeSpecTwinPlant;
         }
         Automaton compositePlant = buildCompositeAutomaton(plants);
-        addSelfLoopsToDumpState(compositeSpec);
-        addSelfLoopsToDumpState(compositePlant);
-        Automaton combinedSys = intersection(compositePlant.generateTwinPlant(), compositeSpec.generateTwinPlant());
+        Automaton compositePlantTwinPlant = compositePlant.generateTwinPlant();
+        addSelfLoopsToDumpState(compositeSpecTwinPlant);
+        addSelfLoopsToDumpState(compositePlantTwinPlant);
+        Automaton combinedSys = intersection(compositeSpecTwinPlant, compositePlantTwinPlant);
         BitSet bSet = new BitSet();
         for (long stateId = 1; stateId <= combinedSys.getNumberOfStates(); stateId++) {
             if (!combinedSys.stateExists(stateId))
@@ -1540,8 +1542,8 @@ public class AutomataOperations {
         if (automata.size() == 1) {
             return automata.iterator().next();
         }
-        return relabelStates(automata.parallelStream().reduce(AutomataOperations::intersection)
-                .orElseThrow(IllegalArgumentException::new));
+        return automata.parallelStream().reduce(AutomataOperations::intersection)
+                .orElseThrow(IllegalArgumentException::new);
     }
 
     private static <T extends Automaton> T relabelStates(T automaton) {
