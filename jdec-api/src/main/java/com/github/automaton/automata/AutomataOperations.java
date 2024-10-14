@@ -1483,7 +1483,8 @@ public class AutomataOperations {
                     return false;
                 }
                 logger.debug("Rebuilding system");
-                combinedSys = buildCombinedSystem(Gprime, Hprime);
+                combinedSys = buildMonolithicSystem(Gprime, Hprime);
+                logger.debug("New system: " + combinedSys.toJsonObject());
             }
             H.removeAll(Hprime);
             G.addAll(Hprime);
@@ -1493,7 +1494,16 @@ public class AutomataOperations {
         return true;
     }
 
-    private static Automaton buildCombinedSystem(Set<Automaton> plants, Set<Automaton> specs) {
+    /**
+     * Builds monolithic system with the specified system components.
+     * 
+     * @param plants set of plant components
+     * @param specs set of specification components
+     * @return the monolithic system
+     * 
+     * @since 2.1.0
+     */
+    public static Automaton buildMonolithicSystem(Set<Automaton> plants, Set<Automaton> specs) {
         Automaton compositeSpec = buildCompositeAutomaton(specs);
         if (plants.isEmpty()) {
             return compositeSpec.generateTwinPlant();
