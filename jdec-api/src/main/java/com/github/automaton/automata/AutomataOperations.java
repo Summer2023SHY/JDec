@@ -1558,6 +1558,7 @@ public class AutomataOperations {
             long dumpStateID = automaton.getStateID(Automaton.DUMP_STATE_LABEL);
             for (Event e : automaton.getEvents()) {
                 automaton.addTransition(dumpStateID, e.getID(), dumpStateID);
+                automaton.markTransitionAsBad(dumpStateID, e.getID(), dumpStateID);
             }
         }
     }
