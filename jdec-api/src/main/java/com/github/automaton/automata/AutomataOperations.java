@@ -466,6 +466,29 @@ public class AutomataOperations {
     }
 
     /**
+     * Generates the intersection of automata in the specified collection.
+     * 
+     * @param automata a collection of automata
+     * @return intersection of automata in the specified collection, or {@code null} if the specified collection is empty
+     * 
+     * @throws NullPointerException if the collection is {@code null}
+     * @throws IncompatibleAutomataException if the automata are incompatible
+     * 
+     * @since 2.1.0
+     */
+    public static Automaton intersection(Collection<Automaton> automata) {
+        Objects.requireNonNull(automata);
+        if (automata.isEmpty()) {
+            return null;
+        }
+        if (automata.size() == 1) {
+            return automata.iterator().next();
+        }
+        return automata.parallelStream().reduce(AutomataOperations::intersection)
+                .orElseThrow(IllegalArgumentException::new);
+    }
+
+    /**
      * Generates the union of the two specified automata.
      * 
      * @param first  the first automaton
