@@ -1810,6 +1810,7 @@ public class Automaton implements Cloneable {
         states.remove(stateID);
         if (initialState == stateID)
             initialState = 0;
+        nStates--;
         return true;
     }
 
