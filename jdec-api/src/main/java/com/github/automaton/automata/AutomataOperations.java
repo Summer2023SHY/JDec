@@ -818,7 +818,7 @@ public class AutomataOperations {
                     }
                 }
 
-                if (isUnconditionalViolation && !automaton.getState(t1.getTargetStateID()).getLabel().contains(Automaton.DUMP_STATE_LABEL)) {
+                if (isUnconditionalViolation) {
                     uStructure.addUnconditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
                     stateVector.setDisablementOf(combinedEvent.get(0));
                     boolean validConfig = false;
@@ -832,7 +832,7 @@ public class AutomataOperations {
                         stateVector.setIllegalConfigOf(combinedEvent.get(0));
                     }
                 }
-                if (isConditionalViolation && !automaton.getState(t1.getTargetStateID()).getLabel().contains(Automaton.DUMP_STATE_LABEL)) {
+                if (isConditionalViolation) {
 
                     uStructure.addConditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
                     stateVector.setEnablementOf(combinedEvent.get(0));
@@ -1487,7 +1487,7 @@ public class AutomataOperations {
                     nComponentChecks++;
                     for (int i = 0; i <= combinedSys.nControllers; i++) {
                         if (i == 0 || counterExample.getEvent().isControllable(i - 1)) {
-                            if (!M.recognizesWord(i, counterExample.getWords().get(i))) {
+                            if (!M.recognizesWord(counterExample.getWords().get(i))) {
                                 found = true;
                                 if (G.contains(M)) {
                                     Gprime.add(M);
@@ -1533,7 +1533,7 @@ public class AutomataOperations {
             return compositeSpecTwinPlant;
         }
         Automaton compositePlant = buildCompositeAutomaton(plants);
-        Automaton compositePlantTwinPlant = compositePlant.generateTwinPlant();
+        Automaton compositePlantTwinPlant = markAllTransitionsAsBad(compositePlant.generateTwinPlant());
         addSelfLoopsToDumpState(compositeSpecTwinPlant);
         addSelfLoopsToDumpState(compositePlantTwinPlant);
         Automaton combinedSys = intersection(compositeSpecTwinPlant, compositePlantTwinPlant);
@@ -1576,7 +1576,14 @@ public class AutomataOperations {
         return automaton;
     }
 
-    private static void addSelfLoopsToDumpState(Automaton automaton) {
+    private static <T extends Automaton> T markAllTransitionsAsBad(T automaton) {
+        for (TransitionData td : automaton.getAllTransitions()) {
+            automaton.markTransitionAsBad(td.initialStateID, td.eventID, td.targetStateID);
+        }
+        return automaton;
+    }
+
+    private static Automaton addSelfLoopsToDumpState(Automaton automaton) {
         if (automaton.stateExists(Automaton.DUMP_STATE_LABEL)) {
             long dumpStateID = automaton.getStateID(Automaton.DUMP_STATE_LABEL);
             for (Event e : automaton.getEvents()) {
@@ -1584,6 +1591,7 @@ public class AutomataOperations {
                 automaton.markTransitionAsBad(dumpStateID, e.getID(), dumpStateID);
             }
         }
+        return automaton;
     }
 
     private static Counterexample buildCounterexample(final Event event, final SubsetConstruction subsetConstruction) {
