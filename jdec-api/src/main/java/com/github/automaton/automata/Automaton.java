@@ -744,7 +744,7 @@ public class Automaton implements Cloneable {
                     }
                 }
 
-                if (isUnconditionalViolation && !getState(t1.getTargetStateID()).getLabel().contains(DUMP_STATE_LABEL)) {
+                if (isUnconditionalViolation) {
                     uStructure.addUnconditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
                     stateVector.setDisablementOf(combinedEvent.get(0));
                     boolean validConfig = false;
@@ -758,7 +758,7 @@ public class Automaton implements Cloneable {
                         stateVector.setIllegalConfigOf(combinedEvent.get(0));
                     }
                 }
-                if (isConditionalViolation && !getState(t1.getTargetStateID()).getLabel().contains(DUMP_STATE_LABEL)) {
+                if (isConditionalViolation) {
 
                     uStructure.addConditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
                     stateVector.setEnablementOf(combinedEvent.get(0));
