@@ -44,6 +44,7 @@ import com.github.automaton.io.input.*;
 import com.github.automaton.io.graphviz.AutomatonDotConverter;
 import com.github.automaton.io.json.AutomatonJsonFileAdapter;
 import com.github.automaton.io.legacy.*;
+import com.google.gson.GsonBuilder;
 import com.jthemedetecor.OsThemeDetector;
 
 import guru.nidi.graphviz.engine.Format;
@@ -371,6 +372,7 @@ public class JDec extends JFrame {
                 null,
                 "View in Browser[ANY_AUTOMATON]",
                 null,
+                "Show internal data[ANY_AUTOMATON]",
                 "Show event-specific view[U_STRUCTURE]"));
 
         // Standard operations menu
@@ -382,7 +384,9 @@ public class JDec extends JFrame {
                 "Generate Twin Plant[BASIC_AUTOMATON]",
                 null,
                 "Intersection[BASIC_AUTOMATON]",
-                "Union[BASIC_AUTOMATON]"));
+                "Union[BASIC_AUTOMATON]",
+                null,
+                "Add Self Loops[BASIC_AUTOMATON]"));
 
         // Special operations menu
         menuBar.add(createMenu("Special Operations",
@@ -403,7 +407,7 @@ public class JDec extends JFrame {
                 "Calculate Ambiguity Levels[BASIC_AUTOMATON]",
                 "Test Controllability[BASIC_AUTOMATON]",
                 null,
-                "Test Incremental Observability[BASIC_AUTOMATON]"));
+                "Incremental Observability->Generate Monolithic System[BASIC_AUTOMATON],Test Incremental Observability[BASIC_AUTOMATON]"));
 
         // Generate menu
         menuBar.add(createMenu("Generate",
@@ -2714,6 +2718,13 @@ public class JDec extends JFrame {
                     viewInBrowser();
                     break;
 
+                case "Show internal data": {
+                    TextPopup popup = new TextPopup(JDec.this, "Internal data");
+                    try (PrintStream popupStream = new PrintStream(popup.getOutputStream())) {
+                        new GsonBuilder().setPrettyPrinting().create().toJson(tab.automaton.toJsonObject(), popupStream);
+                    }
+                }
+
                 case "Show event-specific view":
                     new EventSpecificView((UStructure) tab.automaton);
                     break;
@@ -2817,6 +2828,22 @@ public class JDec extends JFrame {
                                 "Please ensure that both automata have the same number of controllers and that there are no incompatible events (meaning that events share the same name but have different properties).");
                     }
                 }
+                    break;
+
+                case "Add Self Loops": {
+                    try {
+                        var newAut = tab.automaton.clone();
+                        newAut.addSelfLoopsForInactiveEvents();
+                        createTab(newAut);
+                    } catch (IncompatibleAutomataException e) {
+                        logger.catching(e);
+                        temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we
+                                                              // can
+                                                              // re-use it
+                        displayErrorMessage("Operation Failed",
+                                "Please ensure that both automata have the same number of controllers and that there are no incompatible events (meaning that events share the same name but have different properties).");
+                    }
+                }
 
                     break;
 
@@ -2880,8 +2907,7 @@ public class JDec extends JFrame {
                         if (!askForConfirmation("Communications Already Exist",
                                 """
                                         This U-Structure appears to already have had communications added. Are you sure you want to proceed?
-                                        WARNING: This may result in duplicate communications."""
-                        ))
+                                        WARNING: This may result in duplicate communications."""))
                             break;
 
                     setBusyCursor(true);
@@ -3003,23 +3029,48 @@ public class JDec extends JFrame {
                                 JOptionPane.INFORMATION_MESSAGE);
                     break;
 
-                case "Test Incremental Observability":
-                    {
-                        IncrementalObsAutomataSelectionPrompt prompt = new IncrementalObsAutomataSelectionPrompt(JDec.this);
-                        prompt.setVisible(true);
-                        if (!prompt.userSelected())
-                            break;
-                        Set<Automaton> plants = prompt.getPlants(), specs = prompt.getSpecs();
-                        if (plants.isEmpty() || specs.isEmpty())
-                            displayMessage("Invalid selection", "Please try again.",
+                case "Generate Monolithic System": {
+                    IncrementalObsAutomataSelectionPrompt prompt = new IncrementalObsAutomataSelectionPrompt(JDec.this);
+                    prompt.setVisible(true);
+                    if (!prompt.userSelected())
+                        break;
+                    Set<Automaton> plants = prompt.getPlants(), specs = prompt.getSpecs();
+                    if (specs.isEmpty()) {
+                        displayMessage("Invalid selection", "Please try again.",
                                 JOptionPane.WARNING_MESSAGE);
-                        else if (AutomataOperations.testIncrementalObservability(plants, specs, prompt.getSelectedCounterexampleHeuristic(), prompt.getSelectedComponentHeuristic()))
-                            displayMessage("Passed Test", "The system is inference observable.",
-                                    JOptionPane.INFORMATION_MESSAGE);
-                        else
-                            displayMessage("Failed Test", "The system is not inference observable.",
-                                    JOptionPane.INFORMATION_MESSAGE);
+                        break;
                     }
+                    try {
+                        // Create new tab with the intersection
+                        createTab(AutomataOperations.buildMonolithicSystem(plants, specs));
+                    } catch (IncompatibleAutomataException e) {
+                        logger.catching(e);
+                        temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we
+                                                              // can
+                                                              // re-use it
+                        displayErrorMessage("Operation Failed",
+                                "Please ensure that both automata have the same number of controllers and that there are no incompatible events (meaning that events share the same name but have different properties).");
+                    }
+                }
+                    break;
+
+                case "Test Incremental Observability": {
+                    IncrementalObsAutomataSelectionPrompt prompt = new IncrementalObsAutomataSelectionPrompt(JDec.this);
+                    prompt.setVisible(true);
+                    if (!prompt.userSelected())
+                        break;
+                    Set<Automaton> plants = prompt.getPlants(), specs = prompt.getSpecs();
+                    if (plants.isEmpty() || specs.isEmpty())
+                        displayMessage("Invalid selection", "Please try again.",
+                                JOptionPane.WARNING_MESSAGE);
+                    else if (AutomataOperations.testIncrementalObservability(plants, specs,
+                            prompt.getSelectedCounterexampleHeuristic(), prompt.getSelectedComponentHeuristic()))
+                        displayMessage("Passed Test", "The system is inference observable.",
+                                JOptionPane.INFORMATION_MESSAGE);
+                    else
+                        displayMessage("Failed Test", "The system is not inference observable.",
+                                JOptionPane.INFORMATION_MESSAGE);
+                }
                     break;
 
                 case "Random Automaton":
