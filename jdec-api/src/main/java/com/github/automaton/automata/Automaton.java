@@ -25,20 +25,14 @@ package com.github.automaton.automata;
 import java.io.*;
 import java.math.*;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.function.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.collections4.IterableUtils;
-import org.apache.commons.collections4.ListValuedMap;
-import org.apache.commons.collections4.MultiMapUtils;
-import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.io.RandomAccessFileMode;
 import org.apache.commons.lang3.*;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.reflect.TypeUtils;
-import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.*;
 
