@@ -28,6 +28,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.collections4.ListValuedMap;
@@ -1809,7 +1810,7 @@ public class Automaton implements Cloneable {
     public boolean removeState(final long stateID) {
         if (!stateExists(stateID))
             return false;
-        List<TransitionData> tdToRemove = getAllTransitions().parallelStream().filter(td -> td.initialStateID == stateID || td.targetStateID == stateID).collect(Collectors.toList());
+        List<TransitionData> tdToRemove = getTransitionStream().filter(td -> td.initialStateID == stateID || td.targetStateID == stateID).collect(Collectors.toList());
         for (TransitionData td : tdToRemove)
             removeTransition(td);
         states.remove(stateID);
@@ -2248,23 +2249,18 @@ public class Automaton implements Cloneable {
 
         List<Event> inactiveEvents = new ArrayList<Event>(events);
 
-        for (State state : getStates())
-            for (Transition t : state.getTransitions())
-                inactiveEvents.remove(t.getEvent());
+        inactiveEvents.removeAll(getActiveEvents());
 
         return inactiveEvents;
     }
 
     /**
-     * Return the list of all active events.
+     * Returns the list of all active events.
      * 
-     * @implNote This is an expensive operation.
-     * @return The list of all active events
+     * @return the list of all active events
      **/
     public List<Event> getActiveEvents() {
-        List<Event> activeEvents = new ArrayList<Event>(events);
-        activeEvents.removeAll(getInactiveEvents());
-        return activeEvents;
+        return getTransitionStream().mapToInt(td -> td.eventID).distinct().mapToObj(this::getEvent).collect(Collectors.toList());
     }
 
     /**
@@ -2289,17 +2285,27 @@ public class Automaton implements Cloneable {
     }
 
     /**
+     * Generates the stream of all transitions in this automaton.
+     * 
+     * @return stream of all transitions in this automaton
+     * @since 2.1.0
+     */
+    Stream<TransitionData> getTransitionStream() {
+        return getStates().parallelStream().<TransitionData>mapMulti((state, consumer) -> {
+            for (Transition t : state.getTransitions()) {
+                consumer.accept(new TransitionData(state.getID(), t.getEvent().getID(), t.getTargetStateID()));
+            }
+        });
+    }
+
+    /**
      * Generates and returns the list of all transitions in this automaton.
      * 
      * @return the list of all transitions in this automaton
      * @since 2.0
      */
     List<TransitionData> getAllTransitions() {
-        return getStates().parallelStream().<TransitionData>mapMulti((state, consumer) -> {
-            for (Transition t : state.getTransitions()) {
-                consumer.accept(new TransitionData(state.getID(), t.getEvent().getID(), t.getTargetStateID()));
-            }
-        }).collect(Collectors.toList());
+        return getTransitionStream().collect(Collectors.toList());
     }
 
     /**
