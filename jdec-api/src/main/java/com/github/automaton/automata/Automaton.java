@@ -2184,7 +2184,7 @@ public class Automaton implements Cloneable {
             boolean nextStateFound = false;
             for (int i = 0; i < currState.getNumberOfTransitions() && !nextStateFound; i++) {
                 Transition t = currState.getTransition(i);
-                if (!isBadTransition(currState, t.getEvent(), getState(t.getTargetStateID())) && t.getEvent().getLabel().equals(eventLabel) && BooleanUtils.or(t.getEvent().isObservable())) {
+                if (!isBadTransition(currState, t.getEvent(), getState(t.getTargetStateID())) && t.getEvent().getLabel().equals(eventLabel) /* && BooleanUtils.or(t.getEvent().isObservable()) */) {
                     currState = getState(t.getTargetStateID());
                     nextStateFound = true;
                 }
