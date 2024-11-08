@@ -1485,9 +1485,19 @@ public class AutomataOperations {
                     var M = componentIterator.next();
                     logger.info("Current component: " + M);
                     nComponentChecks++;
-                    for (int i = 0; i <= combinedSys.nControllers; i++) {
-                        if (i == 0 || counterExample.getEvent().isControllable(i - 1)) {
-                            if (!M.recognizesWord(counterExample.getWords().get(i))) {
+                    if (G.contains(M) && !M.recognizesWord(counterExample.getWords().get(0).append(counterExample.getEvent().getLabel()))) {
+                        found = true;
+                        Gprime.add(M);
+                        break componentSearch;
+                    }
+                    if (H.contains(M) && !M.recognizesWord(counterExample.getWords().get(0))) {
+                        found = true;
+                        Hprime.add(M);
+                        break componentSearch;
+                    }
+                    for (int i = 1; !found && i <= combinedSys.nControllers; i++) {
+                        if (counterExample.getEvent().isControllable(i - 1)) {
+                            if (!M.recognizesWord(counterExample.getWords().get(i).append(counterExample.getEvent().getLabel()))) {
                                 found = true;
                                 if (G.contains(M)) {
                                     Gprime.add(M);
