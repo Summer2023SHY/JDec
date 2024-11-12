@@ -1158,7 +1158,7 @@ public class UStructure extends Automaton {
      * 
      * @param leastUpperBounds The set of all LUBs in the form of event vectors
      **/
-    private void generateLeastUpperBounds(Set<LabelVector> leastUpperBounds) {
+    private static void generateLeastUpperBounds(Set<LabelVector> leastUpperBounds) {
 
         /*
          * Continue to find LUBs using pairs of event vectors until there are no new
