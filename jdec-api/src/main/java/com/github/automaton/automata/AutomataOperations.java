@@ -1467,8 +1467,7 @@ public class AutomataOperations {
                         if (!enablementStates.contains(illegalConfig)) {
                             illegalConfig.setMarked(true);
                             var trim = uStructure.trim();
-                            SubsetConstruction subsetConstruction = trim.subsetConstruction(0);
-                            var counterExample = buildCounterexample(controllableEvent, subsetConstruction);
+                            var counterExample = buildCounterexample(controllableEvent, trim);
                             counterExamples.add(counterExample);
                             illegalConfig.setMarked(false);
                         }
@@ -1486,23 +1485,20 @@ public class AutomataOperations {
                     logger.info("Current component: " + M);
                     nComponentChecks++;
                     if (G.contains(M) && !M.recognizesWord(counterExample.getWords().get(0).append(counterExample.getEvent().getLabel()))) {
-                        found = true;
-                        Gprime.add(M);
+                        found = Gprime.add(M);
                         break componentSearch;
                     }
                     if (H.contains(M) && !M.recognizesWord(counterExample.getWords().get(0))) {
-                        found = true;
-                        Hprime.add(M);
+                        found = Hprime.add(M);
                         break componentSearch;
                     }
                     for (int i = 1; !found && i <= combinedSys.nControllers; i++) {
                         if (counterExample.getEvent().isControllable(i - 1)) {
                             if (!M.recognizesWord(i, counterExample.getWords().get(i).append(counterExample.getEvent().getLabel()))) {
-                                found = true;
                                 if (G.contains(M)) {
-                                    Gprime.add(M);
+                                    found = Gprime.add(M);
                                 } else {
-                                    Hprime.add(M);
+                                    found = Hprime.add(M);
                                 }
                                 break componentSearch;
                             }
@@ -1517,7 +1513,7 @@ public class AutomataOperations {
                 }
                 logger.debug("Rebuilding system");
                 combinedSys = buildMonolithicSystem(Gprime, Hprime);
-                logger.debug("New system: " + combinedSys.toJsonObject());
+                // logger.debug("New system: " + combinedSys.toJsonObject());
             }
             H.removeAll(Hprime);
             G.addAll(Hprime);
@@ -1604,31 +1600,31 @@ public class AutomataOperations {
         return automaton;
     }
 
-    private static Counterexample buildCounterexample(final Event event, final SubsetConstruction subsetConstruction) {
+    private static Counterexample buildCounterexample(final Event event, final UStructure trim) {
 
-        State currState = subsetConstruction.getState(subsetConstruction.initialState);
+        State currState = trim.getState(trim.initialState);
         Sequence seq = new Sequence(currState.getID());
 
         while (currState.getNumberOfTransitions() > 0) {
             Transition transition = currState.getTransition(0);
             seq = seq.append(transition.getEvent().getID(), transition.getTargetStateID());
-            currState = subsetConstruction.getState(transition.getTargetStateID());
+            currState = trim.getState(transition.getTargetStateID());
         }
 
         List<List<String>> temp = new ArrayList<>();
-        for (int i = 0; i <= subsetConstruction.nControllers; i++) {
+        for (int i = 0; i <= trim.nControllers; i++) {
             temp.add(new ArrayList<>());
         }
         for (int eventID : seq.getEventList()) {
-            Event e = subsetConstruction.getEvent(eventID);
+            Event e = trim.getEvent(eventID);
             LabelVector lv = e.getVector();
-            for (int i = 0; i <= subsetConstruction.nControllers; i++) {
+            for (int i = 0; i <= trim.nControllers; i++) {
                 temp.get(i).add(lv.getLabelAtIndex(i));
             }
         }
         List<Word> words = new ArrayList<>();
 
-        for (int i = 0; i <= subsetConstruction.nControllers; i++) {
+        for (int i = 0; i <= trim.nControllers; i++) {
             words.add(new Word(temp.get(i)));
         }
         return new Counterexample(event, words);
