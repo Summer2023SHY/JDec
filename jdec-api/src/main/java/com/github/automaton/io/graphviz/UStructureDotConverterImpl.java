@@ -52,6 +52,10 @@ class UStructureDotConverterImpl extends AbstractAutomatonDotConverter<UStructur
             combineAttributesInMap(map, createKey(data), Attributes.attrs(Color.BLUE, Color.BLUE.font()));
         }
 
+        for (TransitionData data : automaton.getInvalidCommunications()) {
+            combineAttributesInMap(map, createKey(data), Attributes.attrs(Style.DASHED, Color.PURPLE, Color.PURPLE.font()));
+        }
+
         for (TransitionData data : automaton.getNashCommunications()) {
             combineAttributesInMap(map, createKey(data), Attributes.attrs(Color.BLUE, Color.BLUE.font()));
         }
