@@ -197,6 +197,18 @@ public class LabelVector implements Iterable<String> {
     }
 
     /**
+     * Indicates whether a label vector has an "equal" label as this label vector
+     * 
+     * @param other a label vector
+     * @return {@code true} if this label vector has the same label as the argument
+     * 
+     * @since 2.1.0
+     */
+    public final boolean labelEquals(LabelVector other) {
+        return label.equals(other.label);
+    }
+
+    /**
      * Returns string representation of this label vector
      * 
      * @return string representation of this label vector

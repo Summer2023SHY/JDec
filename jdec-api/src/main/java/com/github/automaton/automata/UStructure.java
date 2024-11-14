@@ -221,7 +221,7 @@ public class UStructure extends Automaton {
                         // all
                         boolean found = false;
                         for (CommunicationLabelVector data : potentialCommunications)
-                            if (vector.equals((LabelVector) data)) {
+                            if (vector.labelEquals(data)) {
                                 uStructure.addPotentialCommunication(startingState.getID(), id,
                                         destinationState.getID(), data.roles);
                                 found = true;
