@@ -248,6 +248,13 @@ public class PrunedUStructure extends UStructure {
 
                 iterator.remove();
 
+                removeTransitionsWithEvent(id, unconditionalViolations);
+                removeTransitionsWithEvent(id, conditionalViolations);
+                removeTransitionsWithEvent(id, potentialCommunications);
+                removeTransitionsWithEvent(id, invalidCommunications);
+                removeTransitionsWithEvent(id, nashCommunications);
+                removeTransitionsWithEvent(id, disablementDecisions);
+
                 return true;
 
             }
@@ -256,6 +263,10 @@ public class PrunedUStructure extends UStructure {
 
         return false;
 
+    }
+
+    private void removeTransitionsWithEvent(int eventID, List<? extends TransitionData> list) {
+        list.removeIf(transition -> transition.eventID == eventID);
     }
 
     /**
