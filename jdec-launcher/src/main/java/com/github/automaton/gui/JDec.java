@@ -26,6 +26,7 @@ import javax.xml.transform.stream.*;
 
 import org.apache.batik.swing.JSVGCanvas;
 import org.apache.batik.swing.gvt.AbstractPanInteractor;
+import org.apache.commons.collections4.ListValuedMap;
 import org.apache.commons.collections4.properties.PropertiesFactory;
 import org.apache.commons.io.*;
 import org.apache.commons.lang3.*;
@@ -37,6 +38,7 @@ import org.w3c.dom.*;
 import org.xml.sax.*;
 
 import com.github.automaton.automata.*;
+import com.github.automaton.automata.Event;
 import com.github.automaton.gui.util.*;
 import com.github.automaton.gui.util.graphviz.GraphvizEngineInitializer;
 import com.github.automaton.io.AutomatonIOAdapter;
@@ -44,6 +46,7 @@ import com.github.automaton.io.input.*;
 import com.github.automaton.io.graphviz.AutomatonDotConverter;
 import com.github.automaton.io.json.AutomatonJsonFileAdapter;
 import com.github.automaton.io.legacy.*;
+import com.google.gson.*;
 import com.jthemedetecor.OsThemeDetector;
 
 import guru.nidi.graphviz.engine.Format;
@@ -402,6 +405,7 @@ public class JDec extends JFrame {
                 "Test Inference Observability[BASIC_AUTOMATON]",
                 "Calculate Ambiguity Levels[BASIC_AUTOMATON]",
                 "Test Controllability[BASIC_AUTOMATON]",
+                "Output Bipartite Graphs[BASIC_AUTOMATON]",
                 null,
                 "Test Incremental Observability[BASIC_AUTOMATON]"));
 
@@ -2880,8 +2884,7 @@ public class JDec extends JFrame {
                         if (!askForConfirmation("Communications Already Exist",
                                 """
                                         This U-Structure appears to already have had communications added. Are you sure you want to proceed?
-                                        WARNING: This may result in duplicate communications."""
-                        ))
+                                        WARNING: This may result in duplicate communications."""))
                             break;
 
                     setBusyCursor(true);
@@ -3003,23 +3006,119 @@ public class JDec extends JFrame {
                                 JOptionPane.INFORMATION_MESSAGE);
                     break;
 
-                case "Test Incremental Observability":
-                    {
-                        IncrementalObsAutomataSelectionPrompt prompt = new IncrementalObsAutomataSelectionPrompt(JDec.this);
-                        prompt.setVisible(true);
-                        if (!prompt.userSelected())
-                            break;
-                        Set<Automaton> plants = prompt.getPlants(), specs = prompt.getSpecs();
-                        if (plants.isEmpty() || specs.isEmpty())
-                            displayMessage("Invalid selection", "Please try again.",
-                                JOptionPane.WARNING_MESSAGE);
-                        else if (AutomataOperations.testIncrementalObservability(plants, specs))
-                            displayMessage("Passed Test", "The system is inference observable.",
-                                    JOptionPane.INFORMATION_MESSAGE);
-                        else
-                            displayMessage("Failed Test", "The system is not inference observable.",
-                                    JOptionPane.INFORMATION_MESSAGE);
+                case "Output Bipartite Graphs": {
+
+                    /* Set up the file chooser */
+
+                    JFileChooser fileChooser = new JFileChooser() {
+                        @Override
+                        protected JDialog createDialog(Component parent) {
+                            JDialog dialog = super.createDialog(JDec.this);
+                            dialog.setModal(true);
+                            return dialog;
+                        }
+
+                        @Override
+                        public void approveSelection() {
+                            // Overwrite protection
+                            // Adapted from https://stackoverflow.com/a/3729157
+                            if (getSelectedFile().exists() && getDialogType() == SAVE_DIALOG) {
+                                int result = JOptionPane.showConfirmDialog(this, "Selected file exists, overwrite?",
+                                        "Existing file", JOptionPane.YES_NO_OPTION);
+                                switch (result) {
+                                    case JOptionPane.YES_OPTION:
+                                        break;
+                                    case JOptionPane.CANCEL_OPTION:
+                                        cancelSelection();
+                                    case JOptionPane.NO_OPTION:
+                                    case JOptionPane.CLOSED_OPTION:
+                                        return;
+                                }
+                            }
+                            super.approveSelection();
+                        }
+                    };
+
+                    fileChooser.setDialogTitle("Output bipartite graph");
+
+                    /* Filter files */
+
+                    fileChooser.setAcceptAllFileFilterUsed(false);
+                    FileNameExtensionFilter jsonFilter = new FileNameExtensionFilter("JSON files",
+                            AutomatonJsonFileAdapter.EXTENSION);
+                    fileChooser.addChoosableFileFilter(jsonFilter);
+
+                    /* Begin at the most recently accessed directory */
+
+                    if (currentDirectory != null)
+                        fileChooser.setCurrentDirectory(currentDirectory);
+
+                    /* Prompt user to select a filename */
+
+                    int result = fileChooser.showSaveDialog(null);
+
+                    /* No file was selected */
+
+                    if (result != JFileChooser.APPROVE_OPTION || fileChooser.getSelectedFile() == null)
+                        return;
+
+                    FileNameExtensionFilter usedFilter = (FileNameExtensionFilter) fileChooser.getFileFilter();
+
+                    if (!FilenameUtils.isExtension(fileChooser.getSelectedFile().getName(),
+                            usedFilter.getExtensions())) {
+                        fileChooser.setSelectedFile(new File(
+                                fileChooser.getSelectedFile().getAbsolutePath()
+                                        + FilenameUtils.EXTENSION_SEPARATOR
+                                        + usedFilter.getExtensions()[0]));
                     }
+
+                    File dest = fileChooser.getSelectedFile();
+
+                    var graphs = AutomataOperations.generateBipartiteGraph(tab.automaton);
+                    JsonObject graphJsonObject = new JsonObject();
+                    for (var graphEntry : graphs.entrySet()) {
+                        Event graphEvent = graphEntry.getKey();
+                        ListValuedMap<State, Set<State>> graph = graphEntry.getValue();
+                        JsonObject graphJson = new JsonObject();
+                        for (var state : graph.keySet()) {
+                            var edges = graph.get(state);
+                            JsonArray edgesJson = new JsonArray();
+                            for (int controller = 0; controller < edges.size(); controller++) {
+                                JsonArray edgeJson = new JsonArray();
+                                for (State s : edges.get(controller)) {
+                                    edgeJson.add(s.getLabel());
+                                }
+                                edgesJson.add(edgeJson);
+                            }
+                            graphJson.add(state.getLabel(), edgesJson);
+                        }
+                        graphJsonObject.add(graphEvent.getLabel(), graphJson);
+                    }
+                    dest.delete();
+                    try (Writer writer = IOUtils.buffer(new FileWriter(dest))) {
+                        new Gson().toJson(graphJsonObject, writer);
+                    } catch (IOException ioe) {
+                        throw new UncheckedIOException(ioe);
+                    }
+                }
+                    break;
+
+                case "Test Incremental Observability": {
+                    IncrementalObsAutomataSelectionPrompt prompt = new IncrementalObsAutomataSelectionPrompt(JDec.this);
+                    prompt.setVisible(true);
+                    if (!prompt.userSelected())
+                        break;
+                    Set<Automaton> plants = prompt.getPlants(), specs = prompt.getSpecs();
+                    if (plants.isEmpty() || specs.isEmpty())
+                        displayMessage("Invalid selection", "Please try again.",
+                                JOptionPane.WARNING_MESSAGE);
+                    else if (AutomataOperations.testIncrementalObservability(plants, specs))
+                        displayMessage("Passed Test", "The system is inference observable.",
+                                JOptionPane.INFORMATION_MESSAGE);
+                    else
+                        displayMessage("Failed Test", "The system is not inference observable.",
+                                JOptionPane.INFORMATION_MESSAGE);
+                }
                     break;
 
                 case "Random Automaton":
