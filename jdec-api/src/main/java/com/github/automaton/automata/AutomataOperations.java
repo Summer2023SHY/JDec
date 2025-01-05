@@ -923,6 +923,78 @@ public class AutomataOperations {
     }
 
     /**
+     * Tests whether the specified system is inference observable.
+     * 
+     * @param automaton a system
+     * @param showInferenceLevel whether the level of inferencing required should be returned
+     * @return whether the system is inference observable and the level of inferencing required
+     * 
+     * @throws NullPointerException if {@code automaton} is {@code null}
+     */
+    @SuppressWarnings("unchecked")
+    public static Map<Event, ListValuedMap<State, Set<State>>> generateBipartiteGraph(final Automaton automaton) {
+
+        Objects.requireNonNull(automaton);
+
+        // Take the U-Structure, then relabel states as needed
+        UStructure uStructure = automaton.synchronizedComposition().relabelConfigurationStates();
+
+        Automaton[] determinizations = new Automaton[automaton.nControllers];
+        List<List<State>>[] indistinguishableStatesArr = new List[automaton.nControllers];
+        Map<Event, MutableInt> nValues = new HashMap<>();
+
+        IntStream.range(0, automaton.nControllers).parallel().forEach(i -> {
+            determinizations[i] = uStructure.subsetConstruction(i + 1);
+            indistinguishableStatesArr[i] = new ArrayList<>();
+            for (State indistinguishableStates : determinizations[i].states.values()) {
+                indistinguishableStatesArr[i]
+                        .add(uStructure.getStatesFromLabel(new LabelVector(indistinguishableStates.getLabel())));
+            }
+        });
+
+        Map<Event, ListValuedMap<State, Set<State>>> bipartiteGraphs = new HashMap<>();
+
+        for (Event e : IterableUtils.filteredIterable(
+                automaton.events, event -> BooleanUtils.or(event.isControllable()))) {
+
+            ListValuedMap<State, Set<State>> neighborMap = MultiMapUtils.newListValuedHashMap();
+            /* Initialize value of N for this event (e) */
+            nValues.put(e, new MutableInt(-1));
+
+            Set<State> disablementStates = Collections.unmodifiableSet(uStructure.getDisablementStates(e.getLabel()));
+            Set<State> enablementStates = Collections.unmodifiableSet(uStructure.getEnablementStates(e.getLabel()));
+
+            /*
+             * Initialize set of adjacent vertices
+             */
+            for (int i = 0; i < automaton.nControllers; i++) {
+                for (State controlState : SetUtils.union(enablementStates, disablementStates)) {
+                    neighborMap.put(controlState, e.isControllable(i) ? new LinkedHashSet<>() : Collections.emptySet());
+                }
+            }
+
+            /* Build edges of bipartite graph */
+            IntStream.range(0, automaton.nControllers).parallel().forEach(i -> {
+                List<List<State>> indistinguishableStateLists = indistinguishableStatesArr[i];
+                for (List<State> indistinguishableStateList : indistinguishableStateLists) {
+                    for (State disablementState : disablementStates) {
+                        for (State enablementState : enablementStates) {
+                            if (indistinguishableStateList.contains(disablementState)
+                                    && indistinguishableStateList.contains(enablementState)
+                                    && e.isControllable(i)) {
+                                neighborMap.get(disablementState).get(i).add(enablementState);
+                                neighborMap.get(enablementState).get(i).add(disablementState);
+                            }
+                        }
+                    }
+                }
+            });
+            bipartiteGraphs.put(e, neighborMap);
+        }
+        return bipartiteGraphs;
+    }
+
+    /**
      * Generates the language recognized by the specified automaton.
      * 
      * @param automaton an automaton
