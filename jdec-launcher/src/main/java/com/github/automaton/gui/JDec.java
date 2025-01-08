@@ -40,6 +40,7 @@ import org.xml.sax.*;
 import com.github.automaton.automata.*;
 import com.github.automaton.automata.Event;
 import com.github.automaton.gui.util.*;
+import com.github.automaton.gui.util.bipartite.BipartiteGraphExport;
 import com.github.automaton.gui.util.graphviz.GraphvizEngineInitializer;
 import com.github.automaton.io.AutomatonIOAdapter;
 import com.github.automaton.io.input.*;
@@ -3074,26 +3075,7 @@ public class JDec extends JFrame {
 
                     File dest = fileChooser.getSelectedFile();
 
-                    var graphs = AutomataOperations.generateBipartiteGraph(tab.automaton);
-                    JsonObject graphJsonObject = new JsonObject();
-                    for (var graphEntry : graphs.entrySet()) {
-                        Event graphEvent = graphEntry.getKey();
-                        ListValuedMap<State, Set<State>> graph = graphEntry.getValue();
-                        JsonObject graphJson = new JsonObject();
-                        for (var state : graph.keySet()) {
-                            var edges = graph.get(state);
-                            JsonArray edgesJson = new JsonArray();
-                            for (int controller = 0; controller < edges.size(); controller++) {
-                                JsonArray edgeJson = new JsonArray();
-                                for (State s : edges.get(controller)) {
-                                    edgeJson.add(s.getLabel());
-                                }
-                                edgesJson.add(edgeJson);
-                            }
-                            graphJson.add(state.getLabel(), edgesJson);
-                        }
-                        graphJsonObject.add(graphEvent.getLabel(), graphJson);
-                    }
+                    JsonObject graphJsonObject = BipartiteGraphExport.generateBipartiteGraphJson(tab.automaton);
                     dest.delete();
                     try (Writer writer = IOUtils.buffer(new FileWriter(dest))) {
                         new Gson().toJson(graphJsonObject, writer);
