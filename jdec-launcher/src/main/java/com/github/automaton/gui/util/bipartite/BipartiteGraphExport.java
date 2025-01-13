@@ -5,14 +5,20 @@
 
 package com.github.automaton.gui.util.bipartite;
 
-import java.util.Objects;
-import java.util.Set;
+import static guru.nidi.graphviz.model.Factory.*;
 
+import java.util.*;
+
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.collections4.ListValuedMap;
 
 import com.github.automaton.automata.*;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+
+import guru.nidi.graphviz.attribute.*;
+import guru.nidi.graphviz.engine.*;
+import guru.nidi.graphviz.model.*;
 
 /**
  * Provides methods for exporting bipartite graph(s) that are used for
@@ -59,5 +65,123 @@ public class BipartiteGraphExport {
             graphJsonObject.add(graphEvent.getLabel(), graphJson);
         }
         return graphJsonObject;
+    }
+
+    private static class BipartiteGraphEdge {
+        public final String startLabel;
+        public final String endLabel;
+        public final String edgeLabel;
+
+        BipartiteGraphEdge(String startLabel, String endLabel, String edgeLabel) {
+            if (startLabel.compareTo(endLabel) > 0) {
+                this.startLabel = endLabel;
+                this.endLabel = startLabel;
+            }
+            else if (startLabel.compareTo(endLabel) < 0) {
+                this.startLabel = startLabel;
+                this.endLabel = endLabel;
+            }
+            else {
+                this.startLabel = this.endLabel = startLabel;
+            }
+            this.edgeLabel = edgeLabel;
+        }
+
+        BipartiteGraphEdge(State startState, State endState, String edgeLabel) {
+            this(startState.getLabel(), endState.getLabel(), edgeLabel);
+        }
+
+        @Override
+        public int hashCode() {
+            String[] startEndLabels = { this.startLabel, this.endLabel };
+            Arrays.sort(startEndLabels);
+            return Objects.hash(startEndLabels[0], startEndLabels[1], this.edgeLabel);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            else if (obj instanceof BipartiteGraphEdge otherEdge) {
+                if (!Objects.equals(this.edgeLabel, otherEdge.edgeLabel))
+                    return false;
+                else if (Objects.equals(this.startLabel, otherEdge.startLabel)
+                        && Objects.equals(this.endLabel, otherEdge.endLabel))
+                    return true;
+                else
+                    return (Objects.equals(this.startLabel, otherEdge.endLabel)
+                            && Objects.equals(this.endLabel, otherEdge.startLabel));
+            } else
+                return false;
+        }
+    }
+
+    public static MutableGraph generateBipartiteGraph(Automaton automaton, String eventLabel) {
+        Objects.requireNonNull(automaton);
+        Objects.requireNonNull(eventLabel);
+        if (eventLabel.isEmpty())
+            throw new IllegalArgumentException();
+        final var event = automaton.getEvent(eventLabel);
+        if (!BooleanUtils.or(event.isControllable()))
+            throw new IllegalArgumentException(String.format("\"%s\" is not controllable", eventLabel));
+        var graphs = AutomataOperations.generateBipartiteGraph(automaton);
+        var graph = graphs.get(event);
+
+        MutableGraph g = mutGraph().setDirected(false);
+        g.graphAttrs().add(
+                GraphAttr.splines(GraphAttr.SplineMode.LINE),
+                Rank.sep(2));
+        var cluster1 = mutGraph().setCluster(true).setName("enablement");
+        var cluster2 = mutGraph().setCluster(true).setName("disablement");
+
+        Set<BipartiteGraphEdge> edgeSet = new HashSet<>();
+        Map<String, MutableNode> nodeMap = Collections.synchronizedMap(new HashMap<>());
+
+        graph.keySet().forEach(state -> {
+            MutableNode node = mutNode(state.getLabel());
+            nodeMap.put(state.getLabel(), node);
+            if (state.isIllegalConfiguration()) {
+                node.add(Shape.DOUBLE_CIRCLE);
+            }
+            if (state.isEnablementState()) {
+                node.add(Color.GREEN3);
+                cluster1.add(node);
+            } else if (state.isDisablementState()) {
+                node.add(Color.RED);
+                cluster2.add(node);
+            }
+        });
+
+        for (var keyState : graph.keySet()) {
+            var allNeighborStates = graph.get(keyState);
+            for (int i = 0; i < allNeighborStates.size(); i++) {
+                var neighborStates = allNeighborStates.get(i);
+                for (State targetState : neighborStates) {
+                    var workingEdge = new BipartiteGraphEdge(keyState, targetState, Integer.toString(i + 1));
+                    if (!edgeSet.contains(workingEdge)) {
+                        edgeSet.add(workingEdge);
+                    }
+                }
+                
+            }
+        }
+
+        for (var edge : edgeSet) {
+            var sourceNode = nodeMap.get(edge.startLabel);
+            var targetNode = nodeMap.get(edge.endLabel);
+            targetNode.addTo(g);
+            Link l = sourceNode.linkTo(targetNode);
+            l.add(Label.of((edge.edgeLabel) + 1));
+            sourceNode.links().add(l);
+            //g.links().add(l);
+        }
+
+        cluster1.graphAttrs().add(Label.of("enablement"));
+        cluster2.graphAttrs().add(Label.of("disablement"));
+
+        g.add(cluster1);
+        g.add(cluster2);
+
+        return g;
     }
 }

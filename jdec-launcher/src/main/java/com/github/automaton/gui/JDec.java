@@ -51,6 +51,7 @@ import com.google.gson.*;
 import com.jthemedetecor.OsThemeDetector;
 
 import guru.nidi.graphviz.engine.Format;
+import guru.nidi.graphviz.engine.Graphviz;
 
 /**
  * A Java application for Decentralized Control. This application has been
@@ -3076,11 +3077,17 @@ public class JDec extends JFrame {
                     File dest = fileChooser.getSelectedFile();
 
                     JsonObject graphJsonObject = BipartiteGraphExport.generateBipartiteGraphJson(tab.automaton);
+                    var graph = BipartiteGraphExport.generateBipartiteGraph(tab.automaton, "sigma");
                     dest.delete();
                     try (Writer writer = IOUtils.buffer(new FileWriter(dest))) {
                         new Gson().toJson(graphJsonObject, writer);
                     } catch (IOException ioe) {
                         throw new UncheckedIOException(ioe);
+                    }
+                    try {
+                        Graphviz.fromGraph(graph).render(Format.DOT).toFile(new File("graph_out.dot"));
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
                     }
                 }
                     break;
