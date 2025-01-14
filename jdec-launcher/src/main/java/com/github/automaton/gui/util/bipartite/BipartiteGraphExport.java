@@ -171,7 +171,7 @@ public class BipartiteGraphExport {
             var targetNode = nodeMap.get(edge.endLabel);
             targetNode.addTo(g);
             Link l = sourceNode.linkTo(targetNode);
-            l.add(Label.of((edge.edgeLabel) + 1));
+            l.add(Label.of((edge.edgeLabel)));
             sourceNode.links().add(l);
             //g.links().add(l);
         }
