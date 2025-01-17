@@ -29,6 +29,10 @@ import guru.nidi.graphviz.model.*;
  */
 public class BipartiteGraphExport {
 
+    public static final List<Color> COLORS = List.of(
+        Color.ORANGE, Color.BLUE, Color.INDIGO, Color.MAGENTA, Color.VIOLET, Color.rgb(0xDC9C34)
+    );
+
     /** Private constructor */
     private BipartiteGraphExport() {
     }
@@ -171,7 +175,8 @@ public class BipartiteGraphExport {
             var targetNode = nodeMap.get(edge.endLabel);
             targetNode.addTo(g);
             Link l = sourceNode.linkTo(targetNode);
-            l.add(Label.of((edge.edgeLabel)));
+            //l.add(Label.of((edge.edgeLabel)));
+            l.add(COLORS.get(Integer.parseInt(edge.edgeLabel) - 1));
             sourceNode.links().add(l);
             //g.links().add(l);
         }
