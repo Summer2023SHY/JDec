@@ -146,6 +146,8 @@ public class BipartiteGraphExport {
             nodeMap.put(state.getLabel(), node);
             if (state.isIllegalConfiguration()) {
                 node.add(Shape.DOUBLE_CIRCLE);
+            } else {
+                node.add(Shape.CIRCLE);
             }
             if (state.isEnablementState()) {
                 node.add(Color.GREEN3);
