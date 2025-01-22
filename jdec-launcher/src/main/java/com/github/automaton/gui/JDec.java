@@ -408,6 +408,7 @@ public class JDec extends JFrame {
                 "Calculate Ambiguity Levels[BASIC_AUTOMATON]",
                 "Test Controllability[BASIC_AUTOMATON]",
                 "Output Bipartite Graphs[BASIC_AUTOMATON]",
+                "Output Bipartite Graph Image[BASIC_AUTOMATON]",
                 null,
                 "Test Incremental Observability[BASIC_AUTOMATON]"));
 
@@ -3084,13 +3085,90 @@ public class JDec extends JFrame {
                     } catch (IOException ioe) {
                         throw new UncheckedIOException(ioe);
                     }
-                    try {
-                        Graphviz.fromGraph(graph).render(Format.DOT).toFile(new File("graph_out.dot"));
-                    } catch (IOException e) {
-                        throw new UncheckedIOException(e);
-                    }
                 }
                     break;
+
+                case "Output Bipartite Graph Image": {
+
+                        /* Set up the file chooser */
+    
+                        JFileChooser fileChooser = new JFileChooser() {
+                            @Override
+                            protected JDialog createDialog(Component parent) {
+                                JDialog dialog = super.createDialog(JDec.this);
+                                dialog.setModal(true);
+                                return dialog;
+                            }
+    
+                            @Override
+                            public void approveSelection() {
+                                // Overwrite protection
+                                // Adapted from https://stackoverflow.com/a/3729157
+                                if (getSelectedFile().exists() && getDialogType() == SAVE_DIALOG) {
+                                    int result = JOptionPane.showConfirmDialog(this, "Selected file exists, overwrite?",
+                                            "Existing file", JOptionPane.YES_NO_OPTION);
+                                    switch (result) {
+                                        case JOptionPane.YES_OPTION:
+                                            break;
+                                        case JOptionPane.CANCEL_OPTION:
+                                            cancelSelection();
+                                        case JOptionPane.NO_OPTION:
+                                        case JOptionPane.CLOSED_OPTION:
+                                            return;
+                                    }
+                                }
+                                super.approveSelection();
+                            }
+                        };
+    
+                        fileChooser.setDialogTitle("Output bipartite graph image");
+    
+                        /* Filter files */
+    
+                        fileChooser.setAcceptAllFileFilterUsed(false);
+                        FileNameExtensionFilter dotFilter = new FileNameExtensionFilter("dot files",
+                                "dot");
+                        FileNameExtensionFilter pngFilter = new FileNameExtensionFilter("png files",
+                                "png");
+                        fileChooser.addChoosableFileFilter(dotFilter);
+                        fileChooser.addChoosableFileFilter(pngFilter);
+    
+                        /* Begin at the most recently accessed directory */
+    
+                        if (currentDirectory != null)
+                            fileChooser.setCurrentDirectory(currentDirectory);
+    
+                        /* Prompt user to select a filename */
+    
+                        int result = fileChooser.showSaveDialog(null);
+    
+                        /* No file was selected */
+    
+                        if (result != JFileChooser.APPROVE_OPTION || fileChooser.getSelectedFile() == null)
+                            return;
+    
+                        FileNameExtensionFilter usedFilter = (FileNameExtensionFilter) fileChooser.getFileFilter();
+    
+                        if (!FilenameUtils.isExtension(fileChooser.getSelectedFile().getName(),
+                                usedFilter.getExtensions())) {
+                            fileChooser.setSelectedFile(new File(
+                                    fileChooser.getSelectedFile().getAbsolutePath()
+                                            + FilenameUtils.EXTENSION_SEPARATOR
+                                            + usedFilter.getExtensions()[0]));
+                        }
+    
+                        File dest = fileChooser.getSelectedFile();
+    
+                        var graph = BipartiteGraphExport.generateBipartiteGraph(tab.automaton, "sigma");
+                        dest.delete();
+                        try {
+                            Format format = Objects.equals(usedFilter.getExtensions()[0], "dot") ? Format.DOT : Format.PNG;
+                            Graphviz.fromGraph(graph).render(format).toFile(dest);
+                        } catch (IOException e) {
+                            throw new UncheckedIOException(e);
+                        }
+                    }
+                        break;
 
                 case "Test Incremental Observability": {
                     IncrementalObsAutomataSelectionPrompt prompt = new IncrementalObsAutomataSelectionPrompt(JDec.this);
