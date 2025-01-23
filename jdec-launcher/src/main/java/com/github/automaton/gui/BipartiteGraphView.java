@@ -42,10 +42,10 @@ import guru.nidi.graphviz.engine.Graphviz;
 class BipartiteGraphView extends JFrame {
 
     private JSVGCanvas canvas;
-    private UStructure uStructure;
+    private Automaton automaton;
 
-    BipartiteGraphView(UStructure uStructure) {
-        this.uStructure = uStructure;
+    BipartiteGraphView(Automaton automaton) {
+        this.automaton = automaton;
         setTitle("Show Bipartite Graphs");
         setMinimumSize(new Dimension(JDec.PREFERRED_DIALOG_WIDTH, JDec.PREFERRED_DIALOG_HEIGHT));
         buildComponents();
@@ -74,7 +74,7 @@ class BipartiteGraphView extends JFrame {
         container.add(eventInputLabel, c);
 
         // Controller input spinner
-        JComboBox<String> comboBox = new JComboBox<>(getControllableEventLabels().toArray(String[]::new));
+        JComboBox<String> comboBox = new JComboBox<>(getControllableEventLabels(automaton).toArray(String[]::new));
         c.insets = new Insets(0, 0, 0, 0);
         c.ipady = 0;
         c.weightx = 0.5;
@@ -148,9 +148,8 @@ class BipartiteGraphView extends JFrame {
         setVisible(true);
     }
 
-    static Automaton getAutomaton() {
-        JDec.AutomatonTab tab = JDec.instance().getCurrentTab();
-        return tab.automaton;
+    Automaton getAutomaton() {
+        return this.automaton;
     }
 
     /**
@@ -158,9 +157,7 @@ class BipartiteGraphView extends JFrame {
      * 
      * @return the set of controllable event labels
      */
-    static Set<String> getControllableEventLabels() {
-        JDec.AutomatonTab tab = JDec.instance().getCurrentTab();
-        Automaton automaton = getAutomaton();
+    static Set<String> getControllableEventLabels(Automaton automaton) {
         return automaton.getEvents().parallelStream().filter(event -> BooleanUtils.or(event.isControllable()))
                 .map(event -> event.getLabel()).collect(Collectors.toSet());
     }
