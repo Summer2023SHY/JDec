@@ -24,7 +24,7 @@ public class OverwriteCheckingFileChooser extends JFileChooser {
     public void approveSelection() {
         // Overwrite protection
         // Adapted from https://stackoverflow.com/a/3729157
-        if (getSelectedFile().exists() && getDialogType() == SAVE_DIALOG) {
+        if (getDialogType() == SAVE_DIALOG && getSelectedFile().exists()) {
             int result = JOptionPane.showConfirmDialog(this, "Selected file exists, overwrite?",
                     "Existing file", JOptionPane.YES_NO_OPTION);
             switch (result) {
