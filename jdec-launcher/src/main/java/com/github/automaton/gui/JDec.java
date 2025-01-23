@@ -1547,32 +1547,12 @@ public class JDec extends JFrame {
 
         /* Set up the file chooser */
 
-        JFileChooser fileChooser = new JFileChooser() {
+        JFileChooser fileChooser = new OverwriteCheckingFileChooser() {
             @Override
             protected JDialog createDialog(Component parent) {
                 JDialog dialog = super.createDialog(JDec.this);
                 dialog.setModal(true);
                 return dialog;
-            }
-
-            @Override
-            public void approveSelection() {
-                // Overwrite protection
-                // Adapted from https://stackoverflow.com/a/3729157
-                if (getSelectedFile().exists() && getDialogType() == SAVE_DIALOG) {
-                    int result = JOptionPane.showConfirmDialog(this, "Selected file exists, overwrite?",
-                            "Existing file", JOptionPane.YES_NO_OPTION);
-                    switch (result) {
-                        case JOptionPane.YES_OPTION:
-                            break;
-                        case JOptionPane.CANCEL_OPTION:
-                            cancelSelection();
-                        case JOptionPane.NO_OPTION:
-                        case JOptionPane.CLOSED_OPTION:
-                            return;
-                    }
-                }
-                super.approveSelection();
             }
         };
 
@@ -2603,32 +2583,12 @@ public class JDec extends JFrame {
                 case "Export...":
 
                 {
-                    JFileChooser fileChooser = new JFileChooser() {
+                    JFileChooser fileChooser = new OverwriteCheckingFileChooser() {
                         @Override
                         protected JDialog createDialog(Component parent) {
                             JDialog dialog = super.createDialog(JDec.this);
                             dialog.setModal(true);
                             return dialog;
-                        }
-
-                        @Override
-                        public void approveSelection() {
-                            // Overwrite protection
-                            // Adapted from https://stackoverflow.com/a/3729157
-                            if (getSelectedFile().exists() && getDialogType() == SAVE_DIALOG) {
-                                int result = JOptionPane.showConfirmDialog(this, "Selected file exists, overwrite?",
-                                        "Existing file", JOptionPane.YES_NO_OPTION);
-                                switch (result) {
-                                    case JOptionPane.YES_OPTION:
-                                        break;
-                                    case JOptionPane.CANCEL_OPTION:
-                                        cancelSelection();
-                                    case JOptionPane.NO_OPTION:
-                                    case JOptionPane.CLOSED_OPTION:
-                                        return;
-                                }
-                            }
-                            super.approveSelection();
                         }
                     };
                     fileChooser.setAcceptAllFileFilterUsed(false);
@@ -3013,32 +2973,12 @@ public class JDec extends JFrame {
 
                     /* Set up the file chooser */
 
-                    JFileChooser fileChooser = new JFileChooser() {
+                    JFileChooser fileChooser = new OverwriteCheckingFileChooser() {
                         @Override
                         protected JDialog createDialog(Component parent) {
                             JDialog dialog = super.createDialog(JDec.this);
                             dialog.setModal(true);
                             return dialog;
-                        }
-
-                        @Override
-                        public void approveSelection() {
-                            // Overwrite protection
-                            // Adapted from https://stackoverflow.com/a/3729157
-                            if (getSelectedFile().exists() && getDialogType() == SAVE_DIALOG) {
-                                int result = JOptionPane.showConfirmDialog(this, "Selected file exists, overwrite?",
-                                        "Existing file", JOptionPane.YES_NO_OPTION);
-                                switch (result) {
-                                    case JOptionPane.YES_OPTION:
-                                        break;
-                                    case JOptionPane.CANCEL_OPTION:
-                                        cancelSelection();
-                                    case JOptionPane.NO_OPTION:
-                                    case JOptionPane.CLOSED_OPTION:
-                                        return;
-                                }
-                            }
-                            super.approveSelection();
                         }
                     };
 
@@ -3092,32 +3032,12 @@ public class JDec extends JFrame {
 
                         /* Set up the file chooser */
     
-                        JFileChooser fileChooser = new JFileChooser() {
+                        JFileChooser fileChooser = new OverwriteCheckingFileChooser() {
                             @Override
                             protected JDialog createDialog(Component parent) {
                                 JDialog dialog = super.createDialog(JDec.this);
                                 dialog.setModal(true);
                                 return dialog;
-                            }
-    
-                            @Override
-                            public void approveSelection() {
-                                // Overwrite protection
-                                // Adapted from https://stackoverflow.com/a/3729157
-                                if (getSelectedFile().exists() && getDialogType() == SAVE_DIALOG) {
-                                    int result = JOptionPane.showConfirmDialog(this, "Selected file exists, overwrite?",
-                                            "Existing file", JOptionPane.YES_NO_OPTION);
-                                    switch (result) {
-                                        case JOptionPane.YES_OPTION:
-                                            break;
-                                        case JOptionPane.CANCEL_OPTION:
-                                            cancelSelection();
-                                        case JOptionPane.NO_OPTION:
-                                        case JOptionPane.CLOSED_OPTION:
-                                            return;
-                                    }
-                                }
-                                super.approveSelection();
                             }
                         };
     
