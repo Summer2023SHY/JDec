@@ -152,7 +152,7 @@ public class JDec extends JFrame {
 
     // Miscellaneous
     /** The current directory */
-    private File currentDirectory = SystemUtils.getUserDir();
+    File currentDirectory = SystemUtils.getUserDir();
     /** Index for temporary files */
     private AtomicInteger temporaryFileIndex = new AtomicInteger(1);
     /** Special message to display when no tabs are open */
