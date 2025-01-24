@@ -78,14 +78,14 @@ class BipartiteGraphView extends JFrame {
         container.add(eventInputLabel, c);
 
         // Controller input spinner
-        JComboBox<String> comboBox = new JComboBox<>(getControllableEventLabels(automaton).toArray(String[]::new));
+        eventComboBox = new JComboBox<>(getControllableEventLabels(automaton).toArray(String[]::new));
         c.insets = new Insets(0, 0, 0, 0);
         c.ipady = 0;
         c.weightx = 0.5;
         c.weighty = 0.0;
         c.gridx = 1;
         c.gridy = 0;
-        container.add(comboBox, c);
+        container.add(eventComboBox, c);
 
         JButton submitButton = new JButton("Submit");
         submitButton.addActionListener(e -> {
