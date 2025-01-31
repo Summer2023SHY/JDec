@@ -6,6 +6,7 @@
 package com.github.automaton.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -47,11 +48,13 @@ class BipartiteGraphView extends JFrame {
     private JSVGCanvas canvas;
     private Automaton automaton;
     private JComboBox<String> eventComboBox;
+    private ColorSelection[] colorSelections;
 
     BipartiteGraphView(Automaton automaton) {
         this.automaton = automaton;
         setTitle("Show Bipartite Graphs");
         setMinimumSize(new Dimension(JDec.PREFERRED_DIALOG_WIDTH, JDec.PREFERRED_DIALOG_HEIGHT));
+        colorSelections = new ColorSelection[this.automaton.getNumberOfControllers()];
         buildComponents();
     }
 
@@ -91,7 +94,8 @@ class BipartiteGraphView extends JFrame {
         submitButton.addActionListener(e -> {
             try {
                 String eventLabel = getSelectedEventLabel();
-                var graph = BipartiteGraphExport.generateBipartiteGraph(getAutomaton(), eventLabel);
+                var graph = BipartiteGraphExport.generateBipartiteGraph(getAutomaton(), eventLabel,
+                        getSelectedColors());
                 File targetTempFile = File.createTempFile("bipartite_graph_",
                         FilenameUtils.EXTENSION_SEPARATOR_STR + Format.SVG.fileExtension);
                 Graphviz.fromGraph(graph).render(Format.SVG).toFile(targetTempFile);
@@ -158,7 +162,8 @@ class BipartiteGraphView extends JFrame {
 
                 File dest = fileChooser.getSelectedFile();
 
-                var graph = BipartiteGraphExport.generateBipartiteGraph(this.automaton, getSelectedEventLabel());
+                var graph = BipartiteGraphExport.generateBipartiteGraph(this.automaton, getSelectedEventLabel(),
+                        getSelectedColors());
                 dest.delete();
                 Format format = Objects.equals(usedFilter.getExtensions()[0], "dot") ? Format.DOT : Format.PNG;
                 Graphviz.fromGraph(graph).render(format).toFile(dest);
@@ -203,7 +208,20 @@ class BipartiteGraphView extends JFrame {
                 action.actionPerformed(null);
         });
 
+        Container container2 = new Container();
+        container2.setLayout(new GridBagLayout());
+        GridBagConstraints c2 = new GridBagConstraints();
+        c2.fill = GridBagConstraints.HORIZONTAL;
+        for (int i = 0; i < colorSelections.length; i++) {
+            colorSelections[i] = new ColorSelection(i + 1);
+            c2.gridy = i;
+            container2.add(colorSelections[i], c2);
+        }
+        c2.gridy++;
+        container2.add(exportButton, c2);
+
         add(container, BorderLayout.NORTH);
+        add(container2, BorderLayout.WEST);
         add(canvas, BorderLayout.CENTER);
 
         // Pack things in nicely
@@ -215,6 +233,54 @@ class BipartiteGraphView extends JFrame {
 
         // Show screen
         setVisible(true);
+    }
+
+    private List<guru.nidi.graphviz.attribute.Color> getSelectedColors() {
+        var colorSelectionList = Arrays.asList(colorSelections);
+        return colorSelectionList.stream().map(colorSelection -> colorSelection.getSelectedColor().orElse(Color.BLACK))
+                .map(color -> convert(color)).toList();
+    }
+
+    static guru.nidi.graphviz.attribute.Color convert(java.awt.Color color) {
+        return guru.nidi.graphviz.attribute.Color.rgb(color.getRed(), color.getGreen(), color.getBlue());
+    }
+
+    private class ColorSelection extends JComponent {
+        private int controller;
+        private JLabel label;
+        private JButton button;
+        private boolean colorSet = false;
+
+        ColorSelection(int controller) {
+            if (controller < 0) {
+                throw new IllegalArgumentException();
+            }
+            setLayout(new GridBagLayout());
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = GridBagConstraints.RELATIVE;
+            c.weightx = 1d;
+            c.fill = GridBagConstraints.BOTH;
+            c.anchor = GridBagConstraints.WEST;
+            this.controller = controller;
+            this.label = new JLabel(String.format("Controller #%d", this.controller));
+            this.button = new JButton(Integer.toString(this.controller));
+            add(label, c);
+            add(button, c);
+            button.addActionListener(e -> {
+                Color newColor = JColorChooser.showDialog(BipartiteGraphView.this, "Select color", Color.white);
+                if (newColor == null) {
+                    return;
+                }
+                colorSet = true;
+                button.setBackground(newColor);
+            });
+            pack();
+        }
+
+        Optional<Color> getSelectedColor() {
+            return colorSet ? Optional.of(button.getBackground()) : Optional.empty();
+        }
+
     }
 
     Automaton getAutomaton() {

@@ -121,6 +121,10 @@ public class BipartiteGraphExport {
     }
 
     public static MutableGraph generateBipartiteGraph(Automaton automaton, String eventLabel) {
+        return generateBipartiteGraph(automaton, eventLabel, COLORS);
+    }
+
+    public static MutableGraph generateBipartiteGraph(Automaton automaton, String eventLabel, List<Color> colors) {
         Objects.requireNonNull(automaton);
         Objects.requireNonNull(eventLabel);
         if (eventLabel.isEmpty())
@@ -178,7 +182,7 @@ public class BipartiteGraphExport {
             targetNode.addTo(g);
             Link l = sourceNode.linkTo(targetNode);
             //l.add(Label.of((edge.edgeLabel)));
-            l.add(COLORS.get(Integer.parseInt(edge.edgeLabel) - 1));
+            l.add(colors.get(Integer.parseInt(edge.edgeLabel) - 1));
             sourceNode.links().add(l);
             //g.links().add(l);
         }
