@@ -51,6 +51,7 @@ import com.google.gson.*;
 import com.jthemedetecor.OsThemeDetector;
 
 import guru.nidi.graphviz.engine.Format;
+import guru.nidi.graphviz.engine.Graphviz;
 
 /**
  * A Java application for Decentralized Control. This application has been
@@ -151,7 +152,7 @@ public class JDec extends JFrame {
 
     // Miscellaneous
     /** The current directory */
-    private File currentDirectory = SystemUtils.getUserDir();
+    File currentDirectory = SystemUtils.getUserDir();
     /** Index for temporary files */
     private AtomicInteger temporaryFileIndex = new AtomicInteger(1);
     /** Special message to display when no tabs are open */
@@ -407,6 +408,7 @@ public class JDec extends JFrame {
                 "Calculate Ambiguity Levels[BASIC_AUTOMATON]",
                 "Test Controllability[BASIC_AUTOMATON]",
                 "Output Bipartite Graphs[BASIC_AUTOMATON]",
+                "Output Bipartite Graph Image[BASIC_AUTOMATON]",
                 null,
                 "Test Incremental Observability[BASIC_AUTOMATON]"));
 
@@ -1545,32 +1547,12 @@ public class JDec extends JFrame {
 
         /* Set up the file chooser */
 
-        JFileChooser fileChooser = new JFileChooser() {
+        JFileChooser fileChooser = new OverwriteCheckingFileChooser() {
             @Override
             protected JDialog createDialog(Component parent) {
                 JDialog dialog = super.createDialog(JDec.this);
                 dialog.setModal(true);
                 return dialog;
-            }
-
-            @Override
-            public void approveSelection() {
-                // Overwrite protection
-                // Adapted from https://stackoverflow.com/a/3729157
-                if (getSelectedFile().exists() && getDialogType() == SAVE_DIALOG) {
-                    int result = JOptionPane.showConfirmDialog(this, "Selected file exists, overwrite?",
-                            "Existing file", JOptionPane.YES_NO_OPTION);
-                    switch (result) {
-                        case JOptionPane.YES_OPTION:
-                            break;
-                        case JOptionPane.CANCEL_OPTION:
-                            cancelSelection();
-                        case JOptionPane.NO_OPTION:
-                        case JOptionPane.CLOSED_OPTION:
-                            return;
-                    }
-                }
-                super.approveSelection();
             }
         };
 
@@ -2601,32 +2583,12 @@ public class JDec extends JFrame {
                 case "Export...":
 
                 {
-                    JFileChooser fileChooser = new JFileChooser() {
+                    JFileChooser fileChooser = new OverwriteCheckingFileChooser() {
                         @Override
                         protected JDialog createDialog(Component parent) {
                             JDialog dialog = super.createDialog(JDec.this);
                             dialog.setModal(true);
                             return dialog;
-                        }
-
-                        @Override
-                        public void approveSelection() {
-                            // Overwrite protection
-                            // Adapted from https://stackoverflow.com/a/3729157
-                            if (getSelectedFile().exists() && getDialogType() == SAVE_DIALOG) {
-                                int result = JOptionPane.showConfirmDialog(this, "Selected file exists, overwrite?",
-                                        "Existing file", JOptionPane.YES_NO_OPTION);
-                                switch (result) {
-                                    case JOptionPane.YES_OPTION:
-                                        break;
-                                    case JOptionPane.CANCEL_OPTION:
-                                        cancelSelection();
-                                    case JOptionPane.NO_OPTION:
-                                    case JOptionPane.CLOSED_OPTION:
-                                        return;
-                                }
-                            }
-                            super.approveSelection();
                         }
                     };
                     fileChooser.setAcceptAllFileFilterUsed(false);
@@ -3011,32 +2973,12 @@ public class JDec extends JFrame {
 
                     /* Set up the file chooser */
 
-                    JFileChooser fileChooser = new JFileChooser() {
+                    JFileChooser fileChooser = new OverwriteCheckingFileChooser() {
                         @Override
                         protected JDialog createDialog(Component parent) {
                             JDialog dialog = super.createDialog(JDec.this);
                             dialog.setModal(true);
                             return dialog;
-                        }
-
-                        @Override
-                        public void approveSelection() {
-                            // Overwrite protection
-                            // Adapted from https://stackoverflow.com/a/3729157
-                            if (getSelectedFile().exists() && getDialogType() == SAVE_DIALOG) {
-                                int result = JOptionPane.showConfirmDialog(this, "Selected file exists, overwrite?",
-                                        "Existing file", JOptionPane.YES_NO_OPTION);
-                                switch (result) {
-                                    case JOptionPane.YES_OPTION:
-                                        break;
-                                    case JOptionPane.CANCEL_OPTION:
-                                        cancelSelection();
-                                    case JOptionPane.NO_OPTION:
-                                    case JOptionPane.CLOSED_OPTION:
-                                        return;
-                                }
-                            }
-                            super.approveSelection();
                         }
                     };
 
@@ -3076,6 +3018,7 @@ public class JDec extends JFrame {
                     File dest = fileChooser.getSelectedFile();
 
                     JsonObject graphJsonObject = BipartiteGraphExport.generateBipartiteGraphJson(tab.automaton);
+                    var graph = BipartiteGraphExport.generateBipartiteGraph(tab.automaton, "sigma");
                     dest.delete();
                     try (Writer writer = IOUtils.buffer(new FileWriter(dest))) {
                         new Gson().toJson(graphJsonObject, writer);
@@ -3084,6 +3027,12 @@ public class JDec extends JFrame {
                     }
                 }
                     break;
+
+                case "Output Bipartite Graph Image": {
+
+                        new BipartiteGraphView(tab.automaton);
+                    }
+                        break;
 
                 case "Test Incremental Observability": {
                     IncrementalObsAutomataSelectionPrompt prompt = new IncrementalObsAutomataSelectionPrompt(JDec.this);
