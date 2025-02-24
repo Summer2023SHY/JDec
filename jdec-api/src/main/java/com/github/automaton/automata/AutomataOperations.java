@@ -1068,7 +1068,7 @@ public class AutomataOperations {
 
             State state = automaton.getState(s);
 
-            long id = twinPlant.addState(state.getLabel(), !state.isMarked(), s == automaton.initialState);
+            long id = twinPlant.addState(state.getLabel(), state.isMarked(), s == automaton.initialState);
 
             // Try to add transitions for each event
             for (Event e : automaton.getEvents()) {
