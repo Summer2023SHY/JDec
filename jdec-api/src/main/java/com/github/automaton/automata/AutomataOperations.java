@@ -448,9 +448,9 @@ public class AutomataOperations {
                                 second);
                         int eventID = automaton.addTransition(newStateID, t1.getEvent().getLabel(), targetID);
 
-                        // Mark as bad transition if both of them are bad
+                        // Mark as bad transition if either of them are bad
                         if (first.isBadTransition(id1, t1.getEvent().getID(), t1.getTargetStateID())
-                                && second.isBadTransition(id2, t2.getEvent().getID(), t2.getTargetStateID()))
+                                || second.isBadTransition(id2, t2.getEvent().getID(), t2.getTargetStateID()))
                             automaton.markTransitionAsBad(newStateID, eventID, targetID);
 
                     }
