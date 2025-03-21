@@ -896,7 +896,7 @@ public class AutomataOperations {
                                 neighborMap.get(v).get(i).clear();
                                 vDist.get(i).add(v);
                                 ambLevels.get(e).get(v).set(i,
-                                        /* Math.min(ambLevels.get(e).get(v).get(i), */ infLevel/* ) */);
+                                        /* Math.min(ambLevels.get(e).get(v).get(i), */ -1/* ) */);
                             }
                         }
                     }
@@ -908,7 +908,7 @@ public class AutomataOperations {
                 List<Integer> ambLevelList = ambLevels.get(e).get(state);
                 for (int i = 0; i < automaton.nControllers; i++) {
                     if (e.isControllable(i))
-                        retList.add(new AmbiguityData(state, e, i + 1, enablementStates.contains(state),
+                        retList.add(new AmbiguityData(state, e, i + 1, flipControl(enablementStates.contains(state), ambLevelList.get(i)),
                                 ambLevelList.get(i)));
                 }
             });
@@ -920,6 +920,11 @@ public class AutomataOperations {
 
         return retList;
 
+    }
+
+    private static boolean flipControl(boolean orig, int round) {
+        if (round >= 0) return orig;
+        else return !orig;
     }
 
     /**
