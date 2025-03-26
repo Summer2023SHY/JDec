@@ -892,11 +892,6 @@ public class AutomataOperations {
 
     }
 
-    private static boolean flipControl(boolean orig, int round) {
-        if (round >= 0) return orig;
-        else return !orig;
-    }
-
     /**
      * Tests whether the specified system is inference observable.
      * 
