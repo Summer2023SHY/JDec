@@ -2960,7 +2960,7 @@ public class JDec extends JFrame {
                                 setBusyCursor(false);
                                 currTab.remove(label);
                                 if (ambList.isEmpty()) {
-                                    displayMessage("Local Control Decisions", "Local control decisions cannot be determined in " + choice + " framework.",
+                                    displayMessage("Local Control Decisions", "There is no local control solution for this system in the " + choice + " framework.",
                                     JOptionPane.INFORMATION_MESSAGE);
                                     return;
                                 }
