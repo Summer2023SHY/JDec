@@ -863,17 +863,16 @@ public class AutomataOperations {
                 for (State v : prevDist) {
                     for (int i = 0; i < automaton.nControllers; i++) {
                         if (e.isControllable(i)) {
-                            boolean cleaned = false;
-                            for (State vPrime : neighborMap.get(v).get(i)) {
-                                cleaned = true;
-                                neighborMap.get(vPrime).get(i).remove(v);
-                                if (neighborMap.get(vPrime).get(i).isEmpty() && !vDist.get(i).contains(vPrime)) {
-                                    currDist.add(vPrime);
-                                    retList.add(new AmbiguityData(vPrime, e, i + 1, (infLevel % 2 == 1) ^ enablement, infLevel));
+                            var neighborStates = neighborMap.get(v).get(i);
+                            if (!neighborStates.isEmpty()) {
+                                for (State vPrime : neighborStates) {
+                                    neighborMap.get(vPrime).get(i).remove(v);
+                                    if (neighborMap.get(vPrime).get(i).isEmpty() && !vDist.get(i).contains(vPrime)) {
+                                        currDist.add(vPrime);
+                                        retList.add(new AmbiguityData(vPrime, e, i + 1, (infLevel % 2 == 1) ^ enablement, infLevel));
+                                    }
                                 }
-                            }
-                            if (cleaned) {
-                                neighborMap.get(v).get(i).clear();
+                                neighborStates.clear();
                                 vDist.get(i).add(v);
                                 retList.add(new AmbiguityData(v, e, i + 1, (infLevel % 2 == 1) ^ enablement, infLevel));
                             }
