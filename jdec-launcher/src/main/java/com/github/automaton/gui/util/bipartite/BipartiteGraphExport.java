@@ -139,8 +139,6 @@ public class BipartiteGraphExport {
         g.graphAttrs().add(
                 GraphAttr.splines(GraphAttr.SplineMode.LINE),
                 Rank.sep(2));
-        var cluster1 = mutGraph().setCluster(true).setName("enablement");
-        var cluster2 = mutGraph().setCluster(true).setName("disablement");
 
         Set<BipartiteGraphEdge> edgeSet = new HashSet<>();
         Map<String, MutableNode> nodeMap = Collections.synchronizedMap(new HashMap<>());
@@ -155,10 +153,10 @@ public class BipartiteGraphExport {
             }
             if (state.isEnablementState()) {
                 node.add(Color.GREEN3);
-                cluster1.add(node);
+                g.add(node);
             } else if (state.isDisablementState()) {
                 node.add(Color.RED);
-                cluster2.add(node);
+                g.add(node);
             }
         });
 
@@ -186,12 +184,6 @@ public class BipartiteGraphExport {
             sourceNode.links().add(l);
             //g.links().add(l);
         }
-
-        cluster1.graphAttrs().add(Label.of("enablement"));
-        cluster2.graphAttrs().add(Label.of("disablement"));
-
-        g.add(cluster1);
-        g.add(cluster2);
 
         return g;
     }
