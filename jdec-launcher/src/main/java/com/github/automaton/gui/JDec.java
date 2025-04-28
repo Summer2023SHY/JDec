@@ -405,7 +405,7 @@ public class JDec extends JFrame {
                 "Show control configurations[U_STRUCTURE]",
                 null,
                 "Test Inference Observability[BASIC_AUTOMATON]",
-                "Calculate Ambiguity Levels[BASIC_AUTOMATON]",
+                "Generate local control decisions[BASIC_AUTOMATON]",
                 "Test Controllability[BASIC_AUTOMATON]",
                 "Output Bipartite Graphs[BASIC_AUTOMATON]",
                 "Output Bipartite Graph Image[BASIC_AUTOMATON]",
@@ -2939,20 +2939,32 @@ public class JDec extends JFrame {
                     testInferenceObservability(tab);
                     break;
 
-                case "Calculate Ambiguity Levels": {
+                case "Generate local control decisions": {
                     AutomatonTab currTab = tab;
+                    String[] frameworks = {"Enable by default (EBD)", "Disable by default (DBD)"};
+                    var choice = (String) JOptionPane.showInputDialog(
+                        JDec.this, "Select control framework", "Select control framework", JOptionPane.PLAIN_MESSAGE,
+                        null, frameworks, frameworks[0]
+                    );
+                    if (choice == null) return;
+                    boolean enablementSelected = Objects.equals(frameworks[0], choice);
                     Thread observabilityThread = new Thread(
                             () -> {
                                 JLabel label = new JLabel("Running observability test", SwingConstants.CENTER);
                                 currTab.add(label, BorderLayout.SOUTH);
                                 setBusyCursor(true);
                                 currTab.nUsingThreads.incrementAndGet();
-                                var ambList = currTab.automaton.calculateAmbiguityLevels();
+                                var ambList = AutomataOperations.generateLocalControlDecisions(currTab.automaton, enablementSelected);
                                 currTab.nUsingThreads.decrementAndGet();
                                 tabbedPane.setSelectedComponent(currTab);
                                 setBusyCursor(false);
                                 currTab.remove(label);
-                                new AmbiguityLevelOutput(JDec.this, "Ambiguity Levels", ambList);
+                                if (ambList.isEmpty()) {
+                                    displayMessage("Local Control Decisions", "There is no local control solution for this system in the " + choice + " framework.",
+                                    JOptionPane.INFORMATION_MESSAGE);
+                                    return;
+                                }
+                                new AmbiguityLevelOutput(JDec.this, "Local Control Decisions", ambList);
                             },
                             FilenameUtils.removeExtension(currTab.ioAdapter.getFile().getName())
                                     + " - Observability Test");

@@ -767,6 +767,13 @@ public class AutomataOperations {
     @SuppressWarnings("unchecked")
     public static List<AmbiguityData> calculateAmbiguityLevels(final Automaton automaton) {
 
+        return generateLocalControlDecisions(automaton, false);
+
+    }
+
+    @SuppressWarnings("unchecked")
+    public static List<AmbiguityData> generateLocalControlDecisions(final Automaton automaton, boolean enablement) {
+
         Objects.requireNonNull(automaton);
 
         StopWatch sw = StopWatch.createStarted();
@@ -792,9 +799,6 @@ public class AutomataOperations {
             }
         });
 
-        // Setup global ambiguity level storage
-        Map<Event, ListValuedMap<State, Integer>> ambLevels = new LinkedHashMap<>();
-
         List<AmbiguityData> retList = Collections.synchronizedList(new ArrayList<>());
 
         for (Event e : IterableUtils.filteredIterable(
@@ -806,16 +810,12 @@ public class AutomataOperations {
             Set<State> enablementStates = Collections.unmodifiableSet(uStructure.getEnablementStates(e.getLabel()));
             Set<State> controlStates = SetUtils.union(enablementStates, disablementStates);
 
-            // Setup ambiguity level store for current event
-            ambLevels.put(e, MultiMapUtils.newListValuedHashMap());
-
             /*
              * Initialize set of adjacent vertices and ambiguity levels
              */
             for (int i = 0; i < automaton.nControllers; i++) {
                 for (State controlState : controlStates) {
                     neighborMap.put(controlState, e.isControllable(i) ? new LinkedHashSet<>() : Collections.emptySet());
-                    ambLevels.get(e).put(controlState, e.isControllable(i) ? Integer.MAX_VALUE : -1);
                 }
             }
 
@@ -845,9 +845,9 @@ public class AutomataOperations {
 
             for (State v : neighborMap.keySet()) {
                 for (int i = 0; i < automaton.nControllers; i++) {
-                    if (e.isControllable(i) && neighborMap.get(v).get(i).isEmpty()) {
+                    if (e.isControllable(i) && neighborMap.get(v).get(i).isEmpty() && (enablement ^ v.isDisablementStateOf(e.getLabel()))) {
+                        retList.add(new AmbiguityData(v, e, i + 1, enablement, infLevel));
                         vDist.get(i).add(v);
-                        ambLevels.get(e).get(v).set(i, infLevel);
                     }
                 }
             }
@@ -860,58 +860,27 @@ public class AutomataOperations {
             while (infLevel <= obsResult.getRight().getAsInt()) {
                 Set<State> currDist = new LinkedHashSet<>();
                 infLevel += 1;
-                logger.printf(Level.DEBUG, "infLevel = %d", infLevel);
-                logger.printf(Level.DEBUG, "prevDist = %s", prevDist.toString());
-                if (logger.isDebugEnabled()) {
-                    logger.debug("neighborMap");
-                    for (State s : neighborMap.keySet()) {
-                        logger.debug("\tState " + s);
-                        List<Set<State>> neighborsList = neighborMap.get(s);
-                        for (int i = 0; i < neighborsList.size(); i++) {
-                            logger.printf(Level.DEBUG, "\t\t%d: %s", i + 1, neighborsList.get(i));
-                        }
-                    }
-                }
                 for (State v : prevDist) {
-                    logger.printf(Level.TRACE, "\tv = (%s)", v.getLabel());
                     for (int i = 0; i < automaton.nControllers; i++) {
-                        logger.printf(Level.TRACE, "\t\tController %d", i);
-                        logger.printf(Level.TRACE, "\t\tNeighbors = %s", neighborMap.get(v).get(i).toString());
                         if (e.isControllable(i)) {
-                            if (neighborMap.get(v).get(i).isEmpty()) {
-                                if (!vDist.get(i).contains(v)) {
-                                    vDist.get(i).add(v);
-                                    currDist.add(v);
-                                    ambLevels.get(e).get(v).set(i, infLevel);
-                                }
-                            } else {
-                                for (State vPrime : neighborMap.get(v).get(i)) {
+                            var neighborStates = neighborMap.get(v).get(i);
+                            if (!neighborStates.isEmpty()) {
+                                for (State vPrime : neighborStates) {
                                     neighborMap.get(vPrime).get(i).remove(v);
                                     if (neighborMap.get(vPrime).get(i).isEmpty() && !vDist.get(i).contains(vPrime)) {
-                                        vDist.get(i).add(vPrime);
                                         currDist.add(vPrime);
-                                        ambLevels.get(e).get(vPrime).set(i, infLevel);
+                                        retList.add(new AmbiguityData(vPrime, e, i + 1, (infLevel % 2 == 1) ^ enablement, infLevel));
                                     }
                                 }
-                                neighborMap.get(v).get(i).clear();
+                                neighborStates.clear();
                                 vDist.get(i).add(v);
-                                ambLevels.get(e).get(v).set(i,
-                                        /* Math.min(ambLevels.get(e).get(v).get(i), */ infLevel/* ) */);
+                                retList.add(new AmbiguityData(v, e, i + 1, (infLevel % 2 == 1) ^ enablement, infLevel));
                             }
                         }
                     }
                 }
                 prevDist = currDist;
             }
-
-            ambLevels.get(e).keySet().stream().parallel().forEach(state -> {
-                List<Integer> ambLevelList = ambLevels.get(e).get(state);
-                for (int i = 0; i < automaton.nControllers; i++) {
-                    if (e.isControllable(i))
-                        retList.add(new AmbiguityData(state, e, i + 1, enablementStates.contains(state),
-                                ambLevelList.get(i)));
-                }
-            });
         }
 
         long timeTaken = sw.getTime(TimeUnit.MILLISECONDS);
@@ -941,7 +910,6 @@ public class AutomataOperations {
 
         Automaton[] determinizations = new Automaton[automaton.nControllers];
         List<List<State>>[] indistinguishableStatesArr = new List[automaton.nControllers];
-        Map<Event, MutableInt> nValues = new HashMap<>();
 
         IntStream.range(0, automaton.nControllers).parallel().forEach(i -> {
             determinizations[i] = uStructure.subsetConstruction(i + 1);
@@ -958,8 +926,6 @@ public class AutomataOperations {
                 automaton.events, event -> BooleanUtils.or(event.isControllable()))) {
 
             ListValuedMap<State, Set<State>> neighborMap = MultiMapUtils.newListValuedHashMap();
-            /* Initialize value of N for this event (e) */
-            nValues.put(e, new MutableInt(-1));
 
             Set<State> disablementStates = Collections.unmodifiableSet(uStructure.getDisablementStates(e.getLabel()));
             Set<State> enablementStates = Collections.unmodifiableSet(uStructure.getEnablementStates(e.getLabel()));

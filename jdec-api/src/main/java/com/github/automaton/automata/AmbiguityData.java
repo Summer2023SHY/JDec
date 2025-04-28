@@ -45,7 +45,7 @@ public record AmbiguityData(State state, Event event, int controller, boolean is
         }
         this.controller = controller;
         this.isEnablement = isEnablement;
-        if (ambLevel < 0) {
+        if (ambLevel < -1) {
             throw new IllegalArgumentException("Invalid ambiguity level: " + ambLevel);
         }
         this.ambLevel = ambLevel;
