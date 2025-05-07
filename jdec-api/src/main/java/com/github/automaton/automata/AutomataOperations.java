@@ -625,6 +625,290 @@ public class AutomataOperations {
     }
 
     /**
+     * Apply the synchronized composition algorithm to an automaton to produce the
+     * U-Structure.
+     * 
+     * @param automaton an automaton
+     * @return The U-Structure
+     * 
+     * @throws NoInitialStateException  if there was no starting state
+     * @throws NullPointerException if argument is {@code null}
+     * @throws OperationFailedException if something else went wrong
+     * 
+     * @since 2.1.0
+     **/
+    public static UStructure synchronizedComposition(Automaton automaton) {
+
+        Objects.requireNonNull(automaton);
+
+        // Error checking
+        if (automaton.getState(automaton.initialState) == null) {
+            throw new NoInitialStateException("No starting state");
+        }
+
+        /* Setup */
+
+        boolean containsDumpState = automaton.getState(Automaton.DUMP_STATE_LABEL) != null;
+
+        Deque<StateVector> stack = new ArrayDeque<StateVector>();
+        Set<StateVector> valuesInStack = new HashSet<StateVector>();
+        UStructure uStructure = new UStructure(automaton.getNumberOfControllers());
+
+        /* Add initial state to the stack */
+
+        { // The only reason this is inside a scope is so that variable names could be
+          // re-used more cleanly
+            List<State> listOfInitialStates = new ArrayList<State>();
+            State startingState = automaton.getState(automaton.getInitialStateID());
+
+            // Create list of initial IDs and build the label
+            for (int i = 0; i <= automaton.getNumberOfControllers(); i++) {
+                listOfInitialStates.add(startingState);
+            }
+
+            StateVector initialStateVector = new StateVector(listOfInitialStates, automaton.getNumberOfStates());
+            stack.push(initialStateVector);
+            valuesInStack.add(initialStateVector);
+
+            uStructure.addStateAt(initialStateVector, true);
+
+        }
+
+        /* Continue until the stack is empty */
+
+        while (stack.size() > 0) {
+
+            StateVector stateVector = stack.pop();
+            valuesInStack.remove(stateVector);
+
+            // Get list of IDs and states
+            List<State> listOfStates = stateVector.getStates();
+            List<Long> listOfIDs = new ArrayList<Long>();
+            for (State s : listOfStates)
+                listOfIDs.add(s.getID());
+
+            // For each transition in the system automaton
+            outer: for (Transition t1 : listOfStates.get(0).getTransitions()) {
+
+                Event e = t1.getEvent();
+
+                List<State> targetStates = new ArrayList<State>();
+                State currTargetState = automaton.getState(t1.getTargetStateID());
+                targetStates.add(currTargetState);
+
+                List<String> combinedEvent = new ArrayList<>();
+                combinedEvent.add(e.getLabel());
+
+                // Determine observable and controllable properties for this event vector
+                boolean[] observable = new boolean[automaton.getNumberOfControllers()];
+                boolean[] controllable = new boolean[automaton.getNumberOfControllers()];
+
+                // For each controller
+                for (int i = 0; i < automaton.getNumberOfControllers(); i++) {
+
+                    // Observable events by this controller
+                    if (e.isObservable(i)) {
+
+                        observable[i] = true;
+
+                        // If the event is observable, but not possible at this current time, then we
+                        // can skip this altogether
+                        State target = null;
+                        for (Transition t2 : listOfStates.get(i + 1).getTransitions())
+                            if (t2.getEvent().equals(e)) {
+                                target = automaton.getState(t2.getTargetStateID());
+                            }
+                        if (target == null)
+                            continue outer;
+
+                        combinedEvent.add(e.getLabel());
+                        targetStates.add(target);
+
+                        if (e.isControllable(i)) {
+
+                            controllable[i] = true;
+
+                        }
+
+                    // Unobservable events by this controller
+                    } else {
+                        combinedEvent.add(Event.EPSILON);
+                        targetStates.add(listOfStates.get(i + 1));
+                    }
+
+                } // for i
+
+                LabelVector eventLabelVector = new LabelVector(combinedEvent);
+
+                StateVector targetStateVector = new StateVector(targetStates, automaton.getNumberOfStates());
+
+                boolean isConditionalViolation = false, isUnconditionalViolation = false;
+
+                /* Check control configurations */
+                if (automaton.transitionExists(listOfIDs.get(0), e.getID(), targetStates.get(0).getID()) && BooleanUtils.or(e.isControllable())) {
+                    if (automaton.getBadTransitions().contains(new TransitionData(listOfIDs.get(0), e.getID(), targetStates.get(0).getID())))
+                        isUnconditionalViolation = true;
+                    else
+                        isConditionalViolation = true;
+                }
+                controlCheck: for (int i = 1; i < listOfIDs.size() && (isConditionalViolation || isUnconditionalViolation); i++) {
+                    String eventLabel = eventLabelVector.getLabelAtIndex(i);
+                    if ((listOfIDs.get(i) == targetStates.get(i).getID()) && (Objects.equals(eventLabel, Event.EPSILON)))
+                        continue controlCheck;
+                    else if (!automaton.transitionExists(listOfIDs.get(i), automaton.getEvent(eventLabel).getID(), targetStates.get(i).getID())) {
+                        isUnconditionalViolation = isConditionalViolation = false;
+                    }
+                }
+
+                // Add event
+                uStructure.addEventIfNonExisting(eventLabelVector, observable, controllable);
+
+                // Add state if it doesn't already exist
+                if (!uStructure.stateExists(targetStateVector.getID())) {
+
+                    // Add state
+                    if (!uStructure.addStateAt(targetStateVector, false)) {
+                        throw new OperationFailedException("Failed to add state");
+                    }
+
+                    // Only add the ID if it's not already waiting to be processed
+                    if (!valuesInStack.contains(targetStateVector)) {
+                        stack.push(targetStateVector);
+                        valuesInStack.add(targetStateVector);
+                    } else
+                        logger.debug("Prevented adding of state since it was already in the stack.");
+                    /*
+                     * NOTE: Does this ever get printed to the console? Intuitively it should, but I
+                     * have never seen it before. (from Micah Stairs)
+                     */
+                }
+
+                // Add transition
+                int eventID = uStructure.addTransition(stateVector, eventLabelVector, targetStateVector);
+
+                inner: for (int i = 0; i < automaton.getNumberOfControllers(); i++) {
+                    if ((isConditionalViolation || isUnconditionalViolation)
+                            && !automaton.transitionExistsWithEvent(stateVector.getStateFor(i + 1).getID(),
+                                automaton.getEvent(combinedEvent.get(0)).getID())) {
+                        isUnconditionalViolation = false;
+                        isConditionalViolation = false;
+                        break inner;
+                    }
+                }
+
+                if (isUnconditionalViolation) {
+                    uStructure.addUnconditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
+                    stateVector.setDisablementOf(combinedEvent.get(0));
+                    boolean validConfig = false;
+                    for (int i = 1; !validConfig && i < stateVector.getStates().size(); i++) {
+                        State init = stateVector.getStateFor(i);
+                        if (automaton.getBadTransitions().parallelStream().anyMatch(td -> td.initialStateID == init.getID() && td.eventID == automaton.getEvent(eventLabelVector.getLabelAtIndex(0)).getID())) {
+                            validConfig = true;
+                        }
+                    }
+                    if (!validConfig) {
+                        stateVector.setIllegalConfigOf(combinedEvent.get(0));
+                    }
+                }
+                if (isConditionalViolation) {
+
+                    uStructure.addConditionalViolation(stateVector.getID(), eventID, targetStateVector.getID());
+                    stateVector.setEnablementOf(combinedEvent.get(0));
+                    boolean validConfig = false;
+                    for (int i = 1; !validConfig && i < stateVector.getStates().size(); i++) {
+                        State init = stateVector.getStateFor(i);
+                        if (automaton.getBadTransitions().parallelStream().noneMatch(td -> td.initialStateID == init.getID() && td.eventID == automaton.getEvent(eventLabelVector.getLabelAtIndex(0)).getID())) {
+                            validConfig = true;
+                        }
+                    }
+                    if (!validConfig) {
+                        stateVector.setIllegalConfigOf(combinedEvent.get(0));
+                    }
+                }
+
+            } // for
+
+            // For each unobservable transition in the each of the controllers of the
+            // automaton
+            outer: for (int i = 0; i < automaton.getNumberOfControllers(); i++) {
+
+                for (Transition t : listOfStates.get(i + 1).getTransitions()) {
+                    if (!t.getEvent().isObservable(i)) {
+
+                        List<State> targetStates = new ArrayList<State>();
+                        List<String> combinedEvent = new ArrayList<>();
+
+                        for (int j = 0; j <= automaton.getNumberOfControllers(); j++) {
+
+                            // The current controller
+                            if (j == i + 1) {
+                                combinedEvent.add(t.getEvent().getLabel());
+                                targetStates.add(automaton.getState(t.getTargetStateID()));
+                            } else {
+                                combinedEvent.add(Event.EPSILON);
+                                targetStates.add(automaton.getState(listOfIDs.get(j)));
+                            }
+
+                        }
+
+                        LabelVector eventLabelVector = new LabelVector(combinedEvent);
+                        StateVector targetStateVector = new StateVector(targetStates, automaton.getNumberOfStates());
+
+                        // Add event
+                        boolean[] observable = new boolean[automaton.getNumberOfControllers()];
+                        boolean[] controllable = new boolean[automaton.getNumberOfControllers()];
+                        controllable[i] = t.getEvent().isControllable(i);
+                        uStructure.addEventIfNonExisting(eventLabelVector, observable, controllable);
+
+                        // Add state if it doesn't already exist
+                        if (!uStructure.stateExists(targetStateVector)) {
+
+                            // Add state
+                            if (!uStructure.addStateAt(targetStateVector, false)) {
+                                throw new OperationFailedException("Failed to add state");
+                            }
+
+                            // Only add the ID if it's not already waiting to be processed
+                            if (!valuesInStack.contains(targetStateVector)) {
+                                stack.push(targetStateVector);
+                                valuesInStack.add(targetStateVector);
+                            } else
+                                logger.debug("Prevented adding of state since it was already in the stack.");
+
+                        }
+
+                        // Add transition
+                        int eventID = uStructure.addTransition(stateVector, eventLabelVector, targetStateVector);
+                        if (eventID == 0)
+                            logger.error("Failed to add transition.");
+                    }
+                }
+
+            } // for
+
+        } // while
+
+        /* Filter dump state */
+        if (containsDumpState) {
+            StringBuilder labelBuilder = new StringBuilder(Automaton.DUMP_STATE_LABEL);
+            for (int i = 0; i < automaton.getNumberOfControllers(); i++) {
+                labelBuilder.append('_');
+                labelBuilder.append(Automaton.DUMP_STATE_LABEL);
+            }
+            String label = labelBuilder.toString();
+            long dumpID = uStructure.getStateID(label);
+            uStructure.removeState(dumpID);
+        }
+
+        /* Re-number states (by removing empty ones) */
+        uStructure.renumberStates();
+
+        /* Return produced U-Structure */
+        return uStructure;
+
+    }
+
+    /**
      * Tests whether the specified system is inference observable.
      * 
      * @param automaton a system
