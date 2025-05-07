@@ -315,7 +315,6 @@ public class Automaton implements Cloneable {
         Objects.requireNonNull(jsonObject);
 
         initializeLists();
-        ;
 
         type = Type.getType(jsonObject.getAsJsonPrimitive("type").getAsByte());
         nStates = jsonObject.getAsJsonPrimitive("nStates").getAsLong();
