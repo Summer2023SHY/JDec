@@ -26,7 +26,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
-    <batik.version>1.18</batik.version>
+    <batik.version>1.19</batik.version>
     <log4j.version>2.24.3</log4j.version>
   </properties>
   <licenses>
