@@ -131,7 +131,7 @@ public class AutomatonInfoOutput extends JDialog {
          */
         public AutomatonInfoTable(Automaton automaton) {
             this.automaton = Objects.requireNonNull(automaton);
-            automatonInfo.add(Pair.of("#States", this.automaton.getNumberOfStates()));
+            automatonInfo.add(Pair.of("#States", Long.valueOf(this.automaton.getNumberOfStates())));
             automatonInfo.add(Pair.of("#Events", Long.valueOf(this.automaton.getNumberOfEvents())));
             automatonInfo.add(Pair.of("#Controllers", Long.valueOf(this.automaton.getNumberOfControllers())));
             automatonInfo.add(Pair.of("#Transitions", this.automaton.getNumberOfTransitions()));

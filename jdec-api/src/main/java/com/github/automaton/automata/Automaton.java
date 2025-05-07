@@ -100,8 +100,6 @@ public class Automaton implements Cloneable {
     // Basic properties of the automaton
     /** The type of this automaton */
     protected Type type;
-    /** Number of states in this automaton */
-    protected long nStates = 0;
     /** Initial state of this automaton */
     protected long initialState = 0;
     /** Number of controllers */
@@ -317,7 +315,6 @@ public class Automaton implements Cloneable {
         initializeLists();
 
         type = Type.getType(jsonObject.getAsJsonPrimitive("type").getAsByte());
-        nStates = jsonObject.getAsJsonPrimitive("nStates").getAsLong();
         initialState = jsonObject.getAsJsonPrimitive("initialState").getAsLong();
         nControllers = jsonObject.getAsJsonPrimitive("nControllers").getAsInt();
 
@@ -1040,7 +1037,7 @@ public class Automaton implements Cloneable {
      */
     public JsonObject toJsonObject() {
         JsonObject jsonObj = new JsonObject();
-        jsonObj.addProperty("nStates", nStates);
+        jsonObj.addProperty("nStates", getNumberOfStates());
         jsonObj.addProperty("initialState", initialState);
         jsonObj.addProperty("nControllers", nControllers);
 
@@ -1371,7 +1368,7 @@ public class Automaton implements Cloneable {
         if (transitions == null)
             transitions = new ArrayList<Transition>();
 
-        long id = ++nStates;
+        long id = getNumberOfStates() + 1;
 
         /* Add new state to this automaton */
 
@@ -1519,8 +1516,6 @@ public class Automaton implements Cloneable {
             return false;
         }
 
-        nStates++;
-
         states.put(state.getID(), state);
 
         /* Update initial state */
@@ -1548,7 +1543,6 @@ public class Automaton implements Cloneable {
         states.remove(stateID);
         if (initialState == stateID)
             initialState = 0;
-        nStates--;
         return true;
     }
 
@@ -2001,8 +1995,8 @@ public class Automaton implements Cloneable {
      * 
      * @return Number of states
      **/
-    public long getNumberOfStates() {
-        return nStates;
+    public final int getNumberOfStates() {
+        return getStates().size();
     }
 
     /**

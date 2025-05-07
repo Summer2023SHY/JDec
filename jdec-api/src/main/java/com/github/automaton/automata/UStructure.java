@@ -566,7 +566,7 @@ public class UStructure extends Automaton {
                 /* Calculate new state IDs for relabeling */
                 for (State s : ss.getSet()) {
                     long origID = s.getID();
-                    long modID = origID + nStates * stateIDMultiSet.getCount(origID);
+                    long modID = origID + getNumberOfStates() * stateIDMultiSet.getCount(origID);
                     currStateSetIDMap.put(s.getID(), modID);
                     State modState = new State(
                             s.getLabel() + (stateIDMultiSet.getCount(origID) == 0 ? StringUtils.EMPTY
@@ -623,9 +623,9 @@ public class UStructure extends Automaton {
             long initStateID = unconditionalTd.initialStateID;
             long targetStateID = unconditionalTd.targetStateID;
             for (int i = 1; i < stateIDMultiSet.getCount(unconditionalTd.initialStateID); i++) {
-                long relabeledInitStateID = initStateID + nStates * i;
+                long relabeledInitStateID = initStateID + getNumberOfStates() * i;
                 for (int j = 1; j < stateIDMultiSet.getCount(targetStateID); j++) {
-                    long relabeledTargetStateID = targetStateID + nStates * j;
+                    long relabeledTargetStateID = targetStateID + getNumberOfStates() * j;
                     if (relabeled.transitionExists(relabeledInitStateID, unconditionalTd.eventID,
                             relabeledTargetStateID)) {
                         relabeled.addUnconditionalViolation(relabeledInitStateID, unconditionalTd.eventID,
@@ -638,9 +638,9 @@ public class UStructure extends Automaton {
             long initStateID = conditionalTd.initialStateID;
             long targetStateID = conditionalTd.targetStateID;
             for (int i = 1; i < stateIDMultiSet.getCount(conditionalTd.initialStateID); i++) {
-                long relabeledInitStateID = initStateID + nStates * i;
+                long relabeledInitStateID = initStateID + getNumberOfStates() * i;
                 for (int j = 1; j < stateIDMultiSet.getCount(targetStateID); j++) {
-                    long relabeledTargetStateID = targetStateID + nStates * j;
+                    long relabeledTargetStateID = targetStateID + getNumberOfStates() * j;
                     if (relabeled.transitionExists(relabeledInitStateID, conditionalTd.eventID,
                             relabeledTargetStateID)) {
                         relabeled.addConditionalViolation(relabeledInitStateID, conditionalTd.eventID,
@@ -1391,7 +1391,7 @@ public class UStructure extends Automaton {
         if (!hasViolations())
             return null;
 
-        if (nStates + 1 > Integer.MAX_VALUE)
+        if (getNumberOfStates() + 1 > Integer.MAX_VALUE)
             logger.error("Integer overflow due to too many states.");
 
         /* Find counter-examples using a breadth-first search */
@@ -1401,7 +1401,7 @@ public class UStructure extends Automaton {
         List<State> initialPath = new ArrayList<State>();
         initialPath.add(getState(initialState));
         paths.add(initialPath);
-        boolean[] visited = new boolean[(int) (nStates + 1)];
+        boolean[] visited = new boolean[(int) (getNumberOfStates() + 1)];
         List<State> longestPath = null;
         TransitionData longestViolation = null;
 

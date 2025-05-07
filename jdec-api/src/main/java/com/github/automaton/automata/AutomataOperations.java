@@ -153,7 +153,7 @@ public class AutomataOperations {
         // Add all marked states to the stack (NOTE: This may have complications if
         // there are more than Integer.MAX_VALUE marked states)
         Deque<Long> stack = new ArrayDeque<Long>();
-        for (long s = 1; s <= source.nStates; s++) {
+        for (long s = 1; s <= source.getNumberOfStates(); s++) {
 
             State state = invertedAutomaton.getState(s);
 
@@ -248,11 +248,11 @@ public class AutomataOperations {
 
         /* Build complement of this automaton */
 
-        final long dumpStateID = source.nStates + 1;
+        final long dumpStateID = source.getNumberOfStates() + 1;
         boolean needToAddDumpState = false;
 
         // Add each state to the new automaton
-        for (long s = 1; s <= source.nStates; s++) {
+        for (long s = 1; s <= source.getNumberOfStates(); s++) {
 
             State state = source.getState(s);
 
@@ -1437,7 +1437,7 @@ public class AutomataOperations {
         Automaton compositePlant = buildCompositeAutomaton(plants);
         Automaton compositeSpec = buildCompositeAutomaton(specs);
         Automaton combinedSys = intersection(compositePlant.generateTwinPlant(), compositeSpec.generateTwinPlant());
-        for (long stateId = 1; stateId <= combinedSys.nStates; stateId++) {
+        for (long stateId = 1; stateId <= combinedSys.getNumberOfStates(); stateId++) {
             if (!combinedSys.stateExists(stateId))
                 continue;
             State s = combinedSys.getState(stateId);

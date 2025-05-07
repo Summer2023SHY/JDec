@@ -124,7 +124,7 @@ public class SubsetConstruction extends Automaton {
     private StateSet nullClosure(State state) {
         Set<State> indistinguishableStates = new HashSet<>();
         nullClosure(indistinguishableStates, state);
-        return new StateSet(indistinguishableStates, source.nStates);
+        return new StateSet(indistinguishableStates, source.getNumberOfStates());
     }
 
     /**
@@ -140,7 +140,7 @@ public class SubsetConstruction extends Automaton {
             nullClosure(tempSet, s);
             indistinguishableStates.addAll(tempSet);
         }
-        return new StateSet(indistinguishableStates, source.nStates);
+        return new StateSet(indistinguishableStates, source.getNumberOfStates());
     }
 
     /**
