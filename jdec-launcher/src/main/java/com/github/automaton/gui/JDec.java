@@ -3140,7 +3140,7 @@ public class JDec extends JFrame {
                         tab.nUsingThreads.incrementAndGet();
                         syncCompositionLock.lock();
                         try {
-                            UStructure uStructure = tab.automaton.synchronizedComposition();
+                            UStructure uStructure = AutomataOperations.synchronizedComposition(tab.automaton);
                             createTab(uStructure);
                             setBusyCursor(false);
                         } catch (NoInitialStateException e) {

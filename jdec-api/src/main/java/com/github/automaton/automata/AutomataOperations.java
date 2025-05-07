@@ -925,7 +925,7 @@ public class AutomataOperations {
         StopWatch sw = StopWatch.createStarted();
 
         // Take the U-Structure, then relabel states as needed
-        UStructure uStructure = automaton.synchronizedComposition().relabelConfigurationStates();
+        UStructure uStructure = synchronizedComposition(automaton).relabelConfigurationStates();
 
         Automaton[] determinizations = new Automaton[automaton.nControllers];
         List<List<State>>[] indistinguishableStatesArr = new List[automaton.nControllers];
@@ -1068,7 +1068,7 @@ public class AutomataOperations {
             throw new IllegalArgumentException("System is not inference observable");
 
         // Take the U-Structure, then relabel states as needed
-        UStructure uStructure = automaton.synchronizedComposition().relabelConfigurationStates();
+        UStructure uStructure = synchronizedComposition(automaton).relabelConfigurationStates();
 
         Automaton[] determinizations = new Automaton[automaton.nControllers];
         List<List<State>>[] indistinguishableStatesArr = new List[automaton.nControllers];
@@ -1190,7 +1190,7 @@ public class AutomataOperations {
         Objects.requireNonNull(automaton);
 
         // Take the U-Structure, then relabel states as needed
-        UStructure uStructure = automaton.synchronizedComposition().relabelConfigurationStates();
+        UStructure uStructure = synchronizedComposition(automaton).relabelConfigurationStates();
 
         Automaton[] determinizations = new Automaton[automaton.nControllers];
         List<List<State>>[] indistinguishableStatesArr = new List[automaton.nControllers];
@@ -1392,7 +1392,7 @@ public class AutomataOperations {
             Hprime.add(Hj);
             Automaton combinedSys = generateTwinPlant(Hj);
             while (!testObservability(combinedSys, false).getLeft()) {
-                UStructure uStructure = combinedSys.synchronizedComposition().relabelConfigurationStates();
+                UStructure uStructure = synchronizedComposition(combinedSys).relabelConfigurationStates();
                 for (Event controllableEvent : combinedSys.getControllableEvents()) {
                     var illegalConfigs = uStructure.getIllegalConfigStates(controllableEvent.getLabel());
                     for (var illegalConfig : illegalConfigs) {
