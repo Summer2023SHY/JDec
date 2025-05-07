@@ -2127,11 +2127,7 @@ public class Automaton implements Cloneable {
      * @return Whether or not this automaton is deterministic
      **/
     public boolean isValid() {
-
-        for (long s = 1; s <= getNumberOfStates(); s++) {
-
-            State state = getState(s);
-
+        return getStates().parallelStream().allMatch(state -> {
             if (state == null)
                 return false;
 
@@ -2141,11 +2137,8 @@ public class Automaton implements Cloneable {
                 if (!stateExists(t.getTargetStateID()))
                     return false;
             }
-
-        }
-
-        return true;
-
+            return true;
+        });
     }
 
     /**
