@@ -686,34 +686,15 @@ public class UStructure extends Automaton {
      *                          associated Shapley values
      * @param indexOfController The index of the controller (1-based)
      * @return The Shapley value of the specified controller
+     * 
+     * @see UStructureOperations#findShapleyValueForController(UStructure, Map, int)
+     * 
+     * @deprecated Use {@link UStructureOperations#findShapleyValueForController(UStructure, Map, int)} instead.
      **/
+    @Deprecated(since = "2.1.0", forRemoval = true)
     public double findShapleyValueForController(Map<Set<Integer>, Integer> shapleyValues, int indexOfController) {
 
-        int sum = 0;
-
-        // Iterate through each coalition
-        for (Map.Entry<Set<Integer>, Integer> entry : shapleyValues.entrySet()) {
-            Set<Integer> coalition = entry.getKey();
-
-            // Skip this coalition if it contains the controller
-            if (coalition.contains(indexOfController))
-                continue;
-
-            Integer shapleyValueWithoutController = entry.getValue();
-
-            // Find the Shapley value of this coalition if the controller were to be added
-            Set<Integer> coalitionWithController = new HashSet<Integer>(coalition);
-            coalitionWithController.add(indexOfController);
-            Integer shapleyValueWithController = shapleyValues.get(coalitionWithController);
-
-            // Add calculated value to summation
-            sum += factorial(coalition.size())
-                    * factorial(getNumberOfControllers() - coalition.size() - 1)
-                    * (shapleyValueWithController - shapleyValueWithoutController);
-
-        }
-
-        return (double) sum / (double) factorial(getNumberOfControllers());
+        return UStructureOperations.findShapleyValueForController(this, shapleyValues, indexOfController);
 
     }
 
@@ -839,29 +820,6 @@ public class UStructure extends Automaton {
         }
 
         return feasibleProtocol;
-
-    }
-
-    /**
-     * Recursively find the factorial of the specified number.
-     * 
-     * @param n The number to take the factorial of, must be in the range [0,12]
-     * @return The factorial value
-     **/
-    private static int factorial(int n) {
-
-        // Error checking
-        if (n < 0 || n > 12) {
-            logger.error("Factorial value of " + n + " is outside allowed range.");
-            return -1;
-        }
-
-        // Base case
-        if (n == 0)
-            return 1;
-
-        // Recursive case
-        return n * factorial(n - 1);
 
     }
 
