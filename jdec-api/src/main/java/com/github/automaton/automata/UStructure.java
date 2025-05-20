@@ -8,11 +8,7 @@ package com.github.automaton.automata;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.apache.commons.collections4.*;
-import org.apache.commons.collections4.multiset.HashMultiSet;
-import org.apache.commons.lang3.*;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.tuple.Triple;
 import org.apache.logging.log4j.*;
 
 import com.github.automaton.automata.util.PowerSetUtils;
