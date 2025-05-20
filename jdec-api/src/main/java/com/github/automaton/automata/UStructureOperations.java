@@ -13,6 +13,8 @@ import org.apache.commons.collections4.multiset.HashMultiSet;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 
+import com.google.gson.JsonObject;
+
 /**
  * A collection of U-Structure operations.
  * 
@@ -22,6 +24,65 @@ import org.apache.commons.lang3.tuple.Triple;
  * @since 2.1.0
  */
 public class UStructureOperations {
+
+    /**
+     * Duplicates the specified U-Structure as a pruned U-Structure.
+     * 
+     * @return The duplicated U-Structure (as a pruned U-Structure)
+     **/
+    public static PrunedUStructure duplicateAsPrunedUStructure(UStructure orig) {
+
+        JsonObject jsonObj = orig.toJsonObject();
+        jsonObj.remove("type");
+        jsonObj.addProperty("type", Automaton.Type.PRUNED_U_STRUCTURE.getNumericValue());
+        return new PrunedUStructure(jsonObj);
+    }
+
+    /**
+     * Refine the U-Structure by applying the specified communication protocol, and
+     * doing the necessary pruning.
+     * 
+     * @param <T>                         The type of communication data
+     * @param protocol                    The chosen protocol
+     * @param discardUnusedCommunications Whether or not the unused communications
+     *                                    should be discarded
+     * @return the pruned U-Structure that had the specified protocol applied
+     **/
+    public static <T extends CommunicationData> PrunedUStructure applyProtocol(UStructure uStructure, Set<T> protocol,
+            boolean discardUnusedCommunications) {
+
+        PrunedUStructure prunedUStructure = duplicateAsPrunedUStructure(uStructure);
+
+        /* Remove all communications that are not part of the protocol */
+
+        if (discardUnusedCommunications) {
+
+            for (TransitionData data : uStructure.getInvalidCommunications())
+                prunedUStructure.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
+
+            for (CommunicationData data : uStructure.getPotentialAndNashCommunications())
+                if (!protocol.contains(data))
+                    prunedUStructure.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
+
+        }
+
+        /* Prune (which removes more transitions) */
+
+        for (CommunicationData data : protocol)
+            prunedUStructure.prune(protocol, uStructure.getEvent(data.eventID).getVector(), data.initialStateID,
+                    data.getIndexOfSender() + 1);
+
+        /* Get the accessible part of the U-Structure */
+
+        prunedUStructure = prunedUStructure.accessible();
+
+        /* Remove all inactive events */
+
+        prunedUStructure.removeInactiveEvents();
+
+        return prunedUStructure;
+
+    }
 
     /**
      * Creates a copy of the specified U-Structure that has copies of same state(s)

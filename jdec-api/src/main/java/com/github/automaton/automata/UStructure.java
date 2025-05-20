@@ -446,40 +446,14 @@ public class UStructure extends Automaton {
      * @return This pruned U-Structure that had the specified protocol applied
      * 
      * @since 2.0
+     * 
+     * @deprecated Use {@link UStructureOperations#applyProtocol(UStructure, Set, boolean)} instead.
      **/
+    @Deprecated(since = "2.1.0", forRemoval = true)
     public <T extends CommunicationData> PrunedUStructure applyProtocol(Set<T> protocol,
             boolean discardUnusedCommunications) {
 
-        PrunedUStructure prunedUStructure = duplicateAsPrunedUStructure();
-
-        /* Remove all communications that are not part of the protocol */
-
-        if (discardUnusedCommunications) {
-
-            for (TransitionData data : invalidCommunications)
-                prunedUStructure.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
-
-            for (CommunicationData data : getPotentialAndNashCommunications())
-                if (!protocol.contains(data))
-                    prunedUStructure.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
-
-        }
-
-        /* Prune (which removes more transitions) */
-
-        for (CommunicationData data : protocol)
-            prunedUStructure.prune(protocol, getEvent(data.eventID).getVector(), data.initialStateID,
-                    data.getIndexOfSender() + 1);
-
-        /* Get the accessible part of the U-Structure */
-
-        prunedUStructure = prunedUStructure.accessible();
-
-        /* Remove all inactive events */
-
-        prunedUStructure.removeInactiveEvents();
-
-        return prunedUStructure;
+        return UStructureOperations.applyProtocol(this, protocol, discardUnusedCommunications);
 
     }
 
@@ -489,13 +463,12 @@ public class UStructure extends Automaton {
      * @return The duplicated U-Structure (as a pruned U-Structure)
      * 
      * @since 2.0
+     * 
+     * @deprecated Use {@link UStructureOperations#duplicateAsPrunedUStructure(UStructure)} instead.
      **/
+    @Deprecated(since = "2.1.0", forRemoval = true)
     public PrunedUStructure duplicateAsPrunedUStructure() {
-
-        JsonObject jsonObj = toJsonObject();
-        jsonObj.remove("type");
-        jsonObj.addProperty("type", Type.PRUNED_U_STRUCTURE.getNumericValue());
-        return new PrunedUStructure(jsonObj);
+        return UStructureOperations.duplicateAsPrunedUStructure(this);
     }
 
     /**
