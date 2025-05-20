@@ -141,7 +141,7 @@ public class UStructure extends Automaton {
         // controller has different properties for each event
         Map<String, Boolean> observableMapping = new HashMap<String, Boolean>();
         Map<String, Boolean> controllableMapping = new HashMap<String, Boolean>();
-        for (Event e : events) {
+        for (Event e : getEvents()) {
             LabelVector vector = e.getVector();
             for (int i = 1; i < vector.getSize(); i++) {
                 String label = vector.getLabelAtIndex(i);
@@ -152,7 +152,7 @@ public class UStructure extends Automaton {
 
         // Generate all potential communication labels
         Set<LabelVector> leastUpperBounds = new HashSet<LabelVector>();
-        for (Event e : events)
+        for (Event e : getEvents())
             leastUpperBounds.add(e.getVector());
         Set<CommunicationLabelVector> potentialCommunications = findPotentialCommunicationLabels(leastUpperBounds);
 
@@ -168,9 +168,7 @@ public class UStructure extends Automaton {
         /* Add communications (marking the potential communications) */
 
         // Map<String, State> memoization = new HashMap<String, State>();
-        for (long s = 1; s <= uStructure.getNumberOfStates(); s++) {
-
-            State startingState = uStructure.getState(s);
+        for (State startingState : uStructure.getStates()) {
 
             // Try each least upper bound
             for (LabelVector vector : leastUpperBounds) {
