@@ -8,11 +8,7 @@ package com.github.automaton.automata;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.apache.commons.collections4.*;
-import org.apache.commons.collections4.multiset.HashMultiSet;
-import org.apache.commons.lang3.*;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.tuple.Triple;
 import org.apache.logging.log4j.*;
 
 import com.github.automaton.automata.util.PowerSetUtils;
@@ -133,111 +129,13 @@ public class UStructure extends Automaton {
      * @return The U-Structure with the added transitions
      * 
      * @since 2.0
+     * 
+     * @deprecated Use {@link UStructureOperations#addCommunications(UStructure)} instead.
      **/
+    @Deprecated(since = "2.1.0", forRemoval = true)
     public UStructure addCommunications() {
 
-        /* Setup */
-
-        // Create a mapping between the event labels and their associated properties in
-        // the original automaton
-        // NOTE: The controller's index (1-based, in this case) is appended to the
-        // event's label since each
-        // controller has different properties for each event
-        Map<String, Boolean> observableMapping = new HashMap<String, Boolean>();
-        Map<String, Boolean> controllableMapping = new HashMap<String, Boolean>();
-        for (Event e : events) {
-            LabelVector vector = e.getVector();
-            for (int i = 1; i < vector.getSize(); i++) {
-                String label = vector.getLabelAtIndex(i);
-                observableMapping.put(label + i, e.isObservable(i - 1));
-                controllableMapping.put(label + i, e.isControllable(i - 1));
-            }
-        }
-
-        // Generate all potential communication labels
-        Set<LabelVector> leastUpperBounds = new HashSet<LabelVector>();
-        for (Event e : events)
-            leastUpperBounds.add(e.getVector());
-        Set<CommunicationLabelVector> potentialCommunications = findPotentialCommunicationLabels(leastUpperBounds);
-
-        // Generate all least upper bounds (if invalid communications are not being
-        // suppressed)
-        if (SUPPRESS_INVALID_COMMUNICATIONS) {
-            leastUpperBounds.addAll(potentialCommunications);
-        } else
-            generateLeastUpperBounds(leastUpperBounds);
-
-        UStructure uStructure = this.clone();
-
-        /* Add communications (marking the potential communications) */
-
-        // Map<String, State> memoization = new HashMap<String, State>();
-        for (long s = 1; s <= uStructure.getNumberOfStates(); s++) {
-
-            State startingState = uStructure.getState(s);
-
-            // Try each least upper bound
-            for (LabelVector vector : leastUpperBounds) {
-
-                boolean[] vectorElementsFound = new boolean[vector.getSize()];
-                State destinationState = uStructure.findWhereCommunicationLeads(vector, vectorElementsFound,
-                        startingState/* , memoization */);
-
-                if (destinationState != null) {
-
-                    // Add event if it doesn't already exist
-                    int id;
-                    Event event = uStructure.getEvent(vector.toString());
-                    if (event == null) {
-
-                        // Determine observable and controllable properties of the event vector
-                        boolean[] observable = new boolean[nControllers];
-                        boolean[] controllable = new boolean[nControllers];
-                        for (int i = 1; i < vector.getSize(); i++) {
-                            String label = vector.getLabelAtIndex(i);
-                            if (!label.equals(Event.EPSILON)) {
-                                observable[i - 1] = observableMapping.get(label + i);
-                                controllable[i - 1] = controllableMapping.get(label + i);
-                            }
-                        }
-
-                        id = uStructure.addEvent(vector.toString(), observable, controllable);
-                    } else
-                        id = event.getID();
-
-                    // Add the transition (if it doesn't already exist)
-                    if (!uStructure.transitionExists(startingState.getID(), id, destinationState.getID())) {
-
-                        // Add transition
-                        uStructure.addTransition(startingState.getID(), id, destinationState.getID());
-
-                        // There could be more than one potential communication, so we need to mark them
-                        // all
-                        boolean found = false;
-                        for (CommunicationLabelVector data : potentialCommunications)
-                            if (vector.equals((LabelVector) data)) {
-                                uStructure.addPotentialCommunication(startingState.getID(), id,
-                                        destinationState.getID(), data.roles);
-                                found = true;
-                            }
-
-                        // If there were no potential communications, then it must be a invalid
-                        // communication
-                        if (!found) {
-                            if (SUPPRESS_INVALID_COMMUNICATIONS)
-                                logger.error("Invalid communication was not suppressed: " + vector);
-                            uStructure.addInvalidCommunication(startingState.getID(), id, destinationState.getID());
-                        }
-
-                    }
-
-                }
-
-            }
-
-        }
-
-        return uStructure;
+        return UStructureOperations.addCommunications(this);
 
     }
 
@@ -446,40 +344,14 @@ public class UStructure extends Automaton {
      * @return This pruned U-Structure that had the specified protocol applied
      * 
      * @since 2.0
+     * 
+     * @deprecated Use {@link UStructureOperations#applyProtocol(UStructure, Set, boolean)} instead.
      **/
+    @Deprecated(since = "2.1.0", forRemoval = true)
     public <T extends CommunicationData> PrunedUStructure applyProtocol(Set<T> protocol,
             boolean discardUnusedCommunications) {
 
-        PrunedUStructure prunedUStructure = duplicateAsPrunedUStructure();
-
-        /* Remove all communications that are not part of the protocol */
-
-        if (discardUnusedCommunications) {
-
-            for (TransitionData data : invalidCommunications)
-                prunedUStructure.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
-
-            for (CommunicationData data : getPotentialAndNashCommunications())
-                if (!protocol.contains(data))
-                    prunedUStructure.removeTransition(data.initialStateID, data.eventID, data.targetStateID);
-
-        }
-
-        /* Prune (which removes more transitions) */
-
-        for (CommunicationData data : protocol)
-            prunedUStructure.prune(protocol, getEvent(data.eventID).getVector(), data.initialStateID,
-                    data.getIndexOfSender() + 1);
-
-        /* Get the accessible part of the U-Structure */
-
-        prunedUStructure = prunedUStructure.accessible();
-
-        /* Remove all inactive events */
-
-        prunedUStructure.removeInactiveEvents();
-
-        return prunedUStructure;
+        return UStructureOperations.applyProtocol(this, protocol, discardUnusedCommunications);
 
     }
 
@@ -489,13 +361,12 @@ public class UStructure extends Automaton {
      * @return The duplicated U-Structure (as a pruned U-Structure)
      * 
      * @since 2.0
+     * 
+     * @deprecated Use {@link UStructureOperations#duplicateAsPrunedUStructure(UStructure)} instead.
      **/
+    @Deprecated(since = "2.1.0", forRemoval = true)
     public PrunedUStructure duplicateAsPrunedUStructure() {
-
-        JsonObject jsonObj = toJsonObject();
-        jsonObj.remove("type");
-        jsonObj.addProperty("type", Type.PRUNED_U_STRUCTURE.getNumericValue());
-        return new PrunedUStructure(jsonObj);
+        return UStructureOperations.duplicateAsPrunedUStructure(this);
     }
 
     /**
@@ -532,128 +403,12 @@ public class UStructure extends Automaton {
      * @return a copy of this U-Structure with relabeled states
      * 
      * @since 2.0
+     * 
+     * @deprecated Use {@link UStructureOperations#relabelConfigurationStates(UStructure)} instead.
      */
+    @Deprecated(since = "2.1.0", forRemoval = true)
     public UStructure relabelConfigurationStates() {
-
-        SubsetConstruction subsetConstruction = this.subsetConstruction();
-
-        /* Collection of counters for occurrences of original states */
-        MultiSet<Long> stateIDMultiSet = new HashMultiSet<>();
-        /* Mapping of state set IDs to their member state IDs */
-        final Map<Long, Map<Long, Long>> relabelMapping = new LinkedHashMap<>();
-
-        /*
-         * Build a queue for breadth-first traversal of the UStructure
-         * Each entry of the queue consists of the triple of:
-         * 
-         * - ID of the current state of interest
-         * - the sequence of states and events that led to this state
-         * - whether a cycle has been detected
-         */
-        Queue<Triple<Long, Sequence, Boolean>> combinedStateQueue = new ArrayDeque<>();
-        combinedStateQueue.add(Triple.of(subsetConstruction.initialState, new Sequence(subsetConstruction.initialState), true));
-
-        UStructure relabeled = new UStructure(nControllers);
-        relabeled.addAllEvents(this.events);
-
-        while (!combinedStateQueue.isEmpty()) {
-            Triple<Long, Sequence, Boolean> currSequence = combinedStateQueue.remove();
-
-            StateSet ss = subsetConstruction.getStateAsStateSet(currSequence.getLeft());
-            Map<Long, Long> currStateSetIDMap = currSequence.getRight() ? new LinkedHashMap<>() : relabelMapping.get(currSequence.getLeft());
-            if (currSequence.getRight()) {
-                relabelMapping.put(ss.getID(), currStateSetIDMap);
-                /* Calculate new state IDs for relabeling */
-                for (State s : ss.getSet()) {
-                    long origID = s.getID();
-                    long modID = origID + nStates * stateIDMultiSet.getCount(origID);
-                    currStateSetIDMap.put(s.getID(), modID);
-                    State modState = new State(
-                            s.getLabel() + (stateIDMultiSet.getCount(origID) == 0 ? StringUtils.EMPTY
-                                    : "-" + Integer.toString(stateIDMultiSet.getCount(origID))),
-                            modID, false, s.getEnablementEvents(), s.getDisablementEvents(), s.getIllegalConfigEvents());
-                    relabeled.addStateAt(modState, false);
-                    stateIDMultiSet.add(origID);
-                }
-                /* Add transitions to states in the same state set */
-                for (State origS : ss.getSet()) {
-                    State modS = relabeled.getState(currStateSetIDMap.get(origS.getID()));
-                    for (Transition t : origS.getTransitions()) {
-                        if (currStateSetIDMap.containsKey(t.getTargetStateID())) {
-                            relabeled.addTransition(modS.getID(), t.getEvent().getLabel(),
-                                    currStateSetIDMap.get(t.getTargetStateID()));
-                        }
-                    }
-                }
-            }
-            /* Handle transitions from preceding state set */
-            if (currSequence.getMiddle().getEventArray().length > 0) {
-                long prevStateSetID = currSequence.getMiddle().getState(currSequence.getMiddle().length() - 2);
-                StateSet prevStateSet = subsetConstruction.getStateAsStateSet(prevStateSetID);
-                Map<Long, Long> prevStateSetIDMap = relabelMapping.get(prevStateSetID);
-                for (State prevS : prevStateSet.getSet()) {
-                    for (Transition prevT : prevS.getTransitions()) {
-                        if (currStateSetIDMap.containsKey(prevT.getTargetStateID())) {
-                            relabeled.addTransition(prevStateSetIDMap.get(prevS.getID()), prevT.getEvent().getLabel(),
-                                    currStateSetIDMap.get(prevT.getTargetStateID()));
-                        }
-                    }
-                }
-            }
-
-            /* Detect next entries for breadth-first traversal */
-            for (Transition t : IterableUtils.filteredIterable(
-                    ss.getTransitions(), t -> t.getTargetStateID() != ss.getID())) {
-                if (!currSequence.getMiddle().containsState(t.getTargetStateID()) && currSequence.getRight()) {
-                    /* Next transition found */
-                    combinedStateQueue.add(Triple.of(t.getTargetStateID(),
-                            currSequence.getMiddle().append(t.getEvent().getID(), t.getTargetStateID()), true));
-                } else if (!currSequence.getMiddle().isLastState(t.getTargetStateID()) && currSequence.getRight()) {
-                    /* Cycle detected */
-                    combinedStateQueue.add(Triple.of(t.getTargetStateID(),
-                            currSequence.getMiddle().append(t.getEvent().getID(), t.getTargetStateID()), false));
-                }
-            }
-
-        }
-
-        /* Restore violation states in relabeled U-Structure */
-        copyOverSpecialTransitions(relabeled);
-        for (TransitionData unconditionalTd : unconditionalViolations) {
-            long initStateID = unconditionalTd.initialStateID;
-            long targetStateID = unconditionalTd.targetStateID;
-            for (int i = 1; i < stateIDMultiSet.getCount(unconditionalTd.initialStateID); i++) {
-                long relabeledInitStateID = initStateID + nStates * i;
-                for (int j = 1; j < stateIDMultiSet.getCount(targetStateID); j++) {
-                    long relabeledTargetStateID = targetStateID + nStates * j;
-                    if (relabeled.transitionExists(relabeledInitStateID, unconditionalTd.eventID,
-                            relabeledTargetStateID)) {
-                        relabeled.addUnconditionalViolation(relabeledInitStateID, unconditionalTd.eventID,
-                                relabeledTargetStateID);
-                    }
-                }
-            }
-        }
-        for (TransitionData conditionalTd : conditionalViolations) {
-            long initStateID = conditionalTd.initialStateID;
-            long targetStateID = conditionalTd.targetStateID;
-            for (int i = 1; i < stateIDMultiSet.getCount(conditionalTd.initialStateID); i++) {
-                long relabeledInitStateID = initStateID + nStates * i;
-                for (int j = 1; j < stateIDMultiSet.getCount(targetStateID); j++) {
-                    long relabeledTargetStateID = targetStateID + nStates * j;
-                    if (relabeled.transitionExists(relabeledInitStateID, conditionalTd.eventID,
-                            relabeledTargetStateID)) {
-                        relabeled.addConditionalViolation(relabeledInitStateID, conditionalTd.eventID,
-                                relabeledTargetStateID);
-                    }
-                }
-            }
-        }
-
-        relabeled.setInitialStateID(this.initialState);
-
-        relabeled.renumberStates();
-        return relabeled;
+        return UStructureOperations.relabelConfigurationStates(this);
     }
 
     /**
@@ -686,34 +441,15 @@ public class UStructure extends Automaton {
      *                          associated Shapley values
      * @param indexOfController The index of the controller (1-based)
      * @return The Shapley value of the specified controller
+     * 
+     * @see UStructureOperations#findShapleyValueForController(UStructure, Map, int)
+     * 
+     * @deprecated Use {@link UStructureOperations#findShapleyValueForController(UStructure, Map, int)} instead.
      **/
+    @Deprecated(since = "2.1.0", forRemoval = true)
     public double findShapleyValueForController(Map<Set<Integer>, Integer> shapleyValues, int indexOfController) {
 
-        int sum = 0;
-
-        // Iterate through each coalition
-        for (Map.Entry<Set<Integer>, Integer> entry : shapleyValues.entrySet()) {
-            Set<Integer> coalition = entry.getKey();
-
-            // Skip this coalition if it contains the controller
-            if (coalition.contains(indexOfController))
-                continue;
-
-            Integer shapleyValueWithoutController = entry.getValue();
-
-            // Find the Shapley value of this coalition if the controller were to be added
-            Set<Integer> coalitionWithController = new HashSet<Integer>(coalition);
-            coalitionWithController.add(indexOfController);
-            Integer shapleyValueWithController = shapleyValues.get(coalitionWithController);
-
-            // Add calculated value to summation
-            sum += factorial(coalition.size())
-                    * factorial(getNumberOfControllers() - coalition.size() - 1)
-                    * (shapleyValueWithController - shapleyValueWithoutController);
-
-        }
-
-        return (double) sum / (double) factorial(getNumberOfControllers());
+        return UStructureOperations.findShapleyValueForController(this, shapleyValues, indexOfController);
 
     }
 
@@ -842,29 +578,6 @@ public class UStructure extends Automaton {
 
     }
 
-    /**
-     * Recursively find the factorial of the specified number.
-     * 
-     * @param n The number to take the factorial of, must be in the range [0,12]
-     * @return The factorial value
-     **/
-    private static int factorial(int n) {
-
-        // Error checking
-        if (n < 0 || n > 12) {
-            logger.error("Factorial value of " + n + " is outside allowed range.");
-            return -1;
-        }
-
-        // Base case
-        if (n == 0)
-            return 1;
-
-        // Recursive case
-        return n * factorial(n - 1);
-
-    }
-
     @Override
     protected <T extends Automaton> void copyOverSpecialTransitions(T automaton) {
 
@@ -899,99 +612,7 @@ public class UStructure extends Automaton {
 
     }
 
-    /**
-     * Using recursion, starting at a given state, determine which state the
-     * specified communication leads to (if it exists).
-     * 
-     * @param communication       The event vector representing the communication
-     * @param vectorElementsFound Indicates which elements of the vector have been
-     *                            found
-     * @param currentState        The state that we are currently on
-     * @return The destination state (or {@code null} if the communication does not
-     *         lead to a state)
-     **/
-    private State findWhereCommunicationLeads(LabelVector communication,
-            boolean[] vectorElementsFound,
-            State currentState/*
-                               * ,
-                               * Map<String, State> memoization
-                               */) {
-
-        /* Base case */
-
-        // We have found the destination if all vector elements have been found
-        boolean finished = true;
-        for (int i = 0; i < communication.getSize(); i++)
-            if (!communication.getLabelAtIndex(i).equals(Event.EPSILON) && !vectorElementsFound[i]) {
-                finished = false;
-                break;
-            }
-
-        if (finished)
-            return currentState;
-
-        /*
-         * Memoization
-         * 
-         * // NOTE: Memoziation is commented out since it is extremely memory intensive,
-         * and should not be used in the general case
-         * 
-         * String key = encodeString(communication, vectorElementsFound, currentState);
-         * if (memoization.containsKey(key))
-         * return memoization.get(key);
-         * 
-         */
-
-        /* Recursive case */
-
-        // Try all transitions leading from this state
-        outer: for (Transition t : currentState.getTransitions()) {
-
-            boolean[] copy = ArrayUtils.clone(vectorElementsFound);
-
-            // Check to see if the event vector of this transition is compatible with what
-            // we've found so far
-            for (int i = 0; i < t.getEvent().getVector().getSize(); i++) {
-
-                String element = t.getEvent().getVector().getLabelAtIndex(i);
-
-                if (!element.equals(Event.EPSILON)) {
-
-                    // Conflict since we have already found an element for this index (so they
-                    // aren't compatible)
-                    if (copy[i])
-                        continue outer;
-
-                    // Is compatible
-                    else if (element.equals(communication.getLabelAtIndex(i)))
-                        copy[i] = true;
-
-                    // Conflict since the elements do not match (meaning they aren't compatible)
-                    else
-                        continue outer;
-                }
-
-            }
-
-            // Recursive call to the state where this transition leads
-            State destinationState = findWhereCommunicationLeads(communication, copy,
-                    getState(t.getTargetStateID())/* , memoization */);
-
-            // Return destination if it is found (there will only ever be one destination
-            // for a given communication from a given state, so we can stop as soon as we
-            // find it the first time)
-            if (destinationState != null) {
-                // memoization.put(key, destinationState); // Save the answer (NOTE: Saving the
-                // dead-ends is more important than saving the answers)
-                return destinationState;
-            }
-
-        }
-
-        // memoization.put(key, null); // Indicate that this is a dead-end
-        return null;
-
-    }
+    
 
     /**
      * Encode the current method's state in order to use it as a key in a hash map.
@@ -1023,128 +644,7 @@ public class UStructure extends Automaton {
 
     }
 
-    /**
-     * Given the complete set of least upper bounds (LUBs), return the subset of
-     * LUBs which are the event vectors for potential communications.
-     * 
-     * @param leastUpperBounds The set of LUBs
-     * @return The set of potential communications, including communication roles
-     **/
-    private Set<CommunicationLabelVector> findPotentialCommunicationLabels(Set<LabelVector> leastUpperBounds) {
-
-        /* Separate observable and unobservable labels */
-
-        Set<LabelVector> observableLabels = new HashSet<LabelVector>();
-        Set<LabelVector> unobservableLabels = new HashSet<LabelVector>();
-
-        for (LabelVector v : leastUpperBounds) {
-            if (v.getLabelAtIndex(0).equals(Event.EPSILON))
-                unobservableLabels.add(v);
-            else
-                observableLabels.add(v);
-        }
-
-        // Find all LUB's of the unobservable labels (which will add communications
-        // where there is more than one receiver)
-        generateLeastUpperBounds(unobservableLabels);
-
-        /* Find potential communications */
-
-        Set<CommunicationLabelVector> potentialCommunications = new HashSet<CommunicationLabelVector>();
-
-        for (LabelVector v1 : observableLabels) {
-            for (LabelVector v2 : unobservableLabels) {
-
-                /* Error checking */
-
-                if (v1.getSize() == -1 || v2.getSize() == -1 || v1.getSize() != v2.getSize()) {
-                    logger.error("Bad event vectors. Least upper bounds generation aborted.");
-                    return null;
-                }
-
-                /* Setup */
-
-                CommunicationRole[] roles = new CommunicationRole[v1.getSize() - 1];
-
-                /* Build least upper bound */
-
-                boolean valid = true;
-                StringBuilder potentialCommunicationBuilder = new StringBuilder();
-                String eventLabel = null;
-
-                for (int i = 0; i < v1.getSize(); i++) {
-
-                    String label1 = v1.getLabelAtIndex(i);
-                    String label2 = v2.getLabelAtIndex(i);
-
-                    // Check to see if they are incompatible or if this potential communication has
-                    // already been taken care of
-                    if (!label1.equals(Event.EPSILON) && !label2.equals(Event.EPSILON)) {
-                        valid = false;
-                        break;
-                    }
-
-                    // Append vector element
-                    String newEventLabel = null;
-                    if (!label1.equals(Event.EPSILON)) {
-                        potentialCommunicationBuilder.append("," + label1);
-                        newEventLabel = label1;
-                        if (i > 0)
-                            roles[i - 1] = CommunicationRole.SENDER;
-                    } else if (!label2.equals(Event.EPSILON)) {
-                        potentialCommunicationBuilder.append("," + label2);
-                        newEventLabel = label2;
-                        if (i > 0)
-                            roles[i - 1] = CommunicationRole.RECEIVER;
-                    } else {
-                        potentialCommunicationBuilder.append(",*");
-                        if (i > 0)
-                            roles[i - 1] = CommunicationRole.NONE;
-                    }
-
-                    // Make sure that the senders and receivers all are working with the same event
-                    if (eventLabel != null && newEventLabel != null && !newEventLabel.equals(eventLabel)) {
-                        valid = false;
-                        break;
-                    }
-
-                    if (eventLabel == null)
-                        eventLabel = newEventLabel;
-
-                }
-
-                /* Add it to the set */
-
-                if (valid) {
-
-                    // Add all potential communications (1 for each sender)
-                    for (int i = 0; i < roles.length; i++) {
-
-                        if (roles[i] == CommunicationRole.SENDER) {
-
-                            CommunicationRole[] copy = ArrayUtils.clone(roles);
-
-                            // Remove all other senders
-                            for (int j = 0; j < copy.length; j++)
-                                if (j != i && copy[j] == CommunicationRole.SENDER)
-                                    copy[j] = CommunicationRole.NONE;
-
-                            // Add potential communication
-                            potentialCommunications.add(new CommunicationLabelVector(
-                                    "<" + potentialCommunicationBuilder.substring(1) + ">", copy));
-
-                        }
-
-                    }
-
-                }
-
-            } // for
-        } // for
-
-        return potentialCommunications;
-
-    }
+    
 
     /**
      * Expand the specified set of event vectors to include all possible least upper
@@ -1391,7 +891,7 @@ public class UStructure extends Automaton {
         if (!hasViolations())
             return null;
 
-        if (nStates + 1 > Integer.MAX_VALUE)
+        if (getNumberOfStates() + 1 > Integer.MAX_VALUE)
             logger.error("Integer overflow due to too many states.");
 
         /* Find counter-examples using a breadth-first search */
@@ -1401,7 +901,7 @@ public class UStructure extends Automaton {
         List<State> initialPath = new ArrayList<State>();
         initialPath.add(getState(initialState));
         paths.add(initialPath);
-        boolean[] visited = new boolean[(int) (nStates + 1)];
+        boolean[] visited = new boolean[(int) (getNumberOfStates() + 1)];
         List<State> longestPath = null;
         TransitionData longestViolation = null;
 

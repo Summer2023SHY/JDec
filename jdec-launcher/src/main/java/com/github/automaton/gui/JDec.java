@@ -2854,7 +2854,7 @@ public class JDec extends JFrame {
 
                     // Create a copy of the current automaton with all communications added and
                     // potential communications marked
-                    UStructure uStructureWithCommunications = uStructure.addCommunications();
+                    UStructure uStructureWithCommunications = UStructureOperations.addCommunications(uStructure);
                     createTab(uStructureWithCommunications);
 
                     setBusyCursor(false);
@@ -3030,7 +3030,6 @@ public class JDec extends JFrame {
                     File dest = fileChooser.getSelectedFile();
 
                     JsonObject graphJsonObject = BipartiteGraphExport.generateBipartiteGraphJson(tab.automaton);
-                    var graph = BipartiteGraphExport.generateBipartiteGraph(tab.automaton, "sigma");
                     dest.delete();
                     try (Writer writer = IOUtils.buffer(new FileWriter(dest))) {
                         new Gson().toJson(graphJsonObject, writer);
@@ -3140,7 +3139,7 @@ public class JDec extends JFrame {
                         tab.nUsingThreads.incrementAndGet();
                         syncCompositionLock.lock();
                         try {
-                            UStructure uStructure = tab.automaton.synchronizedComposition();
+                            UStructure uStructure = AutomataOperations.synchronizedComposition(tab.automaton);
                             createTab(uStructure);
                             setBusyCursor(false);
                         } catch (NoInitialStateException e) {
@@ -3191,7 +3190,7 @@ public class JDec extends JFrame {
                     setBusyCursor(false);
                     return;
                 }
-                Automaton automaton = uStructure.relabelConfigurationStates().subsetConstruction(controller);
+                Automaton automaton = UStructureOperations.relabelConfigurationStates(uStructure).subsetConstruction(controller);
                 createTab(automaton);
                 setBusyCursor(false);
             } catch (RuntimeException e) {
@@ -3226,7 +3225,7 @@ public class JDec extends JFrame {
                     () -> {
                         tab.nUsingThreads.incrementAndGet();
                         try {
-                            createTab(uStructure.relabelConfigurationStates());
+                            createTab(UStructureOperations.relabelConfigurationStates(uStructure));
                             setBusyCursor(false);
                         } catch (RuntimeException e) {
                             temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after

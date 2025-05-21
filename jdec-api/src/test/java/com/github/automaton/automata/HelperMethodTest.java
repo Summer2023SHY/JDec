@@ -39,7 +39,7 @@ class HelperMethodTest {
         );
 
         logger.debug("Taking the U-Structure of the automaton...");
-        UStructure uStructure = automaton.synchronizedComposition();
+        UStructure uStructure = AutomataOperations.synchronizedComposition(automaton);
 
         logger.debug("Finding the counter-example...");
         labelSequences = uStructure.findCounterExample(true);
