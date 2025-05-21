@@ -3030,7 +3030,6 @@ public class JDec extends JFrame {
                     File dest = fileChooser.getSelectedFile();
 
                     JsonObject graphJsonObject = BipartiteGraphExport.generateBipartiteGraphJson(tab.automaton);
-                    var graph = BipartiteGraphExport.generateBipartiteGraph(tab.automaton, "sigma");
                     dest.delete();
                     try (Writer writer = IOUtils.buffer(new FileWriter(dest))) {
                         new Gson().toJson(graphJsonObject, writer);
