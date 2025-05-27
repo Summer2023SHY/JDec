@@ -55,6 +55,7 @@ public class BipartiteGraphExport {
             JsonObject graphJson = new JsonObject();
             for (var state : graph.keySet()) {
                 var edges = graph.get(state);
+                JsonObject stateJson = new JsonObject();
                 JsonArray edgesJson = new JsonArray();
                 for (int controller = 0; controller < edges.size(); controller++) {
                     JsonArray edgeJson = new JsonArray();
@@ -63,7 +64,10 @@ public class BipartiteGraphExport {
                     }
                     edgesJson.add(edgeJson);
                 }
-                graphJson.add(state.getLabel(), edgesJson);
+                stateJson.add("edges", edgesJson);
+                stateJson.addProperty("enablement", state.isEnablementStateOf(graphEvent.getLabel()));
+                stateJson.addProperty("disablement", state.isDisablementStateOf(graphEvent.getLabel()));
+                graphJson.add(state.getLabel(), stateJson);
             }
             graphJsonObject.add(graphEvent.getLabel(), graphJson);
         }
