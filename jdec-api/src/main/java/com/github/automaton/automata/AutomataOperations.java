@@ -252,16 +252,13 @@ public class AutomataOperations {
         boolean needToAddDumpState = false;
 
         // Add each state to the new automaton
-        for (long s = 1; s <= source.getNumberOfStates(); s++) {
-
-            State state = source.getState(s);
-
+        for (State state : source.getStates()) {
             // Indicate that a dump state already exists, and the complement shouldn't be
             // taken again
             if (state.getLabel().equals(Automaton.DUMP_STATE_LABEL))
                 throw new OperationFailedException();
 
-            long id = automaton.addState(state.getLabel(), !state.isMarked(), s == source.initialState);
+            long id = automaton.addState(state.getLabel(), state.isMarked(), state.getID() == source.initialState);
 
             // Add transitions for each event (even if they were previously undefined, these
             // transitions will lead to the dump state)
