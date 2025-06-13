@@ -1539,29 +1539,7 @@ public class AutomataOperations {
             return compositeSpecTwinPlant;
         }
         Automaton compositePlant = buildCompositeAutomaton(plants);
-        Automaton compositePlantTwinPlant = markAllTransitionsAsBad(compositePlant.generateTwinPlant());
-        addSelfLoopsToDumpState(compositeSpecTwinPlant);
-        addSelfLoopsToDumpState(compositePlantTwinPlant);
-        Automaton combinedSys = intersection(compositeSpecTwinPlant, compositePlantTwinPlant);
-        BitSet bSet = new BitSet();
-        for (long stateId = 1; stateId <= combinedSys.getNumberOfStates(); stateId++) {
-            if (!combinedSys.stateExists(stateId))
-                continue;
-            State s = combinedSys.getState(stateId);
-            String[] stateLabels = s.getLabel().split("_");
-            boolean plantStateIsDump = Objects.equals(stateLabels[0], Automaton.DUMP_STATE_LABEL);
-            boolean specStateIsDump = Objects.equals(stateLabels[1], Automaton.DUMP_STATE_LABEL);
-            if (plantStateIsDump && specStateIsDump) {
-                combinedSys.removeState(stateId);
-            } else if (specStateIsDump) {
-                s.setMarked(true);
-                bSet.set((int) stateId);
-            }
-        }
-        var bad = combinedSys.getAllTransitions().parallelStream().filter(td -> bSet.get((int) td.targetStateID)).toList();
-        for (var badTd : bad) {
-            combinedSys.markTransitionAsBad(badTd.initialStateID, badTd.eventID, badTd.targetStateID);
-        }
+        Automaton combinedSys = union(compositeSpecTwinPlant, compositePlant);
         combinedSys.renumberStates();
         relabelStates(combinedSys);
         return combinedSys;
