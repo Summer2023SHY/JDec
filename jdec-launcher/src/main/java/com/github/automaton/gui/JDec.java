@@ -3266,33 +3266,39 @@ public class JDec extends JFrame {
             }
             Thread observabilityThread = new Thread(
                     () -> {
-                        final boolean displayAmbLevel = ambLevelDisplayResponse == JOptionPane.YES_OPTION;
                         JLabel label = new JLabel("Running observability test", SwingConstants.CENTER);
                         tab.add(label, BorderLayout.SOUTH);
-                        setBusyCursor(true);
-                        tab.nUsingThreads.incrementAndGet();
-                        Pair<Boolean, OptionalInt> observability = tab.automaton
-                                .testObservability(displayAmbLevel);
-                        tab.nUsingThreads.decrementAndGet();
-                        tabbedPane.setSelectedComponent(tab);
-                        setBusyCursor(false);
-                        tab.remove(label);
-                        if (observability.getLeft())
-                            if (displayAmbLevel) {
-                                // new AmbiguityLevelOutput(JDec.this, "Passed Test", observability);
-                                displayMessage("Passed Test",
-                                        "The system is inference observable with "
-                                                + observability.getRight().getAsInt()
-                                                + (observability.getRight().getAsInt() == 1 ? " level"
-                                                        : " levels")
-                                                + " of inferencing",
+                        try {
+                            final boolean displayAmbLevel = ambLevelDisplayResponse == JOptionPane.YES_OPTION;
+                            setBusyCursor(true);
+                            tab.nUsingThreads.incrementAndGet();
+                            Pair<Boolean, OptionalInt> observability = tab.automaton
+                                    .testObservability(displayAmbLevel);
+                            tab.nUsingThreads.decrementAndGet();
+                            tabbedPane.setSelectedComponent(tab);
+                            setBusyCursor(false);
+                            tab.remove(label);
+                            if (observability.getLeft())
+                                if (displayAmbLevel) {
+                                    // new AmbiguityLevelOutput(JDec.this, "Passed Test", observability);
+                                    displayMessage("Passed Test",
+                                            "The system is inference observable with "
+                                                    + observability.getRight().getAsInt()
+                                                    + (observability.getRight().getAsInt() == 1 ? " level"
+                                                            : " levels")
+                                                    + " of inferencing",
+                                            JOptionPane.INFORMATION_MESSAGE);
+                                } else
+                                    displayMessage("Passed Test", "The system is inference observable.",
+                                            JOptionPane.INFORMATION_MESSAGE);
+                            else
+                                displayMessage("Failed Test", "The system is not inference observable.",
                                         JOptionPane.INFORMATION_MESSAGE);
-                            } else
-                                displayMessage("Passed Test", "The system is inference observable.",
-                                        JOptionPane.INFORMATION_MESSAGE);
-                        else
-                            displayMessage("Failed Test", "The system is not inference observable.",
-                                    JOptionPane.INFORMATION_MESSAGE);
+                        } catch (Exception e) {
+                            setBusyCursor(false);
+                            tab.remove(label);
+                            JDec.this.displayException(e);
+                        }
                     },
                     FilenameUtils.removeExtension(tab.ioAdapter.getFile().getName())
                             + " - Observability Test");
