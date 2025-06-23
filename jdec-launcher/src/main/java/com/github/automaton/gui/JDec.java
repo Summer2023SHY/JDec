@@ -947,7 +947,7 @@ public class JDec extends JFrame {
 
         int index = tabbedPane.getSelectedIndex();
         AutomatonTab tab = tabs.get(index);
-        String fileName = FilenameUtils.removeExtension(tab.ioAdapter.getFile().getAbsolutePath()) + ".svg";
+        File imageFile = new File(FilenameUtils.removeExtension(tab.ioAdapter.getFile().getAbsolutePath()) + ".svg");
 
         boolean successful = false;
 
@@ -955,24 +955,22 @@ public class JDec extends JFrame {
         try {
             if (Desktop.isDesktopSupported()) {
                 if (SystemUtils.IS_OS_WINDOWS) {
-                    Desktop.getDesktop().open(new File(fileName.replaceAll(" ", "%20")));
+                    Desktop.getDesktop().open(imageFile);
                 } else {
-                    // NOTE: There is the possibility that I am missing some characters that should
-                    // be encoded
-                    Desktop.getDesktop().browse(new URI("file://" + fileName.replaceAll(" ", "%20")));
+                    Desktop.getDesktop().browse(imageFile.toURI());
                 }
                 successful = true;
 
             }
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException e) {
             logger.catching(e);
         }
 
         // Display the proper error message
         if (!successful) {
-            if (new File(fileName).exists())
+            if (imageFile.exists())
                 displayErrorMessage("Unable To Open",
-                        "The .SVG file could not be opened in your browser. You can find the file here: '" + fileName
+                        "The .SVG file could not be opened in your browser. You can find the file here: '" + imageFile.getAbsolutePath()
                                 + "'.");
             else
                 displayErrorMessage("File Not Found",
