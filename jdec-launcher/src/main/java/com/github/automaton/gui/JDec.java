@@ -26,7 +26,6 @@ import javax.xml.transform.stream.*;
 
 import org.apache.batik.swing.JSVGCanvas;
 import org.apache.batik.swing.gvt.AbstractPanInteractor;
-import org.apache.commons.collections4.ListValuedMap;
 import org.apache.commons.collections4.properties.PropertiesFactory;
 import org.apache.commons.io.*;
 import org.apache.commons.lang3.*;
@@ -38,7 +37,6 @@ import org.w3c.dom.*;
 import org.xml.sax.*;
 
 import com.github.automaton.automata.*;
-import com.github.automaton.automata.Event;
 import com.github.automaton.gui.util.*;
 import com.github.automaton.gui.util.bipartite.BipartiteGraphExport;
 import com.github.automaton.gui.util.graphviz.GraphvizEngineInitializer;
@@ -51,7 +49,6 @@ import com.google.gson.*;
 import com.jthemedetecor.OsThemeDetector;
 
 import guru.nidi.graphviz.engine.Format;
-import guru.nidi.graphviz.engine.Graphviz;
 
 /**
  * A Java application for Decentralized Control. This application has been
