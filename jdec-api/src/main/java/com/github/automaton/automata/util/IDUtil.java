@@ -56,7 +56,7 @@ public class IDUtil {
      * 
      * @param list  The list of IDs
      * @param maxID The largest possible value that could appear in the list
-     *              (usually {@link Automaton#nStates})
+     *              (usually {@link Automaton#getNumberOfStates()})
      * 
      * @return The unique combined ID
      * 
@@ -92,7 +92,7 @@ public class IDUtil {
      * 
      * @param list  The list of IDs
      * @param maxID The largest possible value that could appear in the list
-     *              (usually {@link Automaton#nStates})
+     *              (usually {@link Automaton#getNumberOfStates()})
      * 
      * @return The unique combined ID
      */

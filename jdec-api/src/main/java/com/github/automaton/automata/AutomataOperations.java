@@ -1176,7 +1176,6 @@ public class AutomataOperations {
      * Tests whether the specified system is inference observable.
      * 
      * @param automaton a system
-     * @param showInferenceLevel whether the level of inferencing required should be returned
      * @return whether the system is inference observable and the level of inferencing required
      * 
      * @throws NullPointerException if {@code automaton} is {@code null}

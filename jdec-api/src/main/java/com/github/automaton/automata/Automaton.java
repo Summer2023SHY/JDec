@@ -797,7 +797,7 @@ public class Automaton implements Cloneable {
      *           internally.
      * @param list  The list of IDs
      * @param maxID The largest possible value that could appear in the list
-     *              (usually {@link #nStates})
+     *              (usually {@link #getNumberOfStates()})
      * @return The unique combined ID
      * @throws ArithmeticException if the ID combination result overflows a
      *                             {@code long}
@@ -819,7 +819,7 @@ public class Automaton implements Cloneable {
      *           internally.
      * @param list  The list of IDs
      * @param maxID The largest possible value that could appear in the list
-     *              (usually {@link #nStates})
+     *              (usually {@link #getNumberOfStates()})
      * @return The unique combined ID
      * 
      * @deprecated Use {@link IDUtil#combineBigIDs(List, long)}.
