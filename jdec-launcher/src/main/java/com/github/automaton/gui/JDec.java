@@ -2588,13 +2588,9 @@ public class JDec extends JFrame {
                     };
                     fileChooser.setAcceptAllFileFilterUsed(false);
                     fileChooser.setDialogTitle("Export");
-                    final java.util.List<Format> supportedFormats = java.util.List.of(Format.PNG, Format.SVG,
-                            Format.DOT);
-                    for (Format f : supportedFormats) {
-                        fileChooser
-                                .addChoosableFileFilter(
-                                        new FileNameExtensionFilter(f.name() + " file", f.fileExtension));
-                    }
+                    java.util.List.of(Format.PNG, Format.SVG, Format.DOT).forEach(f -> {
+                        fileChooser.addChoosableFileFilter(new FileNameExtensionFilter(f.name() + " file", f.fileExtension));
+                    });
                     if (currentDirectory != null)
                         fileChooser.setCurrentDirectory(currentDirectory);
 
