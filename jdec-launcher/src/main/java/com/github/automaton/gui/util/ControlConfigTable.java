@@ -77,7 +77,7 @@ public class ControlConfigTable extends ListBasedTableModel<State> {
     /**
      * Returns the name of the column at the specified index.
      * 
-     * @param columnIndex the index of the column
+     * @param column the index of the column
      * 
      * @return the name of the column at the specified index
      * 
