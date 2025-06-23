@@ -282,7 +282,7 @@ public final class Sequence implements Cloneable, Iterable<Pair<Integer, Long>> 
      * 
      * @return a copy of this sequence
      * 
-     * @since 2.1.0
+     * @since 2.2.0
      */
     @Override
     public Sequence clone() {
@@ -297,7 +297,7 @@ public final class Sequence implements Cloneable, Iterable<Pair<Integer, Long>> 
      * 
      * @return a reversed copy of this sequence
      * 
-     * @since 2.1.0
+     * @since 2.2.0
      */
     public Sequence reversed() {
         Sequence reversed = this.clone();

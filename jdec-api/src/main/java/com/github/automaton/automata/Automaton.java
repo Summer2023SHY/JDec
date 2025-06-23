@@ -1825,7 +1825,7 @@ public class Automaton implements Cloneable {
      * @param label a state label
      * @return {@code true} if the state with the specified label
      * 
-     * @since 2.1.0
+     * @since 2.2.0
      **/
     public boolean stateExists(String label) {
         return getState(label) != null;
@@ -2203,7 +2203,7 @@ public class Automaton implements Cloneable {
      * 
      * @throws NullPointerException if argument is {@code null}
      * 
-     * @since 2.1.0
+     * @since 2.2.0
      */
     public boolean recognizesWord(int controller, Word word) {
         Objects.requireNonNull(word);

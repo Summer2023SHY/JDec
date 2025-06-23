@@ -16,7 +16,7 @@ import com.github.automaton.automata.Automaton;
  * the underlying heuristic.
  * 
  * @author Sung Ho Yoon
- * @since 2.1.0
+ * @since 2.2.0
  */
 public abstract class ComponentIterable implements Iterable<Automaton> {
 

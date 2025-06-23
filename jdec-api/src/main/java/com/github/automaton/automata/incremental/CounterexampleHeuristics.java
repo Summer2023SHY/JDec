@@ -13,7 +13,7 @@ import com.github.automaton.automata.Word;
  * Heuristics that can be used for selecting counterexamples.
  * 
  * @author Sung Ho Yoon
- * @since 2.1.0
+ * @since 2.2.0
  */
 public enum CounterexampleHeuristics implements Comparator<Counterexample> {
     /**

@@ -13,7 +13,7 @@ import com.github.automaton.automata.Automaton;
  * A generator interface for {@link ComponentIterable}s.
  * 
  * @author Sung Ho Yoon
- * @since 2.1.0
+ * @since 2.2.0
  */
 @FunctionalInterface
 public interface ComponentIterableGenerator {

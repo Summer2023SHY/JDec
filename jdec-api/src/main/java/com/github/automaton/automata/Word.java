@@ -234,6 +234,8 @@ public final class Word implements Comparable<Word>, Iterable<String> {
      *         the specified word
      * 
      * @throws NullPointerException if specified word is {@code null}
+     * 
+     * @since 2.2.0
      */
     @Override
     public int compareTo(Word other) {

@@ -13,7 +13,7 @@ import com.github.automaton.automata.Automaton;
  * An iterable of system components that favor plants over specifications.
  * 
  * @author Sung Ho Yoon
- * @since 2.1.0
+ * @since 2.2.0
  */
 public class PlantOverSpecComponentIterable extends ComponentIterable {
 

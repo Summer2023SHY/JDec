@@ -15,7 +15,7 @@ import com.github.automaton.automata.Automaton;
  * with an option to specify extra filters.
  * 
  * @author Sung Ho Yoon
- * @since 2.1.0
+ * @since 2.2.0
  */
 @FunctionalInterface
 public interface FilteredComponentIterableGenerator extends ComponentIterableGenerator {

@@ -474,7 +474,7 @@ public class AutomataOperations {
      * @throws NullPointerException if the collection is {@code null}
      * @throws IncompatibleAutomataException if the automata are incompatible
      * 
-     * @since 2.1.0
+     * @since 2.2.0
      */
     public static Automaton intersection(Collection<Automaton> automata) {
         Objects.requireNonNull(automata);
@@ -1415,6 +1415,8 @@ public class AutomataOperations {
      * @return {@code true} if the combined system is inference observable
      * 
      * @throws NullPointerException if either one of the arguments is {@code null}
+     * 
+     * @since 2.2.0
      */
     public static boolean testIncrementalObservability(Set<Automaton> plants, Set<Automaton> specs, FilteredComponentIterableGenerator componentHeuristicSupplier) {
         return testIncrementalObservability(plants, specs, CounterexampleHeuristics.NONE, RandomOrderComponentIterable::new);
@@ -1432,6 +1434,8 @@ public class AutomataOperations {
      * @return {@code true} if the combined system is inference observable
      * 
      * @throws NullPointerException if either one of the arguments is {@code null}
+     * 
+     * @since 2.2.0
      */
     public static boolean testIncrementalObservability(Set<Automaton> plants, Set<Automaton> specs, CounterexampleHeuristics counterexampleHeuristic, FilteredComponentIterableGenerator componentHeuristicSupplier) {
         Objects.requireNonNull(plants);
@@ -1530,7 +1534,7 @@ public class AutomataOperations {
      * @param specs set of specification components
      * @return the monolithic system
      * 
-     * @since 2.1.0
+     * @since 2.2.0
      */
     public static Automaton buildMonolithicSystem(Set<Automaton> plants, Set<Automaton> specs) {
         Automaton compositeSpec = buildCompositeAutomaton(specs);
@@ -1553,6 +1557,16 @@ public class AutomataOperations {
                 .orElseThrow(IllegalArgumentException::new);
     }
 
+    /**
+     * Relabels all states in the specified automaton
+     * with the state IDs. The original automaton is modified.
+     * 
+     * @param <T> the type of automaton
+     * @param automaton the automaton to relabel
+     * @return the relabelled automaton
+     * 
+     * @since 2.2.0
+     */
     private static <T extends Automaton> T relabelStates(T automaton) {
         for (State s : automaton.getStates()) {
             s.setLabel(Long.toString(s.getID()));
@@ -1560,6 +1574,13 @@ public class AutomataOperations {
         return automaton;
     }
 
+    /**
+     * Constructs counterexamples w.r.t. the specified event.
+     * 
+     * @param event an event
+     * @param trim the trimmed U-Structure
+     * @return a counterexample
+     */
     private static Counterexample buildCounterexample(final Event event, final UStructure trim) {
 
         State currState = trim.getState(trim.initialState);

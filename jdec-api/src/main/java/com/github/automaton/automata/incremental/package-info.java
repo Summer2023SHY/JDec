@@ -9,6 +9,6 @@
  * testing incremental observability}.
  * 
  * @author Sung Ho Yoon
- * @since 2.1.0
+ * @since 2.2.0
  */
 package com.github.automaton.automata.incremental;

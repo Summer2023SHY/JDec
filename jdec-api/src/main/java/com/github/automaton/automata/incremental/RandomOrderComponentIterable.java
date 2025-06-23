@@ -15,7 +15,7 @@ import com.github.automaton.automata.Automaton;
  * the components are used for ordering.
  * 
  * @author Sung Ho Yoon
- * @since 2.1.0
+ * @since 2.2.0
  */
 public class RandomOrderComponentIterable  extends ComponentIterable {
 

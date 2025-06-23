@@ -13,7 +13,7 @@ import java.util.Objects;
  * {@link Object#hashCode() hash codes} for ordering.
  * 
  * @author Sung Ho Yoon
- * @since 2.1.0
+ * @since 2.2.0
  */
 public final class HashcodeBasedComparator<T> implements Comparator<T> {
 
