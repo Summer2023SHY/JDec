@@ -2524,9 +2524,7 @@ public class JDec extends JFrame {
 
             int index = tabbedPane.getSelectedIndex();
             // Only get the tab if it actually exists
-            if (index < 0)
-                return;
-            AutomatonTab tab = tabs.get(index);
+            AutomatonTab tab = index >= 0 ? tabs.get(index) : null;
 
             // Execute the appropriate command
             switch (event.getActionCommand()) {
