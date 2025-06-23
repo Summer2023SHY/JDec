@@ -1560,24 +1560,6 @@ public class AutomataOperations {
         return automaton;
     }
 
-    private static <T extends Automaton> T markAllTransitionsAsBad(T automaton) {
-        for (TransitionData td : automaton.getAllTransitions()) {
-            automaton.markTransitionAsBad(td.initialStateID, td.eventID, td.targetStateID);
-        }
-        return automaton;
-    }
-
-    private static Automaton addSelfLoopsToDumpState(Automaton automaton) {
-        if (automaton.stateExists(Automaton.DUMP_STATE_LABEL)) {
-            long dumpStateID = automaton.getStateID(Automaton.DUMP_STATE_LABEL);
-            for (Event e : automaton.getEvents()) {
-                automaton.addTransition(dumpStateID, e.getID(), dumpStateID);
-                automaton.markTransitionAsBad(dumpStateID, e.getID(), dumpStateID);
-            }
-        }
-        return automaton;
-    }
-
     private static Counterexample buildCounterexample(final Event event, final UStructure trim) {
 
         State currState = trim.getState(trim.initialState);
