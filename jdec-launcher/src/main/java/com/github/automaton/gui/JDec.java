@@ -1430,8 +1430,8 @@ public class JDec extends JFrame {
                 HeaderAccessFile.EXTENSION);
         FileNameExtensionFilter jsonFilter = new FileNameExtensionFilter("JSON files",
                 AutomatonJsonFileAdapter.EXTENSION);
-        fileChooser.addChoosableFileFilter(binaryFilter);
         fileChooser.addChoosableFileFilter(jsonFilter);
+        fileChooser.addChoosableFileFilter(binaryFilter);
 
         /* Begin at the most recently accessed directory */
 
@@ -1565,8 +1565,8 @@ public class JDec extends JFrame {
                 HeaderAccessFile.EXTENSION);
         FileNameExtensionFilter jsonFilter = new FileNameExtensionFilter("JSON files",
                 AutomatonJsonFileAdapter.EXTENSION);
-        fileChooser.addChoosableFileFilter(binaryFilter);
         fileChooser.addChoosableFileFilter(jsonFilter);
+        fileChooser.addChoosableFileFilter(binaryFilter);
 
         /* Begin at the most recently accessed directory */
 
