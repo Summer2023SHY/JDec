@@ -1045,7 +1045,6 @@ public class AutomataOperations {
      * @throws IllegalArgumentException if system is not inference observable
      * @throws NullPointerException     if argument is {@code null}
      */
-    @SuppressWarnings("unchecked")
     public static List<AmbiguityData> calculateAmbiguityLevels(final Automaton automaton) {
 
         return generateLocalControlDecisions(automaton, false);
