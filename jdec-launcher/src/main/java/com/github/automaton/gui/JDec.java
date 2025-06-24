@@ -3072,7 +3072,7 @@ public class JDec extends JFrame {
                     break;
                 case "Open GitHub Repository":
                     try {
-                        Desktop.getDesktop().browse(new URI("https://github.com/Summer2023SHY/Automata"));
+                        Desktop.getDesktop().browse(new URI("https://github.com/Summer2023SHY/JDec"));
                     } catch (IOException | URISyntaxException e) {
                         displayException(e);
                     }
@@ -3080,7 +3080,7 @@ public class JDec extends JFrame {
                 case "View License":
                     try {
                         Desktop.getDesktop()
-                                .browse(new URI("https://github.com/Summer2023SHY/Automata/blob/main/LICENSE"));
+                                .browse(new URI("https://github.com/Summer2023SHY/JDec/blob/main/LICENSE"));
                     } catch (IOException | URISyntaxException e) {
                         displayException(e);
                     }
