@@ -1051,6 +1051,17 @@ public class AutomataOperations {
 
     }
 
+    /**
+     * Calculates the local control decisions for an inference observable system.
+     * 
+     * @param automaton a system
+     * @param enablement whether to use "enable by default (EBD)" framework for generating local control decisions
+     * 
+     * @return the local control decisions
+     * 
+     * @throws IllegalArgumentException if system is not inference observable
+     * @throws NullPointerException     if argument is {@code null}
+     */
     @SuppressWarnings("unchecked")
     public static List<AmbiguityData> generateLocalControlDecisions(final Automaton automaton, boolean enablement) {
 
