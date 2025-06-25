@@ -1969,8 +1969,7 @@ public class JDec extends JFrame {
 
     /**
      * Load the current directory from file (so that the current directory is
-     * maintained even after the
-     * program has been closed).
+     * maintained even after the program has been closed).
      **/
     private void loadCurrentDirectory() {
 
@@ -1988,8 +1987,7 @@ public class JDec extends JFrame {
 
     /**
      * Saves the current directory to file (so that the current directory is
-     * maintained even after the
-     * program has been closed).
+     * maintained even after the program has been closed).
      **/
     private void saveCurrentDirectory() {
 
@@ -2683,8 +2681,7 @@ public class JDec extends JFrame {
                     // Create new tab for the accessible automaton
                     if (automaton == null) {
                         temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we
-                                                              // can
-                                                              // re-use it
+                                                              // can re-use it
                         displayErrorMessage("Operation Failed", "Please specify a starting state.");
                     } else
                         createTab(automaton);
@@ -2703,8 +2700,7 @@ public class JDec extends JFrame {
                     // Create new tab for the trim automaton
                     if (automaton == null) {
                         temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we
-                                                              // can
-                                                              // re-use it
+                                                              // can re-use it
                         displayErrorMessage("Operation Failed", "Please specify a starting state.");
                     } else
                         createTab(automaton);
@@ -2718,8 +2714,7 @@ public class JDec extends JFrame {
                     } catch (OperationFailedException e) {
                         logger.catching(e);
                         temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we
-                                                              // can
-                                                              // re-use it
+                                                              // can re-use it
                         displayErrorMessage("Operation Failed",
                                 "There already exists a dump state, so the complement could not be taken again.");
                     }
@@ -2745,8 +2740,7 @@ public class JDec extends JFrame {
                     } catch (IncompatibleAutomataException e) {
                         logger.catching(e);
                         temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we
-                                                              // can
-                                                              // re-use it
+                                                              // can re-use it
                         displayErrorMessage("Operation Failed",
                                 "Please ensure that both automata have the same number of controllers and that there are no incompatible events (meaning that events share the same name but have different properties).");
                     }
@@ -2767,8 +2761,7 @@ public class JDec extends JFrame {
                     } catch (IncompatibleAutomataException e) {
                         logger.catching(e);
                         temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we
-                                                              // can
-                                                              // re-use it
+                                                              // can re-use it
                         displayErrorMessage("Operation Failed",
                                 "Please ensure that both automata have the same number of controllers and that there are no incompatible events (meaning that events share the same name but have different properties).");
                     }
@@ -2803,8 +2796,7 @@ public class JDec extends JFrame {
                         setBusyCursor(false);
                     } catch (RuntimeException e) {
                         temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after
-                                                              // all,
-                                                              // so we can re-use it
+                                                              // all, so we can re-use it
                         setBusyCursor(false);
                         displayException(e);
                     } /*
@@ -3134,16 +3126,14 @@ public class JDec extends JFrame {
                         } catch (NoInitialStateException e) {
                             logger.catching(e);
                             temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after
-                                                                  // all,
-                                                                  // so we can re-use it
+                                                                  // all, so we can re-use it
                             setBusyCursor(false);
                             displayErrorMessage("Operation Failed",
                                     "Please ensure that you have specified a starting state (using an '@' symbol).");
                         } catch (OperationFailedException e) {
                             logger.catching(e);
                             temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after
-                                                                  // all,
-                                                                  // so we can re-use it
+                                                                  // all, so we can re-use it
                             setBusyCursor(false);
                             displayErrorMessage("Operation Failed", "Failed to add state.");
                         }
@@ -3174,8 +3164,7 @@ public class JDec extends JFrame {
                         true);
                 if (controller == -1) {
                     temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so
-                                                          // we
-                                                          // can re-use it
+                                                          // we can re-use it
                     setBusyCursor(false);
                     return;
                 }
@@ -3184,8 +3173,7 @@ public class JDec extends JFrame {
                 setBusyCursor(false);
             } catch (RuntimeException e) {
                 temporaryFileIndex.decrementAndGet(); // We did not need this temporary file after all, so we
-                                                      // can
-                                                      // re-use it
+                                                      // can re-use it
                 setBusyCursor(false);
                 displayException(e);
             } /*
