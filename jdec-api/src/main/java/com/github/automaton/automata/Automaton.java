@@ -1820,6 +1820,18 @@ public class Automaton implements Cloneable {
     }
 
     /**
+     * Check to see if a state with the specified label exists.
+     * 
+     * @param label a state label
+     * @return {@code true} if the state with the specified label
+     * 
+     * @since 2.2.0
+     **/
+    public boolean stateExists(String label) {
+        return getState(label) != null;
+    }
+
+    /**
      * Given the ID number of a state, get the state information.
      * 
      * @param id The unique identifier corresponding to the requested state
@@ -2172,7 +2184,7 @@ public class Automaton implements Cloneable {
             boolean nextStateFound = false;
             for (int i = 0; i < currState.getNumberOfTransitions() && !nextStateFound; i++) {
                 Transition t = currState.getTransition(i);
-                if (!isBadTransition(currState, t.getEvent(), getState(t.getTargetStateID())) &&  t.getEvent().getLabel().equals(eventLabel)) {
+                if (!isBadTransition(currState, t.getEvent(), getState(t.getTargetStateID())) && t.getEvent().getLabel().equals(eventLabel) /* && BooleanUtils.or(t.getEvent().isObservable()) */) {
                     currState = getState(t.getTargetStateID());
                     nextStateFound = true;
                 }
@@ -2181,6 +2193,51 @@ public class Automaton implements Cloneable {
                 return false;
         }
         return currState.isMarked();
+    }
+
+    /**
+     * Tests whether this automaton recognizes the specified word.
+     * 
+     * @param word a word
+     * @return {@code true} if this automaton recognizes this word
+     * 
+     * @throws NullPointerException if argument is {@code null}
+     * 
+     * @since 2.2.0
+     */
+    public boolean recognizesWord(int controller, Word word) {
+        Objects.requireNonNull(word);
+        if (!stateExists(initialState))
+            return false;
+        if (controller < 0 || controller > nControllers) {
+            throw new IllegalArgumentException();
+        }
+        if (controller == 0) {
+            return recognizesWord(word);
+        }
+        Queue<Pair<Long, Integer>> queue = new PriorityQueue<>((a, b) -> Integer.compare(a.getRight(), b.getRight()));
+        queue.add(Pair.of(initialState, 0));
+        while (!queue.isEmpty()) {
+            var curr = queue.poll();
+            State currState = getState(curr.getLeft());
+            if (curr.getRight() == word.length()) {
+                return true;
+            }
+            String eventLabel = word.getEventAt(curr.getRight());
+            for (int i = 0; i < currState.getNumberOfTransitions(); i++) {
+                Transition t = currState.getTransition(i);
+                if (!isBadTransition(currState, t.getEvent(), getState(t.getTargetStateID()))) {
+                    if (t.getEvent().isObservable(controller - 1)) {
+                        if (t.getEvent().getLabel().equals(eventLabel)) {
+                            queue.add(Pair.of(t.getTargetStateID(), curr.getRight() + 1));
+                        }
+                    } else {
+                        queue.add(Pair.of(t.getTargetStateID(), curr.getRight()));
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -2194,7 +2251,7 @@ public class Automaton implements Cloneable {
      * 
      * @since 2.1.0
      */
-    public boolean recognizesWords(Set<Word> words) {
+    public boolean recognizesWords(Collection<Word> words) {
         Validate.noNullElements(words);
         if (words.isEmpty())
             return false;

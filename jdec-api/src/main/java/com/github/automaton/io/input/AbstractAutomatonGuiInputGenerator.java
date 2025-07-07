@@ -99,7 +99,7 @@ abstract class AbstractAutomatonGuiInputGenerator<T extends Automaton> implement
             State state = automaton.getState(s);
 
             if (state == null) {
-                logger.error("State could not be loaded.");
+                logger.error("State with id \"" + s + "\" could not be loaded.");
                 continue;
             }
 

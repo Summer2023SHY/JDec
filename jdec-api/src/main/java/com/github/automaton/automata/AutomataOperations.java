@@ -10,9 +10,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.IntFunction;
 import java.util.stream.IntStream;
 
+import com.github.automaton.automata.incremental.*;
 import com.github.automaton.automata.util.*;
 
 import org.apache.commons.collections4.*;
+import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.time.StopWatch;
@@ -461,6 +463,29 @@ public class AutomataOperations {
         /* Return produced automaton */
 
         return automaton;
+    }
+
+    /**
+     * Generates the intersection of automata in the specified collection.
+     * 
+     * @param automata a collection of automata
+     * @return intersection of automata in the specified collection, or {@code null} if the specified collection is empty
+     * 
+     * @throws NullPointerException if the collection is {@code null}
+     * @throws IncompatibleAutomataException if the automata are incompatible
+     * 
+     * @since 2.2.0
+     */
+    public static Automaton intersection(Collection<Automaton> automata) {
+        Objects.requireNonNull(automata);
+        if (automata.isEmpty()) {
+            return null;
+        }
+        if (automata.size() == 1) {
+            return automata.iterator().next();
+        }
+        return automata.parallelStream().reduce(AutomataOperations::intersection)
+                .orElseThrow(IllegalArgumentException::new);
     }
 
     /**
@@ -1284,8 +1309,11 @@ public class AutomataOperations {
             for (Transition t : lastState.getTransitions()) {
                 if (sequence.containsState(t.getTargetStateID()))
                     throw new IllegalArgumentException();
-                else
-                    queue.add(sequence.append(t.getEvent().getID(), t.getTargetStateID()));
+                else {
+                    if (!automaton.getBadTransitions().contains(new TransitionData(lastState.getID(), t.getEvent().getID(), t.getTargetStateID()))) {
+                        queue.add(sequence.append(t.getEvent().getID(), t.getTargetStateID()));
+                    }
+                }
             }
         }
         return language;
@@ -1338,12 +1366,9 @@ public class AutomataOperations {
                         foundMatch = true;
                     }
 
-                // Check to see if this event is controllable by at least one controller
-                boolean controllable = BooleanUtils.or(e.isControllable());
-
                 // Add new transition leading to dump state if this event if undefined at this
-                // state and is controllable and active
-                if (!foundMatch && controllable && activeEvents.contains(e)) {
+                // state and is active
+                if (!foundMatch && activeEvents.contains(e)) {
                     twinPlant.addTransition(id, e.getID(), dumpStateID);
                     twinPlant.markTransitionAsBad(id, e.getID(), dumpStateID);
                     needToAddDumpState = true;
@@ -1376,6 +1401,7 @@ public class AutomataOperations {
 
     /**
      * Given a set of plants and specifications, test whether the combined system is inference observable.
+     * This method uses random order for querying the system components.
      * 
      * @param plants a set of plants
      * @param specs a set of specifications
@@ -1384,82 +1410,151 @@ public class AutomataOperations {
      * @throws NullPointerException if either one of the arguments is {@code null}
      */
     public static boolean testIncrementalObservability(Set<Automaton> plants, Set<Automaton> specs) {
+        return testIncrementalObservability(plants, specs, RandomOrderComponentIterable::new);
+    }
+
+    /**
+     * Given a set of plants and specifications, test whether the combined system is inference observable.
+     * This method uses the specified heuristic for querying the system components.
+     * 
+     * @param plants a set of plants
+     * @param specs a set of specifications
+     * @param componentHeuristicSupplier a component heuristic supplier
+     * 
+     * @return {@code true} if the combined system is inference observable
+     * 
+     * @throws NullPointerException if either one of the arguments is {@code null}
+     * 
+     * @since 2.2.0
+     */
+    public static boolean testIncrementalObservability(Set<Automaton> plants, Set<Automaton> specs, FilteredComponentIterableGenerator componentHeuristicSupplier) {
+        return testIncrementalObservability(plants, specs, CounterexampleHeuristics.NONE, RandomOrderComponentIterable::new);
+    }
+
+    /**
+     * Given a set of plants and specifications, test whether the combined system is inference observable.
+     * This method uses the specified heuristic for querying the system components.
+     * 
+     * @param plants a set of plants
+     * @param specs a set of specifications
+     * @param counterexampleHeuristic a counterexample heuristic
+     * @param componentHeuristicSupplier a component heuristic supplier
+     * 
+     * @return {@code true} if the combined system is inference observable
+     * 
+     * @throws NullPointerException if either one of the arguments is {@code null}
+     * 
+     * @since 2.2.0
+     */
+    public static boolean testIncrementalObservability(Set<Automaton> plants, Set<Automaton> specs, CounterexampleHeuristics counterexampleHeuristic, FilteredComponentIterableGenerator componentHeuristicSupplier) {
         Objects.requireNonNull(plants);
         Objects.requireNonNull(specs);
+        Objects.requireNonNull(counterexampleHeuristic);
+        Objects.requireNonNull(componentHeuristicSupplier);
 
         /* Create copies of the sets to avoid modifying supplied sets */
         Set<Automaton> G = new LinkedHashSet<>(plants);
         Set<Automaton> H = new LinkedHashSet<>(specs);
 
+        logger.info("Starting incremental observability check");
+        logger.info("Counterexample heuristic: " + counterexampleHeuristic.toString());
+        logger.info("Component heuristic: " + componentHeuristicSupplier.toString());
+        StopWatch sw = StopWatch.createStarted();
+        int nComponentChecks = 0;
+
         while (!H.isEmpty()) {
             Automaton Hj = H.iterator().next();
+            logger.debug(Hj);
             Set<Automaton> Hprime = new LinkedHashSet<>();
             Set<Automaton> Gprime = new LinkedHashSet<>();
             Hprime.add(Hj);
             Automaton combinedSys = generateTwinPlant(Hj);
             while (!testObservability(combinedSys, false).getLeft()) {
                 UStructure uStructure = UStructureOperations.relabelConfigurationStates(synchronizedComposition(combinedSys));
+                List<Counterexample> counterExamplesRaw = new ArrayList<>();
+                List<Counterexample> counterExamples = SetUniqueList.setUniqueList(counterExamplesRaw);
                 for (Event controllableEvent : combinedSys.getControllableEvents()) {
+                    var enablementStates = uStructure.getEnablementStates(controllableEvent.getLabel());
                     var illegalConfigs = uStructure.getIllegalConfigStates(controllableEvent.getLabel());
                     for (var illegalConfig : illegalConfigs) {
-                        illegalConfig.setMarked(true);
-                        var trim = uStructure.trim();
-                        boolean found = false;
-                        Set<Word> counterExample = Collections.synchronizedSet(new LinkedHashSet<>());
-                        SubsetConstruction subsetConstruction = trim.subsetConstruction(0);
-                        IntStream.range(0, combinedSys.nControllers).parallel().forEach(i -> counterExample
-                                .addAll(buildLanguage(subsetConstruction.buildAutomatonRepresentationOf(i))));
-                        int nCheckedAutomata = 0;
-                        for (Iterator<Automaton> iterator = IteratorUtils.filteredIterator(G.iterator(), aut -> !Gprime.contains(aut)); iterator.hasNext() && !found; ) {
-                            Automaton M = iterator.next();
-                            nCheckedAutomata++;
-                            if (M.recognizesWords(counterExample)) {
-                                found = true;
-                                Gprime.add(M);
-                            }
-                        }
-                        for (Iterator<Automaton> iterator = IteratorUtils.filteredIterator(H.iterator(), aut -> !Hprime.contains(aut)); iterator.hasNext() && !found; ) {
-                            Automaton M = iterator.next();
-                            nCheckedAutomata++;
-                            if (M.recognizesWords(counterExample)) {
-                                found = true;
-                                Hprime.add(M);
-                            }
-                        }
-                        if (nCheckedAutomata > 0 && !found) {
-                            return false;
+                        if (!enablementStates.contains(illegalConfig)) {
+                            illegalConfig.setMarked(true);
+                            var trim = uStructure.trim();
+                            var counterExample = buildCounterexample(controllableEvent, trim);
+                            counterExamples.add(counterExample);
+                            illegalConfig.setMarked(false);
                         }
                     }
                 }
-                combinedSys = buildCombinedSystem(Gprime, Hprime);
-                H.removeAll(Hprime);
-                G.removeAll(Gprime);
+                logger.debug("Counterexamples: "  + counterExamples);
+                counterExamplesRaw.sort(counterexampleHeuristic);
+
+                boolean found = false;
+                Counterexample counterExample = counterExamplesRaw.get(0);
+                logger.info("Current counterexample: " + counterExample);
+                var componentIterator = componentHeuristicSupplier.generate(G, H, Gprime, Hprime).iterator();
+                componentSearch: while (!found && componentIterator.hasNext()) {
+                    var M = componentIterator.next();
+                    logger.info("Current component: " + M);
+                    nComponentChecks++;
+                    if (G.contains(M) && !M.recognizesWord(counterExample.getWords().get(0).append(counterExample.getEvent().getLabel()))) {
+                        found = Gprime.add(M);
+                        break componentSearch;
+                    }
+                    if (H.contains(M) && !M.recognizesWord(counterExample.getWords().get(0))) {
+                        found = Hprime.add(M);
+                        break componentSearch;
+                    }
+                    for (int i = 1; !found && i <= combinedSys.nControllers; i++) {
+                        if (counterExample.getEvent().isControllable(i - 1)) {
+                            if (!M.recognizesWord(i, counterExample.getWords().get(i).append(counterExample.getEvent().getLabel()))) {
+                                if (G.contains(M)) {
+                                    found = Gprime.add(M);
+                                } else {
+                                    found = Hprime.add(M);
+                                }
+                                break componentSearch;
+                            }
+                        }
+                    }
+                }
+
+                if (!found) {
+                    logger.info("Time taken: " + sw.getTime(TimeUnit.MILLISECONDS) + " ms");
+                    logger.info("Number of component checks: " + nComponentChecks);
+                    return false;
+                }
+                logger.debug("Rebuilding system");
+                combinedSys = buildMonolithicSystem(Gprime, Hprime);
+                // logger.debug("New system: " + combinedSys.toJsonObject());
             }
+            H.removeAll(Hprime);
+            G.addAll(Hprime);
         }
+        logger.info("Time taken: " + sw.getTime(TimeUnit.MILLISECONDS) + " ms");
+        logger.info("Number of component checks: " + nComponentChecks);
         return true;
     }
 
-    private static Automaton buildCombinedSystem(Set<Automaton> plants, Set<Automaton> specs) {
-        Automaton compositePlant = buildCompositeAutomaton(plants);
+    /**
+     * Builds monolithic system with the specified system components.
+     * 
+     * @param plants set of plant components
+     * @param specs set of specification components
+     * @return the monolithic system
+     * 
+     * @since 2.2.0
+     */
+    public static Automaton buildMonolithicSystem(Set<Automaton> plants, Set<Automaton> specs) {
         Automaton compositeSpec = buildCompositeAutomaton(specs);
-        Automaton combinedSys = intersection(compositePlant.generateTwinPlant(), compositeSpec.generateTwinPlant());
-        for (long stateId = 1; stateId <= combinedSys.getNumberOfStates(); stateId++) {
-            if (!combinedSys.stateExists(stateId))
-                continue;
-            State s = combinedSys.getState(stateId);
-            String[] stateLabels = s.getLabel().split("_");
-            int dumpCount = 0;
-            for (int i = 0; i < stateLabels.length; i++) {
-                if (Objects.equals(stateLabels[i], Automaton.DUMP_STATE_LABEL))
-                    dumpCount++;
-            }
-            if (dumpCount == stateLabels.length) {
-                combinedSys.removeState(stateId);
-            } else if (dumpCount > 0) {
-                s.setMarked(true);
-            }
+        Automaton compositeSpecTwinPlant = compositeSpec.generateTwinPlant();
+        if (plants.isEmpty()) {
+            return compositeSpecTwinPlant;
         }
+        Automaton compositePlant = buildCompositeAutomaton(plants);
+        Automaton combinedSys = union(compositeSpecTwinPlant, compositePlant);
         combinedSys.renumberStates();
+        relabelStates(combinedSys);
         return combinedSys;
     }
 
@@ -1469,6 +1564,60 @@ public class AutomataOperations {
         }
         return automata.parallelStream().reduce(AutomataOperations::intersection)
                 .orElseThrow(IllegalArgumentException::new);
+    }
+
+    /**
+     * Relabels all states in the specified automaton
+     * with the state IDs. The original automaton is modified.
+     * 
+     * @param <T> the type of automaton
+     * @param automaton the automaton to relabel
+     * @return the relabelled automaton
+     * 
+     * @since 2.2.0
+     */
+    private static <T extends Automaton> T relabelStates(T automaton) {
+        for (State s : automaton.getStates()) {
+            s.setLabel(Long.toString(s.getID()));
+        }
+        return automaton;
+    }
+
+    /**
+     * Constructs counterexamples w.r.t. the specified event.
+     * 
+     * @param event an event
+     * @param trim the trimmed U-Structure
+     * @return a counterexample
+     */
+    private static Counterexample buildCounterexample(final Event event, final UStructure trim) {
+
+        State currState = trim.getState(trim.initialState);
+        Sequence seq = new Sequence(currState.getID());
+
+        while (currState.getNumberOfTransitions() > 0) {
+            Transition transition = currState.getTransition(0);
+            seq = seq.append(transition.getEvent().getID(), transition.getTargetStateID());
+            currState = trim.getState(transition.getTargetStateID());
+        }
+
+        List<List<String>> temp = new ArrayList<>();
+        for (int i = 0; i <= trim.nControllers; i++) {
+            temp.add(new ArrayList<>());
+        }
+        for (int eventID : seq.getEventList()) {
+            Event e = trim.getEvent(eventID);
+            LabelVector lv = e.getVector();
+            for (int i = 0; i <= trim.nControllers; i++) {
+                temp.get(i).add(lv.getLabelAtIndex(i));
+            }
+        }
+        List<Word> words = new ArrayList<>();
+
+        for (int i = 0; i <= trim.nControllers; i++) {
+            words.add(new Word(temp.get(i)));
+        }
+        return new Counterexample(event, words);
     }
 
 }

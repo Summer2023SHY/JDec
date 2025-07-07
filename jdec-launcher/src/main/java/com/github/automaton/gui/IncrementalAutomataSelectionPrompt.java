@@ -22,6 +22,8 @@ import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.io.FilenameUtils;
 
 import com.github.automaton.automata.Automaton;
+import com.github.automaton.automata.incremental.*;
+import com.github.automaton.gui.util.*;
 
 /**
  * A prompt for selecting automata to be used in incremental observability test.
@@ -34,6 +36,9 @@ class IncrementalObsAutomataSelectionPrompt extends JDialog {
     private AtomicBoolean selected = new AtomicBoolean(false);
 
     private List<AutomatonEntry> entries;
+
+    private AbstractComboBoxModel<CounterexampleHeuristics> counterexampleHeuristics;
+    private AbstractComboBoxModel<ComponentHeuristics> componentHeuristics;
 
     public IncrementalObsAutomataSelectionPrompt(Frame owner) {
         super(owner, true);
@@ -77,6 +82,33 @@ class IncrementalObsAutomataSelectionPrompt extends JDialog {
         c.insets = new Insets(0, 0, 0, 0);
         add(pane, c);
 
+        JLabel counterexampleHeuristicLabel = new JLabel("Counterexample Heuristic");
+        c.gridy = 1;
+        c.weightx = 0.5d;
+        c.weighty = 0d;
+        c.gridwidth = 1;
+        c.insets = new Insets(0, 8, 0, 8);
+        c.fill = GridBagConstraints.HORIZONTAL;
+        add(counterexampleHeuristicLabel, c);
+
+        counterexampleHeuristics = new AbstractComboBoxModel<>(CounterexampleHeuristics.values()) {};
+
+        var counterexampleHeuristicOptions = new JComboBox<>(counterexampleHeuristics);
+        c.gridx = 1;
+        add(counterexampleHeuristicOptions, c);
+
+        JLabel componentHeuristicLabel = new JLabel("Component Heuristic");
+        c.gridx = 0;
+        c.gridy = 2;
+        add(componentHeuristicLabel, c);
+
+        componentHeuristics = new AbstractComboBoxModel<>(ComponentHeuristics.values()) {};
+
+        var componentHeuristicOptions = new JComboBox<>(componentHeuristics);
+
+        c.gridx = 1;
+        add(componentHeuristicOptions, c);
+
         JButton submitButton = new JButton("Submit");
         submitButton.addActionListener(action -> {
             selected.set(true);
@@ -87,9 +119,10 @@ class IncrementalObsAutomataSelectionPrompt extends JDialog {
         cancelButton.addActionListener(action -> IncrementalObsAutomataSelectionPrompt.this.dispose());
 
         c.gridx = 0;
-        c.gridy = 1;
+        c.gridy = 3;
         c.weightx = 0.5d;
         c.weighty = 0d;
+        c.insets = new Insets(0, 0, 0, 0);
         c.gridwidth = 1;
         c.fill = GridBagConstraints.HORIZONTAL;
         add(submitButton, c);
@@ -110,6 +143,20 @@ class IncrementalObsAutomataSelectionPrompt extends JDialog {
 
     boolean userSelected() {
         return selected.get();
+    }
+
+    /**
+     * @since 2.2.0
+     */
+    CounterexampleHeuristics getSelectedCounterexampleHeuristic() {
+        return counterexampleHeuristics.getSelectedItem();
+    }
+
+    /**
+     * @since 2.2.0
+     */
+    FilteredComponentIterableGenerator getSelectedComponentHeuristic() {
+        return componentHeuristics.getSelectedItem();
     }
 
     static class AutomatonEntry extends JPanel {
