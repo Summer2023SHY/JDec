@@ -41,7 +41,7 @@ public class AutomatonJsonFileAdapter implements AutomatonIOAdapter {
     }
 
     /**
-     * Constructs a new {@code AutomatonAccessFile} with the given file
+     * Constructs a new {@code AutomatonIOAdapter} with the given file
      * @param file an automaton data file
      * @throws IOException if an I/O error occurs
      * @throws NullPointerException if argument is {@code null}
@@ -51,7 +51,7 @@ public class AutomatonJsonFileAdapter implements AutomatonIOAdapter {
     }
 
     /**
-     * Constructs a new {@code AutomatonAccessFile} with the given file
+     * Constructs a new {@code AutomatonIOAdapter} with the given file
      * @param file an automaton data file
      * @param load whether or not to load data from the specified file
      * @throws IOException if an I/O error occurs
