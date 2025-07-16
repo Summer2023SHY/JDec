@@ -30,7 +30,7 @@ public class ControlConfigTableRowSorter extends TableRowSorter<ControlConfigTab
      * Constructs a new {@code ControlConfigTableRowSorter} using the
      * specified table as the underlying {@link ControlConfigTable}.
      * 
-     * @param table
+     * @param table table of control configurations
      */
     public ControlConfigTableRowSorter(ControlConfigTable table) {
         super(table);
