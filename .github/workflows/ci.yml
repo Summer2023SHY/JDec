@@ -32,7 +32,7 @@ jobs:
       with:
         lfs: ${{ startsWith(github.ref, 'refs/tags/v') }}
     - name: Setup JDK
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         distribution: 'temurin'
         java-version: '17'
@@ -65,7 +65,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
     - name: Setup JDK
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         distribution: temurin # Eclipse Temurin
         java-version: '17'    # Java 17 (LTS)
