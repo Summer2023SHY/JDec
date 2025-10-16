@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         lfs: ${{ startsWith(github.ref, 'refs/tags/v') }}
     - name: Setup JDK
@@ -63,7 +63,7 @@ jobs:
     runs-on: ${{ matrix.os.tag }}
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
     - name: Setup JDK
       uses: actions/setup-java@v5
       with:
