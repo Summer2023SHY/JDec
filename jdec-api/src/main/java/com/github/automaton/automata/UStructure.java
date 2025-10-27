@@ -906,7 +906,7 @@ public class UStructure extends Automaton {
         TransitionData longestViolation = null;
 
         // Continue until we have checked all of the paths
-        outer: while (paths.size() > 0) {
+        while (paths.size() > 0) {
 
             Set<List<State>> newPaths = new HashSet<List<State>>();
 
